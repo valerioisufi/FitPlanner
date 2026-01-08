@@ -1,0 +1,131 @@
+.button {
+    -fx-background-color: #155DFC;
+    -fx-text-fill: white;
+
+    -fx-background-radius: 15px;
+    -fx-padding: 5px 15px;
+}
+
+.button:hover {
+    -fx-background-color: #2665f6;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(three-pass-box, rgba(62, 62, 62, 0.1), 10, 0, 0, 5);
+}
+
+/* 2. Stato PRESSED (Click attivo) */
+.button:pressed {
+    -fx-background-color: #164fc5;
+    -fx-effect: none;
+}
+
+/* Sfondo generale della finestra */
+.root {
+    -fx-background-color: #F0F4F8; /* Grigio-azzurro chiarissimo */
+}
+
+/* La "Card" bianca centrale */
+.card-panel {
+    -fx-background-color: white;
+    -fx-background-radius: 8px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);
+    -fx-padding: 30px;
+    -fx-min-width: 400px;
+    -fx-max-width: 400px;
+}
+
+/* === TIPOGRAFIA === */
+.label-step {
+    -fx-text-fill: #7F8C8D;
+    -fx-font-size: 12px;
+    -fx-padding: 10px 0 5px 0;
+}
+
+.label-title {
+    -fx-text-fill: #2C3E50;
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+}
+
+.label-subtitle {
+    -fx-text-fill: #66788A;
+    -fx-font-size: 14px;
+    -fx-padding: 0 0 20px 0;
+}
+
+.label-field {
+    -fx-text-fill: #2C3E50;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-padding: 10px 0 5px 0;
+}
+
+/* === INPUT TEXT FIELDS === */
+.text-field {
+    -fx-background-color: #F3F4F6; /* Grigio chiaro dell'input */
+    -fx-background-radius: 6px;
+    -fx-border-width: 0;
+    -fx-padding: 10px;
+    -fx-font-size: 14px;
+    -fx-prompt-text-fill: #9CA3AF;
+}
+
+.text-field:focused {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #155DFC; /* Bordo blu quando attivo */
+    -fx-border-width: 1px;
+    -fx-border-radius: 6px;
+}
+
+/* === PROGRESS BAR === */
+.custom-progress-bar {
+    -fx-pref-height: 8px;
+    -fx-accent: #0F172A; /* Colore scuro della parte piena */
+}
+
+/* Rimuoviamo i bordi standard della progress bar per farla piatta */
+.custom-progress-bar .track {
+    -fx-background-color: #E2E8F0;
+    -fx-background-radius: 4px;
+}
+.custom-progress-bar .bar {
+    -fx-background-color: #0F172A; /* Blu scurissimo/Nero */
+    -fx-background-radius: 4px;
+    -fx-padding: 0; /* Rimuove padding interno */
+}
+
+/* === BOTTONI (Footer) === */
+.button-back {
+    -fx-background-color: white;
+    -fx-text-fill: #64748B;
+    -fx-border-color: #E2E8F0;
+    -fx-border-radius: 6px;
+    -fx-background-radius: 6px;
+    -fx-padding: 8px 20px;
+    -fx-cursor: hand;
+}
+.button-back:hover {
+    -fx-background-color: #F8FAFC;
+    -fx-border-color: #CBD5E1;
+}
+
+.button-next {
+    -fx-background-color: #7F848D; /* Grigio scuro come nell'immagine */
+    -fx-text-fill: white;
+    -fx-background-radius: 6px;
+    -fx-padding: 8px 25px;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+.button-next:hover {
+    -fx-background-color: #64748B;
+}
+
+/* Icona di chiusura (simulata con testo) */
+.close-icon {
+    -fx-text-fill: #9CA3AF;
+    -fx-font-size: 16px;
+    -fx-cursor: hand;
+}
+.close-icon:hover {
+    -fx-text-fill: #EF4444; /* Rosso al passaggio */
+}
