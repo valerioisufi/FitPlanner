@@ -20,9 +20,9 @@ public class AppLauncher extends Application {
         stage.setTitle("FitPlanner");
         stage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/appIcon.png"))));
 
-        var scene = new Scene(new RegistrationView());
+        var scene = new Scene(new HomeView());
 
-        String css = Objects.requireNonNull(getClass().getResource("/style/style.css")).toExternalForm();
+        String css = Objects.requireNonNull(getClass().getResource("/style/theme1.css")).toExternalForm();
         scene.getStylesheets().add(css);
 
         stage.setScene(scene);

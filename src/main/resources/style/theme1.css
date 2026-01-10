@@ -1,0 +1,274 @@
+/* * ==========================================
+ * FITNESS APP THEME - JAVA FX
+ * ==========================================
+ * Definizione variabili globali e palette colori
+ */
+
+.root {
+    -fx-background-color: linear-gradient(to bottom right, #F8FAFC, #F1F5F9);
+
+    -fx-font-family: "Segoe UI", "Roboto", "Helvetica", sans-serif;
+    -fx-font-size: 14px;
+    -fx-text-fill: -color-text-body;
+}
+
+.root {
+    /* Colori Primari e Accent */
+    -color-primary: #155DFC;       /* Blu principale (es. pulsanti azione) */
+    -color-accent: #FF5722;        /* Arancione/Rosso (es. timer, alert, azioni importanti) */
+    -color-success: #66BB6A;       /* Verde (es. completamento, progressi positivi) */
+
+    /* Sfondi */
+    -color-bg-main: #F4F6F9;       /* Sfondo generale dell'app (grigio chiarissimo) */
+    -color-bg-card: #FFFFFF;       /* Sfondo delle card/pannelli */
+    -color-bg-sidebar: #2C3E50;    /* Sfondo scuro per la sidebar/menu */
+
+    /* Testo */
+    -color-text-header: #2C3E50;   /* Colore titoli */
+    -color-text-body: #546E7A;     /* Colore testo normale */
+    -color-text-light: #90A4AE;    /* Colore testo secondario/placeholder */
+    -color-text-inverse: #FFFFFF;  /* Testo su sfondi scuri */
+
+    /* Bordi e Ombre */
+    -border-color: #E0E0E0;
+    -card-shadow: dropshadow(three-pass-box, rgba(0, 0, 0, 0.05), 10, 0, 0, 4);
+    -card-radius: 12px;
+
+}
+
+/* ==========================================
+ * TIPOGRAFIA
+ * ========================================== */
+
+.label {
+    -fx-text-fill: -color-text-body;
+}
+
+.h1 {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-text-header;
+}
+
+.h2 {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-text-header;
+}
+
+.h3 {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-text-header;
+}
+
+.subtitle {
+    -fx-font-size: 12px;
+    -fx-text-fill: -color-text-light;
+}
+
+/* ==========================================
+ * COMPONENTI UI BASE (Input, Bottoni)
+ * ========================================== */
+
+/* Button Primario (Pieno) */
+.button-primary {
+    -fx-background-color: -color-primary;
+    -fx-text-fill: -color-text-inverse;
+    -fx-background-radius: 6px;
+    -fx-padding: 10 20 10 20;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+.button-primary:hover {
+    -fx-background-color: derive(-color-primary, +10%);
+}
+.button-primary:pressed {
+    -fx-background-color: derive(-color-primary, -20%);
+}
+
+/* Button Secondario (Outline) */
+.button-secondary {
+    -fx-background-color: transparent;
+    -fx-border-color: -color-primary;
+    -fx-border-radius: 6px;
+    -fx-border-width: 1.5px;
+    -fx-text-fill: -color-primary;
+    -fx-padding: 8 18 8 18; /* Compensate border */
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+.button-secondary:hover {
+    -fx-background-color: rgba(74, 144, 226, 0.1); /* Tinted background */
+}
+
+/* Button Pericolo/Accent (es. Stop Workout) */
+.button-danger {
+    -fx-background-color: -color-accent;
+    -fx-text-fill: -color-text-inverse;
+    -fx-background-radius: 6px;
+    -fx-font-weight: bold;
+    -fx-effect: dropshadow(three-pass-box, rgba(255, 87, 34, 0.3), 10, 0, 0, 4);
+}
+
+/* Text Fields & Inputs */
+.text-field, .password-field, .combo-box {
+    -fx-background-color: -color-bg-card;
+    -fx-border-color: -border-color;
+    -fx-border-radius: 6px;
+    -fx-background-radius: 6px;
+    -fx-padding: 8px;
+    -fx-prompt-text-fill: -color-text-light;
+}
+.text-field:focused, .password-field:focused, .combo-box:focused {
+    -fx-border-color: -color-primary;
+    -fx-effect: dropshadow(three-pass-box, rgba(74, 144, 226, 0.2), 5, 0, 0, 0);
+}
+
+/* ==========================================
+ * LAYOUT & NAVIGAZIONE (Dashboard & Sidebar)
+ * ========================================== */
+
+/* Sidebar Laterale */
+.sidebar {
+    -fx-background-color: -color-bg-sidebar;
+}
+
+.sidebar-item {
+    -fx-background-color: transparent;
+    -fx-text-fill: -color-text-light;
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 12 20 12 20;
+    -fx-font-size: 14px;
+    -fx-cursor: hand;
+}
+.sidebar-item:hover {
+    -fx-background-color: derive(-color-bg-sidebar, 10%);
+    -fx-text-fill: -color-text-inverse;
+}
+.sidebar-item:selected {
+    -fx-background-color: -color-primary;
+    -fx-text-fill: -color-text-inverse;
+    -fx-border-width: 0 0 0 4;
+    -fx-border-color: -color-accent; /* Linea colorata a sinistra */
+}
+
+/* Card Contenitore (Stats, Charts) */
+.card {
+    -fx-background-color: -color-bg-card;
+    -fx-background-radius: -card-radius;
+    -fx-effect: -card-shadow;
+    -fx-padding: 20px;
+}
+
+/* ==========================================
+ * MULTI-STEP ONBOARDING WIZARD
+ * ========================================== */
+
+.wizard-progress-bar {
+    -fx-accent: -color-primary;
+    -fx-control-inner-background: #E0E0E0;
+}
+
+.wizard-step-indicator {
+    -fx-background-color: #E0E0E0;
+    -fx-background-radius: 50%; /* Cerchio */
+    -fx-min-width: 30px;
+    -fx-min-height: 30px;
+    -fx-alignment: CENTER;
+    -fx-text-fill: -color-text-light;
+    -fx-font-weight: bold;
+}
+
+.wizard-step-indicator-active {
+    -fx-background-color: -color-primary;
+    -fx-text-fill: -color-text-inverse;
+    -fx-effect: dropshadow(three-pass-box, rgba(74, 144, 226, 0.4), 8, 0, 0, 2);
+}
+
+/* ==========================================
+ * WORKOUT INTERFACE
+ * ========================================== */
+
+/* Grande Timer Display */
+.timer-display {
+    -fx-font-size: 48px;
+    -fx-font-weight: bold;
+    -fx-font-family: "Monospaced"; /* Per evitare che i numeri saltino */
+    -fx-text-fill: -color-text-header;
+}
+
+/* Progress Bar Circolare o Lineare per Workout */
+.workout-progress {
+    -fx-accent: -color-success; /* Verde per progresso */
+}
+
+.exercise-title-large {
+    -fx-font-size: 32px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-primary;
+}
+
+/* ==========================================
+ * EXERCISE LIBRARY & LISTS
+ * ========================================== */
+
+/* Griglia Esercizi */
+.exercise-item {
+    -fx-background-color: -color-bg-card;
+    -fx-background-radius: 8px;
+    -fx-border-color: -border-color;
+    -fx-border-radius: 8px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.03), 5, 0, 0, 2);
+}
+.exercise-item:hover {
+    -fx-border-color: -color-primary;
+    -fx-effect: dropshadow(three-pass-box, rgba(74, 144, 226, 0.2), 8, 0, 0, 4);
+}
+
+.tag {
+    -fx-background-color: #E3F2FD; /* Blu chiarissimo */
+    -fx-text-fill: -color-primary;
+    -fx-background-radius: 15px;
+    -fx-padding: 4 10 4 10;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+/* Liste (TableView, ListView) */
+.table-view, .list-view {
+    -fx-background-color: -color-bg-card;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+}
+.table-view .column-header-background {
+    -fx-background-color: -color-bg-main;
+    -fx-border-width: 0 0 1 0;
+    -fx-border-color: -border-color;
+}
+.table-view .column-header .label {
+    -fx-text-fill: -color-text-body;
+    -fx-font-weight: bold;
+}
+.table-row-cell:selected {
+    -fx-background-color: rgba(74, 144, 226, 0.1); /* Selezione leggera */
+    -fx-text-fill: -color-text-header; /* Mantiene il testo leggibile */
+}
+
+/* ==========================================
+ * CHARTS (Progress View)
+ * ========================================== */
+
+.chart {
+    -fx-padding: 10px;
+}
+.chart-content {
+    -fx-padding: 10px;
+}
+.chart-series-line {
+    -fx-stroke-width: 3px;
+}
+.default-color0.chart-series-line { -fx-stroke: -color-primary; }
+.default-color1.chart-series-line { -fx-stroke: -color-accent; }
+.default-color0.chart-line-symbol { -fx-background-color: -color-primary, white; }
+.default-color1.chart-line-symbol { -fx-background-color: -color-accent, white; }

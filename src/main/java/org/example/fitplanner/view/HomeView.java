@@ -11,11 +11,11 @@ public class HomeView extends VBox {
     public HomeView() {
         this.setSpacing(16);
         this.setAlignment(Pos.CENTER);
-        this.setStyle("-fx-background-color: linear-gradient(to bottom right, #F8FAFC, #F1F5F9);");
+        this.getStyleClass().add("root");
 
         primaryButton = new Button("Get Started");
         primaryButton.setPrefSize(200, 50);
-        primaryButton.getStyleClass().add("primary-button");
+        primaryButton.getStyleClass().add("button-primary");
 
         this.getChildren().add(new Label("Welcome to FitPlanner!"));
         this.getChildren().add(primaryButton);
