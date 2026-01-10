@@ -156,7 +156,7 @@
 /* Card Contenitore (Stats, Charts) */
 .card {
     -fx-background-color: -color-bg-card;
-    -fx-background-radius: -card-radius;
+    -fx-background-radius: 12px;
     -fx-effect: -card-shadow;
     -fx-padding: 20px;
 }
