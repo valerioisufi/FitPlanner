@@ -1,4 +1,4 @@
-package org.example.fitplanner.view;
+package org.example.fitplannerclient.view;
 
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;

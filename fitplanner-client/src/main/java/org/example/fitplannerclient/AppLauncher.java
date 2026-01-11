@@ -1,4 +1,4 @@
-package org.example.fitplanner;
+package org.example.fitplannerclient;
 
 import javafx.application.Application;
 import javafx.geometry.Insets;
@@ -11,8 +11,6 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
-import org.example.fitplanner.view.HomeView;
-import org.example.fitplanner.view.RegistrationView;
 
 import java.util.Objects;
 
