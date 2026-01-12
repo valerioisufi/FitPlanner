@@ -11,6 +11,7 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
+import org.example.fitplannerclient.ui.typeA.HomeView;
 
 import java.util.Objects;
 
@@ -21,18 +22,12 @@ public class AppLauncher extends Application {
 
     @Override
     public void start(Stage stage) {
-
         stage.setTitle("FitPlanner");
-        stage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/appIcon.png"))));
+        stage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/app_icon.png"))));
+        stage.setMinWidth(1200);
+        stage.setMinHeight(800);
 
-        var scene = new Scene(new DashboardView(), 1200, 800);
-
-        String css = Objects.requireNonNull(getClass().getResource("/style/theme1.css")).toExternalForm();
-        scene.getStylesheets().add(css);
-
-        stage.setScene(scene);
-        stage.show();
-
+        Navigator.getInstance().startHomeController(stage);
     }
 
     /* ==========================================

@@ -10,9 +10,8 @@
     -fx-font-family: "Segoe UI", "Roboto", "Helvetica", sans-serif;
     -fx-font-size: 14px;
     -fx-text-fill: -color-text-body;
-}
 
-.root {
+
     /* Colori Primari e Accent */
     -color-primary: #155DFC;       /* Blu principale (es. pulsanti azione) */
     -color-accent: #FF5722;        /* Arancione/Rosso (es. timer, alert, azioni importanti) */
@@ -25,8 +24,8 @@
 
     /* Testo */
     -color-text-header: #2C3E50;   /* Colore titoli */
-    -color-text-body: #546E7A;     /* Colore testo normale */
-    -color-text-light: #90A4AE;    /* Colore testo secondario/placeholder */
+    -color-text-body: #171717;     /* Colore testo normale */
+    -color-text-light: #525252;    /* Colore testo secondario/placeholder */
     -color-text-inverse: #FFFFFF;  /* Testo su sfondi scuri */
 
     /* Bordi e Ombre */
@@ -71,6 +70,25 @@
  * COMPONENTI UI BASE (Input, Bottoni)
  * ========================================== */
 
+.button-header {
+    -fx-background-color: transparent;
+    -fx-text-fill: -color-text-light;
+    -fx-font-size: 16px;
+
+    -fx-background-radius: 12px;
+    -fx-border-radius: 12px;
+
+    -fx-padding: 8px 20px 8px 20px;
+    -fx-graphic-text-gap: 10px;
+
+    -fx-cursor: hand;
+}
+
+.button-header-active {
+    -fx-text-fill: -color-primary;
+    -fx-background-color: #e6f2ff;
+}
+
 /* Button Primario (Pieno) */
 .button-primary {
     -fx-background-color: -color-primary;
@@ -92,9 +110,9 @@
     -fx-background-color: transparent;
     -fx-border-color: -color-primary;
     -fx-border-radius: 6px;
-    -fx-border-width: 1.5px;
+    -fx-border-width: 2px;
     -fx-text-fill: -color-primary;
-    -fx-padding: 8 18 8 18; /* Compensate border */
+    -fx-padding: 8 18 8 18;
     -fx-font-weight: bold;
     -fx-cursor: hand;
 }
@@ -128,6 +146,13 @@
 /* ==========================================
  * LAYOUT & NAVIGAZIONE (Dashboard & Sidebar)
  * ========================================== */
+
+.header {
+    -fx-background-color: -color-bg-card;
+
+    -fx-border-width: 0 0 1 0;
+    -fx-border-color: -border-color;
+}
 
 /* Sidebar Laterale */
 .sidebar {

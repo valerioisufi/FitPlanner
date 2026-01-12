@@ -19,7 +19,7 @@
     <modules>
         <module>fitplanner-client</module>
         <module>fitplanner-server</module>
-        <module>common</module>
+        <module>fitplanner-common</module>
     </modules>
 
 </project>
