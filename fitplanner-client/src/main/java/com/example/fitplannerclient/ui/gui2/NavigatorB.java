@@ -1,4 +1,4 @@
-package com.example.fitplannerclient.ui.typeB;
+package com.example.fitplannerclient.ui.gui2;
 
 import javafx.stage.Stage;
 import com.example.fitplannerclient.Navigator;

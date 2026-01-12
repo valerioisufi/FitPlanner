@@ -1,4 +1,4 @@
-package com.example.fitplannerclient.ui.typeA;
+package com.example.fitplannerclient.ui.gui1;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
