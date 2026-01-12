@@ -9,10 +9,13 @@ import org.example.fitplannerclient.ui.GraphicController;
 import java.util.Objects;
 
 public class HomeController implements GraphicController {
-    Parent view;
+    HomeView view;
+    HeaderController headerController;
+
 
     public HomeController() {
-        view = new HomeView();
+        headerController = new HeaderController();
+        view = new HomeView(headerController.getView());
 
         String themeCss = Objects.requireNonNull(getClass().getResource("/style/theme1.css")).toExternalForm();
         String iconsCss = Objects.requireNonNull(getClass().getResource("/style/icons.css")).toExternalForm();

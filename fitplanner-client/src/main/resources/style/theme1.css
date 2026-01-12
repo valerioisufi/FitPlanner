@@ -86,7 +86,15 @@
 
 .button-header-active {
     -fx-text-fill: -color-primary;
-    -fx-background-color: #e6f2ff;
+    -fx-background-color: #EFF6FF;
+}
+
+.button-header-icon {
+    -fx-background-color: -color-text-light;
+}
+
+.button-header-icon-active {
+    -fx-background-color: -color-primary;
 }
 
 /* Button Primario (Pieno) */

@@ -1,20 +1,14 @@
 .home-icon {
     -fx-shape: "M240-200h120v-240h240v240h120v-360L480-740 240-560v360Zm-80 80v-480l320-240 320 240v480H520v-240h-80v240H160Zm320-350Z";
     -fx-scale-shape: true;
-
-    -fx-background-color: -color-primary;
 }
 
 .plan-icon {
     -fx-shape: "M200-80q-33 0-56.5-23.5T120-160v-560q0-33 23.5-56.5T200-800h40v-80h80v80h320v-80h80v80h40q33 0 56.5 23.5T840-720v560q0 33-23.5 56.5T760-80H200Zm0-80h560v-400H200v400Zm0-480h560v-80H200v80Zm0 0v-80 80Z";
     -fx-scale-shape: true;
-
-    -fx-background-color: -color-primary;
 }
 
 .progress-icon {
     -fx-shape: "M640-160v-280h160v280H640Zm-240 0v-640h160v640H400Zm-240 0v-440h160v440H160Z";
     -fx-scale-shape: true;
-
-    -fx-background-color: -color-primary;
 }
