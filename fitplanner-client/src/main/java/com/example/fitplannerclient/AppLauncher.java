@@ -1,4 +1,4 @@
-package org.example.fitplannerclient;
+package com.example.fitplannerclient;
 
 import javafx.application.Application;
 import javafx.geometry.Insets;

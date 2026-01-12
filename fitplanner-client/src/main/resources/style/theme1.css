@@ -84,13 +84,13 @@
     -fx-cursor: hand;
 }
 
+.button-header-icon {
+    -fx-background-color: -color-text-light;
+}
+
 .button-header-active {
     -fx-text-fill: -color-primary;
     -fx-background-color: #EFF6FF;
-}
-
-.button-header-icon {
-    -fx-background-color: -color-text-light;
 }
 
 .button-header-icon-active {

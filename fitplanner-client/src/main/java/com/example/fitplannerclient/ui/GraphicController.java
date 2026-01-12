@@ -1,4 +1,4 @@
-package org.example.fitplannerclient.ui;
+package com.example.fitplannerclient.ui;
 
 import javafx.stage.Stage;
 

@@ -1,7 +1,7 @@
-package org.example.fitplannerclient.ui.typeB;
+package com.example.fitplannerclient.ui.typeB;
 
 import javafx.stage.Stage;
-import org.example.fitplannerclient.Navigator;
+import com.example.fitplannerclient.Navigator;
 
 public class NavigatorB extends Navigator {
     @Override

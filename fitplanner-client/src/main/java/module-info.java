@@ -3,6 +3,6 @@ module FitPlanner {
     requires javafx.fxml;
     requires java.logging;
 
-    opens org.example.fitplannerclient to javafx.fxml;
-    exports org.example.fitplannerclient;
+    opens com.example.fitplannerclient to javafx.fxml;
+    exports com.example.fitplannerclient;
 }

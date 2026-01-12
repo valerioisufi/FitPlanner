@@ -1,10 +1,8 @@
-package org.example.fitplannerclient.ui.typeA;
+package com.example.fitplannerclient.ui.typeA;
 
-import javafx.scene.Node;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import org.example.fitplannerclient.ui.GraphicController;
+import com.example.fitplannerclient.ui.GraphicController;
 
 import java.util.Objects;
 

@@ -1,15 +1,18 @@
-package org.example.fitplannerclient.ui.typeA;
+package com.example.fitplannerclient.ui.typeA;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class HeaderView extends HBox {
     public record MenuConfig(String title, String icon) {}
@@ -22,14 +25,24 @@ public class HeaderView extends HBox {
         this.setPrefHeight(60);
         this.setAlignment(Pos.CENTER_LEFT);
 
+        // titleContainer
+        HBox titleContainer = new HBox(10);
+        titleContainer.setAlignment(Pos.CENTER_LEFT);
+        ImageView imageLogo = new ImageView(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/app_icon.png"))));
+        imageLogo.setPreserveRatio(true);
+
         Label title = new Label("FitPlanner");
         title.getStyleClass().add("h2");
-        // Aggiungiamo un margine sinistro al titolo se serve, o usiamo il padding dell'HBox
-        HBox.setMargin(title, new Insets(0, 0, 0, 20));
+        HBox.setMargin(titleContainer, new Insets(0, 0, 0, 20));
 
+        titleContainer.getChildren().addAll(imageLogo, title);
+        imageLogo.fitHeightProperty().bind(title.heightProperty().multiply(1.5));
+
+        // spacer
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
+        // buttonsContainer
         HBox buttonsContainer = new HBox(15);
         buttonsContainer.setAlignment(Pos.CENTER_RIGHT);
         HBox.setMargin(buttonsContainer, new Insets(0, 20, 0, 0));
@@ -60,7 +73,7 @@ public class HeaderView extends HBox {
         }
 
         // Aggiungiamo i tre blocchi principali all'HBox radice
-        this.getChildren().addAll(title, spacer, buttonsContainer);
+        this.getChildren().addAll(titleContainer, spacer, buttonsContainer);
     }
 
     // Metodo fondamentale per il Controller

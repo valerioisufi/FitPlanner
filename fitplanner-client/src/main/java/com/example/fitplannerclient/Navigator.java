@@ -1,8 +1,8 @@
-package org.example.fitplannerclient;
+package com.example.fitplannerclient;
 
 import javafx.stage.Stage;
-import org.example.fitplannerclient.ui.typeA.NavigatorA;
-import org.example.fitplannerclient.ui.typeB.NavigatorB;
+import com.example.fitplannerclient.ui.typeA.NavigatorA;
+import com.example.fitplannerclient.ui.typeB.NavigatorB;
 
 import java.io.IOException;
 import java.io.InputStream;
