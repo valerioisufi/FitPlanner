@@ -7,6 +7,7 @@ import org.example.fitplannerclient.ui.typeB.NavigatorB;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
+import java.util.logging.Logger;
 
 public abstract class Navigator {
 
@@ -16,6 +17,7 @@ public abstract class Navigator {
         static final Navigator INSTANCE = createInstance();
 
         private static Navigator createInstance() {
+            Logger logger = Logger.getLogger(Navigator.class.getName());
             Properties prop = new Properties();
 
             // Cerca il file nel Classpath (src/main/resources)
@@ -24,7 +26,7 @@ public abstract class Navigator {
                 String uiType = "A"; // Valore di default
 
                 if (input == null) {
-                    System.out.println("Attenzione: config.properties non trovato. Uso default A.");
+                    logger.info("Attenzione: config.properties non trovato. Uso default A.");
                 } else {
                     prop.load(input);
                     // Legge la proprietà 'ui.type', default "A" se chiave mancante
