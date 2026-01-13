@@ -19,7 +19,7 @@ public class DbConnection {
         // Blocco statico: viene eseguito una sola volta quando la classe viene caricata
         try (InputStream input = DbConnection.class.getClassLoader().getResourceAsStream("db.properties")) {
             if (input == null) {
-                throw new RuntimeException("Spiacente, impossibile trovare db.properties");
+                throw new RuntimeException("Impossibile trovare db.properties");
             }
             // Carica le coppie chiave-valore dal file
             config.load(input);
