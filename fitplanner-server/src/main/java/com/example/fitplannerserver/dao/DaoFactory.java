@@ -1,6 +1,8 @@
 package com.example.fitplannerserver.dao;
 
-import com.example.fitplannerserver.PersistencyLayer;
+import com.example.fitplannerserver.dao.database.DatabaseDaoFactory;
+import com.example.fitplannerserver.dao.filesystem.FileSystemDaoFactory;
+import com.example.fitplannerserver.dao.inmemory.InMemoryDaoFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,4 +44,7 @@ public abstract class DaoFactory {
     public static DaoFactory getInstance() {
         return Wrapper.INSTANCE;
     }
+
+
+
 }

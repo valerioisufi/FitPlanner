@@ -1,4 +1,4 @@
-package com.example.fitplannerserver;
+package com.example.fitplannerserver.dao;
 
 public enum PersistencyLayer {
     IN_MEMORY,
