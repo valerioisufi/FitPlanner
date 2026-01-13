@@ -1,9 +1,6 @@
 package com.example.fitplannerserver.security;
 
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.io.Decoders;
-import io.jsonwebtoken.security.Keys;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -11,18 +8,20 @@ import java.util.Date;
 
 @Component
 public class JwtUtil {
-    @Value("${auth.jwt.secret}")
-    private String key;
+    private final SecretKey signingKey;
+
+    public JwtUtil() {
+        this.signingKey = Jwts.SIG.HS256.key().build();
+    }
 
     private SecretKey getSigningKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(key);
-        return Keys.hmacShaKeyFor(keyBytes);
+        return signingKey;
     }
 
     public String generateToken(String username) {
         return Jwts.builder()
                 .subject(username)
-                .expiration(new Date(System.currentTimeMillis() + (1000 * 60 * 60 * 10)))
+                .expiration(new Date(System.currentTimeMillis() + (1000 * 60 * 15))) // 15 minuti
                 .signWith(getSigningKey())
                 .compact();
     }

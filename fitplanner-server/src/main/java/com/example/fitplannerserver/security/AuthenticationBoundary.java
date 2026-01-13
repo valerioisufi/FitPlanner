@@ -1,6 +1,7 @@
 package com.example.fitplannerserver.security;
 
 import com.example.fitplannercommon.LoginBean;
+import com.example.fitplannercommon.RegisterBean;
 import com.example.fitplannercommon.TokenBean;
 import com.example.fitplannerserver.controller.AuthenticationController;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,4 +23,15 @@ public class AuthenticationBoundary {
     public TokenBean login(@RequestBody LoginBean loginBean) {
         return authenticationController.login(loginBean);
     }
+
+    @PostMapping("/register")
+    public TokenBean register(@RequestBody RegisterBean registerBean) {
+        return authenticationController.register(registerBean);
+    }
+
+    @PostMapping("/refresh")
+    public TokenBean refreshToken(@RequestBody TokenBean tokenBean) {
+        return authenticationController.refreshToken(tokenBean);
+    }
+
 }

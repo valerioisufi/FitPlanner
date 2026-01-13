@@ -1,10 +1,9 @@
 package com.example.fitplannerserver.controller;
 
 import com.example.fitplannercommon.LoginBean;
+import com.example.fitplannercommon.RegisterBean;
 import com.example.fitplannercommon.TokenBean;
-import com.example.fitplannercommon.UserBean;
 import com.example.fitplannerserver.security.JwtUtil;
-import org.springframework.stereotype.Service;
 
 public class AuthenticationController {
     private final JwtUtil jwtUtil;
@@ -20,7 +19,7 @@ public class AuthenticationController {
                 "password".equals(loginBean.getPassword())) {
 
             TokenBean tokenBean = new TokenBean();
-            tokenBean.setToken(jwtUtil.generateToken(loginBean.getUsername()));
+            tokenBean.setAccessToken(jwtUtil.generateToken(loginBean.getUsername()));
             return tokenBean;
         }
 
@@ -28,7 +27,11 @@ public class AuthenticationController {
 
     }
 
-    public TokenBean register(UserBean userBean) {
+    public TokenBean register(RegisterBean registerBean) {
+        return null;
+    }
+
+    public TokenBean refreshToken(TokenBean tokenBean) {
         return null;
     }
 }
