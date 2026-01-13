@@ -9,11 +9,10 @@ public class WorkoutPlan {
     private String title;
     private ArrayList<WorkoutSession> sessions;
     private Boolean completed = false;
-    private
 
     public WorkoutPlan(String title) {
         this.title = title;
-        sessions = new ArrayList<>();
+        this.sessions = new ArrayList<>();
     }
     public String getTitle() {
         return title;

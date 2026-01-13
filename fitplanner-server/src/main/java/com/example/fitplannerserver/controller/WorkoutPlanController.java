@@ -20,7 +20,7 @@ public class WorkoutPlanController {
 
         }
 
-        WorkoutPlan plan = new WorkoutPlan(); //da modificare con la funzione della dao
+//        WorkoutPlan plan = new WorkoutPlan(); //da modificare con la funzione della dao
 
     }
 
@@ -54,7 +54,7 @@ public class WorkoutPlanController {
         return plan;
     }
 
-    private WorkoutPlan assignWorkoutPlan(WorkoutPlanBean bean){
-        return new WorkoutPlan();
-    }
+//    private WorkoutPlan assignWorkoutPlan(WorkoutPlanBean bean){
+//        return new WorkoutPlan();
+//    }
 }
