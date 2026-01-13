@@ -1,5 +1,8 @@
 package com.example.fitplannerserver.security;
 
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import org.springframework.stereotype.Component;
 
@@ -28,12 +31,14 @@ public class JwtUtil {
 
     public String validateTokenAndGetUsername(String token) {
         try {
-            return Jwts.parser()
+            Jws<Claims> claims = Jwts.parser()
                     .verifyWith(getSigningKey())
                     .build()
-                    .parseSignedClaims(token)
-                    .getPayload()
-                    .getSubject();
+                    .parseSignedClaims(token);
+
+            if(claims.getPayload().getExpiration().after(new Date())) return null;
+
+            return claims.getPayload().getSubject();
         } catch (Exception e) {
             return null;
         }
