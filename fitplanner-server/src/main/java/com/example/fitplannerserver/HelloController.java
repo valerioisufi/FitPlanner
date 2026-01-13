@@ -12,12 +12,4 @@ public class HelloController {
     public String ciao() {
         return "Ciao! Il progetto Spring Boot funziona!";
     }
-
-//    @PostMapping
-//    public String aggiungiProdotto(@RequestBody Prodotto nuovoProdotto) {
-//        // @RequestBody dice a Spring: "Prendi il JSON che arriva e spalmalo dentro l'oggetto nuovoProdotto"
-//
-//        inventario.add(nuovoProdotto);
-//        return "Prodotto aggiunto: " + nuovoProdotto.getNome();
-//    }
 }

@@ -1,7 +1,7 @@
 package com.example.fitplannerserver;
 
+import com.example.fitplannercommon.WorkoutPlanBean;
 import com.example.fitplannerserver.controller.WorkoutPlanController;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -16,8 +16,13 @@ public class AthleteWorkoutPlanBoundary {
     }
 
     @GetMapping
-    public String getWorkoutPlanBoundary() {
-        return "Workout Plan Boundary";
+    public WorkoutPlanBean getWorkoutPlanBoundary() {
+        WorkoutPlanBean workoutPlanBean = new WorkoutPlanBean();
+        workoutPlanBean.setName("Workout Plan Boundary");
+        workoutPlanBean.setDescription("Workout Plan Boundary");
+        workoutPlanBean.setWorkoutSessions(null);
+
+        return workoutPlanBean;
 //        return workoutPlanController.retrieveWorkoutPlan();
     }
 
