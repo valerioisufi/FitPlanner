@@ -6,10 +6,17 @@ import com.example.fitplannercommon.WorkoutSessionBean;
 import com.example.fitplannerserver.model.Exercise;
 import com.example.fitplannerserver.model.WorkoutPlan;
 import com.example.fitplannerserver.model.WorkoutSession;
+import com.example.fitplannerserver.security.SessionProvider;
 
 import java.util.List;
 
 public class WorkoutPlanController {
+    private final SessionProvider sessionProvider;
+
+    public WorkoutPlanController(SessionProvider sessionProvider) {
+        this.sessionProvider = sessionProvider;
+    }
+
     public void retrieveWorkoutPlan() {
 
 
