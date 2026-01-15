@@ -1,4 +1,4 @@
-package com.example.fitplannerserver;
+package com.example.fitplannerserver.boundary;
 
 import com.example.fitplannercommon.WorkoutPlanBean;
 import com.example.fitplannerserver.controller.WorkoutPlanController;
