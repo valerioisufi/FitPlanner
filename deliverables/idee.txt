@@ -1,4 +1,4 @@
 databas -> tabella con tutte sessioni e workout con chiave primaria trainer. Ogni workout entità differente
 sessione-> ogni sessione ha un identificatore diverso, trattata così come singola (+ chiave workout)
 database -> tabella con tutti i label
-
+nuova bean -> AthleteManagementUI o AthleteAssignmentBoundary
