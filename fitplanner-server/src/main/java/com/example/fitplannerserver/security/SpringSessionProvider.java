@@ -8,7 +8,7 @@ public class SpringSessionProvider implements SessionProvider {
     public String getUsername(){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
-            throw new RuntimeException("Utente non autenticato");
+            throw new RuntimeException("Utente non autenticato"); // TODO da modificare ECCEZIONE
         }
         return authentication.getName();
     }

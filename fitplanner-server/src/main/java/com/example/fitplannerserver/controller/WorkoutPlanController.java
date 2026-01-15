@@ -15,7 +15,7 @@ public class WorkoutPlanController {
 
     public WorkoutPlanController(SessionProvider sessionProvider) {
         this.sessionProvider = sessionProvider;
-    }
+    } //per accedere a username utente sessionProvider.getUsername()
 
     public void retrieveWorkoutPlan() {
 

@@ -5,10 +5,10 @@ import java.util.List;
 public class WorkoutSessionBean {
     private String name;
     private List<ExerciseBean> exercises;
-    private String day;
+    private int day;
     private WorkoutState state = WorkoutState.TO_DO;
 
-    public WorkoutSessionBean(String name, List<ExerciseBean> exercises, String day) {
+    public WorkoutSessionBean(String name, List<ExerciseBean> exercises, int day) {
         this.name = name;
         this.exercises = exercises;
         this.day = day;
@@ -27,10 +27,10 @@ public class WorkoutSessionBean {
     public void setExercises(List<ExerciseBean> exercises) {
         this.exercises = exercises;
     }
-    public String getDay() {
+    public int getDay() {
         return day;
     }
-    public void setDay(String day) {
+    public void setDay(int day) {
         this.day = day;
     }
     public WorkoutState getState() {
