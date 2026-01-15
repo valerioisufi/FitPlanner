@@ -24,7 +24,9 @@ public class HttpService {
 
     private final HttpClient httpClient;
     private final ObjectMapper objectMapper;
-    private final String BASE_URL;
+
+    private final String contentType = "application/json";
+    private final String baseUrl;
 
     private HttpService() {
         this.httpClient = HttpClient.newHttpClient();
@@ -38,8 +40,8 @@ public class HttpService {
             }
             // Carica le coppie chiave-valore dal file
             properties.load(input);
-            BASE_URL = properties.getProperty("api.url");
-            if (BASE_URL == null) {
+            baseUrl = properties.getProperty("api.url");
+            if (baseUrl == null) {
                 throw new RuntimeException("La proprietà 'api.url' non è presente in config.properties");
             }
         } catch (IOException ex) {
@@ -47,18 +49,20 @@ public class HttpService {
         }
     }
 
-    public <T> CompletableFuture<T> getAsync(String url, Class<T> responseType){
 
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(BASE_URL + url))
-                .header("Accept", "application/json")
-                .GET()
-                .build();
+    private <T> CompletableFuture<T> requestAsync(HttpRequest.Builder requestBuilder, Class<T> responseType){
+        requestBuilder.header("Accept", contentType);
+
+        if (SessionManager.getInstance().getAccessToken() != null) {
+            requestBuilder.header("Authorization", "Bearer " + SessionManager.getInstance().getAccessToken());
+        }
+
+        HttpRequest request = requestBuilder.build();
 
         return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
                 .thenApply(response -> {
                     if (response.statusCode() < 200 || response.statusCode() >= 300) {
-                        throw new RuntimeException("Errore HTTP GET: " + response.statusCode());
+                        throw new RuntimeException("Errore HTTP: " + response.statusCode());
                     }
 
                     try {
@@ -69,13 +73,13 @@ public class HttpService {
                 });
     }
 
-    // Esempio nel Controller
-//    HttpService.getInstance().getAsync("users/1", User.class)
-//        .thenAccept(user -> {
-//            Platform.runLater(() -> {
-//                // Aggiorna UI
-//            });
-//        });
+    public <T> CompletableFuture<T> getAsync(String url, Class<T> responseType){
+        HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
+                .uri(URI.create(baseUrl + url))
+                .GET();
+
+        return requestAsync(requestBuilder, responseType);
+    }
 
     public <T, R> CompletableFuture<R> postAsync(String url, T requestBody, Class<R> responseType){
         String jsonRequestBody;
@@ -88,25 +92,12 @@ public class HttpService {
             return failedFuture;
         }
 
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(BASE_URL + url))
-                .header("Content-Type", "application/json")
-                .header("Accept", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(jsonRequestBody))
-                .build();
+        HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
+                .uri(URI.create(baseUrl + url))
+                .header("Content-Type", contentType)
+                .POST(HttpRequest.BodyPublishers.ofString(jsonRequestBody));
 
-        return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
-                .thenApply(response -> {
-                    if (response.statusCode() < 200 || response.statusCode() >= 300) {
-                        throw new RuntimeException("Errore HTTP POST: " + response.statusCode());
-                    }
-
-                    try {
-                        return objectMapper.readValue(response.body(), responseType);
-                    } catch (JacksonException e) {
-                        throw new RuntimeException("Errore durante la deserializzazione della risposta", e);
-                    }
-                });
+        return requestAsync(requestBuilder, responseType);
     }
 
 }
