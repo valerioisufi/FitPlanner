@@ -2,27 +2,28 @@ package com.example.fitplannerserver.model;
 
 import com.example.fitplannercommon.WorkoutState;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.lang.reflect.Array;
+import java.util.*;
 
 public class WorkoutPlan {
     private String title;
-    private ArrayList<WorkoutSession> sessions;
-    private Boolean completed = false;
+    private Map<Integer, WorkoutSession> sessions;
+    private Athlete assignedTo;
 
     public WorkoutPlan(String title) {
         this.title = title;
-        this.sessions = new ArrayList<>();
+        this.sessions = new TreeMap<>();
     }
     public String getTitle() {
         return title;
     }
+
     public void setTitle(String title) {
         this.title = title;
     }
 
-    public WorkoutSession getCurrentSession() {
-        for (WorkoutSession session : sessions){
+    public WorkoutSession getToDoSession() {
+        for (WorkoutSession session : sessions.values()){
             if (session.getState() == WorkoutState.TO_DO || session.getState() == WorkoutState.IN_PROGRESS ){
                 return session;
             }
@@ -31,15 +32,24 @@ public class WorkoutPlan {
     }
 
 
-
-    public List<WorkoutSession> getAllPlannedSessions() {
-        return sessions;
+    public WorkoutSession getSession(int day) {
+        return this.sessions.get(day);
     }
 
-    public void addSession(int prevSessionIndex, WorkoutSession session) {
-        sessions.add(prevSessionIndex, session);
+    public void addSession(WorkoutSession newSession) {
+        this.sessions.put(newSession.getDay(), newSession);
     }
-    public void addSession(WorkoutSession session) {
-        sessions.add(session);
+
+    public Athlete getAssignedTo() {
+        return this.assignedTo;
     }
+
+    public void assignTo(Athlete athlete) {
+        this.assignedTo = athlete;
+    }
+
+    public void removeSession(int day) {
+        this.sessions.remove(day);
+    }
+
 }

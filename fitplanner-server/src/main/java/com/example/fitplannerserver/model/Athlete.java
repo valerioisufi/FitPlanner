@@ -5,7 +5,7 @@ import java.util.List;
 public class Athlete extends User {
     private int weight;
     private int height;
-    private List<WorkoutPlan> workoutPlans;
+    private WorkoutPlan workoutPlan;
 
     public int getWeight (){
         return weight;
@@ -21,15 +21,12 @@ public class Athlete extends User {
         this.height = height;
     }
 
-    public List<WorkoutPlan> getWorkoutPlans (){
-        return workoutPlans;
+    public WorkoutPlan getWorkoutPlan (){
+        return workoutPlan;
     }
 
     public void setWorkoutPlans (List<WorkoutPlan> workoutPlans){
         this.workoutPlans = workoutPlans;
-    }
-    public void addWorkoutPlan(WorkoutPlan plan){
-        workoutPlans.add(plan);
     }
     public void removeWorkoutPlan(WorkoutPlan plan){
         workoutPlans.remove(plan);

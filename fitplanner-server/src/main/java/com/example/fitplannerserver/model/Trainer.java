@@ -1,4 +1,7 @@
 package com.example.fitplannerserver.model;
 
-public class Trainer extends User{
+import java.util.List;
+
+public class Trainer extends User {
+    private List<WorkoutPlan> workoutPlans;
 }
