@@ -25,7 +25,7 @@ public class HttpService {
     private final HttpClient httpClient;
     private final ObjectMapper objectMapper;
 
-    private final String contentType = "application/json";
+    private static final String contentType = "application/json";
     private final String baseUrl;
 
     private HttpService() {

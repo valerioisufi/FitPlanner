@@ -61,13 +61,16 @@ public class DbConnection {
         this.maxPoolSize = maxPoolSize;
         this.pool = new ArrayBlockingQueue<>(maxPoolSize);
 
-        initPool(2); // Iniziamo con poche connessioni
+        // TODO lanciare un'eccezione se i parametri sono null
+
+        initPool(1);
     }
 
     private void initPool(int initialSize) {
         try {
             for (int i = 0; i < initialSize; i++) {
-                pool.offer(createNewConnection());
+                boolean inserted = pool.offer(createNewConnection());
+                if (!inserted) return;
                 currentPoolSize.incrementAndGet();
             }
         } catch (SQLException e) {
@@ -80,36 +83,51 @@ public class DbConnection {
     }
 
     public Connection getConnection() throws SQLException, InterruptedException {
-        // Prova a prendere una connessione libera subito
-        Connection conn = pool.poll();
+        long startTime = System.currentTimeMillis();
+        long timeoutMs = 5000; // 5 secondi totali
 
-        if (conn == null) {
-            // Se non ce ne sono, controlliamo se possiamo crearne una nuova
-            if (currentPoolSize.get() < maxPoolSize) {
-                synchronized (this) {
-                    // Doppio controllo all'interno del blocco synchronized
-                    if (currentPoolSize.get() < maxPoolSize) {
-                        Connection newConn = createNewConnection();
-                        currentPoolSize.incrementAndGet();
-                        return newConn;
+        while (true) {
+            // Calcola quanto tempo rimane per evitare loop infiniti se il DB è giù
+            if (System.currentTimeMillis() - startTime > timeoutMs) {
+                throw new SQLException("Timeout: Impossibile ottenere una connessione valida.");
+            }
+
+            // Prova a prendere dal pool
+            Connection conn = pool.poll();
+
+            if (conn == null) {
+                // Se vuoto, prova a creare (Double-Checked Locking)
+                if (currentPoolSize.get() < maxPoolSize) {
+                    synchronized (this) {
+                        if (currentPoolSize.get() < maxPoolSize) {
+                            Connection newConn = createNewConnection();
+                            currentPoolSize.incrementAndGet();
+                            return newConn; // Le nuove connessioni sono sicuramente valide
+                        }
                     }
                 }
+
+                // Se non ho potuto creare (pool pieno), aspetto
+                // Nota: calcoliamo il tempo residuo per il poll
+                long remaining = timeoutMs - (System.currentTimeMillis() - startTime);
+                if (remaining <= 0) remaining = 1; // Evita numeri negativi
+
+                conn = pool.poll(remaining, TimeUnit.MILLISECONDS);
+
+                if (conn == null) {
+                    throw new SQLException("Timeout: Nessuna connessione disponibile nel pool.");
+                }
             }
-            // Se siamo al limite massimo, aspettiamo che se ne liberi una (blocca per max 5 secondi)
-            conn = pool.poll(5, TimeUnit.SECONDS);
-            if (conn == null) {
-                throw new SQLException("Timeout: Nessuna connessione disponibile nel pool.");
+
+            // Validazione
+            if (conn.isValid(2)) {
+                return conn;
+            } else {
+                // Se invalida: decrementiamo, chiudiamo la risorsa reale e il ciclo while ricomincia
+                currentPoolSize.decrementAndGet();
+                try { conn.close(); } catch (Exception ignored) {} // Pulizia
             }
         }
-
-        // Verifica base se la connessione è ancora valida
-        if (!conn.isValid(2)) {
-            // Se è morta, decrementiamo il contatore e riproviamo (ricorsione semplificata)
-            currentPoolSize.decrementAndGet();
-            return getConnection();
-        }
-
-        return conn;
     }
 
     public void releaseConnection(Connection conn) {
