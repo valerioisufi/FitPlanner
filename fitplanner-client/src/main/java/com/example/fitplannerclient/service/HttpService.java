@@ -1,5 +1,6 @@
 package com.example.fitplannerclient.service;
 
+import com.example.fitplannerclient.exception.ConfigException;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
 
@@ -36,16 +37,16 @@ public class HttpService {
 
         try (InputStream input = HttpService.class.getClassLoader().getResourceAsStream("config.properties")) {
             if (input == null) {
-                throw new RuntimeException("Impossibile trovare config.properties");
+                throw new ConfigException("Impossibile trovare config.properties");
             }
             // Carica le coppie chiave-valore dal file
             properties.load(input);
             baseUrl = properties.getProperty("api.url");
             if (baseUrl == null) {
-                throw new RuntimeException("La proprietà 'api.url' non è presente in config.properties");
+                throw new ConfigException("La proprietà 'api.url' non è presente in config.properties");
             }
         } catch (IOException ex) {
-            throw new RuntimeException("Errore durante la lettura di config.properties", ex);
+            throw new ConfigException("Errore durante la lettura di config.properties");
         }
     }
 
