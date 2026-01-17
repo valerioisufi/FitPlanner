@@ -55,7 +55,7 @@ public class AuthenticationController {
             return tokenBean;
         }
 
-        return null;
+        throw new InvalidCredentialsException("username già utilizzato");
     }
 
     public TokenBean refreshToken(TokenBean tokenBean) {
@@ -68,6 +68,6 @@ public class AuthenticationController {
             return newTokenBean;
         }
 
-        return null;
+        throw new InvalidCredentialsException("Refresh token non valido");
     }
 }
