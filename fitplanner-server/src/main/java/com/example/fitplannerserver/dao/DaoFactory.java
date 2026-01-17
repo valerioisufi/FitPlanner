@@ -45,6 +45,8 @@ public abstract class DaoFactory {
         return Wrapper.INSTANCE;
     }
 
+    public abstract AccountDao getAccountDao();
+
 
 
 }

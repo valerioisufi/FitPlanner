@@ -14,8 +14,9 @@ public class AuthenticationBoundary {
                     SessionManager.getInstance().setAccessToken(tokenBean.getAccessToken());
                     SessionManager.getInstance().setRefreshToken(tokenBean.getRefreshToken());
                 })
-                .exceptionally(e -> {
-                    Throwable cause = e.getCause();
+                .exceptionally(ex -> {
+                    Throwable cause_ = ex instanceof CompletionException ? ex.getCause() : ex;
+                    Throwable cause = ex.getCause();
 //                    if (cause instanceof HttpErrorException && ((HttpErrorException) cause).getStatusCode() == 401) {
 //                        throw new CompletionException(new InvalidCredentialsException("User o pass errati"));
 //                    }
