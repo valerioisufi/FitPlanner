@@ -9,6 +9,7 @@ import com.example.fitplannerserver.model.WorkoutSession;
 import com.example.fitplannerserver.security.SessionProvider;
 
 import java.util.List;
+import java.util.UUID;
 
 public class WorkoutPlanController {
     private final SessionProvider sessionProvider;
@@ -44,7 +45,9 @@ public class WorkoutPlanController {
         List<Exercise> exercises = bean.getExercises().stream().map(this::convertExercise).toList();
 
         return new WorkoutSession(
+                UUID.randomUUID().hashCode(),
                 bean.getName(),
+                bean.getLabels(),
                 exercises,
                 bean.getDay(),
                 bean.getState()

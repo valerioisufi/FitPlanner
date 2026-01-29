@@ -7,28 +7,28 @@ public class Athlete extends User {
     private int height;
     private WorkoutPlan workoutPlan;
 
-    public int getWeight (){
+    public int getWeight(){
         return weight;
     }
-    public void setWeight (int weight){
+    public void setWeight(int weight){
         this.weight = weight;
     }
 
-    public int getHeight (){
+    public int getHeight(){
         return height;
     }
-    public void setHeight (int height){
+    public void setHeight(int height){
         this.height = height;
     }
 
-    public WorkoutPlan getWorkoutPlan (){
+    public WorkoutPlan getWorkoutPlan(){
         return workoutPlan;
     }
 
-    public void setWorkoutPlans (List<WorkoutPlan> workoutPlans){
-        this.workoutPlans = workoutPlans;
+    public void setWorkoutPlan(WorkoutPlan workoutPlan){
+        this.workoutPlan = workoutPlan;
     }
-    public void removeWorkoutPlan(WorkoutPlan plan){
-        workoutPlans.remove(plan);
+    public void removeWorkoutPlan(){
+        this.workoutPlan = null;
     }
 }

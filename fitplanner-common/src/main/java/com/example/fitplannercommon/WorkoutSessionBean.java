@@ -4,6 +4,7 @@ import java.util.List;
 
 public class WorkoutSessionBean {
     private String name;
+    private List<String> labels;
     private List<ExerciseBean> exercises;
     private int day;
     private WorkoutState state = WorkoutState.TO_DO;
@@ -21,18 +22,27 @@ public class WorkoutSessionBean {
         this.name = name;
     }
 
+    public List<String> getLabels() {
+        return labels;
+    }
+    public void setLabels(List<String> labels) {
+        this.labels = labels;
+    }
+
     public List<ExerciseBean> getExercises() {
         return exercises;
     }
     public void setExercises(List<ExerciseBean> exercises) {
         this.exercises = exercises;
     }
+
     public int getDay() {
         return day;
     }
     public void setDay(int day) {
         this.day = day;
     }
+
     public WorkoutState getState() {
         return state;
     }
