@@ -1,4 +1,4 @@
-package com.example.fitplannerclient.ui.gui1;
+package com.example.fitplannerclient.ui.gui1.view;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -20,7 +20,7 @@ public class HeaderView extends HBox {
     // 1. Aggiungiamo una lista per conservare i riferimenti ai pulsanti
     private final List<Button> menuButtons = new ArrayList<>();
 
-    HeaderView(List<MenuConfig> menuItems, int activeBtnIndex) {
+    public HeaderView(List<MenuConfig> menuItems, int activeBtnIndex) {
         this.getStyleClass().add("header");
         this.setPrefHeight(60);
         this.setAlignment(Pos.CENTER_LEFT);

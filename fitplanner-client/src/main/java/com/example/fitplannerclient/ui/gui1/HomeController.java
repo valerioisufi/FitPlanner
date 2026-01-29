@@ -1,5 +1,6 @@
 package com.example.fitplannerclient.ui.gui1;
 
+import com.example.fitplannerclient.ui.gui1.view.HomeView;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import com.example.fitplannerclient.ui.GraphicController;

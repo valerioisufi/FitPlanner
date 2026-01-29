@@ -1,8 +1,8 @@
 package com.example.fitplannerclient;
 
 import javafx.stage.Stage;
-import com.example.fitplannerclient.ui.gui1.NavigatorA;
-import com.example.fitplannerclient.ui.gui2.NavigatorB;
+import com.example.fitplannerclient.ui.gui1.NavigatorGui1;
+import com.example.fitplannerclient.ui.gui2.NavigatorGui2;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,9 +34,9 @@ public abstract class Navigator {
                 }
 
                 if ("B".equalsIgnoreCase(uiType)) {
-                    return new NavigatorB();
+                    return new NavigatorGui2();
                 } else {
-                    return new NavigatorA(); // Default
+                    return new NavigatorGui1(); // Default
                 }
 
             } catch (IOException ex) {
@@ -49,5 +49,11 @@ public abstract class Navigator {
         return Wrapper.INSTANCE;
     }
 
+
+    protected abstract void requireAuthentication(Stage stage);
+
     public abstract void startHomeController(Stage stage);
+
+    public abstract void startViewPlanController(Stage stage);
+
 }
