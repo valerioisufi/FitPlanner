@@ -1,5 +1,6 @@
 package com.example.fitplannerclient.ui.gui1;
 
+import com.example.fitplannerclient.service.AuthenticationBoundary;
 import com.example.fitplannerclient.service.SessionManager;
 import com.example.fitplannerclient.ui.gui1.view.RegistrationView;
 import javafx.stage.Stage;
@@ -9,7 +10,7 @@ public class NavigatorGui1 extends Navigator {
 
     @Override
     protected void requireAuthentication(Stage stage) {
-        AuthenticationController authenticationController = new AuthenticationController();
+        AuthenticationController authenticationController = new AuthenticationController(new AuthenticationBoundary());
         authenticationController.start(stage);
     }
 

@@ -5,17 +5,14 @@ import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
 import javafx.util.Duration;
 
 public class BaseView extends StackPane {
-    public BaseView() {
-    }
 
-
-
-    protected void showNotification(String message) {
+    public void showNotification(String message) {
         Label notification = new Label(message);
         notification.getStyleClass().add("notification-toast"); // Stile CSS
 
