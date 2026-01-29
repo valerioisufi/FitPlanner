@@ -116,16 +116,21 @@
 /* Button Secondario (Outline) */
 .button-secondary {
     -fx-background-color: transparent;
-    -fx-border-color: -color-primary;
+    -fx-border-color: -border-color;
     -fx-border-radius: 6px;
     -fx-border-width: 2px;
-    -fx-text-fill: -color-primary;
+    -fx-text-fill: -color-text-light;
     -fx-padding: 8 18 8 18;
     -fx-font-weight: bold;
     -fx-cursor: hand;
 }
 .button-secondary:hover {
-    -fx-background-color: rgba(74, 144, 226, 0.1); /* Tinted background */
+    -fx-border-color: derive(-color-primary, +10%);
+    -fx-text-fill: derive(-color-primary, +10%);
+}
+.button-secondary:pressed {
+    -fx-border-color: derive(-color-primary, -20%);
+    -fx-text-fill: derive(-color-primary, -20%);
 }
 
 /* Button Pericolo/Accent (es. Stop Workout) */
@@ -137,18 +142,30 @@
     -fx-effect: dropshadow(three-pass-box, rgba(255, 87, 34, 0.3), 10, 0, 0, 4);
 }
 
+.label-field {
+    -fx-text-fill: #2C3E50;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-padding: 10px 0 5px 0;
+}
+
 /* Text Fields & Inputs */
 .text-field, .password-field, .combo-box {
-    -fx-background-color: -color-bg-card;
-    -fx-border-color: -border-color;
+    -fx-background-color: #F3F4F6;
+    -fx-border-color: derive(#F3F4F6, -2%);
+
+    -fx-border-width: 1px;
     -fx-border-radius: 6px;
+
     -fx-background-radius: 6px;
-    -fx-padding: 8px;
+    -fx-padding: 10px;
+    -fx-font-size: 14px;
     -fx-prompt-text-fill: -color-text-light;
 }
 .text-field:focused, .password-field:focused, .combo-box:focused {
+    -fx-background-color: #FFFFFF;
     -fx-border-color: -color-primary;
-    -fx-effect: dropshadow(three-pass-box, rgba(74, 144, 226, 0.2), 5, 0, 0, 0);
+
 }
 
 /* ==========================================
@@ -162,37 +179,22 @@
     -fx-border-color: -border-color;
 }
 
-/* Sidebar Laterale */
-.sidebar {
-    -fx-background-color: -color-bg-sidebar;
-}
-
-.sidebar-item {
-    -fx-background-color: transparent;
-    -fx-text-fill: -color-text-light;
-    -fx-alignment: CENTER_LEFT;
-    -fx-padding: 12 20 12 20;
-    -fx-font-size: 14px;
-    -fx-cursor: hand;
-}
-.sidebar-item:hover {
-    -fx-background-color: derive(-color-bg-sidebar, 10%);
-    -fx-text-fill: -color-text-inverse;
-}
-.sidebar-item:selected {
-    -fx-background-color: -color-primary;
-    -fx-text-fill: -color-text-inverse;
-    -fx-border-width: 0 0 0 4;
-    -fx-border-color: -color-accent; /* Linea colorata a sinistra */
-}
-
-/* Card Contenitore (Stats, Charts) */
 .card {
     -fx-background-color: -color-bg-card;
     -fx-background-radius: 12px;
-    -fx-effect: -card-shadow;
-    -fx-padding: 20px;
+    -fx-padding: 24px;
+
+    -fx-border-width: 1;
+    -fx-border-color: -border-color;
+    -fx-border-radius: 12px;
 }
+
+
+
+
+
+
+
 
 /* ==========================================
  * MULTI-STEP ONBOARDING WIZARD
