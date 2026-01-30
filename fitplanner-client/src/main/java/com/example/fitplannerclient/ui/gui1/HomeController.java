@@ -20,7 +20,14 @@ public class HomeController implements GraphicController {
 
     @Override
     public void start(Stage stage) {
-        stage.setScene(new Scene((Parent) this.view.getRootNode()));
+        Parent root = (Parent) view.getRootNode();
+
+        // CORREZIONE:
+        // Invece di 'new Scene(root)', passiamo anche larghezza e altezza attuali dello stage.
+        // Questo dice alla scena: "Occupami tutto lo spazio che c'è già".
+        Scene scene = new Scene(root, stage.getWidth(), stage.getHeight());
+
+        stage.setScene(scene);
         stage.show();
     }
 }

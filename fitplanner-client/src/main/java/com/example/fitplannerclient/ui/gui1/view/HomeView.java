@@ -5,6 +5,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.*;
 import javafx.scene.text.Text;
 
@@ -22,7 +23,12 @@ public class HomeView extends BaseView {
 
         content.getChildren().addAll(welcomeSection, workoutCard);
 
-        this.setMainContent(content);
+        ScrollPane scrollPane = new ScrollPane(content);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setFitToHeight(false);
+        scrollPane.setStyle("-fx-background-color: transparent; -fx-background: transparent;");
+
+        this.setMainContent(scrollPane);
 
     }
 

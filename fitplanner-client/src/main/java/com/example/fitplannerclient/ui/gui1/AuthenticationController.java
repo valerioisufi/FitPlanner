@@ -29,7 +29,7 @@ public class AuthenticationController implements GraphicController {
         authenticationBoundary.loginAsync(loginBean)
                 .thenRun(() -> {
                     // Login successful, proceed to the next screen
-                    System.out.println("Login successful!");
+                    this.view.showNotification("Login successful!");
                     Navigator.getInstance().startHomeController();
                 })
                 .exceptionally(ex -> {
@@ -44,7 +44,7 @@ public class AuthenticationController implements GraphicController {
         authenticationBoundary.registerAsync(registerBean)
                 .thenRun(() -> {
                     // Registration successful, proceed to the next screen
-                    System.out.println("Registration successful!");
+                    this.view.showNotification("Registration successful!");
                     Navigator.getInstance().startHomeController();
                 })
                 .exceptionally(ex -> {
