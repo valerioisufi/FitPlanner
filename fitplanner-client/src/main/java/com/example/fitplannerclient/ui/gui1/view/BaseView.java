@@ -5,14 +5,41 @@ import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.control.Label;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 import javafx.util.Duration;
 
-public class BaseView extends StackPane {
+import java.util.Objects;
 
-    public BaseView() {
-        this.getStyleClass().add("root");
+public abstract class BaseView {
+
+    private final StackPane rootStackPane;
+    private final BorderPane mainLayout;
+
+    protected BaseView() {
+        this.rootStackPane = new StackPane();
+        String themeCss = Objects.requireNonNull(getClass().getResource("/style/theme1.css")).toExternalForm();
+        String iconsCss = Objects.requireNonNull(getClass().getResource("/style/icons.css")).toExternalForm();
+        rootStackPane.getStylesheets().addAll(themeCss, iconsCss);
+
+        this.rootStackPane.getStyleClass().add("root");
+
+        this.mainLayout = new BorderPane();
+        this.rootStackPane.getChildren().add(mainLayout);
+    }
+
+    public Node getRootNode() {
+        return rootStackPane;
+    }
+
+    public void setHeader(Node headerView) {
+        mainLayout.setTop(headerView);
+    }
+
+    public void setMainContent(Node content) {
+        mainLayout.setCenter(content);
     }
 
     public void showNotification(String message) {
@@ -25,7 +52,7 @@ public class BaseView extends StackPane {
         StackPane.setMargin(notification, new Insets(0, 20, 20, 0));
 
         Platform.runLater(() -> {
-            this.getChildren().add(notification);
+            this.rootStackPane.getChildren().add(notification);
 
             fadeAnimation(notification);
         });
@@ -38,7 +65,7 @@ public class BaseView extends StackPane {
         fadeOut.setFromValue(1.0);
         fadeOut.setToValue(0.0);
 
-        fadeOut.setOnFinished(e -> this.getChildren().remove(notification));
+        fadeOut.setOnFinished(e -> this.rootStackPane.getChildren().remove(notification));
 
         delay.setOnFinished(e -> fadeOut.play());
         delay.play();

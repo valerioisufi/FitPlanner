@@ -1,6 +1,7 @@
 package com.example.fitplannerclient.ui.gui1;
 
 import com.example.fitplannerclient.ui.gui1.view.HomeView;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import com.example.fitplannerclient.ui.GraphicController;
@@ -15,15 +16,11 @@ public class HomeController implements GraphicController {
     public HomeController() {
         headerController = new HeaderController();
         view = new HomeView(headerController.getView());
-
-        String themeCss = Objects.requireNonNull(getClass().getResource("/style/theme1.css")).toExternalForm();
-        String iconsCss = Objects.requireNonNull(getClass().getResource("/style/icons.css")).toExternalForm();
-        view.getStylesheets().addAll(themeCss, iconsCss);
     }
 
     @Override
     public void start(Stage stage) {
-        stage.setScene(new Scene(view));
+        stage.setScene(new Scene((Parent) this.view.getRootNode()));
         stage.show();
     }
 }

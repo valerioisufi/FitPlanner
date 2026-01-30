@@ -12,9 +12,7 @@ public class HomeView extends BaseView {
     private Button primaryButton;
 
     public HomeView(Node header) {
-        this.getStyleClass().add("root");
-
-        if (header != null) this.getChildren().add(header);
+        if (header != null) this.setHeader(header);
 
         VBox content = new VBox(20);
         content.setPadding(new Insets(20));
@@ -24,7 +22,7 @@ public class HomeView extends BaseView {
 
         content.getChildren().addAll(welcomeSection, workoutCard);
 
-        this.getChildren().add(content);
+        this.setMainContent(content);
 
     }
 

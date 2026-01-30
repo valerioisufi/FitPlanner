@@ -32,30 +32,36 @@ public class AuthenticationView extends BaseView {
     }
 
     public void showSelectionMenu() {
-        this.getChildren().clear();
+        this.btnLogin.setDefaultButton(false);
+        this.btnRegistration.setDefaultButton(false);
+
         VBox card = createChooseLoginOrRegisterForm();
         styleCard(card);
-        this.getChildren().add(card);
+        this.setMainContent(card);
     }
 
     public void showLoginForm() {
-        this.getChildren().clear();
         clearFields();
         this.btnNext = this.btnLogin;
 
+        this.btnLogin.setDefaultButton(true);
+        this.btnRegistration.setDefaultButton(false);
+
         VBox loginForm = createLoginForm();
         styleCard(loginForm);
-        this.getChildren().add(loginForm);
+        this.setMainContent(loginForm);
     }
 
     public void showRegistrationForm() {
-        this.getChildren().clear();
         clearFields();
         this.btnNext = this.btnRegistration;
 
+        this.btnLogin.setDefaultButton(false);
+        this.btnRegistration.setDefaultButton(true);
+
         VBox registrationForm = createRegistrationForm();
         styleCard(registrationForm);
-        this.getChildren().add(registrationForm);
+        this.setMainContent(registrationForm);
     }
 
     private void styleCard(VBox card) {
