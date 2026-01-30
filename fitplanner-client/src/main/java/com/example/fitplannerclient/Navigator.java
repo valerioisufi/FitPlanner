@@ -53,9 +53,6 @@ public abstract class Navigator {
     public void setPrimaryStage(Stage stage) {
         this.primaryStage = stage;
     }
-    public Stage getStage() {
-        return this.primaryStage;
-    }
 
     protected abstract void requireAuthentication();
 

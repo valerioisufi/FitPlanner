@@ -31,6 +31,7 @@ public class AppLauncher extends Application {
         Navigator navigator = Navigator.getInstance();
         navigator.setPrimaryStage(stage);
         navigator.startHomeController();
+        stage.show();
     }
 
     /* ==========================================

@@ -6,13 +6,12 @@ import com.example.fitplannerclient.ui.GraphicController;
 import com.example.fitplannerclient.ui.gui1.view.AuthenticationView;
 import com.example.fitplannercommon.LoginBean;
 import com.example.fitplannercommon.RegisterBean;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.stage.Stage;
 
 public class AuthenticationController implements GraphicController {
-    AuthenticationBoundary authenticationBoundary;
-    AuthenticationView view;
+    private GuiManager guiManager;
+
+    private AuthenticationBoundary authenticationBoundary;
+    private AuthenticationView view;
 
     public AuthenticationController(AuthenticationBoundary authenticationBoundary) {
         this.authenticationBoundary = authenticationBoundary;
@@ -29,11 +28,11 @@ public class AuthenticationController implements GraphicController {
         authenticationBoundary.loginAsync(loginBean)
                 .thenRun(() -> {
                     // Login successful, proceed to the next screen
-                    this.view.showNotification("Login successful!");
+                    this.guiManager.showNotification("Login successful!");
                     Navigator.getInstance().startHomeController();
                 })
                 .exceptionally(ex -> {
-                    this.view.showNotification(ex.getMessage());
+                    this.guiManager.showNotification(ex.getMessage());
                     return null;
                 });
     }
@@ -44,18 +43,18 @@ public class AuthenticationController implements GraphicController {
         authenticationBoundary.registerAsync(registerBean)
                 .thenRun(() -> {
                     // Registration successful, proceed to the next screen
-                    this.view.showNotification("Registration successful!");
+                    this.guiManager.showNotification("Registration successful!");
                     Navigator.getInstance().startHomeController();
                 })
                 .exceptionally(ex -> {
-                    this.view.showNotification(ex.getMessage());
+                    this.guiManager.showNotification(ex.getMessage());
                     return null;
                 });
     }
 
     @Override
-    public void start(Stage stage) {
-        stage.setScene(new Scene((Parent) this.view.getRootNode()));
-        stage.show();
+    public void start(GuiManager guiManager) {
+        this.guiManager = guiManager;
+        this.guiManager.setView(view);
     }
 }

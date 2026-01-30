@@ -37,7 +37,7 @@ public class AuthenticationView extends BaseView {
 
         VBox card = createChooseLoginOrRegisterForm();
         styleCard(card);
-        this.setMainContent(card);
+        this.setContent(card);
     }
 
     public void showLoginForm() {
@@ -49,7 +49,7 @@ public class AuthenticationView extends BaseView {
 
         VBox loginForm = createLoginForm();
         styleCard(loginForm);
-        this.setMainContent(loginForm);
+        this.setContent(loginForm);
     }
 
     public void showRegistrationForm() {
@@ -61,7 +61,7 @@ public class AuthenticationView extends BaseView {
 
         VBox registrationForm = createRegistrationForm();
         styleCard(registrationForm);
-        this.setMainContent(registrationForm);
+        this.setContent(registrationForm);
     }
 
     private void styleCard(VBox card) {

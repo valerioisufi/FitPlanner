@@ -9,7 +9,7 @@ public class ViewWorkoutPlanController implements GraphicController {
     }
 
     @Override
-    public void start(Stage stage) {
+    public void start(GuiManager guiManager) {
         // Set up the scene and show the stage
     }
 }

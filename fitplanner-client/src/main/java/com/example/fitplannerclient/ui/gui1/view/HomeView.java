@@ -28,7 +28,7 @@ public class HomeView extends BaseView {
         scrollPane.setFitToHeight(false);
         scrollPane.setStyle("-fx-background-color: transparent; -fx-background: transparent;");
 
-        this.setMainContent(scrollPane);
+        this.setContent(scrollPane);
 
     }
 
