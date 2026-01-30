@@ -214,8 +214,7 @@
 
     -fx-effect: null;
 
-    -fx-max-width: 350px;
-    -fx-min-width: 300px;
+    -fx-max-width: 340px;
     -fx-alignment: CENTER-LEFT;
 }
 

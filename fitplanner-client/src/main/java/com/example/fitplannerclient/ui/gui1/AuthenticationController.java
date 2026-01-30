@@ -10,8 +10,8 @@ import com.example.fitplannercommon.RegisterBean;
 public class AuthenticationController implements GraphicController {
     private GuiManager guiManager;
 
-    private AuthenticationBoundary authenticationBoundary;
-    private AuthenticationView view;
+    private final AuthenticationBoundary authenticationBoundary;
+    private final AuthenticationView view;
 
     public AuthenticationController(AuthenticationBoundary authenticationBoundary) {
         this.authenticationBoundary = authenticationBoundary;
@@ -28,11 +28,12 @@ public class AuthenticationController implements GraphicController {
         authenticationBoundary.loginAsync(loginBean)
                 .thenRun(() -> {
                     // Login successful, proceed to the next screen
-                    this.guiManager.showNotification("Login successful!");
+                    this.guiManager.showNotification("Login avvenuto con successo!");
                     Navigator.getInstance().startHomeController();
                 })
                 .exceptionally(ex -> {
-                    this.guiManager.showNotification(ex.getMessage());
+
+                    this.guiManager.showNotification(ex.getCause().getMessage());
                     return null;
                 });
     }
@@ -43,11 +44,11 @@ public class AuthenticationController implements GraphicController {
         authenticationBoundary.registerAsync(registerBean)
                 .thenRun(() -> {
                     // Registration successful, proceed to the next screen
-                    this.guiManager.showNotification("Registration successful!");
+                    this.guiManager.showNotification("Registrazione avvenuta con successo!");
                     Navigator.getInstance().startHomeController();
                 })
                 .exceptionally(ex -> {
-                    this.guiManager.showNotification(ex.getMessage());
+                    this.guiManager.showNotification(ex.getCause().getMessage());
                     return null;
                 });
     }

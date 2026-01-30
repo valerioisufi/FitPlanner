@@ -1,5 +1,6 @@
 package com.example.fitplannerclient.service;
 
+import com.example.fitplannerclient.Navigator;
 import com.example.fitplannerclient.exception.ConfigException;
 import com.example.fitplannerclient.exception.RequestException;
 import com.example.fitplannercommon.TokenBean;
@@ -80,14 +81,23 @@ public class HttpService {
                                         return requestAsync(requestBuilder, responseType, true);
                                     } else {
                                         // Se il refresh fallisce, propaga l'errore (Logout forzato)
-                                        return CompletableFuture.failedFuture(new RequestException("Sessione scaduta, effettuare nuovamente il login."));
+                                        Navigator.getInstance().startHomeController();
+                                        String errorMessage = response.body();
+                                        return CompletableFuture.failedFuture(new RequestException(errorMessage));
                                     }
                                 });
                     }
 
                     // Gestione Errori Standard
                     if (response.statusCode() >= 300) {
-                        return CompletableFuture.failedFuture(new RequestException("Errore HTTP: " + response.statusCode() + " Body: " + response.body()));
+                        String errorMessage = response.body();
+
+                        // Se il body è vuoto, usa un fallback generico
+                        if (errorMessage == null || errorMessage.isBlank()) {
+                            errorMessage = "Errore del server (" + response.statusCode() + ")";
+                        }
+
+                        return CompletableFuture.failedFuture(new RequestException(errorMessage));
                     }
 
                     // Successo
