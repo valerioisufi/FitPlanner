@@ -8,7 +8,7 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.*;
 import javafx.scene.text.Text;
 
-public class HomeView extends VBox {
+public class HomeView extends BaseView {
     private Button primaryButton;
 
     public HomeView(Node header) {

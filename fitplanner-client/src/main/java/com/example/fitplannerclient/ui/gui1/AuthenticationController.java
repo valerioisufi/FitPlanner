@@ -57,11 +57,9 @@ public class AuthenticationController implements GraphicController {
                 });
     }
 
-    private Stage stage;
     @Override
     public void start(Stage stage) {
-        this.stage = stage;
-        this.stage.setScene(new Scene(view));
-        this.stage.show();
+        stage.setScene(new Scene(view));
+        stage.show();
     }
 }

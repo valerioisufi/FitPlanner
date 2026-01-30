@@ -196,9 +196,28 @@
 }
 
 
+/* ==========================================
+ * NOTIFICATION TOASTS
+ * ========================================== */
+.notification-toast {
+    -fx-background-color: #D9EDF7;
+    -fx-border-color: #BCE8F1;
+    -fx-text-fill: #31708F;
 
+    -fx-background-radius: 12px;
+    -fx-border-radius: 12px;
+    -fx-border-width: 1px;
 
+    -fx-padding: 12px 15px 12px 15px;
 
+    -fx-font-size: 14px;
+
+    -fx-effect: null;
+
+    -fx-max-width: 350px;
+    -fx-min-width: 300px;
+    -fx-alignment: CENTER-LEFT;
+}
 
 
 
