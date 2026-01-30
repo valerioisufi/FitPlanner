@@ -31,7 +31,7 @@ public class HttpService {
     private final HttpClient httpClient;
     private final ObjectMapper objectMapper;
 
-    private static final String contentType = "application/json";
+    private static final String CONTENT_TYPE = "application/json";
     private final String baseUrl;
 
     private HttpService() {
@@ -60,7 +60,7 @@ public class HttpService {
      * Metodo interno per gestire le richieste
      */
     private <T> CompletableFuture<T> requestAsync(HttpRequest.Builder requestBuilder, Class<T> responseType, boolean isRetry) {
-        requestBuilder.header("Accept", contentType);
+        requestBuilder.header("Accept", CONTENT_TYPE);
         String token = SessionManager.getInstance().getAccessToken();
         if (token != null && !token.isEmpty()) {
             requestBuilder.setHeader("Authorization", "Bearer " + token);
@@ -132,7 +132,7 @@ public class HttpService {
 
         HttpRequest refreshRequest = HttpRequest.newBuilder()
                 .uri(URI.create(baseUrl + "/auth/refresh"))
-                .header("Content-Type", contentType)
+                .header("Content-Type", CONTENT_TYPE)
                 .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                 .build();
 
@@ -176,7 +176,7 @@ public class HttpService {
 
         HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
                 .uri(URI.create(baseUrl + url))
-                .header("Content-Type", contentType)
+                .header("Content-Type", CONTENT_TYPE)
                 .POST(HttpRequest.BodyPublishers.ofString(jsonRequestBody));
 
         return requestAsync(requestBuilder, responseType, false);
