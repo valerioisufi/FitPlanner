@@ -4,6 +4,11 @@ public class RegisterBean {
     private String username;
     private String password;
 
+    public RegisterBean(String username, String password) {
+        this.username = username;
+        this.password = password;
+    }
+
     // Regex: almeno 1 numero, 1 minuscola, 1 maiuscola, min 8 caratteri
     private static final String REGEX = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z]).{8,}$";
 

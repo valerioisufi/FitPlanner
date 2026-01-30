@@ -61,6 +61,12 @@
     -fx-text-fill: -color-text-header;
 }
 
+.paragraph {
+    -fx-font-size: 14px;
+    -fx-text-fill: -color-text-body;
+    -fx-line-spacing: 1.4em;
+}
+
 .subtitle {
     -fx-font-size: 12px;
     -fx-text-fill: -color-text-light;

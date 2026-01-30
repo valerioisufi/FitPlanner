@@ -1,6 +1,8 @@
 package com.example.fitplannerclient.service;
 
 import com.example.fitplannerclient.exception.ConfigException;
+import com.example.fitplannerclient.exception.RequestException;
+import com.example.fitplannercommon.TokenBean;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
 
@@ -12,8 +14,10 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
+import java.util.logging.Logger;
 
 public class HttpService {
+    private static final Logger logger = Logger.getLogger(HttpService.class.getName());
 
     private static class Wrapper {
         public static final HttpService INSTANCE = new HttpService();
@@ -51,25 +55,95 @@ public class HttpService {
     }
 
 
-    private <T> CompletableFuture<T> requestAsync(HttpRequest.Builder requestBuilder, Class<T> responseType){
+    /**
+     * Metodo interno per gestire le richieste
+     */
+    private <T> CompletableFuture<T> requestAsync(HttpRequest.Builder requestBuilder, Class<T> responseType, boolean isRetry) {
         requestBuilder.header("Accept", contentType);
-
-        if (SessionManager.getInstance().getAccessToken() != null) {
-            requestBuilder.header("Authorization", "Bearer " + SessionManager.getInstance().getAccessToken());
+        String token = SessionManager.getInstance().getAccessToken();
+        if (token != null && !token.isEmpty()) {
+            requestBuilder.setHeader("Authorization", "Bearer " + token);
         }
 
         HttpRequest request = requestBuilder.build();
 
         return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
-                .thenApply(response -> {
-                    if (response.statusCode() < 200 || response.statusCode() >= 300) {
-                        throw new RuntimeException("Errore HTTP: " + response.statusCode());
+                .thenCompose(response -> {
+                    logger.info("Response code: " + response.statusCode() + " for " + request.uri() + "\nBody: " + response.body());
+
+                    // Token Scaduto (401) e non stiamo già riprovando
+                    if (response.statusCode() == 401 && !isRetry) {
+                        return handleRefreshToken()
+                                .thenCompose(success -> {
+                                    if (success) {
+                                        requestBuilder.setHeader("Authorization", "Bearer " + SessionManager.getInstance().getAccessToken());
+                                        return requestAsync(requestBuilder, responseType, true);
+                                    } else {
+                                        // Se il refresh fallisce, propaga l'errore (Logout forzato)
+                                        return CompletableFuture.failedFuture(new RequestException("Sessione scaduta, effettuare nuovamente il login."));
+                                    }
+                                });
                     }
 
+                    // Gestione Errori Standard
+                    if (response.statusCode() >= 300) {
+                        return CompletableFuture.failedFuture(new RequestException("Errore HTTP: " + response.statusCode() + " Body: " + response.body()));
+                    }
+
+                    // Successo
                     try {
-                        return objectMapper.readValue(response.body(), responseType);
+                        T result = objectMapper.readValue(response.body(), responseType);
+                        return CompletableFuture.completedFuture(result);
                     } catch (JacksonException e) {
-                        throw new RuntimeException("Errore durante la deserializzazione della risposta", e);
+                        return CompletableFuture.failedFuture(new RequestException("Errore deserializzazione", e));
+                    }
+                });
+    }
+
+    /**
+     * Logica specifica per eseguire il refresh del token.
+     * Restituisce true se il refresh ha successo, false altrimenti.
+     */
+    private CompletableFuture<Boolean> handleRefreshToken() {
+        String refreshToken = SessionManager.getInstance().getRefreshToken();
+        if (refreshToken == null) {
+            return CompletableFuture.completedFuture(false);
+        }
+
+        TokenBean refreshBody = new TokenBean();
+        refreshBody.setRefreshToken(refreshToken);
+
+        String jsonBody;
+        try {
+            jsonBody = objectMapper.writeValueAsString(refreshBody);
+        } catch (JacksonException e) {
+            return CompletableFuture.completedFuture(false);
+        }
+
+        HttpRequest refreshRequest = HttpRequest.newBuilder()
+                .uri(URI.create(baseUrl + "/auth/refresh"))
+                .header("Content-Type", contentType)
+                .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
+                .build();
+
+        return httpClient.sendAsync(refreshRequest, HttpResponse.BodyHandlers.ofString())
+                .thenApply(response -> {
+                    if (response.statusCode() == 200) {
+                        try {
+                            TokenBean newToken = objectMapper.readValue(response.body(), TokenBean.class);
+
+                            SessionManager.getInstance().setAccessToken(newToken.getAccessToken());
+                            if(newToken.getRefreshToken() != null) {
+                                SessionManager.getInstance().setRefreshToken(newToken.getRefreshToken());
+                            }
+                            return true;
+                        } catch (JacksonException e) {
+                            return false;
+                        }
+                    } else {
+                        // Il refresh token è scaduto o non valido -> Logout
+                        SessionManager.getInstance().logout();
+                        return false;
                     }
                 });
     }
@@ -79,7 +153,7 @@ public class HttpService {
                 .uri(URI.create(baseUrl + url))
                 .GET();
 
-        return requestAsync(requestBuilder, responseType);
+        return requestAsync(requestBuilder, responseType, false);
     }
 
     public <T, R> CompletableFuture<R> postAsync(String url, T requestBody, Class<R> responseType){
@@ -87,10 +161,7 @@ public class HttpService {
         try {
             jsonRequestBody = objectMapper.writeValueAsString(requestBody);
         } catch (JacksonException e) {
-            // Se non riusciamo a convertire l'oggetto in JSON, falliamo subito
-            CompletableFuture<R> failedFuture = new CompletableFuture<>();
-            failedFuture.completeExceptionally(new RuntimeException("Errore serializzazione body", e));
-            return failedFuture;
+            return CompletableFuture.failedFuture(new RequestException("Errore serializzazione", e));
         }
 
         HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
@@ -98,7 +169,7 @@ public class HttpService {
                 .header("Content-Type", contentType)
                 .POST(HttpRequest.BodyPublishers.ofString(jsonRequestBody));
 
-        return requestAsync(requestBuilder, responseType);
+        return requestAsync(requestBuilder, responseType, false);
     }
 
 }

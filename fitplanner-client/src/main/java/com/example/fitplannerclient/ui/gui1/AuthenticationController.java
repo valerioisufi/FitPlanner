@@ -3,7 +3,8 @@ package com.example.fitplannerclient.ui.gui1;
 import com.example.fitplannerclient.service.AuthenticationBoundary;
 import com.example.fitplannerclient.ui.GraphicController;
 import com.example.fitplannerclient.ui.gui1.view.AuthenticationView;
-import com.example.fitplannerclient.ui.gui1.view.RegistrationView;
+import com.example.fitplannercommon.LoginBean;
+import com.example.fitplannercommon.RegisterBean;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
@@ -20,13 +21,38 @@ public class AuthenticationController implements GraphicController {
         String themeCss = Objects.requireNonNull(getClass().getResource("/style/theme1.css")).toExternalForm();
         String iconsCss = Objects.requireNonNull(getClass().getResource("/style/icons.css")).toExternalForm();
         view.getStylesheets().addAll(themeCss, iconsCss);
+
+        view.setLoginBtnAction(() -> this.onLogin(this.view.getUsername(), this.view.getPassword()));
+        view.setRegistrationBtnAction(() -> this.onRegister(this.view.getUsername(), this.view.getPassword()));
     }
 
+    private void onLogin(String username, String password) {
+        var loginBean = new LoginBean(username, password);
 
-    private void login(){
-
+        authenticationBoundary.loginAsync(loginBean)
+                .thenRun(() -> {
+                    // Login successful, proceed to the next screen
+                    System.out.println("Login successful!");
+                })
+                .exceptionally(ex -> {
+                    this.view.showNotification(ex.getMessage());
+                    return null;
+                });
     }
 
+    private void onRegister(String username, String password) {
+        var registerBean = new RegisterBean(username, password);
+
+        authenticationBoundary.registerAsync(registerBean)
+                .thenRun(() -> {
+                    // Registration successful, proceed to the next screen
+                    System.out.println("Registration successful!");
+                })
+                .exceptionally(ex -> {
+                    this.view.showNotification(ex.getMessage());
+                    return null;
+                });
+    }
 
     @Override
     public void start(Stage stage) {
