@@ -4,6 +4,8 @@ public class RegisterBean {
     private String username;
     private String password;
 
+    public RegisterBean() {}
+
     public RegisterBean(String username, String password) {
         this.username = username;
         this.password = password;

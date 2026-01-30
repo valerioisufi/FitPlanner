@@ -40,7 +40,7 @@ public class JwtUtil {
                     .build()
                     .parseSignedClaims(token);
 
-            if(claims.getPayload().getExpiration().after(new Date())) return null;
+            if(claims.getPayload().getExpiration().before(new Date())) return null;
 
             return claims.getPayload().getSubject();
         } catch (Exception e) {
