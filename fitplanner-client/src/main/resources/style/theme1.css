@@ -220,6 +220,73 @@
 }
 
 
+/* ==========================================
+ * SCROLLBAR
+ * ========================================== */
+
+/* Il contenitore principale della Scrollbar */
+.scroll-bar {
+    -fx-background-color: transparent; /* Sfondo trasparente */
+    -fx-block-increment: 50; /* Velocità di scroll al click */
+}
+
+/* Larghezza della barra verticale */
+.scroll-bar:vertical {
+    -fx-pref-width: 10px; /* Molto più sottile della default */
+    -fx-padding: 0 2px 0 0; /* Un po' di margine a destra se serve */
+}
+
+/* Altezza della barra orizzontale (se presente) */
+.scroll-bar:horizontal {
+    -fx-pref-height: 10px;
+}
+
+/* La "Pista" (Track) su cui scorre la barra */
+.scroll-bar .track {
+    -fx-background-color: transparent; /* Invisibile, così sembra fluttuare */
+    -fx-border-radius: 10px;
+    -fx-background-radius: 10px;
+}
+/* Opzionale: se vuoi che la pista si veda leggermente quando ci passi sopra */
+.scroll-bar:hover .track {
+    -fx-background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Il "Pollice" (Thumb) - La parte che trascini */
+.scroll-bar .thumb {
+    -fx-background-color: #cbd5e1; /* Grigio chiaro (match con il tuo tema) */
+    -fx-background-radius: 10px;    /* Completamente arrotondato */
+    -fx-background-insets: 1;       /* Lascia un pixel di respiro */
+}
+
+/* Effetto Hover sul Pollice (diventa più scuro) */
+.scroll-bar:hover .thumb {
+    -fx-background-color: #94a3b8; /* Grigio più scuro */
+}
+
+/* Effetto Pressed (mentre trascini) */
+.scroll-bar .thumb:pressed {
+    -fx-background-color: -color-primary; /* Diventa blu FitPlanner mentre scorri! */
+}
+
+/* Nascondere le frecce su/giù (Increment/Decrement Buttons) */
+.scroll-bar .increment-button,
+.scroll-bar .decrement-button {
+    -fx-visible: false;
+    -fx-padding: 0;
+    -fx-pref-width: 0;
+    -fx-pref-height: 0;
+    -fx-shape: " "; /* Rimuove la forma della freccia */
+}
+
+/* Nasconde anche il contenitore delle frecce */
+.scroll-bar .increment-arrow,
+.scroll-bar .decrement-arrow {
+    -fx-padding: 0;
+    -fx-shape: " ";
+}
+
+
 
 /* ==========================================
  * MULTI-STEP ONBOARDING WIZARD

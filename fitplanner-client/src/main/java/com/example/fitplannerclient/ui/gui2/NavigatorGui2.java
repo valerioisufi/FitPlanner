@@ -5,6 +5,11 @@ import com.example.fitplannerclient.Navigator;
 
 public class NavigatorGui2 extends Navigator {
     @Override
+    public void setPrimaryStage(Stage stage) {
+
+    }
+
+    @Override
     protected void requireAuthentication() {
 
     }

@@ -11,8 +11,6 @@ import java.util.logging.Logger;
 
 public abstract class Navigator {
 
-    private Stage primaryStage;
-
     private static class Wrapper {
         static final Navigator INSTANCE = createInstance();
 
@@ -50,9 +48,8 @@ public abstract class Navigator {
     }
 
 
-    public void setPrimaryStage(Stage stage) {
-        this.primaryStage = stage;
-    }
+    public abstract void setPrimaryStage(Stage stage);
+
 
     protected abstract void requireAuthentication();
 
