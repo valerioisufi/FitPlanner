@@ -1,5 +1,6 @@
 package com.example.fitplannerclient;
 
+import com.example.fitplannerclient.service.SessionManager;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -25,7 +26,11 @@ public class AppLauncher extends Application {
         stage.setMinWidth(1200);
         stage.setMinHeight(800);
 
-        Navigator.getInstance().startHomeController(stage);
+        SessionManager.getInstance().logout();
+
+        Navigator navigator = Navigator.getInstance();
+        navigator.setPrimaryStage(stage);
+        navigator.startHomeController();
     }
 
     /* ==========================================

@@ -24,10 +24,10 @@ public class SessionManager {
         this.refreshToken = preferences.get(PREF_REFRESH_TOKEN, null);
     }
 
-    public void setAccessToken(String accessToken) {
+    public synchronized void setAccessToken(String accessToken) {
         this.accessToken = accessToken;
     }
-    public void setRefreshToken(String refreshToken) {
+    public synchronized void setRefreshToken(String refreshToken) {
         this.refreshToken = refreshToken;
 
         if (refreshToken != null) {
@@ -37,19 +37,19 @@ public class SessionManager {
         }
     }
 
-    public String getAccessToken() {
+    public synchronized String getAccessToken() {
         return accessToken;
     }
-    public String getRefreshToken() {
+    public synchronized String getRefreshToken() {
         return refreshToken;
     }
 
 
-    public boolean isLoggedIn() {
+    public synchronized boolean isLoggedIn() {
         return accessToken != null || refreshToken != null;
     }
 
-    public void logout() {
+    public synchronized void logout() {
         setAccessToken(null);
         setRefreshToken(null);
     }

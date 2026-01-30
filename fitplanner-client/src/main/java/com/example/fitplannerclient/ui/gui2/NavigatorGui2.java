@@ -5,17 +5,17 @@ import com.example.fitplannerclient.Navigator;
 
 public class NavigatorGui2 extends Navigator {
     @Override
-    protected void requireAuthentication(Stage stage) {
+    protected void requireAuthentication() {
 
     }
 
     @Override
-    public void startHomeController(Stage stage) {
+    public void startHomeController() {
 
     }
 
     @Override
-    public void startViewPlanController(Stage stage) {
+    public void startViewPlanController() {
 
     }
 }

@@ -2,32 +2,32 @@ package com.example.fitplannerclient.ui.gui1;
 
 import com.example.fitplannerclient.service.AuthenticationBoundary;
 import com.example.fitplannerclient.service.SessionManager;
-import com.example.fitplannerclient.ui.gui1.view.RegistrationView;
-import javafx.stage.Stage;
 import com.example.fitplannerclient.Navigator;
+import javafx.application.Platform;
 
 public class NavigatorGui1 extends Navigator {
 
     @Override
-    protected void requireAuthentication(Stage stage) {
+    protected void requireAuthentication() {
         AuthenticationController authenticationController = new AuthenticationController(new AuthenticationBoundary());
-        authenticationController.start(stage);
+        Platform.runLater(() -> authenticationController.start(this.getStage()));
+
     }
 
     @Override
-    public void startHomeController(Stage stage) {
+    public void startHomeController() {
         if(!SessionManager.getInstance().isLoggedIn()) {
-            requireAuthentication(stage);
+            requireAuthentication();
         } else {
             HomeController homeController = new HomeController();
-            homeController.start(stage);
+            Platform.runLater(() -> homeController.start(this.getStage()));
         }
     }
 
     @Override
-    public void startViewPlanController(Stage stage) {
+    public void startViewPlanController() {
         ViewWorkoutPlanController viewWorkoutPlanController = new ViewWorkoutPlanController();
-        viewWorkoutPlanController.start(stage);
+        Platform.runLater(() -> viewWorkoutPlanController.start(getStage()));
     }
 
 

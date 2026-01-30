@@ -11,9 +11,9 @@ import java.util.logging.Logger;
 
 public abstract class Navigator {
 
+    private Stage primaryStage;
+
     private static class Wrapper {
-        // La JVM caricherà questa classe e inizializzerà INSTANCE
-        // solo quando Navigator.getInstance() verrà chiamato per la prima volta.
         static final Navigator INSTANCE = createInstance();
 
         private static Navigator createInstance() {
@@ -50,10 +50,17 @@ public abstract class Navigator {
     }
 
 
-    protected abstract void requireAuthentication(Stage stage);
+    public void setPrimaryStage(Stage stage) {
+        this.primaryStage = stage;
+    }
+    public Stage getStage() {
+        return this.primaryStage;
+    }
 
-    public abstract void startHomeController(Stage stage);
+    protected abstract void requireAuthentication();
 
-    public abstract void startViewPlanController(Stage stage);
+    public abstract void startHomeController();
+
+    public abstract void startViewPlanController();
 
 }

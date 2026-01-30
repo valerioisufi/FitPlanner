@@ -1,5 +1,6 @@
 package com.example.fitplannerclient.ui.gui1;
 
+import com.example.fitplannerclient.Navigator;
 import com.example.fitplannerclient.service.AuthenticationBoundary;
 import com.example.fitplannerclient.ui.GraphicController;
 import com.example.fitplannerclient.ui.gui1.view.AuthenticationView;
@@ -33,6 +34,7 @@ public class AuthenticationController implements GraphicController {
                 .thenRun(() -> {
                     // Login successful, proceed to the next screen
                     System.out.println("Login successful!");
+                    Navigator.getInstance().startHomeController();
                 })
                 .exceptionally(ex -> {
                     this.view.showNotification(ex.getMessage());
@@ -47,6 +49,7 @@ public class AuthenticationController implements GraphicController {
                 .thenRun(() -> {
                     // Registration successful, proceed to the next screen
                     System.out.println("Registration successful!");
+                    Navigator.getInstance().startHomeController();
                 })
                 .exceptionally(ex -> {
                     this.view.showNotification(ex.getMessage());
@@ -54,9 +57,11 @@ public class AuthenticationController implements GraphicController {
                 });
     }
 
+    private Stage stage;
     @Override
     public void start(Stage stage) {
-        stage.setScene(new Scene(view));
-        stage.show();
+        this.stage = stage;
+        this.stage.setScene(new Scene(view));
+        this.stage.show();
     }
 }
