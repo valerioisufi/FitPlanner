@@ -38,5 +38,23 @@ public class NavigatorGui1 extends Navigator {
         Platform.runLater(() -> viewWorkoutPlanController.start(this.guiManager));
     }
 
+    @Override
+    public void startExerciseLibraryController() {
+        ExerciseLibraryController exerciseLibraryController = new ExerciseLibraryController();
+        Platform.runLater(() -> exerciseLibraryController.start(this.guiManager));
+    }
+
+    @Override
+    public void startWorkoutPlanEditorController() {
+        WorkoutPlanEditorController workoutPlanEditorController = new WorkoutPlanEditorController();
+        Platform.runLater(() -> workoutPlanEditorController.start(this.guiManager));
+    }
+
+    @Override
+    public void startWorkoutExecutionController() {
+        WorkoutExecutionController workoutExecutionController = new WorkoutExecutionController();
+        Platform.runLater(() -> workoutExecutionController.start(this.guiManager));
+    }
+
 
 }

@@ -6,6 +6,8 @@ module fitplannerclient {
     requires tools.jackson.databind;
     requires fitplannercommon;
     requires java.prefs;
+    requires javafx.web;
+    requires jdk.httpserver;
 
     opens com.example.fitplannerclient to javafx.fxml;
     exports com.example.fitplannerclient;

@@ -2,7 +2,7 @@ package com.example.fitplannerclient;
 
 import javafx.stage.Stage;
 import com.example.fitplannerclient.ui.gui1.NavigatorGui1;
-import com.example.fitplannerclient.ui.gui2.NavigatorGui2;
+//import com.example.fitplannerclient.ui.gui2.NavigatorGui2;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,7 +32,7 @@ public abstract class Navigator {
                 }
 
                 if ("B".equalsIgnoreCase(uiType)) {
-                    return new NavigatorGui2();
+                    return new NavigatorGui1();
                 } else {
                     return new NavigatorGui1(); // Default
                 }
@@ -56,5 +56,11 @@ public abstract class Navigator {
     public abstract void startHomeController();
 
     public abstract void startViewPlanController();
+
+    public abstract void startExerciseLibraryController();
+
+    public abstract void startWorkoutPlanEditorController();
+
+    public abstract void startWorkoutExecutionController();
 
 }

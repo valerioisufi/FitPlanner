@@ -188,7 +188,6 @@
 .card {
     -fx-background-color: -color-bg-card;
     -fx-background-radius: 12px;
-    -fx-padding: 24px;
 
     -fx-border-width: 1;
     -fx-border-color: -border-color;
@@ -283,6 +282,134 @@
 .scroll-bar .decrement-arrow {
     -fx-padding: 0;
     -fx-shape: " ";
+}
+
+
+
+
+/* ==========================================
+ * WORKOUT PLANNER (Drag & Drop)
+ * ========================================== */
+
+/* Contenitore del Giorno (Target del Drop) */
+.day-card {
+    -fx-background-color: -color-bg-card;
+    -fx-background-radius: 8px;
+    -fx-border-color: -border-color;
+    -fx-border-radius: 8px;
+    -fx-border-width: 1px;
+    -fx-effect: null; /* Rimuoviamo ombre pesanti per performance su griglie grandi */
+}
+
+/* Quando trascini un elemento sopra un giorno valido */
+.day-card-drag-hover {
+    -fx-border-color: -color-primary;
+    -fx-border-width: 2px;
+    -fx-background-color: #EFF6FF; /* Azzurrino chiaro */
+}
+
+/* Header del Giorno (es. "Day 1") */
+.day-card-header {
+    -fx-padding: 10;
+    -fx-border-color: -border-color;
+    -fx-border-width: 0 0 1 0; /* Solo sotto */
+    -fx-background-color: #F8FAFC;
+    -fx-background-radius: 8px 8px 0 0;
+}
+
+/* Lista esercizi dentro il giorno */
+.day-exercise-list {
+    -fx-padding: 10;
+    -fx-spacing: 5;
+}
+
+/* Elemento Esercizio (nella libreria a destra) */
+.library-item {
+    -fx-background-color: -color-bg-card;
+    -fx-border-color: -border-color;
+    -fx-border-radius: 6px;
+    -fx-background-radius: 6px;
+    -fx-padding: 10;
+    -fx-cursor: hand;
+}
+.library-item:hover {
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2);
+    -fx-border-color: -color-primary;
+}
+
+/* Elemento Esercizio (già droppato nel giorno) */
+.planned-exercise-item {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #E2E8F0;
+    -fx-border-radius: 4px;
+    -fx-padding: 8;
+    -fx-font-size: 13px;
+}
+
+/* Chips Filtri (es. "Chest", "Legs") */
+.filter-chip {
+    -fx-background-color: #F1F5F9;
+    -fx-text-fill: -color-text-body;
+    -fx-background-radius: 15px;
+    -fx-padding: 5 12 5 12;
+    -fx-cursor: hand;
+    -fx-font-size: 12px;
+}
+.filter-chip:selected { /* Pseudo-class gestita via codice o styleclass */
+    -fx-background-color: -color-primary;
+    -fx-text-fill: white;
+}
+.filter-chip-active {
+    -fx-background-color: -color-primary;
+    -fx-text-fill: white;
+}
+
+
+
+/* ==========================================
+ * WORKOUT EXECUTION VIEW
+ * ========================================== */
+
+/* Campi di input per Peso e Reps (sfondo grigio chiaro) */
+.execution-input {
+    -fx-background-color: #F3F4F6;
+    -fx-border-color: transparent;
+    -fx-background-radius: 6px;
+    -fx-alignment: CENTER;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-text-body;
+}
+.execution-input:focused {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: -color-primary;
+}
+
+/* Header della tabella dei set (Set, Weight, Reps, Done) */
+.sets-header-label {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-text-light;
+}
+
+/* Riga della tabella dei set */
+.set-row {
+    -fx-padding: 10 0 10 0;
+    -fx-border-color: #E2E8F0;
+    -fx-border-width: 0 0 1 0; /* Linea separatrice sotto */
+}
+
+/* Stile per il numero del set (1, 2, 3...) */
+.set-number-label {
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+    -fx-text-fill: -color-text-header;
+}
+
+/* Contenitore WebView (Bordo arrotondato per il video) */
+.video-container {
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 4);
+    /* Nota: il radius su WebView è tricky in JavaFX standard,
+       spesso si usa un Rectangle clip nel codice Java */
 }
 
 
