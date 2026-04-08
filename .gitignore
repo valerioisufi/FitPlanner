@@ -9,6 +9,7 @@ target/
 .idea/jarRepositories.xml
 .idea/compiler.xml
 .idea/copilot*.xml
+.idea/IntelliLang.xml
 .idea/libraries/
 *.iws
 *.iml
