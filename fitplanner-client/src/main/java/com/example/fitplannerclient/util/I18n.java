@@ -9,9 +9,6 @@ import java.text.MessageFormat;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
-// Utility Class (o Helper Class).
-// È una classe che serve solo come "contenitore" di funzioni globali
-// e non è pensata per rappresentare un oggetto reale.
 public final class I18n {
 
     private static final ObjectProperty<ResourceBundle> currentBundle = new SimpleObjectProperty<>();
