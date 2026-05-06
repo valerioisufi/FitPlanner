@@ -22,7 +22,7 @@ public class HeaderView extends HBox {
 
     public HeaderView(List<MenuConfig> menuItems, int activeBtnIndex) {
         this.getStyleClass().add("header");
-        this.setPrefHeight(60);
+        this.setPrefHeight(80);
         this.setAlignment(Pos.CENTER_LEFT);
 
         // titleContainer
@@ -31,12 +31,16 @@ public class HeaderView extends HBox {
         ImageView imageLogo = new ImageView(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/app_icon.png"))));
         imageLogo.setPreserveRatio(true);
 
-        Label title = new Label("FitPlanner");
-        title.getStyleClass().add("h2");
+        // Create a Region to act as the logo container
+        Region textLogo = new Region();
+
+        // Apply the CSS class holding the SVG shape
+        textLogo.getStyleClass().addAll("logo-fitplanner", "button-header-icon");
+
         HBox.setMargin(titleContainer, new Insets(0, 0, 0, 20));
 
-        titleContainer.getChildren().addAll(imageLogo, title);
-        imageLogo.fitHeightProperty().bind(title.heightProperty().multiply(1.5));
+        titleContainer.getChildren().addAll(imageLogo, textLogo);
+        imageLogo.fitHeightProperty().bind(textLogo.heightProperty().multiply(2));
 
         // spacer
         Region spacer = new Region();
