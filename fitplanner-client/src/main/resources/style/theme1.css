@@ -36,41 +36,103 @@
 }
 
 /* ==========================================
- * TIPOGRAFIA
+ * TYPOGRAPHY
  * ========================================== */
 
-.label {
-    -fx-text-fill: -color-text-body;
+@font-face {
+    font-family: 'SpaceGrotesk';
+    ont-style: normal;
+    font-weight: bold;
+    src: url('fonts/SpaceGrotesk-Bold.ttf');
 }
 
-.h1 {
-    -fx-font-size: 24px;
+@font-face {
+    font-family: 'SpaceGrotesk';
+    ont-style: normal;
+    font-weight: 500;
+    src: url('fonts/SpaceGrotesk-Medium.ttf');
+}
+
+@font-face {
+    font-family: 'Manrope';
+    ont-style: normal;
+    font-weight: 800;
+    src: url('fonts/Manrope-ExtraBold.ttf');
+}
+
+@font-face {
+    font-family: 'Manrope';
+    ont-style: normal;
+    font-weight: bold;
+    src: url('fonts/Manrope-Bold.ttf');
+}
+
+.heading-h1 {
+    -fx-font-family: 'SpaceGrotesk';
     -fx-font-weight: bold;
-    -fx-text-fill: -color-text-header;
-}
-
-.h2 {
     -fx-font-size: 20px;
+}
+
+.heading-h2 {
+    -fx-font-family: 'SpaceGrotesk';
     -fx-font-weight: bold;
-    -fx-text-fill: -color-text-header;
+    -fx-font-size: 18px;
 }
 
-.h3 {
-    -fx-font-size: 16px;
+.heading-h3 {
+    -fx-font-family: 'Manrope';
     -fx-font-weight: bold;
-    -fx-text-fill: -color-text-header;
+    -fx-font-size: 20px;
 }
 
-.paragraph {
-    -fx-font-size: 14px;
-    -fx-text-fill: -color-text-body;
-    -fx-line-spacing: 1.4em;
+.label-overline {
+    -fx-font-family: 'Manrope';
+    -fx-font-weight: 800;
+    -fx-font-size: 10;
 }
 
-.subtitle {
-    -fx-font-size: 12px;
-    -fx-text-fill: -color-text-light;
+.label-badge-value {
+    -fx-font-family: 'Manrope';
+    -fx-font-weight: 800;
+    -fx-font-size: 10;
 }
+
+.label-micro {
+    -fx-font-family: 'Manrope';
+    -fx-font-weight: 800;
+    -fx-font-size: 10;
+}
+
+.brand-logo {
+    -fx-font-family: 'Manrope';
+    -fx-font-weight: 800;
+    -fx-font-size: 10;
+}
+
+.body-base {
+    -fx-font-family: 'Manrope';
+    -fx-font-weight: 800;
+    -fx-font-size: 10;
+}
+
+.body-small {
+    -fx-font-family: 'Manrope';
+    -fx-font-weight: 800;
+    -fx-font-size: 10;
+}
+
+.ui-calendar-day {
+    -fx-font-family: 'Manrope';
+    -fx-font-weight: 800;
+    -fx-font-size: 10;
+}
+
+.ui-calendar-number {
+    -fx-font-family: 'Manrope';
+    -fx-font-weight: 800;
+    -fx-font-size: 10;
+}
+
 
 /* ==========================================
  * COMPONENTI UI BASE (Input, Bottoni)

@@ -12,6 +12,7 @@ public class TrainerProfileClient extends ProfileClient{
     }
 
     private String generateInvitationCode() {
+        return null;
     }
 
     public String getBio() {

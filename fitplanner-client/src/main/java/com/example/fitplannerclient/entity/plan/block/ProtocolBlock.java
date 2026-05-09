@@ -13,4 +13,28 @@ public class ProtocolBlock extends GroupNode{
     private List<ValidationRule> validationRules;
     private List<CompositionRule> compositionRules;
 
+    @Override
+    public void addNodeAt(int index, PlanNode node) {
+
+    }
+
+    @Override
+    public void replaceNode() {
+
+    }
+
+    @Override
+    public void accept() {
+
+    }
+
+    @Override
+    public void execute() {
+
+    }
+
+    @Override
+    public void reset() {
+
+    }
 }
