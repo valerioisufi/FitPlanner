@@ -1,0 +1,180 @@
+/*
+ * ==========================================
+ * RADIX UI COLORS - https://www.radix-ui.com/colors
+ * ==========================================
+ */
+.root {
+    /* Blue colors */
+    -fx-radix-blue-3: #E6F4FE;
+    -fx-radix-blue-4: #D5EFFF;
+    -fx-radix-blue-5: #C2E5FF;
+    -fx-radix-blue-11: #0D74CE;
+    -fx-radix-blue-12: #113264;
+
+    /* Green colors */
+    -fx-radix-green-3: #E6F6EB;
+    -fx-radix-green-4: #D6F1DF;
+    -fx-radix-green-5: #C4E8D1;
+    -fx-radix-green-11: #218358;
+    -fx-radix-green-12: #193B2D;
+
+    /* Red colors */
+    -fx-radix-red-3: #FEEBEC;
+    -fx-radix-red-4: #FFDBDC;
+    -fx-radix-red-5: #FFCDCE;
+    -fx-radix-red-11: #CE2C31;
+    -fx-radix-red-12: #641723;
+
+    /* Yellow colors */
+    -fx-radix-yellow-3: #FFFAB8;
+    -fx-radix-yellow-4: #FFF394;
+    -fx-radix-yellow-5: #FFE770;
+    -fx-radix-yellow-11: #9E6C00;
+    -fx-radix-yellow-12: #473B1F;
+
+    /* Gray colors */
+    -fx-radix-gray-3: #F0F0F0;
+    -fx-radix-gray-4: #E8E8E8;
+    -fx-radix-gray-5: #E0E0E0;
+    -fx-radix-gray-11: #646464;
+    -fx-radix-gray-12: #202020;
+
+    /* Violet colors */
+    -fx-radix-violet-3: #F4F0FE;
+    -fx-radix-violet-4: #EBE4FF;
+    -fx-radix-violet-5: #E1D9FF;
+    -fx-radix-violet-11: #6550B9;
+    -fx-radix-violet-12: #2F265F;
+
+    /* Orange colors */
+    -fx-radix-orange-3: #FFEFD6;
+    -fx-radix-orange-4: #FFDFB5;
+    -fx-radix-orange-5: #FFD19A;
+    -fx-radix-orange-11: #CC4E00;
+    -fx-radix-orange-12: #582D1D;
+
+    /* Amber colors */
+    -fx-radix-amber-3: #FFF7C2;
+    -fx-radix-amber-4: #FFEE9C;
+    -fx-radix-amber-5: #FBE577;
+    -fx-radix-amber-11: #AB6400;
+    -fx-radix-amber-12: #4F3422;
+
+    /* Teal colors */
+    -fx-radix-teal-3: #E0F8F3;
+    -fx-radix-teal-4: #CCF3EA;
+    -fx-radix-teal-5: #B8EAE0;
+    -fx-radix-teal-11: #008573;
+    -fx-radix-teal-12: #0D3D38;
+
+    /* Cyan colors */
+    -fx-radix-cyan-3: #DEF7F9;
+    -fx-radix-cyan-4: #CAF1F6;
+    -fx-radix-cyan-5: #B5E9F0;
+    -fx-radix-cyan-11: #107D98;
+    -fx-radix-cyan-12: #0D3C48;
+
+    /* Indigo colors */
+    -fx-radix-indigo-3: #EDF2FE;
+    -fx-radix-indigo-4: #E1E9FF;
+    -fx-radix-indigo-5: #D2DEFF;
+    -fx-radix-indigo-11: #3A5BC7;
+    -fx-radix-indigo-12: #1F2D5C;
+
+    /* Pink colors */
+    -fx-radix-pink-3: #FEE9F5;
+    -fx-radix-pink-4: #FBDCEF;
+    -fx-radix-pink-5: #F6CEE7;
+    -fx-radix-pink-11: #C2298A;
+    -fx-radix-pink-12: #651249;
+}
+
+/* * ==========================================
+ * BADGE CLASSES
+ * Base style plus dynamic states
+ * ==========================================
+ */
+
+/* Blue */
+.badge-bg-blue { -fx-background-color: -fx-radix-blue-3; }
+.badge-bg-blue:hover { -fx-background-color: -fx-radix-blue-4; }
+.badge-bg-blue:pressed { -fx-background-color: -fx-radix-blue-5; }
+.badge-label-micro-blue { -fx-text-fill: -fx-radix-blue-11; }
+.badge-label-value-blue { -fx-text-fill: -fx-radix-blue-12; }
+
+/* Green */
+.badge-bg-green { -fx-background-color: -fx-radix-green-3; }
+.badge-bg-green:hover { -fx-background-color: -fx-radix-green-4; }
+.badge-bg-green:pressed { -fx-background-color: -fx-radix-green-5; }
+.badge-label-micro-green { -fx-text-fill: -fx-radix-green-11; }
+.badge-label-value-green { -fx-text-fill: -fx-radix-green-12; }
+
+/* Red */
+.badge-bg-red { -fx-background-color: -fx-radix-red-3; }
+.badge-bg-red:hover { -fx-background-color: -fx-radix-red-4; }
+.badge-bg-red:pressed { -fx-background-color: -fx-radix-red-5; }
+.badge-label-micro-red { -fx-text-fill: -fx-radix-red-11; }
+.badge-label-value-red { -fx-text-fill: -fx-radix-red-12; }
+
+/* Yellow */
+.badge-bg-yellow { -fx-background-color: -fx-radix-yellow-3; }
+.badge-bg-yellow:hover { -fx-background-color: -fx-radix-yellow-4; }
+.badge-bg-yellow:pressed { -fx-background-color: -fx-radix-yellow-5; }
+.badge-label-micro-yellow { -fx-text-fill: -fx-radix-yellow-11; }
+.badge-label-value-yellow { -fx-text-fill: -fx-radix-yellow-12; }
+
+/* Gray */
+.badge-bg-gray { -fx-background-color: -fx-radix-gray-3; }
+.badge-bg-gray:hover { -fx-background-color: -fx-radix-gray-4; }
+.badge-bg-gray:pressed { -fx-background-color: -fx-radix-gray-5; }
+.badge-label-micro-gray { -fx-text-fill: -fx-radix-gray-11; }
+.badge-label-value-gray { -fx-text-fill: -fx-radix-gray-12; }
+
+/* Violet */
+.badge-bg-violet { -fx-background-color: -fx-radix-violet-3; }
+.badge-bg-violet:hover { -fx-background-color: -fx-radix-violet-4; }
+.badge-bg-violet:pressed { -fx-background-color: -fx-radix-violet-5; }
+.badge-label-micro-violet { -fx-text-fill: -fx-radix-violet-11; }
+.badge-label-value-violet { -fx-text-fill: -fx-radix-violet-12; }
+
+/* Orange */
+.badge-bg-orange { -fx-background-color: -fx-radix-orange-3; }
+.badge-bg-orange:hover { -fx-background-color: -fx-radix-orange-4; }
+.badge-bg-orange:pressed { -fx-background-color: -fx-radix-orange-5; }
+.badge-label-micro-orange { -fx-text-fill: -fx-radix-orange-11; }
+.badge-label-value-orange { -fx-text-fill: -fx-radix-orange-12; }
+
+/* Amber */
+.badge-bg-amber { -fx-background-color: -fx-radix-amber-3; }
+.badge-bg-amber:hover { -fx-background-color: -fx-radix-amber-4; }
+.badge-bg-amber:pressed { -fx-background-color: -fx-radix-amber-5; }
+.badge-label-micro-amber { -fx-text-fill: -fx-radix-amber-11; }
+.badge-label-value-amber { -fx-text-fill: -fx-radix-amber-12; }
+
+/* Teal */
+.badge-bg-teal { -fx-background-color: -fx-radix-teal-3; }
+.badge-bg-teal:hover { -fx-background-color: -fx-radix-teal-4; }
+.badge-bg-teal:pressed { -fx-background-color: -fx-radix-teal-5; }
+.badge-label-micro-teal { -fx-text-fill: -fx-radix-teal-11; }
+.badge-label-value-teal { -fx-text-fill: -fx-radix-teal-12; }
+
+/* Cyan */
+.badge-bg-cyan { -fx-background-color: -fx-radix-cyan-3; }
+.badge-bg-cyan:hover { -fx-background-color: -fx-radix-cyan-4; }
+.badge-bg-cyan:pressed { -fx-background-color: -fx-radix-cyan-5; }
+.badge-label-micro-cyan { -fx-text-fill: -fx-radix-cyan-11; }
+.badge-label-value-cyan { -fx-text-fill: -fx-radix-cyan-12; }
+
+/* Indigo */
+.badge-bg-indigo { -fx-background-color: -fx-radix-indigo-3; }
+.badge-bg-indigo:hover { -fx-background-color: -fx-radix-indigo-4; }
+.badge-bg-indigo:pressed { -fx-background-color: -fx-radix-indigo-5; }
+.badge-label-micro-indigo { -fx-text-fill: -fx-radix-indigo-11; }
+.badge-label-value-indigo { -fx-text-fill: -fx-radix-indigo-12; }
+
+/* Pink */
+.badge-bg-pink { -fx-background-color: -fx-radix-pink-3; }
+.badge-bg-pink:hover { -fx-background-color: -fx-radix-pink-4; }
+.badge-bg-pink:pressed { -fx-background-color: -fx-radix-pink-5; }
+.badge-label-micro-pink { -fx-text-fill: -fx-radix-pink-11; }
+.badge-label-value-pink { -fx-text-fill: -fx-radix-pink-12; }

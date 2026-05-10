@@ -28,7 +28,7 @@ public class GuiManager extends StackPane {
         this.scene = new Scene(this);
         stage.setScene(scene);
 
-        String themeCss = Objects.requireNonNull(getClass().getResource("/style/theme1.css")).toExternalForm();
+        String themeCss = Objects.requireNonNull(getClass().getResource("/style/theme.css")).toExternalForm();
         String iconsCss = Objects.requireNonNull(getClass().getResource("/style/icons.css")).toExternalForm();
         this.getStylesheets().addAll(themeCss, iconsCss);
 

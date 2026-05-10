@@ -21,3 +21,16 @@
     -fx-shape: "M640-160v-280h160v280H640Zm-240 0v-640h160v640H400Zm-240 0v-440h160v440H160Z";
     -fx-scale-shape: true;
 }
+
+.chevron-separator {
+    -fx-shape: "M 8 5 L 15 12 L 8 19 L 6.5 17.5 L 12 12 L 6.5 6.5 Z";
+
+    -fx-background-color: #556B2F;
+
+    -fx-min-width: 9px;
+    -fx-min-height: 14px;
+    -fx-pref-width: 9px;
+    -fx-pref-height: 14px;
+    -fx-max-width: 9px;
+    -fx-max-height: 14px;
+}
