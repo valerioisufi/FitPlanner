@@ -9,7 +9,6 @@ public class ProfileBean {
     private String email;
     private final ProfileType profileType;
     private String username;
-    private String bio;
 
 
     public ProfileBean(String firstName, String lastName, String phoneNumber, String email, ProfileType profileType, String username, String bio) {
@@ -53,21 +52,16 @@ public class ProfileBean {
         this.email = email;
     }
 
-    public ProfileType getProfileType(){
+    public ProfileType getProfileType() {
         return profileType;
     }
+
     public String getUsername() {
         return username;
     }
+
     public void setUsername(String username) {
         this.username = username;
     }
 
-    public void setBio(String bio) {
-        this.bio = bio;
-    }
-
-    public String getBio() {
-        return bio;
-    }
 }

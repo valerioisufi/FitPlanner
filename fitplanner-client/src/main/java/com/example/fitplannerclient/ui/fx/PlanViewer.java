@@ -25,7 +25,6 @@ public class PlanViewer extends ScrollPane {
         this.setContent(rootWrapper);
     }
 
-    // Recursive method to build actual nested VBox containers, tracking the parent
     private PlanNodeComponent buildTree(PlanNodeBean bean, boolean startExpanded, PlanNodeComponent parentWrapper) {
         PlanNodeComponent wrapper = new PlanNodeComponent(bean, startExpanded, parentWrapper);
 

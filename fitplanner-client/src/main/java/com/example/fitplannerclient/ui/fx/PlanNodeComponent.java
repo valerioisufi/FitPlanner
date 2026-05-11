@@ -23,7 +23,6 @@ import static com.example.fitplannerclient.ui.fx.BadgeComponent.resolveColorFrom
 public class PlanNodeComponent extends VBox {
 
     private final String planNodeId;
-    // Keep a reference to the original bean for Optimistic Copying
     private final PlanNodeBean originalBean;
 
     private final List<ExerciseModifierBean> exerciseModifierBeans;
@@ -43,9 +42,13 @@ public class PlanNodeComponent extends VBox {
 
     // Static fields to track the currently dragged elements across the UI
     private static PlanNodeComponent draggedNode;
-    private static PlanNodeComponent sourceBadgeComponent;
-    private static Object draggedBadgeData;
-    private static String draggedBadgeType; // "MODIFIER" or "DECORATOR"
+    private static BadgeDragContext activeBadgeDrag;
+
+    private record BadgeDragContext(
+            PlanNodeComponent sourceNode,
+            Object badgeData,
+            BadgeComponent.BadgeType badgeType
+    ) {}
 
     public PlanNodeComponent(PlanNodeBean bean, Boolean startExpanded, PlanNodeComponent parentWrapper) {
         this.originalBean = bean;
@@ -55,7 +58,7 @@ public class PlanNodeComponent extends VBox {
         this.exerciseModifierBeans = new ArrayList<>(bean.getModifiers() != null ? bean.getModifiers() : List.of());
         this.flowDecoratorBeans = new ArrayList<>(bean.getFlowDecorators() != null ? bean.getFlowDecorators() : List.of());
 
-        this.getStyleClass().add("plan-node");
+        this.getStyleClass().add("plan-node-drop-area");
 
         this.nameLabel = new Label(bean.getName());
         nameLabel.getStyleClass().add("heading-h3");
@@ -75,7 +78,7 @@ public class PlanNodeComponent extends VBox {
         VBox headerBox = new VBox(8, titleBox, badgesBox);
         headerBox.setStyle("-fx-cursor: hand;");
 
-        childrenContainer = new VBox(8);
+        childrenContainer = new VBox();
 
         Rectangle clipRect = new Rectangle();
         clipRect.widthProperty().bind(childrenContainer.widthProperty());
@@ -93,7 +96,9 @@ public class PlanNodeComponent extends VBox {
             }
         });
 
-        this.getChildren().addAll(headerBox, childrenContainer);
+        VBox nodeContent = new VBox(8, headerBox, childrenContainer);
+        nodeContent.getStyleClass().add("plan-node");
+        this.getChildren().addAll(nodeContent);
 
         // Render Initial Data
         renderModifiers();
@@ -101,7 +106,7 @@ public class PlanNodeComponent extends VBox {
 
         // Initialize Drag and Drop logic
         setupNodeDragAndDrop(headerBox);
-        setupFallbackBadgeDropZone();
+        setupFallbackBadgeDropZone(headerBox);
     }
 
     private void updateExpansionState() {
@@ -157,7 +162,7 @@ public class PlanNodeComponent extends VBox {
                         modifier.getValue(),
                         color
                 );
-                setupBadgeDragAndDrop(badge, modifier, "MODIFIER");
+                setupBadgeDragAndDrop(badge, modifier, BadgeComponent.BadgeType.MODIFIER);
                 badgesBox.getChildren().add(badge);
             }
         }
@@ -176,7 +181,7 @@ public class PlanNodeComponent extends VBox {
 
             Region badge = new BadgeComponent(decorator.getId(), BadgeComponent.BadgeType.DECORATOR, typeName, decorator.getValue(), color);
 
-            setupBadgeDragAndDrop(badge, decorator, "DECORATOR");
+            setupBadgeDragAndDrop(badge, decorator, BadgeComponent.BadgeType.DECORATOR);
             inlineDecoratorsBox.getChildren().add(badge);
 
             if (i < flowDecoratorBeans.size() - 1) {
@@ -227,7 +232,7 @@ public class PlanNodeComponent extends VBox {
             if (draggedNode != null && draggedNode != this && isNotAncestorOf(draggedNode, this)) {
 
                 boolean dropAbove = event.getY() < (this.getHeight() / 2);
-                boolean isCopy = event.getTransferMode() == TransferMode.COPY;
+                boolean isCopy = event.getTransferMode() != TransferMode.COPY;
 
                 PlanNodeComponent newParent = this.parentWrapper;
                 if (newParent != null) {
@@ -273,27 +278,25 @@ public class PlanNodeComponent extends VBox {
         });
     }
 
-    private void setupBadgeDragAndDrop(Region badge, Object data, String type) {
+    private void setupBadgeDragAndDrop(Region badge, Object data, BadgeComponent.BadgeType type) {
         badge.setOnDragDetected(e -> {
             Dragboard db = badge.startDragAndDrop(TransferMode.COPY_OR_MOVE);
             ClipboardContent content = new ClipboardContent();
-            content.putString(type);
+            content.putString(type.name());
             db.setContent(content);
 
             SnapshotParameters snapParams = new SnapshotParameters();
             snapParams.setFill(Color.TRANSPARENT);
             db.setDragView(badge.snapshot(snapParams, null));
 
-            sourceBadgeComponent = this;
-            draggedBadgeData = data;
-            draggedBadgeType = type;
+            activeBadgeDrag = new BadgeDragContext(this, data, type);
 
             badge.setOpacity(0.4);
             e.consume();
         });
 
         badge.setOnDragOver(e -> {
-            if (e.getGestureSource() != badge && type.equals(draggedBadgeType)) {
+            if (e.getGestureSource() != badge && activeBadgeDrag != null && type.equals(activeBadgeDrag.badgeType())) {
                 e.acceptTransferModes(TransferMode.COPY_OR_MOVE);
                 boolean dropBefore = e.getX() < (badge.getWidth() / 2);
                 badge.getStyleClass().removeAll("badge-drop-left", "badge-drop-right");
@@ -309,30 +312,31 @@ public class PlanNodeComponent extends VBox {
 
         badge.setOnDragDropped(e -> {
             boolean success = false;
-            if (draggedBadgeData != null && type.equals(draggedBadgeType)) {
-                boolean dropBefore = e.getX() < (badge.getWidth() / 2);
-                boolean isCopy = e.getTransferMode() == TransferMode.COPY || sourceBadgeComponent == null;
+            if (activeBadgeDrag != null && activeBadgeDrag.badgeData() != null && type.equals(activeBadgeDrag.badgeType())) {
 
-                // Explicit casting removes the "Suspicious call to List.indexOf()" warning
-                int targetIndex = "MODIFIER".equals(type)
+                boolean dropBefore = e.getX() < (badge.getWidth() / 2);
+                boolean isCopy = e.getTransferMode() != TransferMode.COPY || activeBadgeDrag.sourceNode() == null;
+
+                Object draggedData = activeBadgeDrag.badgeData();
+                PlanNodeComponent sourceComponent = activeBadgeDrag.sourceNode();
+
+                int targetIndex = (type == BadgeComponent.BadgeType.MODIFIER)
                         ? this.exerciseModifierBeans.indexOf((ExerciseModifierBean) data)
                         : this.flowDecoratorBeans.indexOf((FlowDecoratorBean) data);
 
                 if (!dropBefore) targetIndex++;
 
-                // Adjust index if dragging downwards within the same list
-                if (!isCopy && sourceBadgeComponent == this) {
-                    int currentSourceIndex = "MODIFIER".equals(type)
-                            ? this.exerciseModifierBeans.indexOf((ExerciseModifierBean) draggedBadgeData)
-                            : this.flowDecoratorBeans.indexOf((FlowDecoratorBean) draggedBadgeData);
+                if (!isCopy && sourceComponent == this) {
+                    int currentSourceIndex = (type == BadgeComponent.BadgeType.MODIFIER)
+                            ? this.exerciseModifierBeans.indexOf((ExerciseModifierBean) draggedData)
+                            : this.flowDecoratorBeans.indexOf((FlowDecoratorBean) draggedData);
 
                     if (currentSourceIndex != -1 && currentSourceIndex < targetIndex) {
                         targetIndex--;
                     }
                 }
 
-                // Process the drop via centralized helper
-                processBadgeDrop(type, draggedBadgeData, targetIndex, isCopy);
+                processBadgeDrop(type.name(), draggedData, targetIndex, isCopy, sourceComponent);
 
                 success = true;
             }
@@ -342,33 +346,34 @@ public class PlanNodeComponent extends VBox {
 
         badge.setOnDragDone(e -> {
             badge.setOpacity(1.0);
-            draggedBadgeData = null;
-            sourceBadgeComponent = null;
-            draggedBadgeType = null;
+
+            activeBadgeDrag = null;
             e.consume();
         });
     }
 
-    private void setupFallbackBadgeDropZone() {
-        this.addEventHandler(DragEvent.DRAG_OVER, e -> {
-            if ("MODIFIER".equals(draggedBadgeType) || "DECORATOR".equals(draggedBadgeType)) {
+    private void setupFallbackBadgeDropZone(VBox dropArea) {
+        dropArea.addEventHandler(DragEvent.DRAG_OVER, e -> {
+            if (activeBadgeDrag != null) {
                 e.acceptTransferModes(TransferMode.COPY_OR_MOVE);
                 e.consume();
             }
         });
 
-        this.addEventHandler(DragEvent.DRAG_DROPPED, e -> {
-            if (draggedBadgeData != null && ("MODIFIER".equals(draggedBadgeType) || "DECORATOR".equals(draggedBadgeType))) {
+        dropArea.addEventHandler(DragEvent.DRAG_DROPPED, e -> {
+            if (activeBadgeDrag != null) {
 
-                boolean isCopy = e.getTransferMode() == TransferMode.COPY || sourceBadgeComponent == null;
+                boolean isCopy = e.getTransferMode() != TransferMode.COPY || activeBadgeDrag.sourceNode() == null;
 
-                // Append to the end of the list
-                int targetIndex = "MODIFIER".equals(draggedBadgeType)
+                BadgeComponent.BadgeType type = activeBadgeDrag.badgeType();
+                Object draggedData = activeBadgeDrag.badgeData();
+                PlanNodeComponent sourceComponent = activeBadgeDrag.sourceNode();
+
+                int targetIndex = (type == BadgeComponent.BadgeType.MODIFIER)
                         ? this.exerciseModifierBeans.size()
                         : this.flowDecoratorBeans.size();
 
-                // Process the drop via centralized helper
-                processBadgeDrop(draggedBadgeType, draggedBadgeData, targetIndex, isCopy);
+                processBadgeDrop(type.name(), draggedData, targetIndex, isCopy, sourceComponent);
 
                 e.setDropCompleted(true);
                 e.consume();
@@ -378,57 +383,56 @@ public class PlanNodeComponent extends VBox {
 
     // --- BADGE DROP LOGIC ---
 
-    // Handles the list manipulation and triggers the final event
-    private void processBadgeDrop(String badgeType, Object badgeData, int targetIndex, boolean isCopy) {
+    private void processBadgeDrop(String badgeType, Object badgeData, int targetIndex, boolean isCopy, PlanNodeComponent sourceComponent) {
         int sourceIndex = -1;
 
-        // Find original index if it's coming from an existing component with explicit casting
-        if (sourceBadgeComponent != null) {
+        // Find original index if it's coming from an existing component
+        if (sourceComponent != null) {
             sourceIndex = "MODIFIER".equals(badgeType)
-                    ? sourceBadgeComponent.exerciseModifierBeans.indexOf((ExerciseModifierBean) badgeData)
-                    : sourceBadgeComponent.flowDecoratorBeans.indexOf((FlowDecoratorBean) badgeData);
+                    ? sourceComponent.exerciseModifierBeans.indexOf((ExerciseModifierBean) badgeData)
+                    : sourceComponent.flowDecoratorBeans.indexOf((FlowDecoratorBean) badgeData);
         }
 
         if ("MODIFIER".equals(badgeType)) {
-            if (!isCopy && sourceBadgeComponent != null) {
-                sourceBadgeComponent.exerciseModifierBeans.remove((ExerciseModifierBean) badgeData);
+            if (!isCopy && sourceComponent != null) {
+                sourceComponent.exerciseModifierBeans.remove((ExerciseModifierBean) badgeData);
             }
-            // Safely clamp the index to prevent out-of-bounds exceptions
+
             if (targetIndex > this.exerciseModifierBeans.size()) targetIndex = this.exerciseModifierBeans.size();
             if (targetIndex < 0) targetIndex = 0;
 
             this.exerciseModifierBeans.add(targetIndex, (ExerciseModifierBean) badgeData);
         } else {
-            if (!isCopy && sourceBadgeComponent != null) {
-                sourceBadgeComponent.flowDecoratorBeans.remove((FlowDecoratorBean) badgeData);
+            if (!isCopy && sourceComponent != null) {
+                sourceComponent.flowDecoratorBeans.remove((FlowDecoratorBean) badgeData);
             }
-            // Safely clamp the index to prevent out-of-bounds exceptions
+
             if (targetIndex > this.flowDecoratorBeans.size()) targetIndex = this.flowDecoratorBeans.size();
             if (targetIndex < 0) targetIndex = 0;
 
             this.flowDecoratorBeans.add(targetIndex, (FlowDecoratorBean) badgeData);
         }
 
-        finalizeBadgeDropAndFireEvent(badgeType, sourceIndex, targetIndex, isCopy);
+        finalizeBadgeDropAndFireEvent(badgeType, sourceIndex, targetIndex, isCopy, sourceComponent, badgeData);
     }
 
-    // Helper method to DRY up the badge drop finalization and event firing
-    private void finalizeBadgeDropAndFireEvent(String badgeType, int sourceIndex, int targetIndex, boolean isCopy) {
-        if (sourceBadgeComponent != null && sourceBadgeComponent != this) {
-            sourceBadgeComponent.renderModifiers();
-            sourceBadgeComponent.renderDecorators();
+    private void finalizeBadgeDropAndFireEvent(String badgeType, int sourceIndex, int targetIndex, boolean isCopy, PlanNodeComponent sourceComponent, Object draggedData) {
+        if (sourceComponent != null && sourceComponent != this) {
+            sourceComponent.renderModifiers();
+            sourceComponent.renderDecorators();
         }
+
         this.renderModifiers();
         this.renderDecorators();
 
         if (onBadgeTransformationCallback != null) {
             onBadgeTransformationCallback.accept(new BadgeTransformationEvent(
                     badgeType,
-                    sourceBadgeComponent != null ? sourceBadgeComponent.getPlanNodeId() : null,
+                    sourceComponent != null ? sourceComponent.getPlanNodeId() : null,
                     this.planNodeId,
                     sourceIndex,
                     targetIndex,
-                    draggedBadgeData,
+                    draggedData,
                     isCopy
             ));
         }
@@ -443,10 +447,8 @@ public class PlanNodeComponent extends VBox {
         return true;
     }
 
-    public static void initiateExternalDrag(Object data, String type) {
-        sourceBadgeComponent = null;
-        draggedBadgeData = data;
-        draggedBadgeType = type;
+    public static void initiateExternalDrag(Object data, BadgeComponent.BadgeType type) {
+        activeBadgeDrag = new BadgeDragContext(null, data, type);
     }
 
     // --- EVENT RECORDS ---
