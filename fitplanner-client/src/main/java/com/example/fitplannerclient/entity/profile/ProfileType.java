@@ -1,4 +1,4 @@
-package com.example.fitplannerclient.entity.account;
+package com.example.fitplannerclient.entity.profile;
 
 public enum ProfileType {
     TRAINER,

@@ -1,10 +1,9 @@
 package com.example.fitplannerclient;
 
-import com.example.fitplannerclient.ui.fx.PlanNodeComponent;
 import com.example.fitplannerclient.ui.fx.PlanViewer;
 import javafx.application.Application;
 import javafx.scene.Scene;
-import javafx.scene.control.ScrollPane;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
@@ -17,15 +16,14 @@ public class UIDebugger extends Application {
 
     @Override
     public void start(Stage stage) {
-        stage.setTitle("debug window");
+        stage.setTitle("UI Debug Window");
 
+        VBox root = new VBox();
+        root.getStyleClass().addAll("card");
         PlanViewer planViewer = new PlanViewer();
 
-        ScrollPane root = new ScrollPane();
-        root.setContent(planViewer);
-        root.setFitToWidth(true);
-        root.setPannable(true);
-        root.setStyle("-fx-background-color: transparent;");
+        VBox.setVgrow(planViewer, Priority.ALWAYS);
+        root.getChildren().add(planViewer);
 
         Scene scene = new Scene(root, 1200, 800);
 
@@ -34,11 +32,5 @@ public class UIDebugger extends Application {
 
         stage.setScene(scene);
         stage.show();
-
-//        Stage myPopup = new Stage();
-//        myPopup.initStyle(StageStyle.TRANSPARENT);
-//        myPopup.setAlwaysOnTop(true);
-//        myPopup.setScene(new Scene(new PlanNodeComponent(), 400, 300));
-//        myPopup.show();
     }
 }

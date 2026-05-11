@@ -1,25 +1,24 @@
 package com.example.fitplannerclient.entity.account;
 
+import com.example.fitplannerclient.entity.profile.ProfileType;
+
 public class AccountClient {
-    private final ProfileType profileType;
-    private String username;
+    private String email;
     private String password;
     private String refreshToken;
     private String accessToken;
+    private final ProfileType profileType;
 
-    public AccountClient(ProfileType profileType, String username, String password, String refreshToken, String accessToken) {
-        this.profileType = profileType;
-        this.username = username;
+    public AccountClient( String email, String password, String refreshToken, String accessToken, ProfileType profileType) {
+        this.email = email;
         this.password = password;
         this.refreshToken = refreshToken;
         this.accessToken = accessToken;
+        this.profileType = profileType;
     }
 
-    public ProfileType getProfileType() {
-        return profileType;
-    }
-    public String getUsername() {
-        return username;
+    public String getEmail() {
+        return email;
     }
     public String getPassword() {
         return password;
