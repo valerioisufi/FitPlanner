@@ -9,7 +9,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.PasswordField;
 import javafx.scene.layout.*;
 
-public class AuthenticationView extends BaseView {
+public class AuthenticationView extends BorderPane {
 
     private final TextField usernameFieldInput = new TextField();
     private final PasswordField passwordFieldInput = new PasswordField();
@@ -39,7 +39,7 @@ public class AuthenticationView extends BaseView {
 
         VBox card = createChooseLoginOrRegisterForm();
         styleCard(card);
-        this.setContent(card);
+        this.setCenter(card);
     }
 
     public void showLoginForm() {
@@ -51,7 +51,7 @@ public class AuthenticationView extends BaseView {
 
         VBox loginForm = createLoginForm();
         styleCard(loginForm);
-        this.setContent(loginForm);
+        this.setCenter(loginForm);
     }
 
     public void showRegistrationForm() {
@@ -63,7 +63,7 @@ public class AuthenticationView extends BaseView {
 
         VBox registrationForm = createRegistrationForm();
         styleCard(registrationForm);
-        this.setContent(registrationForm);
+        this.setCenter(registrationForm);
     }
 
     private void styleCard(VBox card) {

@@ -1,9 +1,9 @@
 package com.example.fitplannerclient.ui.gui1;
 
-import com.example.fitplannerclient.ui.GraphicController;
-import javafx.stage.Stage;
+import com.example.fitplannerclient.ui.fx.GuiController;
+import com.example.fitplannerclient.ui.fx.GuiManager;
 
-public class ViewWorkoutPlanController implements GraphicController {
+public class ViewWorkoutPlanController implements GuiController {
     public ViewWorkoutPlanController() {
         // Initialize your view and other components here
     }

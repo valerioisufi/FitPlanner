@@ -1,9 +1,10 @@
-package com.example.fitplannerclient.ui.gui1;
+package com.example.fitplannerclient.ui.fx.guicontroller;
 
-import com.example.fitplannerclient.ui.gui1.view.HomeView;
-import com.example.fitplannerclient.ui.GraphicController;
+import com.example.fitplannerclient.ui.fx.GuiController;
+import com.example.fitplannerclient.ui.fx.GuiManager;
+import com.example.fitplannerclient.ui.fx.view.HomeView;
 
-public class HomeController implements GraphicController {
+public class HomeController implements GuiController {
     HomeView view;
     HeaderController headerController;
 

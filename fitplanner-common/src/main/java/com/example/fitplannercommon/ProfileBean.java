@@ -9,6 +9,7 @@ public class ProfileBean {
     private String phoneNumber;
     private String email;
 
+    public ProfileBean() {}
 
     public ProfileBean(String username, String firstName, String lastName, String phoneNumber, String email) {
         this.username = username;
