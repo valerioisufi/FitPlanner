@@ -1,18 +1,20 @@
 package com.example.fitplannerserver.model;
 
 public class Account {
-    private final String username;
+    private final String email;
     private final String passwordHash;
     private String refreshToken;
+    private final Role profileType;
 
-    public Account(String username, String passwordHash, String refreshToken) {
-        this.username = username;
+    public Account(String email, String passwordHash, String refreshToken, Role profileType) {
+        this.email = email;
         this.passwordHash = passwordHash;
         this.refreshToken = refreshToken;
+        this.profileType = profileType;
     }
 
     public String getUsername() {
-        return username;
+        return email;
     }
 
     public String getPasswordHash() {
@@ -25,6 +27,15 @@ public class Account {
 
     public void setRefreshToken(String refreshToken) {
         this.refreshToken = refreshToken;
+    }
+
+    public Role getProfileType() {
+        return profileType;
+    }
+
+    public enum Role {
+        TRAINER,
+        ATHLETE
     }
 
 }

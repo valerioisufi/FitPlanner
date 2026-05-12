@@ -4,15 +4,20 @@ public class RegisterBean {
     private String username;
     private String password;
 
+    private ProfileType profileType;
+
+    private ProfileBean profile;
+
     public RegisterBean() {}
 
-    public RegisterBean(String username, String password) {
+    public RegisterBean(String username, String password, ProfileType profileType, ProfileBean profile) {
         this.username = username;
         this.password = password;
-    }
 
-    // Regex: almeno 1 numero, 1 minuscola, 1 maiuscola, min 8 caratteri
-    private static final String REGEX = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z]).{8,}$";
+        this.profileType = profileType;
+
+        this.profile = profile;
+    }
 
     public String getUsername() {
         return username;
@@ -28,5 +33,24 @@ public class RegisterBean {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public ProfileType getProfileType() {
+        return profileType;
+    }
+    public void setProfileType(ProfileType profileType) {
+        this.profileType = profileType;
+    }
+
+    public ProfileBean getProfile() {
+        return profile;
+    }
+    public void setProfile(ProfileBean profile) {
+        this.profile = profile;
+    }
+
+    public enum ProfileType {
+        TRAINER,
+        ATHLETE
     }
 }

@@ -1,6 +1,6 @@
 package com.example.fitplannerclient.controller.profile;
 
-import com.example.fitplannerclient.dto.profile.ProfileBean;
+import com.example.fitplannercommon.ProfileBean;
 import com.example.fitplannerclient.entity.profile.Profile;
 
 public abstract class ProfileManager {

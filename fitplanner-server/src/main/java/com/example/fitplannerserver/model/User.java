@@ -4,24 +4,39 @@ import java.time.LocalDate;
 import java.time.Period;
 
 public abstract class User {
-    private String name;
-    private String surname;
+    private String username;
+    private String firstName;
+    private String lastName;
     private String email;
-    private LocalDate birthdate;
-    private String gender;
+    private String phoneNumber;
 
-    public String getName() {
-        return name;
+    public User(String username, String name, String surname, String email, String phoneNumber) {
+        this.username = username;
+        this.firstName = name;
+        this.lastName = surname;
+        this.email = email;
+        this.phoneNumber = phoneNumber;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getFirstName() {
+        return firstName;
     }
     public void setName(String name) {
-        this.name = name;
+        this.firstName = name;
     }
 
-    public String getSurname() {
-        return surname;
+    public String getLastName() {
+        return lastName;
     }
-    public void setSurname(String surname) {
-        this.surname = surname;
+    public void setLastName(String surname) {
+        this.lastName = surname;
     }
 
     public String getEmail() {
@@ -31,23 +46,10 @@ public abstract class User {
         this.email = email;
     }
 
-    public LocalDate getBirthdate() {
-        return birthdate;
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
     }
-    public void setBirthdate(int birthdate) {
-        this.birthdate = LocalDate.ofEpochDay(birthdate);
-    }
-    public int getAge (){
-        if (this.birthdate == null) throw new IllegalArgumentException("birthdate null");
-        LocalDate now = LocalDate.now();
-        if (birthdate.isAfter(now)) throw new IllegalArgumentException("birthdate nel futuro");
-        return Period.between(birthdate, now).getYears();
-    }
-
-    public String getGender() {
-        return gender;
-    }
-    public void setGender(String gender) {
-        this.gender = gender;
+    public String getPhoneNumber() {
+        return phoneNumber;
     }
 }

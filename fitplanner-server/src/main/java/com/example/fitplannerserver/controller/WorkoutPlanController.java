@@ -6,16 +6,16 @@ import com.example.fitplannercommon.WorkoutSessionBean;
 import com.example.fitplannerserver.model.Exercise;
 import com.example.fitplannerserver.model.WorkoutPlan;
 import com.example.fitplannerserver.model.WorkoutSession;
-import com.example.fitplannerserver.security.SessionProvider;
+import com.example.fitplannerserver.security.IdentityProvider;
 
 import java.util.List;
 import java.util.UUID;
 
 public class WorkoutPlanController {
-    private final SessionProvider sessionProvider;
+    private final IdentityProvider identityProvider;
 
-    public WorkoutPlanController(SessionProvider sessionProvider) {
-        this.sessionProvider = sessionProvider;
+    public WorkoutPlanController(IdentityProvider identityProvider) {
+        this.identityProvider = identityProvider;
     } //per accedere a username utente sessionProvider.getUsername()
 
     public void retrieveWorkoutPlan() {

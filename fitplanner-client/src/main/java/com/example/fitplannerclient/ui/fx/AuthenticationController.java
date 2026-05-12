@@ -6,6 +6,7 @@ import com.example.fitplannerclient.ui.GraphicController;
 import com.example.fitplannerclient.ui.fx.view.AuthenticationView;
 import com.example.fitplannerclient.ui.gui1.GuiManager;
 import com.example.fitplannercommon.LoginBean;
+import com.example.fitplannercommon.ProfileBean;
 import com.example.fitplannercommon.RegisterBean;
 
 public class AuthenticationController implements GraphicController {
@@ -40,7 +41,7 @@ public class AuthenticationController implements GraphicController {
     }
 
     private void onRegister(String username, String password) {
-        var registerBean = new RegisterBean(username, password);
+        var registerBean = new RegisterBean(username, password, RegisterBean.ProfileType.ATHLETE, new ProfileBean("", "", "", "", ""));
 
         authenticationBoundary.registerAsync(registerBean)
                 .thenRun(() -> {

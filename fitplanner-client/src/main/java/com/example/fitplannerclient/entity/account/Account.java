@@ -1,15 +1,15 @@
 package com.example.fitplannerclient.entity.account;
 
-import com.example.fitplannerclient.entity.profile.ProfileType;
+import com.example.fitplannercommon.ProfileBean;
 
-public class AccountClient {
-    private String email;
-    private String password;
-    private String refreshToken;
-    private String accessToken;
-    private final ProfileType profileType;
+public class Account {
+    private final String email;
+    private final String password;
+    private final String refreshToken;
+    private final String accessToken;
+    private final ProfileBean.ProfileType profileType;
 
-    public AccountClient( String email, String password, String refreshToken, String accessToken, ProfileType profileType) {
+    public Account(String email, String password, String refreshToken, String accessToken, ProfileBean.ProfileType profileType) {
         this.email = email;
         this.password = password;
         this.refreshToken = refreshToken;

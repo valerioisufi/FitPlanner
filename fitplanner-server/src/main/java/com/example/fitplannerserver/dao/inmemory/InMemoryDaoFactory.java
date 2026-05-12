@@ -8,4 +8,10 @@ public class InMemoryDaoFactory extends DaoFactory {
     public InMemoryAccountDao getAccountDao() {
         return InMemoryAccountDao.getInstance();
     }
+
+    @Override
+    public InMemoryProfileDao getProfileDao() {
+        return InMemoryProfileDao.getInstance();
+    }
+
 }

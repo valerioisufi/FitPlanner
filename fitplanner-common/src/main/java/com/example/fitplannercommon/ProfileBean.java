@@ -1,22 +1,31 @@
-package com.example.fitplannerclient.dto.profile;
-
-import com.example.fitplannerclient.entity.profile.ProfileType;
+package com.example.fitplannercommon;
 
 public class ProfileBean {
-    private String firstName;
-    private String lastName;
-    private String phoneNumber;
-    private String email;
-    private final ProfileType profileType;
     private String username;
 
+    private String firstName;
+    private String lastName;
 
-    public ProfileBean(String firstName, String lastName, String phoneNumber, String email, ProfileType profileType, String username, String bio) {
+    private String phoneNumber;
+    private String email;
+
+
+
+    public ProfileBean(String username, String firstName, String lastName, String phoneNumber, String email) {
+        this.username = username;
+
         this.firstName = firstName;
         this.lastName = lastName;
+
         this.phoneNumber = phoneNumber;
         this.email = email;
-        this.profileType = profileType;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
         this.username = username;
     }
 
@@ -50,18 +59,6 @@ public class ProfileBean {
 
     public void setEmail(String email) {
         this.email = email;
-    }
-
-    public ProfileType getProfileType() {
-        return profileType;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
     }
 
 }

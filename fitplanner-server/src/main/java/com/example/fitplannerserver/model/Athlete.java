@@ -1,26 +1,15 @@
 package com.example.fitplannerserver.model;
 
-import java.util.List;
-
 public class Athlete extends User {
-    private int weight;
-    private int height;
     private WorkoutPlan workoutPlan;
 
-    public int getWeight(){
-        return weight;
-    }
-    public void setWeight(int weight){
-        this.weight = weight;
+    public Athlete(String username, String name, String surname, String email, String phoneNumber) {
+        super(username, name, surname, email, phoneNumber);
     }
 
-    public int getHeight(){
-        return height;
+    public WorkoutPlan getWorkoutPlan(int id){
+        return workoutPlan;
     }
-    public void setHeight(int height){
-        this.height = height;
-    }
-
     public WorkoutPlan getWorkoutPlan(){
         return workoutPlan;
     }
@@ -31,4 +20,6 @@ public class Athlete extends User {
     public void removeWorkoutPlan(){
         this.workoutPlan = null;
     }
+
+
 }
