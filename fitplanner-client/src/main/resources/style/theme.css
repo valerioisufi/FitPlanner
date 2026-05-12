@@ -9,11 +9,6 @@
 .root {
     -fx-background-color: #F5F6F7;
 
-    /* Colori Primari e Accent */
-    -color-primary: #0078D7;       /* Blu principale (es. pulsanti azione) */
-    -color-accent: #FF5722;        /* Arancione/Rosso (es. timer, alert, azioni importanti) */
-    -color-success: #66BB6A;       /* Verde (es. completamento, progressi positivi) */
-
     -color-bg-card: #FFFFFF;
     -border-color: #E0E0E0;
 }
@@ -97,12 +92,12 @@
 
 
 /* ==========================================
- * COMPONENTI UI BASE (Input, Bottoni)
+ * UI BASE COMPONENTS (Input, Buttons)
  * ========================================== */
 
 .button-header {
     -fx-background-color: transparent;
-    -fx-text-fill: -color-text-light;
+    -fx-text-fill: -fx-color-text-light;
     -fx-font-size: 16px;
 
     -fx-background-radius: 12px;
@@ -115,7 +110,7 @@
 }
 
 .button-header-icon {
-    -fx-background-color: -color-text-light;
+    -fx-background-color: -fx-color-text-light;
 }
 
 .button-header-active {
@@ -129,44 +124,44 @@
 
 /* Button Primario (Pieno) */
 .button-primary {
-    -fx-background-color: -color-primary;
-    -fx-text-fill: -color-text-inverse;
+    -fx-background-color: -fx-radix-blue-9;
+    -fx-text-fill: -fx-color-text-inverse;
     -fx-background-radius: 6px;
     -fx-padding: 10 20 10 20;
     -fx-font-weight: bold;
     -fx-cursor: hand;
 }
 .button-primary:hover {
-    -fx-background-color: derive(-color-primary, +10%);
+    -fx-background-color: -fx-radix-blue-10;
 }
 .button-primary:pressed {
-    -fx-background-color: derive(-color-primary, -20%);
+    -fx-background-color: -fx-radix-blue-11;
 }
 
 /* Button Secondario (Outline) */
 .button-secondary {
-    -fx-background-color: transparent;
-    -fx-border-color: -border-color;
+    -fx-background-color: -fx-radix-slate-1;
+    -fx-border-color: -fx-radix-slate-7;
     -fx-border-radius: 6px;
-    -fx-border-width: 2px;
-    -fx-text-fill: -color-text-light;
+    -fx-border-width: 1px;
+    -fx-text-fill: -fx-radix-slate-11;
     -fx-padding: 8 18 8 18;
     -fx-font-weight: bold;
     -fx-cursor: hand;
 }
 .button-secondary:hover {
-    -fx-border-color: derive(-color-primary, +10%);
-    -fx-text-fill: derive(-color-primary, +10%);
+    -fx-border-color: -fx-radix-slate-8;
+    -fx-text-fill: -fx-radix-slate-12;
 }
 .button-secondary:pressed {
-    -fx-border-color: derive(-color-primary, -20%);
-    -fx-text-fill: derive(-color-primary, -20%);
+    -fx-border-color: -fx-radix-slate-9;
+    -fx-text-fill: -fx-radix-slate-12;
 }
 
 /* Button Pericolo/Accent (es. Stop Workout) */
 .button-danger {
     -fx-background-color: -color-accent;
-    -fx-text-fill: -color-text-inverse;
+    -fx-text-fill: -fx-color-text-inverse;
     -fx-background-radius: 6px;
     -fx-font-weight: bold;
     -fx-effect: dropshadow(three-pass-box, rgba(255, 87, 34, 0.3), 10, 0, 0, 4);
@@ -190,11 +185,11 @@
     -fx-background-radius: 6px;
     -fx-padding: 10px;
     -fx-font-size: 14px;
-    -fx-prompt-text-fill: -color-text-light;
+    -fx-prompt-text-fill: -fx-color-text-light;
 }
 .text-field:focused, .password-field:focused, .combo-box:focused {
     -fx-background-color: #FFFFFF;
-    -fx-border-color: -color-primary;
+    -fx-border-color: -fx-radix-blue-8;
 
 }
 
@@ -204,9 +199,9 @@
  * NOTIFICATION TOASTS
  * ========================================== */
 .notification-toast {
-    -fx-background-color: #D9EDF7;
-    -fx-border-color: #BCE8F1;
-    -fx-text-fill: #31708F;
+    -fx-background-color: -fx-radix-blue-2;
+    -fx-border-color: -fx-radix-blue-8;
+    -fx-text-fill: -fx-radix-blue-11;
 
     -fx-background-radius: 12px;
     -fx-border-radius: 12px;

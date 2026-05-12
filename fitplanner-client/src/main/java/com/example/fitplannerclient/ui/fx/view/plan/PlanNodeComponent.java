@@ -1,4 +1,4 @@
-package com.example.fitplannerclient.ui.fx;
+package com.example.fitplannerclient.ui.fx.view.plan;
 
 import com.example.fitplannerclient.dto.plan.ExerciseModifierBean;
 import com.example.fitplannerclient.dto.plan.FlowDecoratorBean;
@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-import static com.example.fitplannerclient.ui.fx.BadgeComponent.resolveColorFromName;
+import static com.example.fitplannerclient.ui.fx.view.plan.BadgeComponent.resolveColorFromName;
 
 public class PlanNodeComponent extends VBox {
 

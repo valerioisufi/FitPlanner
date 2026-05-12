@@ -1,12 +1,7 @@
-package com.example.fitplannerclient.ui.fx;
+package com.example.fitplannerclient.ui.fx.view.plan;
 
 import com.example.fitplannerclient.dto.plan.*;
-import javafx.animation.KeyFrame;
-import javafx.animation.KeyValue;
-import javafx.animation.Timeline;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.layout.Region;
-import javafx.util.Duration;
 
 import java.util.ArrayList;
 import java.util.List;

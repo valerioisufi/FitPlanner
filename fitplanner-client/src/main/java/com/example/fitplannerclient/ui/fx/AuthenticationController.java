@@ -1,9 +1,10 @@
-package com.example.fitplannerclient.ui.gui1;
+package com.example.fitplannerclient.ui.fx;
 
 import com.example.fitplannerclient.Navigator;
 import com.example.fitplannerclient.service.AuthenticationBoundary;
 import com.example.fitplannerclient.ui.GraphicController;
-import com.example.fitplannerclient.ui.gui1.view.AuthenticationView;
+import com.example.fitplannerclient.ui.fx.view.AuthenticationView;
+import com.example.fitplannerclient.ui.gui1.GuiManager;
 import com.example.fitplannercommon.LoginBean;
 import com.example.fitplannercommon.RegisterBean;
 

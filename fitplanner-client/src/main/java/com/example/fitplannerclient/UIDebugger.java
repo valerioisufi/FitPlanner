@@ -1,6 +1,6 @@
 package com.example.fitplannerclient;
 
-import com.example.fitplannerclient.ui.fx.PlanViewer;
+import com.example.fitplannerclient.ui.fx.view.plan.PlanViewer;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.layout.Priority;

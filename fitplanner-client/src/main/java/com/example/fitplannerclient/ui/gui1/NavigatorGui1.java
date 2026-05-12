@@ -3,6 +3,7 @@ package com.example.fitplannerclient.ui.gui1;
 import com.example.fitplannerclient.service.AuthenticationBoundary;
 import com.example.fitplannerclient.service.SessionManager;
 import com.example.fitplannerclient.Navigator;
+import com.example.fitplannerclient.ui.fx.AuthenticationController;
 import javafx.application.Platform;
 import javafx.stage.Stage;
 

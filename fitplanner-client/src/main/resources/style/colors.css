@@ -5,10 +5,17 @@
  */
 .root {
     /* Blue colors */
-    -fx-radix-blue-3: #E6F4FE;
-    -fx-radix-blue-4: #D5EFFF;
-    -fx-radix-blue-5: #C2E5FF;
-    -fx-radix-blue-11: #0D74CE;
+    -fx-radix-blue-1: #fbfdff;
+    -fx-radix-blue-2: #f4faff;
+    -fx-radix-blue-3: #e6f4fe;
+    -fx-radix-blue-4: #d5efff;
+    -fx-radix-blue-5: #c2e5ff;
+    -fx-radix-blue-6: #acd8fc;
+    -fx-radix-blue-7: #8ec8f6;
+    -fx-radix-blue-8: #5eb1ef;
+    -fx-radix-blue-9: #0090ff;
+    -fx-radix-blue-10: #0588f0;
+    -fx-radix-blue-11: #0d74ce;
     -fx-radix-blue-12: #113264;
 
     /* Green colors */
@@ -38,6 +45,20 @@
     -fx-radix-gray-5: #E0E0E0;
     -fx-radix-gray-11: #646464;
     -fx-radix-gray-12: #202020;
+
+    /* Slate colors */
+    -fx-radix-slate-1: #fcfcfd;
+    -fx-radix-slate-2: #f9f9fb;
+    -fx-radix-slate-3: #f0f0f3;
+    -fx-radix-slate-4: #e8e8ec;
+    -fx-radix-slate-5: #e0e1e6;
+    -fx-radix-slate-6: #d9d9e0;
+    -fx-radix-slate-7: #cdced6;
+    -fx-radix-slate-8: #b9bbc6;
+    -fx-radix-slate-9: #8b8d98;
+    -fx-radix-slate-10: #80838d;
+    -fx-radix-slate-11: #60646c;
+    -fx-radix-slate-12: #1c2024;
 
     /* Violet colors */
     -fx-radix-violet-3: #F4F0FE;

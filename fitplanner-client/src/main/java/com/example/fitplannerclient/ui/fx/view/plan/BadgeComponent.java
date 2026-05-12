@@ -1,9 +1,8 @@
-package com.example.fitplannerclient.ui.fx;
+package com.example.fitplannerclient.ui.fx.view.plan;
 
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Region;
 
 public class BadgeComponent extends HBox {
     private final String planNodeId;

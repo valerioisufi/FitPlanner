@@ -1,5 +1,6 @@
-package com.example.fitplannerclient.ui.gui1.view;
+package com.example.fitplannerclient.ui.fx.view;
 
+import com.example.fitplannerclient.ui.gui1.view.BaseView;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -20,6 +21,7 @@ public class AuthenticationView extends BaseView {
     private Button btnNext;
 
     public AuthenticationView() {
+        // Apply secondary and primary button styles from typography.css/colors.css
         btnBack.getStyleClass().add("button-secondary");
         btnRegistration.getStyleClass().add("button-primary");
         btnLogin.getStyleClass().add("button-primary");
@@ -65,6 +67,7 @@ public class AuthenticationView extends BaseView {
     }
 
     private void styleCard(VBox card) {
+        // Apply the card style defined in the CSS
         card.getStyleClass().add("card");
         card.setMinWidth(380);
         card.setMaxWidth(400);
@@ -78,27 +81,30 @@ public class AuthenticationView extends BaseView {
         formContainer.setPadding(new Insets(40, 30, 40, 30));
 
         Label title = new Label("FitPlanner");
-        title.getStyleClass().add("h1");
+        // Replaced "h1" with the correct typography class
+        title.getStyleClass().add("heading-h1");
 
         Label subtitle = new Label("Gestisci i tuoi allenamenti in modo semplice");
-        subtitle.getStyleClass().add("paragraph");
+        // Replaced "paragraph" with "body-base" to match the CSS
+        subtitle.getStyleClass().add("body-base");
         subtitle.setWrapText(true);
         subtitle.setAlignment(Pos.CENTER);
 
         VBox buttons = new VBox(15);
         buttons.setAlignment(Pos.CENTER);
 
-        Button btnLogin = new Button("Accedi");
-        btnLogin.getStyleClass().add("button-primary");
-        btnLogin.setMaxWidth(Double.MAX_VALUE);
-        btnLogin.setOnAction(e -> showLoginForm());
+        // Local buttons for navigation
+        Button btnGoToLogin = new Button("Accedi");
+        btnGoToLogin.getStyleClass().add("button-primary");
+        btnGoToLogin.setMaxWidth(Double.MAX_VALUE);
+        btnGoToLogin.setOnAction(e -> showLoginForm());
 
-        Button btnRegister = new Button("Crea Account");
-        btnRegister.getStyleClass().add("button-secondary"); // Secondario per differenziarlo
-        btnRegister.setMaxWidth(Double.MAX_VALUE);
-        btnRegister.setOnAction(e -> showRegistrationForm());
+        Button btnGoToRegister = new Button("Crea Account");
+        btnGoToRegister.getStyleClass().add("button-secondary");
+        btnGoToRegister.setMaxWidth(Double.MAX_VALUE);
+        btnGoToRegister.setOnAction(e -> showRegistrationForm());
 
-        buttons.getChildren().addAll(btnLogin, btnRegister);
+        buttons.getChildren().addAll(btnGoToLogin, btnGoToRegister);
         formContainer.getChildren().addAll(title, subtitle, buttons);
 
         return formContainer;
@@ -130,7 +136,8 @@ public class AuthenticationView extends BaseView {
         layout.setPadding(new Insets(30));
 
         Label title = new Label(titleStr);
-        title.getStyleClass().add("h2");
+        // Replaced "h2" with the correct typography class
+        title.getStyleClass().add("heading-h2");
 
         layout.getChildren().addAll(title, fields, createButtonBox());
         return layout;
@@ -150,9 +157,13 @@ public class AuthenticationView extends BaseView {
 
     private VBox createField(String labelText, String placeholder, TextField targetField) {
         Label label = new Label(labelText);
+        // "label-field" correctly maps to the CSS class provided
         label.getStyleClass().add("label-field");
 
         targetField.setPromptText(placeholder);
+
+        // JavaFX automatically adds ".text-field" and ".password-field" classes to instances of TextField and PasswordField.
+        // Therefore, we do not need to add them manually, the CSS will pick them up.
 
         VBox fieldGroup = new VBox(2);
         fieldGroup.getChildren().addAll(label, targetField);
