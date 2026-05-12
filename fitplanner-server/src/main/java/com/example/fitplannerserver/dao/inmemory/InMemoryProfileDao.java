@@ -1,7 +1,6 @@
 package com.example.fitplannerserver.dao.inmemory;
 
 import com.example.fitplannerserver.dao.ProfileDao;
-import com.example.fitplannerserver.model.Account;
 import com.example.fitplannerserver.model.User;
 
 import java.util.Map;
@@ -25,7 +24,7 @@ public class InMemoryProfileDao implements ProfileDao {
     }
 
     @Override
-    public void save(User user) {
+    public void save(String email, User user) {
         profiles.put(user.getEmail(), user);
     }
 }

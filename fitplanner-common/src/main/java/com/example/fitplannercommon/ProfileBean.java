@@ -10,7 +10,6 @@ public class ProfileBean {
     private String email;
 
 
-
     public ProfileBean(String username, String firstName, String lastName, String phoneNumber, String email) {
         this.username = username;
 

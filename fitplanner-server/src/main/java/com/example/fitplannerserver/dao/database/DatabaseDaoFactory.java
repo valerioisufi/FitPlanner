@@ -3,6 +3,7 @@ package com.example.fitplannerserver.dao.database;
 import com.example.fitplannerserver.dao.AccountDao;
 import com.example.fitplannerserver.dao.DaoFactory;
 import com.example.fitplannerserver.dao.ProfileDao;
+import com.example.fitplannerserver.dao.SessionLogDao;
 
 public class DatabaseDaoFactory extends DaoFactory {
 
@@ -13,6 +14,11 @@ public class DatabaseDaoFactory extends DaoFactory {
 
     @Override
     public ProfileDao getProfileDao() {
+        return null;
+    }
+
+    @Override
+    public SessionLogDao getSessionLogDao() {
         return null;
     }
 

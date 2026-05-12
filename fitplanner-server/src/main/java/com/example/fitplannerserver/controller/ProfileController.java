@@ -30,7 +30,12 @@ public class ProfileController {
         ProfileDao profileDao = DaoFactory.getInstance().getProfileDao();
         User user = profileDao.findByEmail(identityProvider.getEmail());
 
-        
+        user.setLastName(profileBean.getLastName());
+        user.setName(profileBean.getFirstName());
+        user.setEmail(profileBean.getEmail());
+        user.setPhoneNumber(profileBean.getPhoneNumber());
+
+        profileDao.save(identityProvider.getEmail(), user);
 
     }
 }

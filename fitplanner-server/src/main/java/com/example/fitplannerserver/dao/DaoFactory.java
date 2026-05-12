@@ -49,6 +49,8 @@ public abstract class DaoFactory {
 
     public abstract ProfileDao getProfileDao();
 
+    public abstract SessionLogDao getSessionLogDao();
+
 
 
 }
