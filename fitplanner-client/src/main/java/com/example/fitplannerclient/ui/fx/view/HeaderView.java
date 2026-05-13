@@ -3,6 +3,7 @@ package com.example.fitplannerclient.ui.fx.view;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
@@ -21,62 +22,49 @@ public class HeaderView extends HBox {
 
     public HeaderView(List<MenuConfig> menuItems, int activeBtnIndex) {
         this.getStyleClass().add("header");
-        this.setPrefHeight(80);
         this.setAlignment(Pos.CENTER_LEFT);
 
         // titleContainer
-        HBox titleContainer = new HBox(10);
+        HBox titleContainer = new HBox(32);
         titleContainer.setAlignment(Pos.CENTER_LEFT);
-        ImageView imageLogo = new ImageView(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/app_icon.png"))));
-        imageLogo.setPreserveRatio(true);
 
-        // Create a Region to act as the logo container
-        Region textLogo = new Region();
+        Label textLogo = new Label("FIT PLANNER");
+        textLogo.getStyleClass().add("brand-logo");
 
-        // Apply the CSS class holding the SVG shape
-        textLogo.getStyleClass().addAll("logo-fitplanner", "button-header-icon");
+        // navContainer
+        HBox navContainer = new HBox(24);
+        navContainer.setAlignment(Pos.CENTER_RIGHT);
 
-        HBox.setMargin(titleContainer, new Insets(0, 0, 0, 20));
+        int i = 0;
+        for (MenuConfig item : menuItems) {
+//            Region icon = new Region();
+//            icon.getStyleClass().add(item.icon);
+//            icon.setPrefSize(20, 20);
 
-        titleContainer.getChildren().addAll(imageLogo, textLogo);
-        imageLogo.fitHeightProperty().bind(textLogo.heightProperty().multiply(2));
+            Button btn = new Button(item.title);
+            btn.getStyleClass().addAll("button-header");
+
+            if (i == activeBtnIndex) {
+                btn.getStyleClass().add("button-header-active");
+            }
+
+            menuButtons.add(btn);
+            navContainer.getChildren().add(btn);
+
+            i++;
+        }
+
+        titleContainer.getChildren().addAll(textLogo, navContainer);
 
         // spacer
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        // buttonsContainer
-        HBox buttonsContainer = new HBox(15);
+        //
+        HBox buttonsContainer = new HBox(16);
         buttonsContainer.setAlignment(Pos.CENTER_RIGHT);
-        HBox.setMargin(buttonsContainer, new Insets(0, 20, 0, 0));
 
-        int i = 0;
-        for (MenuConfig item : menuItems) {
-            Region icon = new Region();
-            icon.getStyleClass().add(item.icon);
-            icon.setPrefSize(20, 20);
-
-            Button btn = new Button(item.title);
-            btn.setGraphic(icon);
-            btn.setGraphicTextGap(10);
-            btn.getStyleClass().add("button-header");
-
-            if (i == activeBtnIndex) {
-                btn.getStyleClass().add("button-header-active");
-                icon.getStyleClass().add("button-header-icon-active");
-            } else {
-                icon.getStyleClass().add("button-header-icon");
-            }
-
-            // Salviamo il pulsante nella lista per il Controller!
-            menuButtons.add(btn);
-            buttonsContainer.getChildren().add(btn);
-
-            i++;
-        }
-
-        // Aggiungiamo i tre blocchi principali all'HBox radice
-        this.getChildren().addAll(titleContainer, spacer, buttonsContainer);
+        this.getChildren().addAll(titleContainer, spacer);
     }
 
     // Metodo fondamentale per il Controller
