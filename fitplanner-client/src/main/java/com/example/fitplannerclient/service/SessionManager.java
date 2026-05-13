@@ -3,22 +3,13 @@ package com.example.fitplannerclient.service;
 import java.util.prefs.Preferences;
 
 public class SessionManager {
-    private static class Wrapper {
-        public static final SessionManager INSTANCE = new SessionManager();
-    }
-
-    public static SessionManager getInstance() {
-        return Wrapper.INSTANCE;
-    }
-
-
     private static final String PREF_REFRESH_TOKEN = "refresh_token";
 
     private String accessToken;
     private String refreshToken;
     private final Preferences preferences;
 
-    private SessionManager() {
+    public SessionManager() {
         preferences = Preferences.userNodeForPackage(SessionManager.class);
 
         this.refreshToken = preferences.get(PREF_REFRESH_TOKEN, null);

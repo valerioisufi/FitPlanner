@@ -1,12 +1,11 @@
 package com.example.fitplannerclient.ui.gui1;
 
-import com.example.fitplannerclient.ui.GraphicController;
+import com.example.fitplannerclient.ui.fx.GuiController;
+import com.example.fitplannerclient.ui.fx.GuiManager;
 import com.example.fitplannercommon.ExerciseBean;
 import com.example.fitplannerclient.ui.gui1.view.WorkoutExecutionView;
 
-import java.io.IOException;
-
-public class WorkoutExecutionController implements GraphicController {
+public class WorkoutExecutionController implements GuiController {
 
     private final WorkoutExecutionView view;
 

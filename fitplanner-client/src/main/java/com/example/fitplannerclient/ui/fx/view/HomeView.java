@@ -1,5 +1,6 @@
-package com.example.fitplannerclient.ui.gui1.view;
+package com.example.fitplannerclient.ui.fx.view;
 
+import com.example.fitplannerclient.ui.gui1.view.BaseView;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -9,11 +10,11 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.*;
 import javafx.scene.text.Text;
 
-public class HomeView extends BaseView {
+public class HomeView extends BorderPane {
     private Button primaryButton;
 
     public HomeView(Node header) {
-        if (header != null) this.setHeader(header);
+        if (header != null) this.setTop(header);
 
         VBox content = new VBox(20);
         content.setPadding(new Insets(20));
@@ -28,7 +29,7 @@ public class HomeView extends BaseView {
         scrollPane.setFitToHeight(false);
         scrollPane.setStyle("-fx-background-color: transparent; -fx-background: transparent;");
 
-        this.setContent(scrollPane);
+        this.setCenter(scrollPane);
 
     }
 

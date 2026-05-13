@@ -1,6 +1,5 @@
-package com.example.fitplannerclient.ui.gui1;
+package com.example.fitplannerclient.ui.fx;
 
-import com.example.fitplannerclient.ui.gui1.view.BaseView;
 import javafx.animation.FadeTransition;
 import javafx.animation.PauseTransition;
 import javafx.application.Platform;
@@ -8,6 +7,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -16,7 +16,6 @@ import javafx.util.Duration;
 import java.util.Objects;
 
 public class GuiManager extends StackPane {
-
     private final Stage stage;
     private final Scene scene;
 
@@ -25,39 +24,34 @@ public class GuiManager extends StackPane {
 
     public GuiManager(Stage stage) {
         this.stage = stage;
-        this.scene = new Scene(this);
+        this.scene = new Scene(this, 1200, 800);
         stage.setScene(scene);
 
         String themeCss = Objects.requireNonNull(getClass().getResource("/style/theme.css")).toExternalForm();
-        String iconsCss = Objects.requireNonNull(getClass().getResource("/style/icons.css")).toExternalForm();
-        this.getStylesheets().addAll(themeCss, iconsCss);
+        this.getStylesheets().addAll(themeCss);
 
-        this.getStyleClass().add("root"); // Background globale
-
-        // Area Contenuto (dove andranno HomeView, LoginView, ecc.)
+        // area contenuto (HomeView, LoginView, ecc.)
         contentArea = new StackPane();
         contentArea.setAlignment(Pos.CENTER);
 
-        // Area Notifiche (Overlay)
+        // area notifiche
         notificationArea = new VBox(10);
         notificationArea.setAlignment(Pos.BOTTOM_RIGHT);
         notificationArea.setPadding(new Insets(20));
         notificationArea.setPickOnBounds(false);
 
-        // Aggiungi nell'ordine: contenuto sotto, notifiche sopra
         this.getChildren().addAll(contentArea, notificationArea);
     }
 
     /**
      * Sostituisce la vista centrale
      */
-    public void setView(BaseView view) {
+    public void setView(Pane view) {
         Platform.runLater(() -> {
             contentArea.getChildren().setAll(view);
         });
 
     }
-
 
     /**
      * Mostra una notifica

@@ -13,19 +13,6 @@
     -border-color: #E0E0E0;
 }
 
-
-
-/* ==========================================
- * LAYOUT & NAVIGAZIONE (Dashboard & Sidebar)
- * ========================================== */
-
-.header {
-    -fx-background-color: -color-bg-card;
-
-    -fx-border-width: 0 0 1 0;
-    -fx-border-color: -border-color;
-}
-
 .card {
     -fx-background-color: -color-bg-card;
     -fx-background-radius: 16px;
@@ -37,6 +24,50 @@
     -fx-border-radius: 16px;
 }
 
+/* ==========================================
+ * HEADER
+ * ========================================== */
+
+.header {
+    -fx-pref-height: 64px;
+
+    -fx-background-color: -color-bg-card;
+
+    -fx-border-width: 0 0 1 0;
+    -fx-border-color: -border-color;
+
+    -fx-padding: 0 24px 0 24px;
+}
+
+.button-header {
+    -fx-font-family: 'Space Grotesk';
+    -fx-font-weight: 500;
+    -fx-font-size: 16px;
+
+    -fx-background-color: transparent;
+    -fx-text-fill: #64748B;
+
+    -fx-border-color: transparent;
+    -fx-border-width: 0 0 2px 0;
+
+    -fx-padding: 0px 0px 4px 0px;
+    /*-fx-graphic-text-gap: 10px;*/
+
+    -fx-cursor: hand;
+}
+
+.button-header-icon {
+    -fx-background-color: #64748B;
+}
+
+.button-header-active {
+    -fx-text-fill: #0F172A;
+    -fx-border-color: -fx-radix-blue-8;
+}
+
+.button-header-icon-active {
+    -fx-background-color: #0F172A;
+}
 
 /* ==========================================
  * PLAN NODE COMPONENT
@@ -94,33 +125,6 @@
 /* ==========================================
  * UI BASE COMPONENTS (Input, Buttons)
  * ========================================== */
-
-.button-header {
-    -fx-background-color: transparent;
-    -fx-text-fill: -fx-color-text-light;
-    -fx-font-size: 16px;
-
-    -fx-background-radius: 12px;
-    -fx-border-radius: 12px;
-
-    -fx-padding: 12px 20px 12px 20px;
-    -fx-graphic-text-gap: 10px;
-
-    -fx-cursor: hand;
-}
-
-.button-header-icon {
-    -fx-background-color: -fx-color-text-light;
-}
-
-.button-header-active {
-    -fx-text-fill: -color-primary;
-    -fx-background-color: #EFF6FF;
-}
-
-.button-header-icon-active {
-    -fx-background-color: -color-primary;
-}
 
 /* Button Primario (Pieno) */
 .button-primary {

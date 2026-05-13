@@ -1,15 +1,15 @@
 package com.example.fitplannerclient.ui.gui1;
 
-import com.example.fitplannerclient.ui.GraphicController;
+import com.example.fitplannerclient.ui.fx.GuiController;
+import com.example.fitplannerclient.ui.fx.GuiManager;
 import com.example.fitplannercommon.ExerciseDescriptionBean;
 import com.example.fitplannerclient.ui.gui1.view.ExerciseLibraryView;
-import javafx.stage.Stage;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class ExerciseLibraryController implements GraphicController {
+public class ExerciseLibraryController implements GuiController {
 
     private final ExerciseLibraryView view;
 

@@ -43,6 +43,13 @@
     -fx-text-fill: -fx-color-text-body;
 }
 
+.brand-logo {
+    -fx-font-family: 'Space Grotesk';
+    -fx-font-weight: bold;
+    -fx-font-size: 20px;
+    -fx-text-fill: -fx-color-text-body;
+}
+
 .heading-h1 {
     -fx-font-family: 'Space Grotesk';
     -fx-font-weight: bold;
@@ -80,13 +87,6 @@
     -fx-font-family: 'Manrope';
     -fx-font-weight: bold;
     -fx-font-size: 9px;
-}
-
-.brand-logo {
-    -fx-font-family: 'Space Grotesk';
-    -fx-font-weight: bold;
-    -fx-font-size: 20px;
-    -fx-text-fill: -fx-color-text-body;
 }
 
 .body-base {

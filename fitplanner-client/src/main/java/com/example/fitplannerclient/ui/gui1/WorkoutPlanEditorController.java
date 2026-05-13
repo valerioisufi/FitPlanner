@@ -1,13 +1,13 @@
 package com.example.fitplannerclient.ui.gui1;
 
-import com.example.fitplannerclient.ui.GraphicController;
+import com.example.fitplannerclient.ui.fx.GuiController;
+import com.example.fitplannerclient.ui.fx.GuiManager;
 import com.example.fitplannerclient.ui.gui1.view.WorkoutPlanEditorView;
 import com.example.fitplannercommon.*;
-import javafx.stage.Stage;
 
 import java.util.*;
 
-public class WorkoutPlanEditorController implements GraphicController {
+public class WorkoutPlanEditorController implements GuiController {
 
     private final WorkoutPlanEditorView view;
     private final WorkoutPlanBean currentPlan;

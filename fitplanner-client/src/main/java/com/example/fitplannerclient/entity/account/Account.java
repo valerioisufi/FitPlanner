@@ -7,14 +7,12 @@ public class Account {
     private final String password;
     private final String refreshToken;
     private final String accessToken;
-    private final ProfileBean.ProfileType profileType;
 
-    public Account(String email, String password, String refreshToken, String accessToken, ProfileBean.ProfileType profileType) {
+    public Account(String email, String password, String refreshToken, String accessToken) {
         this.email = email;
         this.password = password;
         this.refreshToken = refreshToken;
         this.accessToken = accessToken;
-        this.profileType = profileType;
     }
 
     public String getEmail() {

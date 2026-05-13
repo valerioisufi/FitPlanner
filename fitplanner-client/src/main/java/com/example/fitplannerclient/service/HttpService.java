@@ -1,6 +1,5 @@
 package com.example.fitplannerclient.service;
 
-import com.example.fitplannerclient.Navigator;
 import com.example.fitplannerclient.exception.ConfigException;
 import com.example.fitplannerclient.exception.RequestException;
 import com.example.fitplannercommon.TokenBean;
@@ -20,23 +19,23 @@ import java.util.logging.Logger;
 public class HttpService {
     private static final Logger logger = Logger.getLogger(HttpService.class.getName());
 
-    private static class Wrapper {
-        public static final HttpService INSTANCE = new HttpService();
-    }
-
-    public static HttpService getInstance(){
-        return Wrapper.INSTANCE;
-    }
-
+    private final SessionManager sessionManager;
     private final HttpClient httpClient;
     private final ObjectMapper objectMapper;
 
     private static final String CONTENT_TYPE = "application/json";
     private final String baseUrl;
 
-    private HttpService() {
+    // Callback to trigger when the refresh token is expired/invalid
+    private final Runnable onSessionExpired;
+
+    public HttpService(SessionManager sessionManager, Runnable onSessionExpired) {
+        this.sessionManager = sessionManager;
+
         this.httpClient = HttpClient.newHttpClient();
         this.objectMapper = new ObjectMapper();
+
+        this.onSessionExpired = onSessionExpired;
 
         Properties properties = new Properties();
 
@@ -55,13 +54,12 @@ public class HttpService {
         }
     }
 
-
     /**
      * Metodo interno per gestire le richieste
      */
     private <T> CompletableFuture<T> requestAsync(HttpRequest.Builder requestBuilder, Class<T> responseType, boolean isRetry) {
         requestBuilder.header("Accept", CONTENT_TYPE);
-        String token = SessionManager.getInstance().getAccessToken();
+        String token = sessionManager.getAccessToken();
         if (token != null && !token.isEmpty()) {
             requestBuilder.setHeader("Authorization", "Bearer " + token);
         }
@@ -77,11 +75,11 @@ public class HttpService {
                         return handleRefreshToken()
                                 .thenCompose(success -> {
                                     if (success) {
-                                        requestBuilder.setHeader("Authorization", "Bearer " + SessionManager.getInstance().getAccessToken());
+                                        requestBuilder.setHeader("Authorization", "Bearer " + sessionManager.getAccessToken());
                                         return requestAsync(requestBuilder, responseType, true);
                                     } else {
-                                        // Se il refresh fallisce, propaga l'errore (Logout forzato)
-                                        Navigator.getInstance().startHomeController();
+                                        // Se il refresh fallisce eseguire onSessionExpired callback
+                                        this.onSessionExpired.run();
                                         String errorMessage = response.body();
                                         return CompletableFuture.failedFuture(new RequestException(errorMessage));
                                     }
@@ -115,7 +113,7 @@ public class HttpService {
      * Restituisce true se il refresh ha successo, false altrimenti.
      */
     private CompletableFuture<Boolean> handleRefreshToken() {
-        String refreshToken = SessionManager.getInstance().getRefreshToken();
+        String refreshToken = sessionManager.getRefreshToken();
         if (refreshToken == null) {
             return CompletableFuture.completedFuture(false);
         }
@@ -142,9 +140,9 @@ public class HttpService {
                         try {
                             TokenBean newToken = objectMapper.readValue(response.body(), TokenBean.class);
 
-                            SessionManager.getInstance().setAccessToken(newToken.getAccessToken());
+                            sessionManager.setAccessToken(newToken.getAccessToken());
                             if(newToken.getRefreshToken() != null) {
-                                SessionManager.getInstance().setRefreshToken(newToken.getRefreshToken());
+                                sessionManager.setRefreshToken(newToken.getRefreshToken());
                             }
                             return true;
                         } catch (JacksonException e) {
@@ -152,7 +150,7 @@ public class HttpService {
                         }
                     } else {
                         // Il refresh token è scaduto o non valido -> Logout
-                        SessionManager.getInstance().logout();
+                        sessionManager.logout();
                         return false;
                     }
                 });
