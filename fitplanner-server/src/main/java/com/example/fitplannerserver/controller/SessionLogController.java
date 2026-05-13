@@ -4,6 +4,7 @@ import com.example.fitplannercommon.SessionLogBean;
 import com.example.fitplannerserver.dao.DaoFactory;
 import com.example.fitplannerserver.dao.ProfileDao;
 import com.example.fitplannerserver.dao.SessionLogDao;
+import com.example.fitplannerserver.exception.DaoException;
 import com.example.fitplannerserver.exception.UpdateFailureException;
 import com.example.fitplannerserver.model.SessionLog;
 import com.example.fitplannerserver.security.IdentityProvider;
@@ -19,15 +20,21 @@ public class SessionLogController {
         this.identityProvider = identityProvider;
     }
 
-    public List<SessionLogBean> getSessionFilteredSessionLog(LocalDateTime startDate, LocalDateTime endDate){
+    public List<SessionLogBean> getSessionFilteredSessionLog(LocalDateTime startDate, LocalDateTime endDate) throws UpdateFailureException {
         SessionLogDao sessionLogDao = DaoFactory.getInstance().getSessionLogDao();
-        List<SessionLog> sessionLog = sessionLogDao.findByDate(identityProvider.getEmail(), startDate, endDate);
 
-        List<SessionLogBean> sessionLogBeans = new ArrayList<>();
-        for (SessionLog log : sessionLog) {
-            sessionLogBeans.add(convertSessionLogEntity(log));
+        try {
+            List<SessionLog> sessionLog = sessionLogDao.findByDate(identityProvider.getEmail(), startDate, endDate);
+
+            List<SessionLogBean> sessionLogBeans = new ArrayList<>();
+            for (SessionLog log : sessionLog) {
+                sessionLogBeans.add(convertSessionLogEntity(log));
+            }
+            return sessionLogBeans;
+
+        } catch (DaoException e) {
+            throw new UpdateFailureException("Unable to retrieve session logs at this time");
         }
-        return sessionLogBeans;
     }
 
     private SessionLogBean convertSessionLogEntity(SessionLog sessionLog){
@@ -36,34 +43,40 @@ public class SessionLogController {
             case INTERRUPTED -> SessionLogBean.SessionStatus.INTERRUPTED;
             case SKIPPED -> SessionLogBean.SessionStatus.SKIPPED;
         };
-        SessionLogBean sessionLogBean = new SessionLogBean(
+
+        return new SessionLogBean(
                 sessionLog.getNotes(),
                 sessionStatus,
                 sessionLog.getDate()
         );
-        return sessionLogBean;
     }
 
-    public void updateSessionLog(SessionLogBean sessionLogBean, LocalDateTime date){
+    public void updateSessionLog(SessionLogBean sessionLogBean, LocalDateTime date) throws UpdateFailureException {
         SessionLogDao sessionLogDao = DaoFactory.getInstance().getSessionLogDao();
-        List<SessionLog> sessionLogs = sessionLogDao.findByDate(identityProvider.getEmail(), date, date);
 
-        if(sessionLogs.isEmpty()){
-            throw new UpdateFailureException("Session log not found");
+        try {
+            List<SessionLog> sessionLogs = sessionLogDao.findByDate(identityProvider.getEmail(), date, date);
+
+            if(sessionLogs.isEmpty()){
+                throw new UpdateFailureException("Session log not found for the specified date");
+            }
+
+            SessionLog sessionLog = sessionLogs.getFirst();
+
+            SessionLog.SessionStatus sessionStatus = switch (sessionLogBean.getStatus()){
+                case COMPLETED -> SessionLog.SessionStatus.COMPLETED;
+                case INTERRUPTED -> SessionLog.SessionStatus.INTERRUPTED;
+                case SKIPPED -> SessionLog.SessionStatus.SKIPPED;
+            };
+
+            sessionLog.setNotes(sessionLogBean.getNotes());
+            sessionLog.setSessionStatus(sessionStatus);
+            sessionLog.setDate(sessionLogBean.getDate());
+
+            sessionLogDao.save(identityProvider.getEmail(), sessionLog);
+
+        } catch (DaoException e) {
+            throw new UpdateFailureException("Failed to update session log due to a system error");
         }
-        SessionLog sessionLog = sessionLogs.getFirst();
-
-        SessionLog.SessionStatus sessionStatus = switch (sessionLog.getStatus()){
-            case COMPLETED -> SessionLog.SessionStatus.COMPLETED;
-            case INTERRUPTED -> SessionLog.SessionStatus.INTERRUPTED;
-            case SKIPPED -> SessionLog.SessionStatus.SKIPPED;
-        };
-
-        sessionLog.setNotes(sessionLogBean.getNotes());
-        sessionLog.setSessionStatus(sessionStatus);
-        sessionLog.setDate(sessionLogBean.getDate());
-        sessionLogDao.save(identityProvider.getEmail(), sessionLog);
     }
-
-    
 }

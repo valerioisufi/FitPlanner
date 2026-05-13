@@ -1,6 +1,8 @@
 package com.example.fitplannerserver;
 
 import com.example.fitplannerserver.controller.AuthenticationController;
+import com.example.fitplannerserver.controller.ProfileController;
+import com.example.fitplannerserver.controller.SessionLogController;
 import com.example.fitplannerserver.controller.WorkoutPlanController;
 import com.example.fitplannerserver.security.JwtUtil;
 import com.example.fitplannerserver.security.IdentityProvider;
@@ -25,5 +27,15 @@ public class ControllerConfig {
     @Bean
     public AuthenticationController authenticationController(JwtUtil jwtUtil, PasswordEncoder passwordEncoder) {
         return new AuthenticationController(jwtUtil, passwordEncoder);
+    }
+
+    @Bean
+    public ProfileController profileController(IdentityProvider identityProvider) {
+        return new ProfileController(identityProvider);
+    }
+
+    @Bean
+    public SessionLogController sessionLogController(IdentityProvider identityProvider) {
+        return new SessionLogController(identityProvider);
     }
 }
