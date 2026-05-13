@@ -32,15 +32,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (header != null && header.startsWith("Bearer ")) {
             String token = header.substring(7);
-            String username = jwtUtil.validateAccessTokenAndGetUsername(token);
+            String userId = jwtUtil.validateAccessTokenAndGetSubject(token);
 
-            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-                // Nota: Qui stiamo passando una lista di ruoli vuota List.of().
-                // In un'app reale, dovresti caricare i ruoli dell'utente dal DB (UserDetailsService)
                 UsernamePasswordAuthenticationToken auth =
                         new UsernamePasswordAuthenticationToken(
-                                username, null, List.of());
+                                userId, null, List.of());
 
                 SecurityContextHolder.getContext().setAuthentication(auth);
             }

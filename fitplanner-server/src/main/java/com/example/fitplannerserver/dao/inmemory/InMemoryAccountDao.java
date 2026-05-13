@@ -20,23 +20,23 @@ public class InMemoryAccountDao implements AccountDao {
 
     @Override
     public boolean create(Account account) {
-        return accounts.putIfAbsent(account.getUsername(), account) == null;
+        return accounts.putIfAbsent(account.getUserId(), account) == null;
     }
 
     @Override
     public void save(Account account) {
-        accounts.put(account.getUsername(), account);
+        accounts.put(account.getUserId(), account);
     }
 
     @Override
-    public Account findByUsername(String username) {
-        return accounts.get(username);
+    public Account findById(String userId) {
+        return accounts.get(userId);
     }
 
     @Override
-    public Account findByRefreshToken(String refreshToken) {
+    public Account findByEmail(String email) {
         for (Account account : accounts.values()) {
-            if (account.getRefreshToken().equals(refreshToken)) {
+            if (account.getEmail().equalsIgnoreCase(email)) {
                 return account;
             }
         }
@@ -44,12 +44,22 @@ public class InMemoryAccountDao implements AccountDao {
     }
 
     @Override
-    public boolean existsByUsername(String username) {
-        return accounts.containsKey(username);
+    public Account findByRefreshToken(String refreshToken) {
+        for (Account account : accounts.values()) {
+            if (refreshToken != null && refreshToken.equals(account.getRefreshToken())) {
+                return account;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public boolean existsByEmail(String email) {
+        return findByEmail(email) != null;
     }
 
     @Override
     public void delete(Account account) {
-        accounts.remove(account.getUsername());
+        accounts.remove(account.getUserId());
     }
 }

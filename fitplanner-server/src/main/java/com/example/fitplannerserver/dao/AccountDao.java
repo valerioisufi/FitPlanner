@@ -7,11 +7,13 @@ public interface AccountDao {
 
     void save(Account account);
 
-    Account findByUsername(String username);
+    Account findById(String userId);
+
+    Account findByEmail(String email);
 
     Account findByRefreshToken(String refreshToken);
 
-    boolean existsByUsername(String username);
+    boolean existsByEmail(String email);
 
     void delete(Account account);
 }

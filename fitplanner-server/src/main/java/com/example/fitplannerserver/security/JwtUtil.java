@@ -25,15 +25,15 @@ public class JwtUtil {
         return signingKey;
     }
 
-    public String generateAccessToken(String username) {
+    public String generateAccessToken(String userId) {
         return Jwts.builder()
-                .subject(username)
+                .subject(userId)
                 .expiration(new Date(System.currentTimeMillis() + (1000 * 60 * 15))) // 15 minuti
                 .signWith(getSigningKey())
                 .compact();
     }
 
-    public String validateAccessTokenAndGetUsername(String token) {
+    public String validateAccessTokenAndGetSubject(String token) {
         try {
             Jws<Claims> claims = Jwts.parser()
                     .verifyWith(getSigningKey())
