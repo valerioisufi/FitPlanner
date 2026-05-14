@@ -6,7 +6,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 public class SpringIdentityProvider implements IdentityProvider {
 
-    public String getEmail(){
+    public String getUserId(){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
             throw new UnauthorizedException("Utente non autenticato");

@@ -1,4 +1,4 @@
-package com.example.fitplannerserver.model;
+package com.example.fitplannerserver.model.log;
 
 import java.util.List;
 

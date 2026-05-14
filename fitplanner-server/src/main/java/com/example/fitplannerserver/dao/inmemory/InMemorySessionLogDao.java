@@ -1,8 +1,7 @@
 package com.example.fitplannerserver.dao.inmemory;
 
 import com.example.fitplannerserver.dao.SessionLogDao;
-import com.example.fitplannerserver.exception.DaoException;
-import com.example.fitplannerserver.model.SessionLog;
+import com.example.fitplannerserver.model.log.SessionLog;
 
 import java.time.LocalDateTime;
 import java.util.Collections;

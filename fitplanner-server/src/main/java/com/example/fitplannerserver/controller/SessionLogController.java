@@ -2,11 +2,10 @@ package com.example.fitplannerserver.controller;
 
 import com.example.fitplannercommon.SessionLogBean;
 import com.example.fitplannerserver.dao.DaoFactory;
-import com.example.fitplannerserver.dao.ProfileDao;
 import com.example.fitplannerserver.dao.SessionLogDao;
 import com.example.fitplannerserver.exception.DaoException;
 import com.example.fitplannerserver.exception.UpdateFailureException;
-import com.example.fitplannerserver.model.SessionLog;
+import com.example.fitplannerserver.model.log.SessionLog;
 import com.example.fitplannerserver.security.IdentityProvider;
 
 import java.time.LocalDateTime;
@@ -24,7 +23,7 @@ public class SessionLogController {
         SessionLogDao sessionLogDao = DaoFactory.getInstance().getSessionLogDao();
 
         try {
-            List<SessionLog> sessionLog = sessionLogDao.findByDate(identityProvider.getEmail(), startDate, endDate);
+            List<SessionLog> sessionLog = sessionLogDao.findByDate(identityProvider.getUserId(), startDate, endDate);
 
             List<SessionLogBean> sessionLogBeans = new ArrayList<>();
             for (SessionLog log : sessionLog) {
@@ -55,7 +54,7 @@ public class SessionLogController {
         SessionLogDao sessionLogDao = DaoFactory.getInstance().getSessionLogDao();
 
         try {
-            List<SessionLog> sessionLogs = sessionLogDao.findByDate(identityProvider.getEmail(), date, date);
+            List<SessionLog> sessionLogs = sessionLogDao.findByDate(identityProvider.getUserId(), date, date);
 
             if(sessionLogs.isEmpty()){
                 throw new UpdateFailureException("Session log not found for the specified date");
@@ -73,7 +72,7 @@ public class SessionLogController {
             sessionLog.setSessionStatus(sessionStatus);
             sessionLog.setDate(sessionLogBean.getDate());
 
-            sessionLogDao.save(identityProvider.getEmail(), sessionLog);
+            sessionLogDao.save(identityProvider.getUserId(), sessionLog);
 
         } catch (DaoException e) {
             throw new UpdateFailureException("Failed to update session log due to a system error");

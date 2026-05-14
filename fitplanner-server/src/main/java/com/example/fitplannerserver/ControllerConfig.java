@@ -1,9 +1,6 @@
 package com.example.fitplannerserver;
 
-import com.example.fitplannerserver.controller.AuthenticationController;
-import com.example.fitplannerserver.controller.ProfileController;
-import com.example.fitplannerserver.controller.SessionLogController;
-import com.example.fitplannerserver.controller.WorkoutPlanController;
+import com.example.fitplannerserver.controller.*;
 import com.example.fitplannerserver.security.JwtUtil;
 import com.example.fitplannerserver.security.IdentityProvider;
 import com.example.fitplannerserver.security.SpringIdentityProvider;
@@ -20,11 +17,6 @@ public class ControllerConfig {
     }
 
     @Bean
-    public WorkoutPlanController workoutPlanController(IdentityProvider identityProvider) {
-        return new WorkoutPlanController(identityProvider);
-    }
-
-    @Bean
     public AuthenticationController authenticationController(JwtUtil jwtUtil, PasswordEncoder passwordEncoder) {
         return new AuthenticationController(jwtUtil, passwordEncoder);
     }
@@ -35,7 +27,23 @@ public class ControllerConfig {
     }
 
     @Bean
+    public EditWorkoutPlanController editWorkoutPlanController(IdentityProvider identityProvider) {
+        return new EditWorkoutPlanController(identityProvider);
+    }
+
+    @Bean
+    public ManageExerciseLibraryController manageExerciseLibraryController(IdentityProvider identityProvider) {
+        return new ManageExerciseLibraryController(identityProvider);
+    }
+
+    @Bean
     public SessionLogController sessionLogController(IdentityProvider identityProvider) {
         return new SessionLogController(identityProvider);
     }
+
+    @Bean
+    public NotificationController notificationController(IdentityProvider identityProvider) {
+        return new NotificationController(identityProvider);
+    }
+
 }

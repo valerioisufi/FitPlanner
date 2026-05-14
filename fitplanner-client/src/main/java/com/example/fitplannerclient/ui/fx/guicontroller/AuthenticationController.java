@@ -51,7 +51,7 @@ public class AuthenticationController implements GuiController {
     }
 
     private void onRegister(String username, String password) {
-        var registerBean = new RegisterBean(username, password, RegisterBean.ProfileType.ATHLETE, new ProfileBean("", "", "", "", ""));
+        var registerBean = new RegisterBean(username, password, new ProfileBean());
 
         authManager.registerAsync(registerBean)
                 .thenRun(() -> {

@@ -1,4 +1,4 @@
-package com.example.fitplannerserver.security;
+package com.example.fitplannerserver.api;
 
 import com.example.fitplannercommon.LoginBean;
 import com.example.fitplannercommon.RegisterBean;

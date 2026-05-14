@@ -1,19 +1,29 @@
-package com.example.fitplannerserver.model;
+package com.example.fitplannerserver.model.plan;
 
 import com.example.fitplannercommon.WorkoutState;
 
-import java.lang.reflect.Array;
 import java.util.*;
 
 public class WorkoutPlan {
+    private final String planUuid;
+
     private String title;
     private Map<Integer, WorkoutSession> sessions;
-    private Athlete assignedTo;
 
-    public WorkoutPlan(String title) {
+    private String assignedToId;
+    private String authorTrainerId;
+
+    public WorkoutPlan(String planUuid, String title) {
+        this.planUuid = planUuid;
+
         this.title = title;
         this.sessions = new TreeMap<>();
     }
+
+    public String getPlanUuid() {
+        return planUuid;
+    }
+
     public String getTitle() {
         return title;
     }
@@ -40,12 +50,12 @@ public class WorkoutPlan {
         this.sessions.put(newSession.getDay(), newSession);
     }
 
-    public Athlete getAssignedTo() {
-        return this.assignedTo;
+    public String getAssignedToId() {
+        return this.assignedToId;
     }
 
-    public void assignTo(Athlete athlete) {
-        this.assignedTo = athlete;
+    public void assignTo(String athleteId) {
+        this.assignedToId = athleteId;
     }
 
     public void removeSession(int day) {

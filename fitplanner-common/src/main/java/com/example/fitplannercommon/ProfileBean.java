@@ -1,24 +1,38 @@
 package com.example.fitplannercommon;
 
 public class ProfileBean {
+    private String userId;
     private String username;
 
     private String firstName;
     private String lastName;
 
     private String phoneNumber;
-    private String email;
+    private String contactEmail;
+
+    private ProfileType profileType;
 
     public ProfileBean() {}
 
-    public ProfileBean(String username, String firstName, String lastName, String phoneNumber, String email) {
+    public ProfileBean(String userId, String username, String firstName, String lastName, String phoneNumber, String contactEmail, ProfileType profileType) {
+        this.userId = userId;
         this.username = username;
 
         this.firstName = firstName;
         this.lastName = lastName;
 
         this.phoneNumber = phoneNumber;
-        this.email = email;
+        this.contactEmail = contactEmail;
+
+        this.profileType = profileType;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 
     public String getUsername() {
@@ -53,12 +67,25 @@ public class ProfileBean {
         this.phoneNumber = phoneNumber;
     }
 
-    public String getEmail() {
-        return email;
+    public String getContactEmail() {
+        return contactEmail;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    public void setContactEmail(String contactEmail) {
+        this.contactEmail = contactEmail;
+    }
+
+    public ProfileType getProfileType() {
+        return profileType;
+    }
+
+    public void setProfileType(ProfileType profileType) {
+        this.profileType = profileType;
+    }
+
+    public enum ProfileType {
+        TRAINER,
+        ATHLETE
     }
 
 }

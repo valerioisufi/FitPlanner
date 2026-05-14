@@ -13,9 +13,9 @@ public class ProfileController {
         this.identityProvider = identityProvider;
     }
 
-    public void getProfileInfo() {
+    public ProfileBean getProfileInfo() {
         ProfileDao profileDao = DaoFactory.getInstance().getProfileDao();
-        User user = profileDao.findByEmail(identityProvider.getEmail());
+        User user = profileDao.findByEmail(identityProvider.getUserId());
 
         ProfileBean profileBean = new ProfileBean(
                 user.getFirstName(),
@@ -24,18 +24,20 @@ public class ProfileController {
                 user.getPhoneNumber(),
                 user.getUsername()
         );
+
+        return profileBean;
     }
 
     public void updateProfileInfo(ProfileBean profileBean) {
         ProfileDao profileDao = DaoFactory.getInstance().getProfileDao();
-        User user = profileDao.findByEmail(identityProvider.getEmail());
+        User user = profileDao.findByEmail(identityProvider.getUserId());
 
         user.setLastName(profileBean.getLastName());
         user.setName(profileBean.getFirstName());
-        user.setEmail(profileBean.getEmail());
+        user.setEmail(profileBean.getContactEmail());
         user.setPhoneNumber(profileBean.getPhoneNumber());
 
-        profileDao.save(identityProvider.getEmail(), user);
+        profileDao.save(identityProvider.getUserId(), user);
 
     }
 }

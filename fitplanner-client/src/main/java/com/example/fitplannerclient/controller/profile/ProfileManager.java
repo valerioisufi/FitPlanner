@@ -12,7 +12,7 @@ public abstract class ProfileManager {
                     bean.getUsername(),
                     bean.getFirstName(),
                     bean.getLastName(),
-                    bean.getEmail(),
+                    bean.getContactEmail(),
                     bean.getPhoneNumber()
             );
     }

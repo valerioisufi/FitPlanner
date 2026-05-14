@@ -1,6 +1,7 @@
 package com.example.fitplannerserver.controller;
 
 import com.example.fitplannercommon.LoginBean;
+import com.example.fitplannercommon.ProfileBean;
 import com.example.fitplannercommon.RegisterBean;
 import com.example.fitplannercommon.TokenBean;
 import com.example.fitplannerserver.dao.AccountDao;
@@ -43,7 +44,7 @@ public class AuthenticationController {
     public TokenBean register(RegisterBean registerBean) {
         AccountDao accountDao = DaoFactory.getInstance().getAccountDao();
 
-        Account.Role role = (registerBean.getProfileType() == RegisterBean.ProfileType.ATHLETE)
+        Account.Role role = (registerBean.getProfile().getProfileType() == ProfileBean.ProfileType.ATHLETE)
                 ? Account.Role.ATHLETE
                 : Account.Role.TRAINER;
 
@@ -52,7 +53,7 @@ public class AuthenticationController {
 
         Account account = new Account(
                 newUserId,
-                registerBean.getUsername(),
+                registerBean.getEmail(),
                 passwordEncoder.encode(registerBean.getPassword()),
                 JwtUtil.generateRefreshToken(),
                 role
