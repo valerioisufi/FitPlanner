@@ -5,13 +5,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SessionLog {
+    private String userId;
+
     private String notes;
     private SessionStatus status;
     private LocalDateTime date;
 
     private List<ExerciseLog> exerciseLogs;
 
-    public SessionLog(String notes, SessionStatus status, LocalDateTime date) {
+    public SessionLog(String userId, String notes, SessionStatus status, LocalDateTime date) {
+        this.userId = userId;
         this.notes = notes;
         this.status = status;
         this.date = date;
@@ -19,33 +22,54 @@ public class SessionLog {
         this.exerciseLogs = new ArrayList<>();
     }
 
+    public SessionLog(SessionLog other) {
+        this.userId = other.userId;
+
+        this.notes = other.notes;
+        this.status = other.status;
+        this.date = other.date;
+
+        this.exerciseLogs = new ArrayList<>();
+        if (other.exerciseLogs != null) {
+            for (ExerciseLog exerciseLog : other.exerciseLogs) {
+                this.exerciseLogs.add(new ExerciseLog(exerciseLog));
+            }
+        }
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
     public String getNotes() {
         return notes;
     }
 
-    public String setNotes(String notes){
-        return this.notes = notes;
+    public void setNotes(String notes) {
+        this.notes = notes;
     }
 
     public SessionStatus getStatus() {
         return status;
     }
 
-    public SessionStatus setSessionStatus(SessionStatus status){
-        return this.status = status;
+    public void setSessionStatus(SessionStatus status) {
+        this.status = status;
     }
 
     public LocalDateTime getDate() {
         return date;
     }
 
-    public LocalDateTime setDate(LocalDateTime date){
-        return this.date = date;
+    public void setDate(LocalDateTime date) {
+        this.date = date;
     }
 
+    public List<ExerciseLog> getExerciseLogs() {
+        return exerciseLogs;
+    }
 
-
-    public void addExerciseLog(ExerciseLog exerciseLog){
+    public void addExerciseLog(ExerciseLog exerciseLog) {
         this.exerciseLogs.add(exerciseLog);
     }
 
@@ -54,5 +78,4 @@ public class SessionLog {
         INTERRUPTED,
         SKIPPED
     }
-
 }

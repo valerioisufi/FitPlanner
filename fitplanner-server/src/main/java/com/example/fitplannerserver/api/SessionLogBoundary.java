@@ -1,5 +1,6 @@
 package com.example.fitplannerserver.api;
 
+import com.example.fitplannercommon.ExerciseLogBean;
 import com.example.fitplannercommon.SessionLogBean;
 import com.example.fitplannerserver.controller.SessionLogController;
 import org.springframework.web.bind.annotation.*;
@@ -16,28 +17,21 @@ public class SessionLogBoundary {
         this.sessionLogController = sessionLogController;
     }
 
-    // Updates the full session log with exercise results
-    @PutMapping("/{sessionUuid}")
-    public void updateSessionLog(@PathVariable String sessionUuid, @RequestBody SessionLogBean logBean) {
-        sessionLogController.updateSessionLog(sessionUuid, logBean);
+    @PutMapping("/session")
+    public void saveSessionLog(@RequestBody SessionLogBean logBean) {
+        sessionLogController.saveSessionLog(logBean);
     }
 
-    // Retrieves the full session log
-    @GetMapping("/{sessionUuid}")
-    public SessionLogBean getSessionLog(@PathVariable String sessionUuid) {
-        return sessionLogController.getSessionLog(sessionUuid);
-    }
-
-    @GetMapping
+    @GetMapping("/session")
     public List<SessionLogBean> getFilteredSessionLogs(
             @RequestParam(required = false) String athleteUuid,
             @RequestParam long startTimestamp,
             @RequestParam long endTimestamp) {
-        return sessionLogController.getSessionFilteredSessionLog(athleteUuid, startTimestamp, endTimestamp);
+        return sessionLogController.getFilteredSessionLog(athleteUuid, startTimestamp, endTimestamp);
     }
 
-    @GetMapping("/history/exercises/{exerciseUuid}")
-    public com.example.fitplannercommon.LastUsedWeightBean getLastWeightUsed(@PathVariable String exerciseUuid) {
-        return logController.getLastRecordForExercise(exerciseUuid);
+    @GetMapping("/exercises/{exerciseId}/latest")
+    public ExerciseLogBean getLastWeightUsed(@PathVariable String exerciseId) {
+        return sessionLogController.getLastRecordForExercise(exerciseId);
     }
 }

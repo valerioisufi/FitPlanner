@@ -222,64 +222,71 @@ public class HttpService {
      * Internal method to handle SSE requests, including token refresh logic.
      */
     private CompletableFuture<Void> requestSseAsync(HttpRequest.Builder requestBuilder, BiConsumer<String, String> eventProcessor, boolean isRetry) {
-        // SSE requires text/event-stream header
         requestBuilder.header("Accept", "text/event-stream");
-
-        String token = sessionManager.getAccessToken();
-        if (token != null && !token.isEmpty()) {
-            requestBuilder.setHeader("Authorization", "Bearer " + token);
-        }
+        addAuthorizationHeader(requestBuilder); // Reusing the header injection logic
 
         HttpRequest request = requestBuilder.build();
 
-        // Use BodyHandlers.ofLines() to read the response as a continuous stream
         return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofLines())
-                .thenCompose(response -> {
-                    logger.info("SSE Connection status: " + response.statusCode() + " for " + request.uri());
+                .thenCompose(response -> processSseResponse(response, request, requestBuilder, eventProcessor, isRetry));
+    }
 
-                    // Handle expired token logic exactly like standard requests
-                    if (response.statusCode() == 401 && !isRetry) {
-                        return handleRefreshToken()
-                                .thenCompose(success -> {
-                                    if (success) {
-                                        requestBuilder.setHeader("Authorization", "Bearer " + sessionManager.getAccessToken());
-                                        return requestSseAsync(requestBuilder, eventProcessor, true);
-                                    } else {
-                                        this.onSessionExpired.run();
-                                        return CompletableFuture.failedFuture(new RequestException("Unauthorized: SSE token refresh failed"));
-                                    }
-                                });
+    // Extracted method to route the SSE response based on HTTP status
+    private CompletableFuture<Void> processSseResponse(HttpResponse<Stream<String>> response, HttpRequest request, HttpRequest.Builder requestBuilder, BiConsumer<String, String> eventProcessor, boolean isRetry) {
+        logger.info("SSE Connection status: " + response.statusCode() + " for " + request.uri());
+
+        if (response.statusCode() == 401 && !isRetry) {
+            return handleSseUnauthorizedRetry(requestBuilder, eventProcessor);
+        }
+
+        if (response.statusCode() >= 300) {
+            return CompletableFuture.failedFuture(new RequestException("SSE Server Error (" + response.statusCode() + ")"));
+        }
+
+        // Process the infinite stream asynchronously on a separate thread
+        return CompletableFuture.runAsync(() -> processSseStream(response.body(), eventProcessor));
+    }
+
+    // Extracted method to handle token refresh logic specifically for SSE streams
+    private CompletableFuture<Void> handleSseUnauthorizedRetry(HttpRequest.Builder requestBuilder, BiConsumer<String, String> eventProcessor) {
+        return handleRefreshToken()
+                .thenCompose(success -> {
+                    if (success) {
+                        requestBuilder.setHeader("Authorization", "Bearer " + sessionManager.getAccessToken());
+                        return requestSseAsync(requestBuilder, eventProcessor, true);
+                    } else {
+                        this.onSessionExpired.run();
+                        return CompletableFuture.failedFuture(new RequestException("Unauthorized: SSE token refresh failed"));
                     }
-
-                    if (response.statusCode() >= 300) {
-                        return CompletableFuture.failedFuture(new RequestException("SSE Server Error (" + response.statusCode() + ")"));
-                    }
-
-                    // Process the infinite stream asynchronously on a separate thread
-                    return CompletableFuture.runAsync(() -> {
-                        String[] currentEventName = {"message"};
-                        StringBuilder dataBuffer = new StringBuilder();
-
-                        try (Stream<String> lines = response.body()) {
-                            lines.forEach(line -> {
-                                if (line.startsWith("event:")) {
-                                    currentEventName[0] = line.substring(6).trim();
-                                } else if (line.startsWith("data:")) {
-                                    // Append data, handling potential multi-line JSON payloads
-                                    dataBuffer.append(line.substring(5).trim());
-                                } else if (line.isBlank()) {
-                                    // An empty line indicates the end of a single SSE block
-                                    if (dataBuffer.length() > 0) {
-                                        eventProcessor.accept(currentEventName[0], dataBuffer.toString());
-                                        dataBuffer.setLength(0); // Reset buffer
-                                        currentEventName[0] = "message"; // Reset to default
-                                    }
-                                }
-                            });
-                        } catch (Exception e) {
-                            logger.warning("SSE Stream ended or interrupted: " + e.getMessage());
-                        }
-                    });
                 });
+    }
+
+    // Extracted method to manage the lifecycle of the stream and the state buffers
+    private void processSseStream(Stream<String> lines, BiConsumer<String, String> eventProcessor) {
+        String[] currentEventName = {"message"};
+        StringBuilder dataBuffer = new StringBuilder();
+
+        try (lines) {
+            lines.forEach(line -> parseSseLine(line, currentEventName, dataBuffer, eventProcessor));
+        } catch (Exception e) {
+            logger.warning("SSE Stream ended or interrupted: " + e.getMessage());
+        }
+    }
+
+    // Extracted method to process individual lines from the SSE payload
+    private void parseSseLine(String line, String[] currentEventName, StringBuilder dataBuffer, BiConsumer<String, String> eventProcessor) {
+        if (line.startsWith("event:")) {
+            currentEventName[0] = line.substring(6).trim();
+        } else if (line.startsWith("data:")) {
+            // Append data, handling potential multi-line JSON payloads
+            dataBuffer.append(line.substring(5).trim());
+        } else if (line.isBlank()) {
+            // An empty line indicates the end of a single SSE block
+            if (!dataBuffer.isEmpty()) {
+                eventProcessor.accept(currentEventName[0], dataBuffer.toString());
+                dataBuffer.setLength(0); // Reset buffer
+                currentEventName[0] = "message"; // Reset to default
+            }
+        }
     }
 }

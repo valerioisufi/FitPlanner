@@ -1,9 +1,6 @@
 package com.example.fitplannerserver.model;
 
-import java.time.LocalDate;
-import java.time.Period;
-
-public abstract class User {
+public class User {
     private String username;
     private String firstName;
     private String lastName;

@@ -1,22 +1,22 @@
 package com.example.fitplannerserver.dao;
 
+import com.example.fitplannerserver.exception.DaoException;
 import com.example.fitplannerserver.model.log.SessionLog;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface SessionLogDao {
-    // Retrieves a complete session log by its ID
-    SessionLog findSessionLogById(String sessionUuid);
 
     // Saves or updates a full session log (exercises, reps, weights)
-    void saveSessionLog(SessionLog log);
+    void saveSessionLog(SessionLog log) throws DaoException;
 
     // Retrieves logs for a specific athlete within a time range
-    List<SessionLog> findLogsByAthleteIdAndDateRange(String athleteUuid, long startTimestamp, long endTimestamp);
+    List<SessionLog> findLogsByAthleteIdAndDateRange(String athleteId, long startTimestamp, long endTimestamp) throws DaoException;
 
-    SessionLog findMostRecentSessionContainingExercise(
-            String athleteUuid,
+    Optional<SessionLog> findMostRecentSessionContainingExercise(
+            String athleteId,
             String exerciseUuid
-    );
+    ) throws DaoException;
 
 }

@@ -1,16 +1,25 @@
 package com.example.fitplannerserver.controller;
 
+import com.example.fitplannercommon.ExerciseLogBean;
+import com.example.fitplannercommon.ExerciseSetBean;
 import com.example.fitplannercommon.SessionLogBean;
 import com.example.fitplannerserver.dao.DaoFactory;
 import com.example.fitplannerserver.dao.SessionLogDao;
 import com.example.fitplannerserver.exception.DaoException;
-import com.example.fitplannerserver.exception.UpdateFailureException;
+import com.example.fitplannerserver.exception.ResourceNotFoundException;
+import com.example.fitplannerserver.exception.SystemException;
+import com.example.fitplannerserver.exception.UnauthorizedException;
+import com.example.fitplannerserver.model.log.ExerciseLog;
 import com.example.fitplannerserver.model.log.SessionLog;
 import com.example.fitplannerserver.security.IdentityProvider;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 public class SessionLogController {
     private final IdentityProvider identityProvider;
@@ -19,63 +28,168 @@ public class SessionLogController {
         this.identityProvider = identityProvider;
     }
 
-    public List<SessionLogBean> getSessionFilteredSessionLog(LocalDateTime startDate, LocalDateTime endDate) throws UpdateFailureException {
+    public List<SessionLogBean> getFilteredSessionLog(String athleteId, long startDate, long endDate) {
         SessionLogDao sessionLogDao = DaoFactory.getInstance().getSessionLogDao();
 
         try {
-            List<SessionLog> sessionLog = sessionLogDao.findByDate(identityProvider.getUserId(), startDate, endDate);
+            List<SessionLog> sessionLog = sessionLogDao.findLogsByAthleteIdAndDateRange(athleteId, startDate, endDate);
 
             List<SessionLogBean> sessionLogBeans = new ArrayList<>();
             for (SessionLog log : sessionLog) {
-                sessionLogBeans.add(convertSessionLogEntity(log));
+                sessionLogBeans.add(toBean(log));
             }
             return sessionLogBeans;
 
         } catch (DaoException e) {
-            throw new UpdateFailureException("Unable to retrieve session logs at this time");
+            throw new SystemException("Unable to retrieve session logs");
         }
     }
 
-    private SessionLogBean convertSessionLogEntity(SessionLog sessionLog){
-        SessionLogBean.SessionStatus sessionStatus = switch (sessionLog.getStatus()){
-            case COMPLETED -> SessionLogBean.SessionStatus.COMPLETED;
-            case INTERRUPTED -> SessionLogBean.SessionStatus.INTERRUPTED;
-            case SKIPPED -> SessionLogBean.SessionStatus.SKIPPED;
-        };
+    public void saveSessionLog(SessionLogBean logBean) {
+        SessionLogDao sessionLogDao = DaoFactory.getInstance().getSessionLogDao();
 
-        return new SessionLogBean(
-                sessionLog.getNotes(),
-                sessionStatus,
-                sessionLog.getDate()
-        );
+        if(!Objects.equals(identityProvider.getUserId(), logBean.getUserId())){
+            throw new UnauthorizedException("User ID in log does not match authenticated user");
+        }
+
+        SessionLog sessionLog = toEntity(logBean);
+
+        try {
+            sessionLogDao.saveSessionLog(sessionLog);
+
+        } catch (DaoException e) {
+            throw new SystemException("Failed to save session log");
+        }
     }
 
-    public void updateSessionLog(SessionLogBean sessionLogBean, LocalDateTime date) throws UpdateFailureException {
+    public ExerciseLogBean getLastRecordForExercise(String exerciseId) {
         SessionLogDao sessionLogDao = DaoFactory.getInstance().getSessionLogDao();
 
         try {
-            List<SessionLog> sessionLogs = sessionLogDao.findByDate(identityProvider.getUserId(), date, date);
+            Optional<SessionLog> sessionLog = sessionLogDao
+                    .findMostRecentSessionContainingExercise(
+                            identityProvider.getUserId(),
+                            exerciseId
+                    );
 
-            if(sessionLogs.isEmpty()){
-                throw new UpdateFailureException("Session log not found for the specified date");
+            if (sessionLog.isPresent()) {
+
+                for (ExerciseLog exerciseLog : sessionLog.get().getExerciseLogs()) {
+                    if (exerciseLog.getExerciseId().equals(exerciseId)) {
+                        return toBean(exerciseLog);
+                    }
+                }
             }
 
-            SessionLog sessionLog = sessionLogs.getFirst();
-
-            SessionLog.SessionStatus sessionStatus = switch (sessionLogBean.getStatus()){
-                case COMPLETED -> SessionLog.SessionStatus.COMPLETED;
-                case INTERRUPTED -> SessionLog.SessionStatus.INTERRUPTED;
-                case SKIPPED -> SessionLog.SessionStatus.SKIPPED;
-            };
-
-            sessionLog.setNotes(sessionLogBean.getNotes());
-            sessionLog.setSessionStatus(sessionStatus);
-            sessionLog.setDate(sessionLogBean.getDate());
-
-            sessionLogDao.save(identityProvider.getUserId(), sessionLog);
+            throw new ResourceNotFoundException("Exercise not found in any recent session logs");
 
         } catch (DaoException e) {
-            throw new UpdateFailureException("Failed to update session log due to a system error");
+            throw new SystemException("Unable to retrieve last record for exercise");
         }
+
     }
+
+
+    // mapper methods
+    public static SessionLogBean toBean(SessionLog entity) {
+        if (entity == null) return null;
+
+        SessionLogBean bean = new SessionLogBean();
+        bean.setUserId(entity.getUserId());
+        bean.setNotes(entity.getNotes());
+
+        if (entity.getStatus() != null) {
+            bean.setStatus(SessionLogBean.SessionStatus.valueOf(entity.getStatus().name()));
+        }
+
+        if (entity.getDate() != null) {
+            long dateInMillis = entity.getDate()
+                    .atZone(ZoneOffset.UTC)
+                    .toInstant()
+                    .toEpochMilli();
+            bean.setDate(dateInMillis);
+        }
+
+        if (entity.getExerciseLogs() != null) {
+            List<ExerciseLogBean> exerciseLogBeans = new ArrayList<>();
+            for (ExerciseLog exLog : entity.getExerciseLogs()) {
+                exerciseLogBeans.add(toBean(exLog));
+            }
+            bean.setExerciseLogs(exerciseLogBeans);
+        }
+
+        return bean;
+    }
+
+    public static ExerciseLogBean toBean(ExerciseLog entity) {
+        if (entity == null) return null;
+
+        ExerciseLogBean bean = new ExerciseLogBean();
+        bean.setName(entity.getName());
+        bean.setExerciseId(entity.getExerciseId());
+        bean.setRpe(entity.getRpe());
+        bean.setNotes(entity.getNotes());
+
+        if (entity.getSets() != null) {
+            List<ExerciseSetBean> setBeans = new ArrayList<>();
+            for (ExerciseLog.ExerciseSet set : entity.getSets()) {
+                setBeans.add(new ExerciseSetBean(set.reps(), set.load()));
+            }
+            bean.setSets(setBeans);
+        }
+
+        return bean;
+    }
+
+    public static SessionLog toEntity(SessionLogBean bean) {
+        if (bean == null) return null;
+
+        SessionLog.SessionStatus status = null;
+        if (bean.getStatus() != null) {
+            status = SessionLog.SessionStatus.valueOf(bean.getStatus().name());
+        }
+
+        LocalDateTime date = null;
+        if (bean.getDate() > 0) {
+            date = LocalDateTime.ofInstant(
+                    Instant.ofEpochMilli(bean.getDate()),
+                    ZoneOffset.UTC
+            );
+        }
+
+        SessionLog entity = new SessionLog(
+                bean.getUserId(),
+                bean.getNotes(),
+                status,
+                date
+        );
+
+        if (bean.getExerciseLogs() != null) {
+            for (ExerciseLogBean exBean : bean.getExerciseLogs()) {
+                entity.addExerciseLog(toEntity(exBean));
+            }
+        }
+
+        return entity;
+    }
+
+    public static ExerciseLog toEntity(ExerciseLogBean bean) {
+        if (bean == null) return null;
+
+        List<ExerciseLog.ExerciseSet> sets = new ArrayList<>();
+        if (bean.getSets() != null) {
+            for (ExerciseSetBean setBean : bean.getSets()) {
+                sets.add(new ExerciseLog.ExerciseSet(setBean.getReps(), setBean.getLoad()));
+            }
+        }
+
+        return new ExerciseLog(
+                bean.getName(),
+                bean.getExerciseId(),
+                sets,
+                bean.getRpe(),
+                bean.getNotes()
+        );
+    }
+
 }

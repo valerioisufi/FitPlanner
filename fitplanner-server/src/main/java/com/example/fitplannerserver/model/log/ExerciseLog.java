@@ -1,39 +1,63 @@
 package com.example.fitplannerserver.model.log;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ExerciseLog {
     private String name;
-    private int exerciseId;
+    private String exerciseId;
 
-    private List<Integer> reps;
-    private List<Integer> load;
+    private List<ExerciseSet> sets;
 
     private int rpe;
 
     private String notes;
 
-    ExerciseLog(String name, int exerciseId, List<Integer> reps, List<Integer> load, int rpe, String notes) {
+    public ExerciseLog(String name, String exerciseId, List<ExerciseSet> sets, int rpe, String notes) {
         this.name = name;
         this.exerciseId = exerciseId;
 
-        this.reps = reps;
-        this.load = load;
+        this.sets = (sets != null) ? sets : new ArrayList<>();
         this.rpe = rpe;
 
         this.notes = notes;
     }
 
-    public int exerciseVolume(){
-        int volume = 0;
+    public ExerciseLog(ExerciseLog other) {
+        this.name = other.name;
+        this.exerciseId = other.exerciseId;
+        this.rpe = other.rpe;
+        this.notes = other.notes;
 
-        if (this.reps != null && this.load != null && this.reps.size() == this.load.size()) {
-            for (int i = 0; i < this.reps.size(); i++) {
-                volume += this.reps.get(i) * this.load.get(i);
+        this.sets = new ArrayList<>();
+
+        if (other.sets != null) {
+            for (ExerciseSet set : other.sets) {
+                this.sets.add(new ExerciseSet(set.reps(), set.load()));
+
             }
+        }
+
+    }
+
+    public String getName() { return name; }
+
+    public String getExerciseId() { return exerciseId; }
+
+    public List<ExerciseSet> getSets() { return sets; }
+
+    public int getRpe() { return rpe; }
+
+    public String getNotes() { return notes; }
+
+    public double exerciseVolume() {
+        double volume = 0;
+        for (ExerciseSet set : this.sets) {
+            volume += set.reps() * set.load();
         }
         return volume;
     }
 
+    public record ExerciseSet(int reps, double load) {}
 
 }

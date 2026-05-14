@@ -1,16 +1,32 @@
 package com.example.fitplannercommon;
 
-import java.time.LocalDateTime;
+import java.util.List;
 
 public class SessionLogBean {
+    private String userId;
+
     private String notes;
     private SessionStatus status;
-    private LocalDateTime date;
+    private long date;
 
-    public SessionLogBean(String notes, SessionStatus status, LocalDateTime date) {
+    private List<ExerciseLogBean> exerciseLogs;
+
+    public SessionLogBean() {}
+
+    public SessionLogBean(String userId, String notes, SessionStatus status, long date) {
+        this.userId = userId;
+
         this.notes = notes;
         this.status = status;
         this.date = date;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 
     public String getNotes() {
@@ -29,12 +45,20 @@ public class SessionLogBean {
         this.status = status;
     }
 
-    public LocalDateTime getDate() {
+    public long getDate() {
         return date;
     }
 
-    public void setDate(LocalDateTime date) {
+    public void setDate(long date) {
         this.date = date;
+    }
+
+    public List<ExerciseLogBean> getExerciseLogs() {
+        return exerciseLogs;
+    }
+
+    public void setExerciseLogs(List<ExerciseLogBean> exerciseLogs) {
+        this.exerciseLogs = exerciseLogs;
     }
 
 

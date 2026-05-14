@@ -4,6 +4,8 @@ import com.example.fitplannercommon.ExerciseDescriptionBean;
 import com.example.fitplannerserver.security.IdentityProvider;
 import com.github.f4b6a3.uuid.UuidCreator;
 
+import java.util.List;
+
 public class ManageExerciseLibraryController {
     private final IdentityProvider identityProvider;
 
@@ -28,5 +30,12 @@ public class ManageExerciseLibraryController {
 
     public void removeExercise(String uuid) {
         // Removal logic
+    }
+
+    public List<ExerciseDescriptionBean> getExercisesByIds(List<String> uuids) {
+    }
+
+    public List<ExerciseDescriptionBean> getLibrary() {
+
     }
 }
