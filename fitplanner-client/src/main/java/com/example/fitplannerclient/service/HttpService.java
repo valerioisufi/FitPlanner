@@ -14,7 +14,9 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.BiConsumer;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 public class HttpService {
     private static final Logger logger = Logger.getLogger(HttpService.class.getName());
@@ -59,53 +61,72 @@ public class HttpService {
      */
     private <T> CompletableFuture<T> requestAsync(HttpRequest.Builder requestBuilder, Class<T> responseType, boolean isRetry) {
         requestBuilder.header("Accept", CONTENT_TYPE);
-        String token = sessionManager.getAccessToken();
-        if (token != null && !token.isEmpty()) {
-            requestBuilder.setHeader("Authorization", "Bearer " + token);
-        }
+        addAuthorizationHeader(requestBuilder);
 
         HttpRequest request = requestBuilder.build();
 
         return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
-                .thenCompose(response -> {
-                    logger.info("Response code: " + response.statusCode() + " for " + request.uri() + "\nBody: " + response.body());
+                .thenCompose(response -> processResponse(response, request, requestBuilder, responseType, isRetry));
+    }
 
-                    // Token Scaduto (401) e non stiamo già riprovando
-                    if (response.statusCode() == 401 && !isRetry) {
-                        return handleRefreshToken()
-                                .thenCompose(success -> {
-                                    if (success) {
-                                        requestBuilder.setHeader("Authorization", "Bearer " + sessionManager.getAccessToken());
-                                        return requestAsync(requestBuilder, responseType, true);
-                                    } else {
-                                        // Se il refresh fallisce eseguire onSessionExpired callback
-                                        this.onSessionExpired.run();
-                                        String errorMessage = response.body();
-                                        return CompletableFuture.failedFuture(new RequestException(errorMessage));
-                                    }
-                                });
-                    }
+    // Handle the authorization header injection
+    private void addAuthorizationHeader(HttpRequest.Builder requestBuilder) {
+        String token = sessionManager.getAccessToken();
+        if (token != null && !token.isEmpty()) {
+            requestBuilder.setHeader("Authorization", "Bearer " + token);
+        }
+    }
 
-                    // Gestione Errori Standard
-                    if (response.statusCode() >= 300) {
-                        String errorMessage = response.body();
+    // Route the response based on the HTTP status code
+    private <T> CompletableFuture<T> processResponse(HttpResponse<String> response, HttpRequest request, HttpRequest.Builder requestBuilder, Class<T> responseType, boolean isRetry) {
+        logger.info("Response code: " + response.statusCode() + " for " + request.uri() + "\nBody: " + response.body());
 
-                        // Se il body è vuoto, usa un fallback generico
-                        if (errorMessage == null || errorMessage.isBlank()) {
-                            errorMessage = "Errore del server (" + response.statusCode() + ")";
-                        }
+        if (response.statusCode() == 401 && !isRetry) {
+            return handleUnauthorizedRetry(requestBuilder, responseType, response.body());
+        }
 
-                        return CompletableFuture.failedFuture(new RequestException(errorMessage));
-                    }
+        if (response.statusCode() >= 300) {
+            return handleStandardError(response);
+        }
 
-                    // Successo
-                    try {
-                        T result = objectMapper.readValue(response.body(), responseType);
-                        return CompletableFuture.completedFuture(result);
-                    } catch (JacksonException e) {
-                        return CompletableFuture.failedFuture(new RequestException("Errore deserializzazione", e));
+        return handleSuccessfulResponse(response, responseType);
+    }
+
+    // Handle token refresh logic and retry mechanism
+    private <T> CompletableFuture<T> handleUnauthorizedRetry(HttpRequest.Builder requestBuilder, Class<T> responseType, String responseBody) {
+        return handleRefreshToken()
+                .thenCompose(success -> {
+                    if (success) {
+                        requestBuilder.setHeader("Authorization", "Bearer " + sessionManager.getAccessToken());
+                        return requestAsync(requestBuilder, responseType, true);
+                    } else {
+                        // Execute the onSessionExpired callback if the refresh operation fails
+                        this.onSessionExpired.run();
+                        return CompletableFuture.failedFuture(new RequestException(responseBody));
                     }
                 });
+    }
+
+    // Handle standard HTTP errors (300+)
+    private <T> CompletableFuture<T> handleStandardError(HttpResponse<String> response) {
+        String errorMessage = response.body();
+
+        // Fallback to a generic error message if the response body is empty or blank
+        if (errorMessage == null || errorMessage.isBlank()) {
+            errorMessage = "Server error (" + response.statusCode() + ")";
+        }
+
+        return CompletableFuture.failedFuture(new RequestException(errorMessage));
+    }
+
+    // Handle successful payload deserialization
+    private <T> CompletableFuture<T> handleSuccessfulResponse(HttpResponse<String> response, Class<T> responseType) {
+        try {
+            T result = objectMapper.readValue(response.body(), responseType);
+            return CompletableFuture.completedFuture(result);
+        } catch (JacksonException e) {
+            return CompletableFuture.failedFuture(new RequestException("Deserialization error", e));
+        }
     }
 
     /**
@@ -180,4 +201,85 @@ public class HttpService {
         return requestAsync(requestBuilder, responseType, false);
     }
 
+    // --- NEW SSE METHODS ---
+
+    /**
+     * Subscribes to a Server-Sent Events (SSE) stream.
+     *
+     * @param url The relative endpoint URL.
+     * @param eventProcessor A callback to handle incoming events (eventName, payloadData).
+     * @return A CompletableFuture representing the active connection. Call .cancel(true) to close it.
+     */
+    public CompletableFuture<Void> subscribeSseAsync(String url, BiConsumer<String, String> eventProcessor) {
+        HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
+                .uri(URI.create(baseUrl + url))
+                .GET();
+
+        return requestSseAsync(requestBuilder, eventProcessor, false);
+    }
+
+    /**
+     * Internal method to handle SSE requests, including token refresh logic.
+     */
+    private CompletableFuture<Void> requestSseAsync(HttpRequest.Builder requestBuilder, BiConsumer<String, String> eventProcessor, boolean isRetry) {
+        // SSE requires text/event-stream header
+        requestBuilder.header("Accept", "text/event-stream");
+
+        String token = sessionManager.getAccessToken();
+        if (token != null && !token.isEmpty()) {
+            requestBuilder.setHeader("Authorization", "Bearer " + token);
+        }
+
+        HttpRequest request = requestBuilder.build();
+
+        // Use BodyHandlers.ofLines() to read the response as a continuous stream
+        return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofLines())
+                .thenCompose(response -> {
+                    logger.info("SSE Connection status: " + response.statusCode() + " for " + request.uri());
+
+                    // Handle expired token logic exactly like standard requests
+                    if (response.statusCode() == 401 && !isRetry) {
+                        return handleRefreshToken()
+                                .thenCompose(success -> {
+                                    if (success) {
+                                        requestBuilder.setHeader("Authorization", "Bearer " + sessionManager.getAccessToken());
+                                        return requestSseAsync(requestBuilder, eventProcessor, true);
+                                    } else {
+                                        this.onSessionExpired.run();
+                                        return CompletableFuture.failedFuture(new RequestException("Unauthorized: SSE token refresh failed"));
+                                    }
+                                });
+                    }
+
+                    if (response.statusCode() >= 300) {
+                        return CompletableFuture.failedFuture(new RequestException("SSE Server Error (" + response.statusCode() + ")"));
+                    }
+
+                    // Process the infinite stream asynchronously on a separate thread
+                    return CompletableFuture.runAsync(() -> {
+                        String[] currentEventName = {"message"};
+                        StringBuilder dataBuffer = new StringBuilder();
+
+                        try (Stream<String> lines = response.body()) {
+                            lines.forEach(line -> {
+                                if (line.startsWith("event:")) {
+                                    currentEventName[0] = line.substring(6).trim();
+                                } else if (line.startsWith("data:")) {
+                                    // Append data, handling potential multi-line JSON payloads
+                                    dataBuffer.append(line.substring(5).trim());
+                                } else if (line.isBlank()) {
+                                    // An empty line indicates the end of a single SSE block
+                                    if (dataBuffer.length() > 0) {
+                                        eventProcessor.accept(currentEventName[0], dataBuffer.toString());
+                                        dataBuffer.setLength(0); // Reset buffer
+                                        currentEventName[0] = "message"; // Reset to default
+                                    }
+                                }
+                            });
+                        } catch (Exception e) {
+                            logger.warning("SSE Stream ended or interrupted: " + e.getMessage());
+                        }
+                    });
+                });
+    }
 }
