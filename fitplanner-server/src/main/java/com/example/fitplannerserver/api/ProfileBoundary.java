@@ -29,12 +29,6 @@ public class ProfileBoundary {
         profileController.updateProfileInfo(profileBean);
     }
 
-    // Fetches any public profile by its UUID
-    @GetMapping("/{uuid}")
-    public ProfileBean getProfileInfo(@PathVariable String uuid){
-        return profileController.getProfileInfo(uuid);
-    }
-
     // Athlete fetches their assigned trainer's profile
     @GetMapping("/my-trainer")
     public ProfileBean getMyTrainer() {

@@ -1,9 +1,6 @@
 package com.example.fitplannerserver.model.plan;
 
 import com.example.fitplannercommon.WorkoutState;
-import com.example.fitplannerserver.model.Exercise;
-
-import java.util.List;
 
 public class WorkoutSession {
     private final String sessionId;

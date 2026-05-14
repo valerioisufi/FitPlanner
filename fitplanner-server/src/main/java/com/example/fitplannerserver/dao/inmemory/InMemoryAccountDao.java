@@ -4,6 +4,7 @@ import com.example.fitplannerserver.dao.AccountDao;
 import com.example.fitplannerserver.model.Account;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class InMemoryAccountDao implements AccountDao {
@@ -16,28 +17,49 @@ public class InMemoryAccountDao implements AccountDao {
         return Wrapper.INSTANCE;
     }
 
+    // Map Key: email (Account.email)
     private final Map<String, Account> accounts = new ConcurrentHashMap<>();
 
     @Override
     public boolean create(Account account) {
-        return accounts.putIfAbsent(account.getUserId(), account) == null;
+        Objects.requireNonNull(account, "Account cannot be null");
+        Objects.requireNonNull(account.getUserId(), "Account userId cannot be null");
+
+        Account copyOfAccount = new Account(account);
+
+        return accounts.putIfAbsent(copyOfAccount.getUserId(), copyOfAccount) == null;
     }
 
     @Override
     public void save(Account account) {
-        accounts.put(account.getUserId(), account);
+        Objects.requireNonNull(account, "Account cannot be null");
+        Objects.requireNonNull(account.getUserId(), "Account userId cannot be null");
+
+        Account copyOfAccount = new Account(account);
+
+        accounts.put(copyOfAccount.getUserId(), copyOfAccount);
     }
 
     @Override
     public Account findById(String userId) {
-        return accounts.get(userId);
+        Objects.requireNonNull(userId, "userId cannot be null");
+
+        Account foundAccount = accounts.get(userId);
+
+        if (foundAccount == null) {
+            return null;
+        }
+
+        return new Account(foundAccount);
     }
 
     @Override
     public Account findByEmail(String email) {
+        Objects.requireNonNull(email, "email cannot be null");
+
         for (Account account : accounts.values()) {
-            if (account.getEmail().equalsIgnoreCase(email)) {
-                return account;
+            if (email.equalsIgnoreCase(account.getEmail())) {
+                return new Account(account);
             }
         }
         return null;
@@ -45,9 +67,13 @@ public class InMemoryAccountDao implements AccountDao {
 
     @Override
     public Account findByRefreshToken(String refreshToken) {
+        if (refreshToken == null || refreshToken.isBlank()) {
+            return null;
+        }
+
         for (Account account : accounts.values()) {
-            if (refreshToken != null && refreshToken.equals(account.getRefreshToken())) {
-                return account;
+            if (refreshToken.equals(account.getRefreshToken())) {
+                return new Account(account);
             }
         }
         return null;
@@ -60,6 +86,9 @@ public class InMemoryAccountDao implements AccountDao {
 
     @Override
     public void delete(Account account) {
+        Objects.requireNonNull(account, "Account cannot be null");
+        Objects.requireNonNull(account.getUserId(), "Account userId cannot be null");
+
         accounts.remove(account.getUserId());
     }
 }

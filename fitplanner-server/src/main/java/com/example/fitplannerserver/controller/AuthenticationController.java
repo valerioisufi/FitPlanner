@@ -35,7 +35,7 @@ public class AuthenticationController {
 
         TokenBean tokenBean = new TokenBean();
 
-        tokenBean.setAccessToken(jwtUtil.generateAccessToken(account.getUserId()));
+        tokenBean.setAccessToken(jwtUtil.generateAccessToken(account.getUserId(), account.getProfileType()));
         tokenBean.setRefreshToken(refreshToken);
 
         return tokenBean;
@@ -62,7 +62,7 @@ public class AuthenticationController {
         if (accountDao.create(account)) {
             TokenBean tokenBean = new TokenBean();
 
-            tokenBean.setAccessToken(jwtUtil.generateAccessToken(account.getUserId()));
+            tokenBean.setAccessToken(jwtUtil.generateAccessToken(account.getUserId(), account.getProfileType()));
             tokenBean.setRefreshToken(account.getRefreshToken());
             return tokenBean;
         } else {
@@ -77,7 +77,7 @@ public class AuthenticationController {
         if (account != null) {
             TokenBean newTokenBean = new TokenBean();
 
-            newTokenBean.setAccessToken(jwtUtil.generateAccessToken(account.getUserId()));
+            newTokenBean.setAccessToken(jwtUtil.generateAccessToken(account.getUserId(), account.getProfileType()));
             return newTokenBean;
         }
 

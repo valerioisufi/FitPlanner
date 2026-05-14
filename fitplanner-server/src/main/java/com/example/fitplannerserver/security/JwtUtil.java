@@ -1,5 +1,6 @@
 package com.example.fitplannerserver.security;
 
+import com.example.fitplannerserver.model.Account;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
@@ -25,15 +26,16 @@ public class JwtUtil {
         return signingKey;
     }
 
-    public String generateAccessToken(String userId) {
+    public String generateAccessToken(String userId, Account.Role role) {
         return Jwts.builder()
                 .subject(userId)
-                .expiration(new Date(System.currentTimeMillis() + (1000 * 60 * 15))) // 15 minuti
+                .claim("role", role.name())
+                .expiration(new Date(System.currentTimeMillis() + (1000 * 60 * 15))) // 15 minutes
                 .signWith(getSigningKey())
                 .compact();
     }
 
-    public String validateAccessTokenAndGetSubject(String token) {
+    public Claims validateAccessTokenAndGetClaims(String token) {
         try {
             Jws<Claims> claims = Jwts.parser()
                     .verifyWith(getSigningKey())
@@ -42,7 +44,7 @@ public class JwtUtil {
 
             if(claims.getPayload().getExpiration().before(new Date())) return null;
 
-            return claims.getPayload().getSubject();
+            return claims.getPayload();
         } catch (Exception e) {
             return null;
         }

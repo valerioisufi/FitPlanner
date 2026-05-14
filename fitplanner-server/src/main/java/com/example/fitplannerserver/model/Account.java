@@ -15,6 +15,14 @@ public class Account {
         this.profileType = profileType;
     }
 
+    public Account(Account account) {
+        this.userId = account.userId;
+        this.email = account.email;
+        this.passwordHash = account.passwordHash;
+        this.refreshToken = account.refreshToken;
+        this.profileType = account.profileType;
+    }
+
     public String getUserId() {
         return userId;
     }

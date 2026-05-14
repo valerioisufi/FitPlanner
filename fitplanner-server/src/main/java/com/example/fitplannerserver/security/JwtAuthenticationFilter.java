@@ -1,16 +1,20 @@
 package com.example.fitplannerserver.security;
 
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.jspecify.annotations.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 @Component
@@ -32,13 +36,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (header != null && header.startsWith("Bearer ")) {
             String token = header.substring(7);
-            String userId = jwtUtil.validateAccessTokenAndGetSubject(token);
 
-            if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            Claims claims = jwtUtil.validateAccessTokenAndGetClaims(token);
+
+            if (claims != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+
+                String userId = claims.getSubject();
+                String roleString = claims.get("role", String.class);
+
+                List<GrantedAuthority> authorities = new ArrayList<>();
+                if (roleString != null) {
+                    authorities.add(new SimpleGrantedAuthority("ROLE_" + roleString));
+                }
 
                 UsernamePasswordAuthenticationToken auth =
                         new UsernamePasswordAuthenticationToken(
-                                userId, null, List.of());
+                                userId, null, authorities
+                        );
 
                 SecurityContextHolder.getContext().setAuthentication(auth);
             }

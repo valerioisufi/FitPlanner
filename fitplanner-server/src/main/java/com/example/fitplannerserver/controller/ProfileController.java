@@ -1,10 +1,13 @@
 package com.example.fitplannerserver.controller;
 
+import com.example.fitplannercommon.InvitationCodeBean;
 import com.example.fitplannerserver.dao.DaoFactory;
 import com.example.fitplannerserver.dao.ProfileDao;
 import com.example.fitplannerserver.model.User;
 import com.example.fitplannercommon.ProfileBean;
 import com.example.fitplannerserver.security.IdentityProvider;
+
+import java.util.List;
 
 public class ProfileController {
     private final IdentityProvider identityProvider;
@@ -39,5 +42,16 @@ public class ProfileController {
 
         profileDao.save(identityProvider.getUserId(), user);
 
+    }
+
+    public ProfileBean getMyTrainer() {
+    }
+
+    public List<ProfileBean> getMyAthletes() {
+    }
+
+    public void linkTrainer(InvitationCodeBean invitationCodeBean){}
+
+    public InvitationCodeBean generateNewInvitationCode() {
     }
 }
