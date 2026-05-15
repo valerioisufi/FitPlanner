@@ -1,5 +1,6 @@
 package com.example.fitplannerserver.security;
 
+import com.example.fitplannerserver.exception.UnauthorizedException;
 import com.example.fitplannerserver.model.Account;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -34,4 +35,12 @@ public class SpringIdentityProvider implements IdentityProvider {
         // no matching role is found
         throw new IllegalStateException("Valid authentication token found but no valid role is mapped");
     }
+
+    @Override
+    public void checkUserRole(Account.Role role){
+        if(getUserRole() != role){
+            throw new UnauthorizedException("L'utente non dispone del ruolo adeguato");
+        }
+    }
+
 }

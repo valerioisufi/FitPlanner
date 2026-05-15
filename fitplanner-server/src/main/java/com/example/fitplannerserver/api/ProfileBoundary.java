@@ -43,14 +43,13 @@ public class ProfileBoundary {
 
     @PostMapping("/my-trainer/link")
     public void linkTrainerWithCode(@RequestBody InvitationCodeBean invitationBean) {
-        profileController.linkTrainer(invitationBean.getCode());
+        profileController.linkTrainer(invitationBean);
     }
 
-    // Trainer requests to generate/reset their invitation code
-    @PostMapping("/my-code/generate")
-    public InvitationCodeBean generateNewCode() {
-        String newCode = profileController.generateNewInvitationCode();
-        return new InvitationCodeBean(newCode);
+    // Trainer requests to get their invitation code
+    @PostMapping("/my-code")
+    public InvitationCodeBean getCode() {
+        return profileController.getInvitationCode();
     }
 
 }

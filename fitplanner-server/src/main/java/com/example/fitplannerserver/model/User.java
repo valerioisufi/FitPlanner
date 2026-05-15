@@ -1,52 +1,70 @@
 package com.example.fitplannerserver.model;
 
 public class User {
+    private final String id;
     private String username;
     private String firstName;
     private String lastName;
-    private String email;
+    private String contactEmail;
     private String phoneNumber;
 
-    public User(String username, String name, String surname, String email, String phoneNumber) {
+    private String invitationCode;
+
+    public User(String id, String username, String name, String surname, String contactEmail, String phoneNumber, String invitationCode) {
+        this.id= id;
         this.username = username;
         this.firstName = name;
         this.lastName = surname;
-        this.email = email;
+        this.contactEmail = contactEmail;
+        this.phoneNumber = phoneNumber;
+        this.invitationCode = invitationCode;
+    }
+
+    public User(User user){
+        this.id = user.id;
+        this.username = user.username;
+        this.firstName = user.firstName;
+        this.lastName = user.lastName;
+        this.contactEmail = user.contactEmail;
+        this.phoneNumber = user.phoneNumber;
+        this.invitationCode = user.invitationCode;
+    }
+
+    public String getId(){return id;}
+
+    public void setUserProfileInfo(String username, String firstName, String lastName, String contactEmail, String phoneNumber){
+        this.username = username;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.contactEmail = contactEmail;
         this.phoneNumber = phoneNumber;
     }
 
     public String getUsername() {
         return username;
     }
-    public void setUsername(String username) {
-        this.username = username;
-    }
 
     public String getFirstName() {
         return firstName;
-    }
-    public void setName(String name) {
-        this.firstName = name;
     }
 
     public String getLastName() {
         return lastName;
     }
-    public void setLastName(String surname) {
-        this.lastName = surname;
+
+    public String getContactEmail() {
+        return contactEmail;
     }
 
-    public String getEmail() {
-        return email;
-    }
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
-    }
     public String getPhoneNumber() {
         return phoneNumber;
+    }
+
+    public String getInvitationCode() {
+        return invitationCode;
+    }
+
+    public void setInvitationCode(String invitationCode) {
+        this.invitationCode = invitationCode;
     }
 }

@@ -129,7 +129,7 @@ public class ExerciseLibraryView extends BaseView {
         // Simulo .h3 ma un po' più piccolo o uso .label-field
         nameLbl.setStyle("-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #171717;");
 
-        Label descLbl = new Label(exercise.getDescription());
+        Label descLbl = new Label(exercise.getExecution());
         descLbl.getStyleClass().add("subtitle");
         descLbl.setWrapText(true);
 

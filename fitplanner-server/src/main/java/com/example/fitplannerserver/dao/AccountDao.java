@@ -1,19 +1,18 @@
 package com.example.fitplannerserver.dao;
 
+import com.example.fitplannerserver.exception.DaoException;
 import com.example.fitplannerserver.model.Account;
 
+import java.util.Optional;
+
 public interface AccountDao {
-    boolean create(Account account);
+    boolean create(Account account) throws DaoException;
 
-    void save(Account account);
+    void save(Account account) throws DaoException;
 
-    Account findById(String userId);
+    Optional<Account> findByEmail(String email) throws DaoException;
 
-    Account findByEmail(String email);
+    Optional<Account> findByRefreshToken(String refreshToken) throws DaoException;
 
-    Account findByRefreshToken(String refreshToken);
-
-    boolean existsByEmail(String email);
-
-    void delete(Account account);
+    void delete(Account account) throws DaoException;
 }

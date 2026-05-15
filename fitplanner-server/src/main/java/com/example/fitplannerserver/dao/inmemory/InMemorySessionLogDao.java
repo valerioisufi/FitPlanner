@@ -18,6 +18,8 @@ public class InMemorySessionLogDao implements SessionLogDao {
         public static final InMemorySessionLogDao INSTANCE = new InMemorySessionLogDao();
     }
 
+    private InMemorySessionLogDao(){}
+
     public static InMemorySessionLogDao getInstance() {
         return InMemorySessionLogDao.Wrapper.INSTANCE;
     }

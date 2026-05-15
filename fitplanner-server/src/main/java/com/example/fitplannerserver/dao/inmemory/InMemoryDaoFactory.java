@@ -20,4 +20,19 @@ public class InMemoryDaoFactory extends DaoFactory {
         return InMemorySessionLogDao.getInstance();
     }
 
+    @Override
+    public InMemoryExerciseLibraryDao getExerciseLibraryDao() {
+        return InMemoryExerciseLibraryDao.getInstance();
+    }
+
+    @Override
+    public InMemoryWorkoutPlanDao getWorkoutPlanDao() {
+        return InMemoryWorkoutPlanDao.getInstance();
+    }
+
+    @Override
+    public InMemoryCoachingDao getCoachingDao() {
+        return InMemoryCoachingDao.getInstance();
+    }
+
 }

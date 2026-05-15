@@ -1,18 +1,18 @@
 package com.example.fitplannercommon;
 
 public class LoginBean {
-    private String username;
+    private String email;
     private String password;
 
     public LoginBean() {}
 
-    public LoginBean(String username, String password) {
-        this.username = username;
+    public LoginBean(String email, String password) {
+        this.email = email;
         this.password = password;
     }
 
-    public String getUsername() {
-        return username;
+    public String getEmail() {
+        return email;
     }
 
     public String getPassword() {

@@ -18,7 +18,7 @@ public class AuthManager {
     public CompletableFuture<Void> loginAsync(LoginBean loginBean) {
         // Here you could add client-side validation in the future.
         // For example: Check if the username is not empty before making the network call.
-        if (loginBean.getUsername() == null || loginBean.getUsername().isBlank()) {
+        if (loginBean.getEmail() == null || loginBean.getEmail().isBlank()) {
             return CompletableFuture.failedFuture(new IllegalArgumentException("Username cannot be empty"));
         }
 

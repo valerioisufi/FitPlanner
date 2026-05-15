@@ -5,6 +5,7 @@ import com.example.fitplannerserver.model.Account;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class InMemoryAccountDao implements AccountDao {
@@ -12,6 +13,8 @@ public class InMemoryAccountDao implements AccountDao {
     private static class Wrapper {
         public static final InMemoryAccountDao INSTANCE = new InMemoryAccountDao();
     }
+
+    private InMemoryAccountDao(){}
 
     public static InMemoryAccountDao getInstance() {
         return Wrapper.INSTANCE;
@@ -23,11 +26,11 @@ public class InMemoryAccountDao implements AccountDao {
     @Override
     public boolean create(Account account) {
         Objects.requireNonNull(account, "Account cannot be null");
-        Objects.requireNonNull(account.getUserId(), "Account userId cannot be null");
+        Objects.requireNonNull(account.getEmail(), "Account email cannot be null");
 
         Account copyOfAccount = new Account(account);
 
-        return accounts.putIfAbsent(copyOfAccount.getUserId(), copyOfAccount) == null;
+        return accounts.putIfAbsent(copyOfAccount.getEmail().toLowerCase(), copyOfAccount) == null;
     }
 
     @Override
@@ -41,47 +44,28 @@ public class InMemoryAccountDao implements AccountDao {
     }
 
     @Override
-    public Account findById(String userId) {
-        Objects.requireNonNull(userId, "userId cannot be null");
-
-        Account foundAccount = accounts.get(userId);
-
-        if (foundAccount == null) {
-            return null;
-        }
-
-        return new Account(foundAccount);
-    }
-
-    @Override
-    public Account findByEmail(String email) {
+    public Optional<Account> findByEmail(String email) {
         Objects.requireNonNull(email, "email cannot be null");
 
-        for (Account account : accounts.values()) {
-            if (email.equalsIgnoreCase(account.getEmail())) {
-                return new Account(account);
-            }
+        Account account = accounts.get(email.toLowerCase());
+        if (account != null) {
+            return Optional.of(new Account(account));
         }
-        return null;
+        return Optional.empty();
     }
 
     @Override
-    public Account findByRefreshToken(String refreshToken) {
+    public Optional<Account> findByRefreshToken(String refreshToken) {
         if (refreshToken == null || refreshToken.isBlank()) {
-            return null;
+            return Optional.empty();
         }
 
         for (Account account : accounts.values()) {
             if (refreshToken.equals(account.getRefreshToken())) {
-                return new Account(account);
+                return Optional.of(new Account(account));
             }
         }
-        return null;
-    }
-
-    @Override
-    public boolean existsByEmail(String email) {
-        return findByEmail(email) != null;
+        return Optional.empty();
     }
 
     @Override

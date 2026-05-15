@@ -51,6 +51,12 @@ public abstract class DaoFactory {
 
     public abstract SessionLogDao getSessionLogDao();
 
+    public abstract ExerciseLibraryDao getExerciseLibraryDao();
+
+    public abstract WorkoutPlanDao getWorkoutPlanDao();
+
+    public abstract CoachingDao getCoachingDao();
+
 
 
 }

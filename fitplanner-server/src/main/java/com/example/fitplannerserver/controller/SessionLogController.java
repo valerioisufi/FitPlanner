@@ -91,7 +91,7 @@ public class SessionLogController {
 
 
     // mapper methods
-    public static SessionLogBean toBean(SessionLog entity) {
+    private static SessionLogBean toBean(SessionLog entity) {
         if (entity == null) return null;
 
         SessionLogBean bean = new SessionLogBean();
@@ -121,7 +121,7 @@ public class SessionLogController {
         return bean;
     }
 
-    public static ExerciseLogBean toBean(ExerciseLog entity) {
+    private static ExerciseLogBean toBean(ExerciseLog entity) {
         if (entity == null) return null;
 
         ExerciseLogBean bean = new ExerciseLogBean();
@@ -141,7 +141,7 @@ public class SessionLogController {
         return bean;
     }
 
-    public static SessionLog toEntity(SessionLogBean bean) {
+    private static SessionLog toEntity(SessionLogBean bean) {
         if (bean == null) return null;
 
         SessionLog.SessionStatus status = null;
@@ -173,7 +173,7 @@ public class SessionLogController {
         return entity;
     }
 
-    public static ExerciseLog toEntity(ExerciseLogBean bean) {
+    private static ExerciseLog toEntity(ExerciseLogBean bean) {
         if (bean == null) return null;
 
         List<ExerciseLog.ExerciseSet> sets = new ArrayList<>();
