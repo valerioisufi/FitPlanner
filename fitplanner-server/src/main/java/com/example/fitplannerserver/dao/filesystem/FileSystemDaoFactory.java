@@ -1,9 +1,6 @@
 package com.example.fitplannerserver.dao.filesystem;
 
-import com.example.fitplannerserver.dao.AccountDao;
-import com.example.fitplannerserver.dao.DaoFactory;
-import com.example.fitplannerserver.dao.ProfileDao;
-import com.example.fitplannerserver.dao.SessionLogDao;
+import com.example.fitplannerserver.dao.*;
 
 public class FileSystemDaoFactory extends DaoFactory {
     @Override
@@ -18,6 +15,21 @@ public class FileSystemDaoFactory extends DaoFactory {
 
     @Override
     public SessionLogDao getSessionLogDao() {
+        return null;
+    }
+
+    @Override
+    public ExerciseLibraryDao getExerciseLibraryDao() {
+        return null;
+    }
+
+    @Override
+    public WorkoutPlanDao getWorkoutPlanDao() {
+        return null;
+    }
+
+    @Override
+    public CoachingDao getCoachingDao() {
         return null;
     }
 

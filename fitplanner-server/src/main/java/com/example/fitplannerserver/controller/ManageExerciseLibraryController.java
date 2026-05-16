@@ -1,7 +1,18 @@
 package com.example.fitplannerserver.controller;
 
 import com.example.fitplannercommon.ExerciseDescriptionBean;
+import com.example.fitplannerserver.beanvalidator.PlanValidator;
+import com.example.fitplannerserver.dao.CoachingDao;
+import com.example.fitplannerserver.dao.DaoFactory;
+import com.example.fitplannerserver.dao.ExerciseLibraryDao;
+import com.example.fitplannerserver.exception.DaoException;
+import com.example.fitplannerserver.exception.SystemException;
+import com.example.fitplannerserver.exception.UnauthorizedException;
+import com.example.fitplannerserver.exception.WrongArgumentsException;
+import com.example.fitplannerserver.model.Account;
+import com.example.fitplannerserver.model.plan.ExerciseDescription;
 import com.example.fitplannerserver.security.IdentityProvider;
+import com.example.fitplannerserver.util.ValidationUtils;
 import com.github.f4b6a3.uuid.UuidCreator;
 
 import java.util.List;
@@ -14,28 +25,136 @@ public class ManageExerciseLibraryController {
     }
 
     public String addExercise(ExerciseDescriptionBean exerciseBean) {
-        String trainerId = identityProvider.getUserId();
+        identityProvider.checkUserRole(Account.Role.TRAINER);
+        PlanValidator.validateExerciseDescriptionBean(exerciseBean);
 
-        // Generate a new UUIDv7 for the exercise
-        String newExerciseUuid = UuidCreator.getTimeOrderedEpoch().toString();
+        ExerciseLibraryDao exerciseLibraryDao = DaoFactory.getInstance().getExerciseLibraryDao();
 
-        // Map the bean to an entity and save it via DAO
+        String newExerciseId = UuidCreator.getTimeOrderedEpoch().toString();
+        ExerciseDescription newExercise = new ExerciseDescription(identityProvider.getUserId(), newExerciseId);
+        newExercise.setDescription(
+                exerciseBean.getName(),
+                exerciseBean.getExecution(),
+                exerciseBean.getMuscleGroups()
+        );
 
-        return newExerciseUuid;
+        try {
+            exerciseLibraryDao.saveExercise(newExercise);
+
+        } catch (DaoException e){
+            throw new SystemException("Errore nell'aggiunta dell'esercizio");
+        }
+
+        return newExerciseId;
     }
 
-    public void updateExercise(String uuid, ExerciseDescriptionBean exerciseBean) {
-        // Update logic
+    public void updateExercise(ExerciseDescriptionBean exerciseBean) {
+        identityProvider.checkUserRole(Account.Role.TRAINER);
+        PlanValidator.validateExerciseDescriptionBean(exerciseBean);
+        ValidationUtils.isValidUuid(exerciseBean.getExerciseId());
+
+        ExerciseLibraryDao exerciseLibraryDao = DaoFactory.getInstance().getExerciseLibraryDao();
+
+        ExerciseDescription exercise = new ExerciseDescription(identityProvider.getUserId(), exerciseBean.getExerciseId());
+        exercise.setDescription(
+                exerciseBean.getName(),
+                exerciseBean.getExecution(),
+                exerciseBean.getMuscleGroups()
+        );
+
+        try {
+            exerciseLibraryDao.findById(exercise.getExerciseId())
+                .filter(e -> e.getTrainerId().equals(identityProvider.getUserId()))
+                .orElseThrow(() -> new UnauthorizedException("Esercizio non trovato o non appartenente al trainer"));
+
+            exerciseLibraryDao.saveExercise(exercise);
+
+        } catch (DaoException e){
+            throw new SystemException("Errore nell'aggiornamento dell'esercizio");
+        }
+
     }
 
-    public void removeExercise(String uuid) {
-        // Removal logic
+    public void removeExercise(String exerciseId) {
+        identityProvider.checkUserRole(Account.Role.TRAINER);
+        ValidationUtils.isValidUuid(exerciseId);
+
+        ExerciseLibraryDao exerciseLibraryDao = DaoFactory.getInstance().getExerciseLibraryDao();
+
+        try {
+            exerciseLibraryDao.findById(exerciseId)
+                    .filter(e -> e.getTrainerId().equals(identityProvider.getUserId()))
+                    .orElseThrow(() -> new UnauthorizedException("Esercizio non trovato o non appartenente al trainer"));
+
+            exerciseLibraryDao.deleteExercise(exerciseId);
+
+        } catch (DaoException e){
+            throw new SystemException("Errore nell'aggiornamento dell'esercizio");
+        }
+
     }
 
-    public List<ExerciseDescriptionBean> getExercisesByIds(List<String> uuids) {
+    public List<ExerciseDescriptionBean> getExercisesByIds(List<String> exerciseIds) {
+        if(exerciseIds == null || exerciseIds.isEmpty()){
+            throw new WrongArgumentsException("exerciseIds non può essere null o vuoto");
+        }
+        for(String id: exerciseIds){
+            if(ValidationUtils.isValidUuid(id)){
+                throw new WrongArgumentsException("exerciseIds devono essere UUID validi");
+            }
+        }
+
+        CoachingDao coachingDao = DaoFactory.getInstance().getCoachingDao();
+        ExerciseLibraryDao exerciseLibraryDao = DaoFactory.getInstance().getExerciseLibraryDao();
+
+        try{
+            String trainerId = switch(identityProvider.getUserRole()){
+                case Account.Role.TRAINER -> identityProvider.getUserId();
+                case Account.Role.ATHLETE -> coachingDao.findTrainerIdByAthleteId(identityProvider.getUserId())
+                        .orElseThrow(() -> new UnauthorizedException("Atleta non associato a nessun trainer"));
+            };
+
+            return exerciseLibraryDao.findByIds(exerciseIds)
+                    .stream()
+                    .filter(e -> e.getTrainerId().equals(trainerId))
+                    .map(e -> new ExerciseDescriptionBean(
+                            e.getExerciseId(),
+                            e.getName(),
+                            e.getExecution(),
+                            e.getMuscleGroups()
+                    ))
+                    .toList();
+
+        } catch(DaoException e){
+            throw new SystemException("Errore nel recupero degli esercizi");
+        }
     }
 
     public List<ExerciseDescriptionBean> getLibrary() {
 
+        CoachingDao coachingDao = DaoFactory.getInstance().getCoachingDao();
+        ExerciseLibraryDao exerciseLibraryDao = DaoFactory.getInstance().getExerciseLibraryDao();
+
+        try{
+            String trainerId = switch(identityProvider.getUserRole()){
+                case Account.Role.TRAINER -> identityProvider.getUserId();
+                case Account.Role.ATHLETE -> coachingDao.findTrainerIdByAthleteId(identityProvider.getUserId())
+                        .orElseThrow(() -> new UnauthorizedException("Atleta non associato a nessun trainer"));
+            };
+
+            return exerciseLibraryDao.findAllByTrainerId(trainerId)
+                    .stream()
+                    .map(e -> new ExerciseDescriptionBean(
+                            e.getExerciseId(),
+                            e.getName(),
+                            e.getExecution(),
+                            e.getMuscleGroups()
+                    ))
+                    .toList();
+
+        } catch(DaoException e){
+            throw new SystemException("Errore nel recupero della libreria di esercizi");
+        }
     }
+
 }

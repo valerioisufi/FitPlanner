@@ -7,7 +7,7 @@ import java.util.Optional;
 
 public interface ProfileDao {
     // Retrieves a profile by its unique ID
-    Optional<User> findById(String uuid) throws DaoException;
+    Optional<User> findById(String userId) throws DaoException;
 
     // Updates existing profile information
     void save(User user) throws DaoException;

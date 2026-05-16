@@ -41,7 +41,8 @@ public class ExerciseLibraryBoundary {
     // Updates an existing exercise in the library
     @PutMapping("/{uuid}")
     public void updateExercise(@PathVariable String uuid, @RequestBody ExerciseDescriptionBean exerciseBean) {
-        manageExerciseLibraryController.updateExercise(uuid, exerciseBean);
+        exerciseBean.setExerciseId(uuid);
+        manageExerciseLibraryController.updateExercise(exerciseBean);
     }
 
     // Removes an exercise from the library

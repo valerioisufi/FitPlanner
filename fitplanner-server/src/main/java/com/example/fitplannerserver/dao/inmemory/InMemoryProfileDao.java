@@ -1,10 +1,8 @@
 package com.example.fitplannerserver.dao.inmemory;
 
 import com.example.fitplannerserver.dao.ProfileDao;
-import com.example.fitplannerserver.model.Account;
 import com.example.fitplannerserver.model.User;
 
-import javax.swing.text.html.Option;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -26,10 +24,10 @@ public class InMemoryProfileDao implements ProfileDao {
     private final Map<String, User> profiles = new ConcurrentHashMap<>();
 
     @Override
-    public Optional<User> findById(String uuid) {
-        Objects.requireNonNull(uuid, "uuid cannot be null");
+    public Optional<User> findById(String userId) {
+        Objects.requireNonNull(userId, "userId cannot be null");
 
-        User userProfile = profiles.get(uuid);
+        User userProfile = profiles.get(userId);
 
         return Optional.ofNullable(userProfile).map(User::new);
     }

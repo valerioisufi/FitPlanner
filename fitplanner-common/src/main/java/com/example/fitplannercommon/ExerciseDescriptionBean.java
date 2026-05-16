@@ -3,16 +3,28 @@ package com.example.fitplannercommon;
 import java.util.List;
 
 public class ExerciseDescriptionBean {
+    private String exerciseId;
+
     private String name;
     private String execution;
     private List<String> muscleGroups;
 
     public ExerciseDescriptionBean(){}
 
-    public ExerciseDescriptionBean(String name, String execution, List<String> muscleGroups) {
+    public ExerciseDescriptionBean(String exerciseId, String name, String execution, List<String> muscleGroups) {
+        this.exerciseId = exerciseId;
+
         this.name = name;
         this.execution = execution;
         this.muscleGroups = muscleGroups;
+    }
+
+    public String getExerciseId() {
+        return exerciseId;
+    }
+
+    public void setExerciseId(String exerciseId) {
+        this.exerciseId = exerciseId;
     }
 
     public String getName() { return name; }
