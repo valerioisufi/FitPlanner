@@ -4,14 +4,17 @@ import com.example.fitplannercommon.LoginBean;
 import com.example.fitplannercommon.ProfileBean;
 import com.example.fitplannercommon.RegisterBean;
 import com.example.fitplannercommon.TokenBean;
+import com.example.fitplannerserver.beanvalidator.AuthValidator;
 import com.example.fitplannerserver.dao.AccountDao;
 import com.example.fitplannerserver.dao.DaoFactory;
+import com.example.fitplannerserver.dao.ProfileDao;
 import com.example.fitplannerserver.exception.DaoException;
 import com.example.fitplannerserver.exception.InvalidCredentialsException;
 import com.example.fitplannerserver.exception.SystemException;
-import com.example.fitplannerserver.exception.WrongArgumentsException;
 import com.example.fitplannerserver.model.Account;
+import com.example.fitplannerserver.model.User;
 import com.example.fitplannerserver.security.JwtUtil;
+import com.example.fitplannerserver.util.InvitationCodeGenerator;
 import com.github.f4b6a3.uuid.UuidCreator;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -27,9 +30,7 @@ public class AuthenticationController {
     }
 
     public TokenBean login(LoginBean loginBean) {
-        if (loginBean == null || loginBean.getEmail() == null || loginBean.getPassword() == null)
-            throw new WrongArgumentsException("");
-
+        AuthValidator.validateLoginBean(loginBean);
 
         AccountDao accountDao = DaoFactory.getInstance().getAccountDao();
 
@@ -58,6 +59,8 @@ public class AuthenticationController {
     }
 
     public TokenBean register(RegisterBean registerBean) {
+        AuthValidator.validateRegisterBean(registerBean);
+
         AccountDao accountDao = DaoFactory.getInstance().getAccountDao();
 
         Account.Role role = (registerBean.getProfile().getProfileType() == ProfileBean.ProfileType.ATHLETE)
@@ -77,6 +80,24 @@ public class AuthenticationController {
 
         try {
             if (accountDao.create(account)) {
+                // l'account dell'utente è stato creato correttamente
+                ProfileBean profileBean = registerBean.getProfile();
+
+                User user = new User(newUserId);
+                user.setUserProfileInfo(
+                        profileBean.getUsername().trim(),
+                        profileBean.getFirstName(),
+                        profileBean.getLastName(),
+                        profileBean.getContactEmail(),
+                        profileBean.getPhoneNumber()
+                );
+                if(role == Account.Role.TRAINER)
+                    user.setInvitationCode(InvitationCodeGenerator.generateCode());
+
+                ProfileDao profileDao = DaoFactory.getInstance().getProfileDao();
+                profileDao.save(user);
+
+                // genero i token jwt per l'utente
                 TokenBean tokenBean = new TokenBean();
 
                 tokenBean.setAccessToken(jwtUtil.generateAccessToken(account.getUserId(), account.getProfileType()));
@@ -91,6 +112,8 @@ public class AuthenticationController {
     }
 
     public TokenBean refreshToken(TokenBean tokenBean) {
+        AuthValidator.validateRefreshTokenBean(tokenBean);
+
         AccountDao accountDao = DaoFactory.getInstance().getAccountDao();
 
         try {
@@ -109,4 +132,6 @@ public class AuthenticationController {
             throw new SystemException("");
         }
     }
+
+
 }

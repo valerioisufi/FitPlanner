@@ -1,7 +1,7 @@
 package com.example.fitplannercommon;
 
 public class ProfileBean {
-    private String userId;
+    private String userId; // utilizzato solo quando è il server a inviare il bean
     private String username;
 
     private String firstName;

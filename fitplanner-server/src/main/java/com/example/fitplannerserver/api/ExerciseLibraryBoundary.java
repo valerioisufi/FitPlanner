@@ -17,7 +17,7 @@ public class ExerciseLibraryBoundary {
     }
 
     // Retrieve the exercise library.
-    // Logic inside Controller: If Trainer -> returns their library. If Athlete -> returns their Trainer's library.
+    // If Trainer -> returns their library. If Athlete -> returns their Trainer's library.
     // Supports an optional list of UUIDs to filter the results.
     @GetMapping
     public List<ExerciseDescriptionBean> getExercises(
