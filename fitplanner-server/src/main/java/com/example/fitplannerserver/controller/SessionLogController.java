@@ -36,10 +36,8 @@ public class SessionLogController {
             throw new WrongArgumentsException("startDate non può essere successivo a endDate");
         }
 
-        if(identityProvider.getUserRole() == Account.Role.ATHLETE){
-            if (!Objects.equals(identityProvider.getUserId(), athleteId)) {
-                throw new UnauthorizedException("Gli atleti possono solo accedere ai propri session logs");
-            }
+        if(identityProvider.getUserRole() == Account.Role.ATHLETE && !Objects.equals(identityProvider.getUserId(), athleteId)){
+            throw new UnauthorizedException("Gli atleti possono solo accedere ai propri session logs");
         }
 
         if(identityProvider.getUserRole() == Account.Role.TRAINER){

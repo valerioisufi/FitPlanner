@@ -11,7 +11,6 @@ import com.example.fitplannerserver.model.Account;
 import com.example.fitplannerserver.model.User;
 import com.example.fitplannercommon.ProfileBean;
 import com.example.fitplannerserver.security.IdentityProvider;
-import com.example.fitplannerserver.util.ValidationUtils;
 
 import java.util.ArrayList;
 import java.util.List;

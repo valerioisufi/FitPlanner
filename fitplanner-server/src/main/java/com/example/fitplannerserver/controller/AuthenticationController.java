@@ -107,7 +107,7 @@ public class AuthenticationController {
                 throw new InvalidCredentialsException("Email già utilizzata");
             }
         } catch (DaoException e) {
-            throw new RuntimeException(e);
+            throw new SystemException("Errore durante la registrazione");
         }
     }
 
@@ -129,7 +129,7 @@ public class AuthenticationController {
             throw new InvalidCredentialsException("Refresh token non valido");
 
         } catch (DaoException e) {
-            throw new SystemException("");
+            throw new SystemException("Errore durante il recupero dell'account");
         }
     }
 

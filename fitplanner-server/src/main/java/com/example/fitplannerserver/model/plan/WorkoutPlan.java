@@ -23,6 +23,8 @@ public class WorkoutPlan {
         this.planId = planId;
 
         this.title = title;
+        this.cycleLength = cycleLength;
+
         this.sessions = new TreeMap<>();
     }
 
@@ -51,16 +53,6 @@ public class WorkoutPlan {
     public void setTitle(String title) {
         this.title = title;
     }
-
-//    public WorkoutSession getToDoSession() {
-//        for (WorkoutSession session : sessions.values()){
-//            if (session.getState() == WorkoutState.TO_DO || session.getState() == WorkoutState.IN_PROGRESS ){
-//                return session;
-//            }
-//        }
-//        return null;
-//    }
-
 
     public WorkoutSession getSession(int day) {
         return this.sessions.get(day);
