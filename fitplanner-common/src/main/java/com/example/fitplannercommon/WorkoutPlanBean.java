@@ -3,9 +3,18 @@ package com.example.fitplannercommon;
 import java.util.List;
 
 public class WorkoutPlanBean {
+    private String planId;
+
     private String name;
-    private String description;
+    private int cycleLength;
     private List<WorkoutSessionBean> workoutSessions;
+
+    public String getPlanId() {
+        return planId;
+    }
+    public void setPlanId(String planId) {
+        this.planId = planId;
+    }
 
     public String getName() {
         return name;
@@ -14,11 +23,11 @@ public class WorkoutPlanBean {
         this.name = name;
     }
 
-    public String getDescription() {
-        return description;
+    public int getCycleLength() {
+        return cycleLength;
     }
-    public void setDescription(String description) {
-        this.description = description;
+    public void setCycleLength(int cycleLength) {
+        this.cycleLength = cycleLength;
     }
 
     public List<WorkoutSessionBean> getWorkoutSessions() {

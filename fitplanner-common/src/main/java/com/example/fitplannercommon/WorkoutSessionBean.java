@@ -1,17 +1,17 @@
 package com.example.fitplannercommon;
 
-import java.util.List;
-
 public class WorkoutSessionBean {
     private String name;
-    private List<String> labels;
-    private List<ExerciseBean> exercises;
-    private int day;
-    private WorkoutState state = WorkoutState.TO_DO;
+    private String content;
 
-    public WorkoutSessionBean(String name, List<ExerciseBean> exercises, int day) {
+    private int day;
+
+    public WorkoutSessionBean(){}
+
+    public WorkoutSessionBean(String name, String content, int day) {
         this.name = name;
-        this.exercises = exercises;
+        this.content = content;
+
         this.day = day;
     }
 
@@ -22,18 +22,11 @@ public class WorkoutSessionBean {
         this.name = name;
     }
 
-    public List<String> getLabels() {
-        return labels;
+    public String getContent() {
+        return content;
     }
-    public void setLabels(List<String> labels) {
-        this.labels = labels;
-    }
-
-    public List<ExerciseBean> getExercises() {
-        return exercises;
-    }
-    public void setExercises(List<ExerciseBean> exercises) {
-        this.exercises = exercises;
+    public void setContent(String content) {
+        this.content = content;
     }
 
     public int getDay() {
@@ -41,13 +34,6 @@ public class WorkoutSessionBean {
     }
     public void setDay(int day) {
         this.day = day;
-    }
-
-    public WorkoutState getState() {
-        return state;
-    }
-    public void setState(WorkoutState state) {
-        this.state = state;
     }
 }
 

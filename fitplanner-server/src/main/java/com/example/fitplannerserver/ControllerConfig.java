@@ -27,8 +27,13 @@ public class ControllerConfig {
     }
 
     @Bean
-    public EditWorkoutPlanController editWorkoutPlanController(IdentityProvider identityProvider) {
-        return new EditWorkoutPlanController(identityProvider);
+    public WorkoutPlanManagementController workoutPlanManagementController(IdentityProvider identityProvider) {
+        return new WorkoutPlanManagementController(identityProvider);
+    }
+
+    @Bean
+    public WorkoutScheduleController workoutScheduleController(IdentityProvider identityProvider) {
+        return new WorkoutScheduleController(identityProvider);
     }
 
     @Bean

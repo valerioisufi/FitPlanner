@@ -72,7 +72,7 @@ public class InMemoryCoachingDao implements CoachingDao {
         List<String> athletes = trainerToAthletes.get(trainerId);
 
         if (athletes == null || athletes.isEmpty()) {
-            return Collections.emptyList();
+            return List.of();
         }
 
         return new ArrayList<>(athletes);

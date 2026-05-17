@@ -1,46 +1,29 @@
 package com.example.fitplannerserver.dao;
 
+import com.example.fitplannerserver.exception.DaoException;
 import com.example.fitplannerserver.model.plan.WorkoutPlan;
 import com.example.fitplannerserver.model.plan.WorkoutSession;
 import java.util.List;
+import java.util.Optional;
 
 public interface WorkoutPlanDao {
 
-    // --- WORKOUT PLAN OPERATIONS ---
-
     // Creates a new empty workout plan linked to the trainer who authored it
-    void savePlan(WorkoutPlan plan);
-
-    // Updates the general content (title, notes) of an existing plan
-    void updatePlan(WorkoutPlan plan);
+    void savePlan(WorkoutPlan plan) throws DaoException;
 
     // Completely deletes a plan and cascades to its sessions
-    void deletePlan(String planUuid);
+    void deletePlan(String planId) throws DaoException;
 
     // Retrieves a specific plan by its ID
-    WorkoutPlan findPlanById(String planUuid);
+    Optional<WorkoutPlan> findPlanById(String planId) throws DaoException;
 
     // Assigns an existing plan to an athlete
-    void assignPlanToAthlete(String planUuid, String athleteUuid);
+    void assignPlanToAthlete(String planId, String athleteId) throws DaoException;
 
     // Retrieves the active plan assigned to an athlete
-    WorkoutPlan findAssignedPlanByAthleteId(String athleteUuid);
+    Optional<WorkoutPlan> findAssignedPlanByAthleteId(String athleteId) throws DaoException;
 
     // Retrieves all plans authored by a specific trainer
-    List<WorkoutPlan> findPlansByTrainerId(String trainerUuid);
+    List<WorkoutPlan> findPlansByTrainerId(String trainerId) throws DaoException;
 
-
-    // --- WORKOUT SESSION OPERATIONS ---
-
-    // Adds a new session to a specific plan
-    void saveSession(String planUuid, WorkoutSession session);
-
-    // Updates an existing session
-    void updateSession(WorkoutSession session);
-
-    // Deletes a specific session
-    void deleteSession(String sessionUuid);
-
-    // Retrieves a session by its ID
-    WorkoutSession findSessionById(String sessionUuid);
 }

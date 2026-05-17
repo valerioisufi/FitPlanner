@@ -1,44 +1,35 @@
 package com.example.fitplannerserver.model.plan;
 
-import com.example.fitplannercommon.WorkoutState;
-
 public class WorkoutSession {
-    private final String sessionId;
-
     private String title;
-    private String content;
+    private String jsonContent;
 
     private int day;
-    private WorkoutState state;
 
-    public WorkoutSession(String sessionId, String title, String content, int day, WorkoutState state) {
-        this.sessionId = sessionId;
+    public WorkoutSession(String title, String jsonContent, int day) {
 
         this.title = title;
-        this.content = content;
+        this.jsonContent = jsonContent;
 
         this.day = day;
-        this.state= state;
     }
 
-    public String getSessionId() {
-        return sessionId;
+    public WorkoutSession(WorkoutSession old){
+        this.title = old.title;
+        this.jsonContent = old.jsonContent;
+        this.day = old.day;
     }
 
     public String getTitle() {
         return title;
     }
 
+    public String getContent(){
+        return jsonContent;
+    }
+
     public int getDay() {
         return day;
-    }
-
-    public WorkoutState getState() {
-        return state;
-    }
-
-    public void setState(WorkoutState state) {
-        this.state = state;
     }
 
 }

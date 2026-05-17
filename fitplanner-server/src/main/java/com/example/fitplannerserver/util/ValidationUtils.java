@@ -1,5 +1,8 @@
 package com.example.fitplannerserver.util;
 
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
+
 import java.util.regex.Pattern;
 
 public class ValidationUtils {
@@ -34,7 +37,7 @@ public class ValidationUtils {
 
     public static boolean isValidEmail(String email) {
         if (isNullOrBlank(email)) return false;
-        if (isLengthAtMost(email, 320)) return false;
+        if (!isLengthAtMost(email, 320)) return false;
         return EMAIL_PATTERN.matcher(email.trim()).matches();
     }
 
@@ -42,4 +45,22 @@ public class ValidationUtils {
         if (isNullOrBlank(phone)) return false;
         return PHONE_PATTERN.matcher(phone.trim()).matches();
     }
+
+    private static final ObjectMapper mapper = new ObjectMapper();
+
+    public static boolean isValidJson(String jsonString) {
+        if (jsonString == null || jsonString.trim().isEmpty()) {
+            return false;
+        }
+
+        try {
+            mapper.readTree(jsonString);
+            return true;
+        } catch (JacksonException e) {
+            // il JSON non è valido
+            return false;
+        }
+
+    }
+
 }

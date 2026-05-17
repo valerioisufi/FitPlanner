@@ -1,9 +1,7 @@
 package com.example.fitplannerserver.dao.inmemory;
 
 import com.example.fitplannerserver.dao.ExerciseLibraryDao;
-import com.example.fitplannerserver.model.log.SessionLog;
 import com.example.fitplannerserver.model.plan.ExerciseDescription;
-import org.jspecify.annotations.NonNull;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -84,7 +82,7 @@ public class InMemoryExerciseLibraryDao implements ExerciseLibraryDao {
         List<String> exerciseIds = trainerIdToExerciseIds.get(trainerId);
 
         if (exerciseIds == null || exerciseIds.isEmpty()) {
-            return Collections.emptyList();
+            return List.of();
         }
 
         return getExerciseDescriptions(exerciseIds);
@@ -97,7 +95,6 @@ public class InMemoryExerciseLibraryDao implements ExerciseLibraryDao {
         return getExerciseDescriptions(exerciseIds);
     }
 
-    @NonNull
     private List<ExerciseDescription> getExerciseDescriptions(List<String> exerciseIds) {
         List<ExerciseDescription> result = new ArrayList<>();
         for (String exerciseId : exerciseIds) {

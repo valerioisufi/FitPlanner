@@ -5,16 +5,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SessionLog {
-    private String userId;
+    private final String userId;
 
     private String notes;
     private SessionStatus status;
     private LocalDateTime date;
 
+    private PlanReference planReference;
+
     private List<ExerciseLog> exerciseLogs;
 
     public SessionLog(String userId, String notes, SessionStatus status, LocalDateTime date) {
         this.userId = userId;
+
         this.notes = notes;
         this.status = status;
         this.date = date;
@@ -28,6 +31,11 @@ public class SessionLog {
         this.notes = other.notes;
         this.status = other.status;
         this.date = other.date;
+
+        this.planReference = new PlanReference(
+                other.planReference.planId,
+                other.planReference.workoutSessionDay
+        );
 
         this.exerciseLogs = new ArrayList<>();
         if (other.exerciseLogs != null) {
@@ -65,6 +73,14 @@ public class SessionLog {
         this.date = date;
     }
 
+    public String getPlanId(){
+        return this.planReference.planId;
+    }
+
+    public int getWorkoutSessionDay(){
+        return this.planReference.workoutSessionDay;
+    }
+
     public List<ExerciseLog> getExerciseLogs() {
         return exerciseLogs;
     }
@@ -72,6 +88,14 @@ public class SessionLog {
     public void addExerciseLog(ExerciseLog exerciseLog) {
         this.exerciseLogs.add(exerciseLog);
     }
+
+    private record PlanReference(
+            String planId,
+
+            // giorno del WorkoutSession, a partire dalla data di inizio del piano
+            // a cui questo SessionLog fa riferimento
+            int workoutSessionDay
+    ){}
 
     public enum SessionStatus {
         COMPLETED,

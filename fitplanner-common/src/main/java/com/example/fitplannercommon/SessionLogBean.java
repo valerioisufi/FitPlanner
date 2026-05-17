@@ -9,6 +9,9 @@ public class SessionLogBean {
     private SessionStatus status;
     private long date;
 
+    private String planIdReference;
+    private int workoutSessionDay;
+
     private List<ExerciseLogBean> exerciseLogs;
 
     public SessionLogBean() {}
@@ -51,6 +54,22 @@ public class SessionLogBean {
 
     public void setDate(long date) {
         this.date = date;
+    }
+
+    public String getPlanIdReference() {
+        return planIdReference;
+    }
+
+    public void setPlanIdReference(String planIdReference) {
+        this.planIdReference = planIdReference;
+    }
+
+    public int getWorkoutSessionDay() {
+        return workoutSessionDay;
+    }
+
+    public void setWorkoutSessionDay(int workoutSessionDay) {
+        this.workoutSessionDay = workoutSessionDay;
     }
 
     public List<ExerciseLogBean> getExerciseLogs() {

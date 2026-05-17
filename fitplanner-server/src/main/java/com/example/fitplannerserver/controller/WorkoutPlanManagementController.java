@@ -1,0 +1,151 @@
+package com.example.fitplannerserver.controller;
+
+import com.example.fitplannercommon.WorkoutPlanBean;
+import com.example.fitplannerserver.beanvalidator.PlanValidator;
+import com.example.fitplannerserver.dao.CoachingDao;
+import com.example.fitplannerserver.dao.DaoFactory;
+import com.example.fitplannerserver.dao.WorkoutPlanDao;
+import com.example.fitplannerserver.exception.*;
+import com.example.fitplannerserver.mapper.PlanMapper;
+import com.example.fitplannerserver.model.Account;
+import com.example.fitplannerserver.model.plan.WorkoutPlan;
+import com.example.fitplannerserver.security.IdentityProvider;
+import com.example.fitplannerserver.util.ValidationUtils;
+import com.github.f4b6a3.uuid.UuidCreator;
+
+import java.util.List;
+
+public class WorkoutPlanManagementController {
+
+    private final IdentityProvider identityProvider;
+
+    public WorkoutPlanManagementController(IdentityProvider identityProvider) {
+        this.identityProvider = identityProvider;
+    }
+
+    public List<WorkoutPlanBean> getMyPlans() {
+        identityProvider.checkUserRole(Account.Role.TRAINER);
+
+        WorkoutPlanDao workoutPlanDao = DaoFactory.getInstance().getWorkoutPlanDao();
+        try {
+            return workoutPlanDao.findPlansByTrainerId(identityProvider.getUserId())
+                    .stream()
+                    .map(PlanMapper::toBean)
+                    .toList();
+
+        } catch (DaoException e) {
+            throw new SystemException("Errore nel recuperare i WorkoutPlan creati");
+        }
+    }
+
+    public WorkoutPlanBean getAssignedPlan() {
+        identityProvider.checkUserRole(Account.Role.ATHLETE);
+
+        WorkoutPlanDao workoutPlanDao = DaoFactory.getInstance().getWorkoutPlanDao();
+        try {
+            return PlanMapper.toBean(
+                    workoutPlanDao.findAssignedPlanByAthleteId(identityProvider.getUserId())
+                            .orElseThrow(() -> new ResourceNotFoundException("Non hai un piano assegnato"))
+            );
+
+        } catch (DaoException e) {
+            throw new SystemException("Errore nel recuperare il WorkoutPlan assegnato");
+        }
+    }
+
+    public String createPlan(WorkoutPlanBean planBean) {
+        identityProvider.checkUserRole(Account.Role.TRAINER);
+
+        PlanValidator.validateWorkoutPlanBean(planBean);
+
+        WorkoutPlanDao workoutPlanDao = DaoFactory.getInstance().getWorkoutPlanDao();
+        try {
+            String planId = UuidCreator.getTimeOrderedEpoch().toString();
+            WorkoutPlan plan = PlanMapper.toEntity(planBean, planId);
+
+            plan.setAuthorId(identityProvider.getUserId());
+
+            workoutPlanDao.savePlan(plan);
+            return planId;
+
+        } catch (DaoException e) {
+            throw new SystemException("Errore nel creare il WorkoutPlan");
+        }
+    }
+
+    public void assignPlanTo(String planId, String athleteId) {
+        if (!ValidationUtils.isValidUuid(planId)) {
+            throw new WrongArgumentsException("planId deve essere un UUID valido");
+        }
+        if (!ValidationUtils.isValidUuid(athleteId)) {
+            throw new WrongArgumentsException("athleteId deve essere un UUID valido");
+        }
+
+        identityProvider.checkUserRole(Account.Role.TRAINER);
+
+        String trainerId = identityProvider.getUserId();
+
+        CoachingDao coachingDao = DaoFactory.getInstance().getCoachingDao();
+        WorkoutPlanDao workoutPlanDao = DaoFactory.getInstance().getWorkoutPlanDao();
+        try {
+            if(!coachingDao.isClientOf(trainerId, athleteId))
+                throw new UnauthorizedException("L'utente non è tuo cliente");
+
+            workoutPlanDao.assignPlanToAthlete(planId, athleteId);
+
+        } catch (DaoException e) {
+            throw new SystemException("Errore nell'assegnare il WorkoutPlan");
+        }
+    }
+
+    public void updatePlan(String planId, WorkoutPlanBean planBean) {
+        identityProvider.checkUserRole(Account.Role.TRAINER);
+
+        if (!ValidationUtils.isValidUuid(planId)) {
+            throw new WrongArgumentsException("planId deve essere un UUID valido");
+        }
+        PlanValidator.validateWorkoutPlanBean(planBean);
+
+        WorkoutPlanDao workoutPlanDao = DaoFactory.getInstance().getWorkoutPlanDao();
+        try {
+            WorkoutPlan oldPlan = workoutPlanDao.findPlanById(planId)
+                    .orElseThrow(() -> new ResourceNotFoundException("WorkoutPlan non trovato"));
+
+            if(oldPlan.getAuthorId() == null || !oldPlan.getAuthorId().equals(identityProvider.getUserId())) {
+                throw new UnauthorizedException("Il WorkoutPlan non ti appartiene");
+            }
+
+            WorkoutPlan newPlan = PlanMapper.toEntity(planBean, planId);
+            newPlan.setAuthorId(oldPlan.getAuthorId());
+            newPlan.assignTo(oldPlan.getAssignedToId());
+            newPlan.setStartDate(oldPlan.getStartDate());
+
+            workoutPlanDao.savePlan(newPlan);
+
+        } catch (DaoException e) {
+            throw new SystemException("Errore nell'aggiornamento del piano");
+        }
+    }
+
+    public void deletePlan(String planId) {
+        if (!ValidationUtils.isValidUuid(planId)) {
+            throw new WrongArgumentsException("planId deve essere un UUID valido");
+        }
+
+        identityProvider.checkUserRole(Account.Role.TRAINER);
+
+        WorkoutPlanDao workoutPlanDao = DaoFactory.getInstance().getWorkoutPlanDao();
+        try {
+            WorkoutPlan plan = workoutPlanDao.findPlanById(planId)
+                    .orElseThrow(() -> new ResourceNotFoundException("WorkoutPlan non trovato"));
+
+            if(plan.getAuthorId() == null || !plan.getAuthorId().equals(identityProvider.getUserId())) {
+                throw new UnauthorizedException("Il WorkoutPlan non ti appartiene");
+            }
+
+            workoutPlanDao.deletePlan(planId);
+        } catch (DaoException e) {
+            throw new SystemException("Errore nell'eliminazione del WorkoutPlan");
+        }
+    }
+}

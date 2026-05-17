@@ -64,7 +64,7 @@ public class InMemorySessionLogDao implements SessionLogDao {
         LocalDateTime endDate = LocalDateTime.ofEpochSecond(endTimestamp / 1000, 0, ZoneOffset.UTC);
 
         List<SessionLog> logs = sessionLogs.get(athleteId);
-        if (logs == null) return Collections.emptyList();
+        if (logs == null) return List.of();
 
         return logs.stream()
                 .filter(log -> {
