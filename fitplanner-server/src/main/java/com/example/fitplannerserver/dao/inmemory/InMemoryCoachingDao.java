@@ -8,16 +8,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public class InMemoryCoachingDao implements CoachingDao {
 
-    private static class Wrapper {
-        public static final InMemoryCoachingDao INSTANCE = new InMemoryCoachingDao();
-    }
-
-    private InMemoryCoachingDao(){}
-
-    public static InMemoryCoachingDao getInstance() {
-        return InMemoryCoachingDao.Wrapper.INSTANCE;
-    }
-
     // Map: trainerId -> List of athleteIds
     private final Map<String, List<String>> trainerToAthletes = new ConcurrentHashMap<>();
 

@@ -1,38 +1,54 @@
 package com.example.fitplannerserver.dao.inmemory;
 
 import com.example.fitplannerserver.dao.DaoFactory;
-import com.example.fitplannerserver.dao.SessionLogDao;
 
 public class InMemoryDaoFactory extends DaoFactory {
 
+    private final InMemoryAccountDao accountDao;
+    private final InMemoryProfileDao profileDao;
+    private final InMemorySessionLogDao sessionLogDao;
+    private final InMemoryExerciseLibraryDao exerciseLibraryDao;
+    private final InMemoryWorkoutPlanDao workoutPlanDao;
+    private final InMemoryCoachingDao coachingDao;
+
+    public InMemoryDaoFactory() {
+        this.accountDao = new InMemoryAccountDao();
+        this.profileDao = new InMemoryProfileDao();
+        this.sessionLogDao = new InMemorySessionLogDao();
+        this.exerciseLibraryDao = new InMemoryExerciseLibraryDao();
+        this.workoutPlanDao = new InMemoryWorkoutPlanDao();
+        this.coachingDao = new InMemoryCoachingDao();
+
+    }
+
     @Override
     public InMemoryAccountDao getAccountDao() {
-        return InMemoryAccountDao.getInstance();
+        return this.accountDao;
     }
 
     @Override
     public InMemoryProfileDao getProfileDao() {
-        return InMemoryProfileDao.getInstance();
+        return this.profileDao;
     }
 
     @Override
-    public SessionLogDao getSessionLogDao() {
-        return InMemorySessionLogDao.getInstance();
+    public InMemorySessionLogDao getSessionLogDao() {
+        return this.sessionLogDao;
     }
 
     @Override
     public InMemoryExerciseLibraryDao getExerciseLibraryDao() {
-        return InMemoryExerciseLibraryDao.getInstance();
+        return this.exerciseLibraryDao;
     }
 
     @Override
     public InMemoryWorkoutPlanDao getWorkoutPlanDao() {
-        return InMemoryWorkoutPlanDao.getInstance();
+        return this.workoutPlanDao;
     }
 
     @Override
     public InMemoryCoachingDao getCoachingDao() {
-        return InMemoryCoachingDao.getInstance();
+        return this.coachingDao;
     }
 
 }

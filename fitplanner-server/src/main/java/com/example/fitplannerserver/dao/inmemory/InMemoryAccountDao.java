@@ -10,16 +10,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class InMemoryAccountDao implements AccountDao {
 
-    private static class Wrapper {
-        public static final InMemoryAccountDao INSTANCE = new InMemoryAccountDao();
-    }
-
-    private InMemoryAccountDao(){}
-
-    public static InMemoryAccountDao getInstance() {
-        return Wrapper.INSTANCE;
-    }
-
     // Map Key: email (Account.email)
     private final Map<String, Account> accounts = new ConcurrentHashMap<>();
 

@@ -10,16 +10,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class InMemoryProfileDao implements ProfileDao {
 
-    private static class Wrapper {
-        public static final InMemoryProfileDao INSTANCE = new InMemoryProfileDao();
-    }
-
-    private InMemoryProfileDao(){}
-
-    public static InMemoryProfileDao getInstance() {
-        return InMemoryProfileDao.Wrapper.INSTANCE;
-    }
-
     // Map Key: userId
     private final Map<String, User> profiles = new ConcurrentHashMap<>();
 

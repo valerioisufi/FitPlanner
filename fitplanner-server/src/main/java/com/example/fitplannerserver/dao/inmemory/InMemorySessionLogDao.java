@@ -14,16 +14,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public class InMemorySessionLogDao implements SessionLogDao {
 
-    private static class Wrapper {
-        public static final InMemorySessionLogDao INSTANCE = new InMemorySessionLogDao();
-    }
-
-    private InMemorySessionLogDao(){}
-
-    public static InMemorySessionLogDao getInstance() {
-        return InMemorySessionLogDao.Wrapper.INSTANCE;
-    }
-
     // Map Key: athleteUuid (userId)
     private final Map<String, List<SessionLog>> sessionLogs = new ConcurrentHashMap<>();
 

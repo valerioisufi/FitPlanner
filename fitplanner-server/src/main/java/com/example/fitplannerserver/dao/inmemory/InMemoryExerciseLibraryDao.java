@@ -9,16 +9,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public class InMemoryExerciseLibraryDao implements ExerciseLibraryDao {
 
-    private static class Wrapper {
-        public static final InMemoryExerciseLibraryDao INSTANCE = new InMemoryExerciseLibraryDao();
-    }
-
-    private InMemoryExerciseLibraryDao(){}
-
-    public static InMemoryExerciseLibraryDao getInstance() {
-        return Wrapper.INSTANCE;
-    }
-
     // Map Key: exerciseId
     private final Map<String, ExerciseDescription> exerciseIdToExerciseDescription = new ConcurrentHashMap<>();
 
