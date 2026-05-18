@@ -1,5 +1,6 @@
 package com.example.fitplannerclient.entity.plan.block;
 
+import com.example.fitplannerclient.controller.plan.WorkoutPlanVisitor;
 import com.example.fitplannerclient.entity.plan.PlanNode;
 import com.example.fitplannerclient.entity.plan.block.strategy.CompositionRule;
 import com.example.fitplannerclient.entity.plan.block.strategy.ValidationRule;
@@ -24,8 +25,8 @@ public class ProtocolBlock extends GroupNode{
     }
 
     @Override
-    public void accept() {
-
+    public void accept(WorkoutPlanVisitor visitor) {
+        visitor.visit(this);
     }
 
     @Override

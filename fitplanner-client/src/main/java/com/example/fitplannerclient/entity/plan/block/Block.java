@@ -1,5 +1,6 @@
 package com.example.fitplannerclient.entity.plan.block;
 
+import com.example.fitplannerclient.controller.plan.WorkoutPlanVisitor;
 import com.example.fitplannerclient.entity.plan.PlanNode;
 
 public class Block extends GroupNode{
@@ -16,8 +17,8 @@ public class Block extends GroupNode{
     }
 
     @Override
-    public void accept() {
-
+    public void accept(WorkoutPlanVisitor visitor) {
+        visitor.visit(this);
     }
 
     @Override

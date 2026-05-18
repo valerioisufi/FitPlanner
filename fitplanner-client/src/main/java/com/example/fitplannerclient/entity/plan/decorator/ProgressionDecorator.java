@@ -1,5 +1,6 @@
 package com.example.fitplannerclient.entity.plan.decorator;
 
+import com.example.fitplannerclient.controller.plan.WorkoutPlanVisitor;
 import com.example.fitplannerclient.entity.plan.PlanNode;
 
 public class ProgressionDecorator extends FlowDecorator {
@@ -8,8 +9,8 @@ public class ProgressionDecorator extends FlowDecorator {
     }
 
     @Override
-    public void accept() {
-
+    public void accept(WorkoutPlanVisitor visitor) {
+        visitor.visit(this);
     }
 
     @Override

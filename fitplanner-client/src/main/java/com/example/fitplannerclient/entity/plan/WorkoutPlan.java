@@ -1,11 +1,13 @@
 package com.example.fitplannerclient.entity.plan;
 
+import com.example.fitplannerclient.controller.plan.AcceptWorkoutPlanVisitor;
+import com.example.fitplannerclient.controller.plan.WorkoutPlanVisitor;
 import com.example.fitplannerclient.util.IDGenerator;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class WorkoutPlan {
+public class WorkoutPlan implements AcceptWorkoutPlanVisitor {
     private String name;
     private String id;
 
@@ -15,6 +17,11 @@ public class WorkoutPlan {
         this.name = name;
         this.id = id;
         this.sessions = new ArrayList<>();
+    }
+
+    @Override
+    public void accept(WorkoutPlanVisitor visitor) {
+        visitor.visit(this);
     }
 
     public WorkoutPlan(String name){
