@@ -3,7 +3,6 @@ package com.example.fitplannerserver.controller;
 import com.example.fitplannercommon.WorkoutPlanBean;
 import com.example.fitplannerserver.beanvalidator.PlanValidator;
 import com.example.fitplannerserver.dao.CoachingDao;
-import com.example.fitplannerserver.dao.DaoFactory;
 import com.example.fitplannerserver.dao.WorkoutPlanDao;
 import com.example.fitplannerserver.exception.*;
 import com.example.fitplannerserver.mapper.PlanMapper;
@@ -16,17 +15,25 @@ import com.github.f4b6a3.uuid.UuidCreator;
 import java.util.List;
 
 public class WorkoutPlanManagementController {
-
     private final IdentityProvider identityProvider;
 
-    public WorkoutPlanManagementController(IdentityProvider identityProvider) {
+    private final WorkoutPlanDao workoutPlanDao;
+    private final CoachingDao coachingDao;
+
+    public WorkoutPlanManagementController(
+            IdentityProvider identityProvider,
+            WorkoutPlanDao workoutPlanDao,
+            CoachingDao coachingDao
+    ) {
         this.identityProvider = identityProvider;
+
+        this.workoutPlanDao = workoutPlanDao;
+        this.coachingDao = coachingDao;
     }
 
     public List<WorkoutPlanBean> getMyPlans() {
         identityProvider.checkUserRole(Account.Role.TRAINER);
 
-        WorkoutPlanDao workoutPlanDao = DaoFactory.getInstance().getWorkoutPlanDao();
         try {
             return workoutPlanDao.findPlansByTrainerId(identityProvider.getUserId())
                     .stream()
@@ -41,7 +48,6 @@ public class WorkoutPlanManagementController {
     public WorkoutPlanBean getAssignedPlan() {
         identityProvider.checkUserRole(Account.Role.ATHLETE);
 
-        WorkoutPlanDao workoutPlanDao = DaoFactory.getInstance().getWorkoutPlanDao();
         try {
             return PlanMapper.toBean(
                     workoutPlanDao.findAssignedPlanByAthleteId(identityProvider.getUserId())
@@ -58,7 +64,6 @@ public class WorkoutPlanManagementController {
 
         PlanValidator.validateWorkoutPlanBean(planBean);
 
-        WorkoutPlanDao workoutPlanDao = DaoFactory.getInstance().getWorkoutPlanDao();
         try {
             String planId = UuidCreator.getTimeOrderedEpoch().toString();
             WorkoutPlan plan = PlanMapper.toEntity(planBean, planId);
@@ -84,9 +89,6 @@ public class WorkoutPlanManagementController {
         identityProvider.checkUserRole(Account.Role.TRAINER);
 
         String trainerId = identityProvider.getUserId();
-
-        CoachingDao coachingDao = DaoFactory.getInstance().getCoachingDao();
-        WorkoutPlanDao workoutPlanDao = DaoFactory.getInstance().getWorkoutPlanDao();
         try {
             if(!coachingDao.isClientOf(trainerId, athleteId))
                 throw new UnauthorizedException("L'utente non è tuo cliente");
@@ -106,7 +108,6 @@ public class WorkoutPlanManagementController {
         }
         PlanValidator.validateWorkoutPlanBean(planBean);
 
-        WorkoutPlanDao workoutPlanDao = DaoFactory.getInstance().getWorkoutPlanDao();
         try {
             WorkoutPlan oldPlan = workoutPlanDao.findPlanById(planId)
                     .orElseThrow(() -> new ResourceNotFoundException("WorkoutPlan non trovato"));
@@ -134,7 +135,6 @@ public class WorkoutPlanManagementController {
 
         identityProvider.checkUserRole(Account.Role.TRAINER);
 
-        WorkoutPlanDao workoutPlanDao = DaoFactory.getInstance().getWorkoutPlanDao();
         try {
             WorkoutPlan plan = workoutPlanDao.findPlanById(planId)
                     .orElseThrow(() -> new ResourceNotFoundException("WorkoutPlan non trovato"));

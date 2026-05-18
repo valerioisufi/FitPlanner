@@ -3,7 +3,6 @@ package com.example.fitplannerserver.controller;
 import com.example.fitplannercommon.ExerciseDescriptionBean;
 import com.example.fitplannerserver.beanvalidator.PlanValidator;
 import com.example.fitplannerserver.dao.CoachingDao;
-import com.example.fitplannerserver.dao.DaoFactory;
 import com.example.fitplannerserver.dao.ExerciseLibraryDao;
 import com.example.fitplannerserver.exception.DaoException;
 import com.example.fitplannerserver.exception.SystemException;
@@ -20,15 +19,23 @@ import java.util.List;
 public class ManageExerciseLibraryController {
     private final IdentityProvider identityProvider;
 
-    public ManageExerciseLibraryController(IdentityProvider identityProvider) {
+    private final ExerciseLibraryDao exerciseLibraryDao;
+    private final CoachingDao coachingDao;
+
+    public ManageExerciseLibraryController(
+            IdentityProvider identityProvider,
+            ExerciseLibraryDao exerciseLibraryDao,
+            CoachingDao coachingDao
+    ) {
         this.identityProvider = identityProvider;
+
+        this.exerciseLibraryDao = exerciseLibraryDao;
+        this.coachingDao = coachingDao;
     }
 
     public String addExercise(ExerciseDescriptionBean exerciseBean) {
         identityProvider.checkUserRole(Account.Role.TRAINER);
         PlanValidator.validateExerciseDescriptionBean(exerciseBean);
-
-        ExerciseLibraryDao exerciseLibraryDao = DaoFactory.getInstance().getExerciseLibraryDao();
 
         String newExerciseId = UuidCreator.getTimeOrderedEpoch().toString();
         ExerciseDescription newExercise = new ExerciseDescription(identityProvider.getUserId(), newExerciseId);
@@ -52,8 +59,6 @@ public class ManageExerciseLibraryController {
         identityProvider.checkUserRole(Account.Role.TRAINER);
         PlanValidator.validateExerciseDescriptionBean(exerciseBean);
         ValidationUtils.isValidUuid(exerciseBean.getExerciseId());
-
-        ExerciseLibraryDao exerciseLibraryDao = DaoFactory.getInstance().getExerciseLibraryDao();
 
         ExerciseDescription exercise = new ExerciseDescription(identityProvider.getUserId(), exerciseBean.getExerciseId());
         exercise.setDescription(
@@ -79,8 +84,6 @@ public class ManageExerciseLibraryController {
         identityProvider.checkUserRole(Account.Role.TRAINER);
         ValidationUtils.isValidUuid(exerciseId);
 
-        ExerciseLibraryDao exerciseLibraryDao = DaoFactory.getInstance().getExerciseLibraryDao();
-
         try {
             exerciseLibraryDao.findById(exerciseId)
                     .filter(e -> e.getTrainerId().equals(identityProvider.getUserId()))
@@ -103,9 +106,6 @@ public class ManageExerciseLibraryController {
                 throw new WrongArgumentsException("exerciseIds devono essere UUID validi");
             }
         }
-
-        CoachingDao coachingDao = DaoFactory.getInstance().getCoachingDao();
-        ExerciseLibraryDao exerciseLibraryDao = DaoFactory.getInstance().getExerciseLibraryDao();
 
         try{
             String trainerId = switch(identityProvider.getUserRole()){
@@ -131,9 +131,6 @@ public class ManageExerciseLibraryController {
     }
 
     public List<ExerciseDescriptionBean> getLibrary() {
-
-        CoachingDao coachingDao = DaoFactory.getInstance().getCoachingDao();
-        ExerciseLibraryDao exerciseLibraryDao = DaoFactory.getInstance().getExerciseLibraryDao();
 
         try{
             String trainerId = switch(identityProvider.getUserRole()){

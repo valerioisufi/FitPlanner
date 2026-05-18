@@ -4,7 +4,6 @@ import com.example.fitplannercommon.ExerciseLogBean;
 import com.example.fitplannercommon.SessionLogBean;
 import com.example.fitplannerserver.beanvalidator.LogValidator;
 import com.example.fitplannerserver.dao.CoachingDao;
-import com.example.fitplannerserver.dao.DaoFactory;
 import com.example.fitplannerserver.dao.SessionLogDao;
 import com.example.fitplannerserver.exception.*;
 import com.example.fitplannerserver.mapper.LogMapper;
@@ -24,8 +23,18 @@ import static com.example.fitplannerserver.mapper.LogMapper.toBean;
 public class SessionLogController {
     private final IdentityProvider identityProvider;
 
-    public SessionLogController(IdentityProvider identityProvider) {
+    private final SessionLogDao sessionLogDao;
+    private final CoachingDao coachingDao;
+
+    public SessionLogController(
+            IdentityProvider identityProvider,
+            SessionLogDao sessionLogDao,
+            CoachingDao coachingDao
+    ) {
         this.identityProvider = identityProvider;
+
+        this.sessionLogDao = sessionLogDao;
+        this.coachingDao = coachingDao;
     }
 
     public List<SessionLogBean> getFilteredSessionLog(String athleteId, long startDate, long endDate) {
@@ -41,7 +50,6 @@ public class SessionLogController {
         }
 
         if(identityProvider.getUserRole() == Account.Role.TRAINER){
-            CoachingDao coachingDao = DaoFactory.getInstance().getCoachingDao();
 
             try {
                 boolean isTrainerOfAthlete = coachingDao.isClientOf(identityProvider.getUserId(), athleteId);
@@ -54,9 +62,6 @@ public class SessionLogController {
             }
 
         }
-
-
-        SessionLogDao sessionLogDao = DaoFactory.getInstance().getSessionLogDao();
 
         try {
             List<SessionLog> sessionLog = sessionLogDao.findLogsByAthleteIdAndDateRange(athleteId, startDate, endDate);
@@ -76,8 +81,6 @@ public class SessionLogController {
         identityProvider.checkUserRole(Account.Role.ATHLETE);
         LogValidator.validateSessionLogBean(logBean);
 
-        SessionLogDao sessionLogDao = DaoFactory.getInstance().getSessionLogDao();
-
         SessionLog sessionLog = LogMapper.toEntity(identityProvider.getUserId(), logBean);
 
         try {
@@ -94,8 +97,6 @@ public class SessionLogController {
         if (!ValidationUtils.isValidUuid(exerciseId)) {
             throw new WrongArgumentsException("exerciseId deve essere un UUID valido");
         }
-
-        SessionLogDao sessionLogDao = DaoFactory.getInstance().getSessionLogDao();
 
         try {
             Optional<SessionLog> sessionLog = sessionLogDao

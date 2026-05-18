@@ -3,7 +3,6 @@ package com.example.fitplannerserver.controller;
 import com.example.fitplannercommon.InvitationCodeBean;
 import com.example.fitplannerserver.beanvalidator.ProfileValidator;
 import com.example.fitplannerserver.dao.CoachingDao;
-import com.example.fitplannerserver.dao.DaoFactory;
 import com.example.fitplannerserver.dao.ProfileDao;
 import com.example.fitplannerserver.exception.*;
 import com.example.fitplannerserver.mapper.ProfileMapper;
@@ -18,12 +17,21 @@ import java.util.List;
 public class ProfileController {
     private final IdentityProvider identityProvider;
 
-    public ProfileController(IdentityProvider identityProvider) {
+    private final ProfileDao profileDao;
+    private final CoachingDao coachingDao;
+
+    public ProfileController(
+            IdentityProvider identityProvider,
+            ProfileDao profileDao,
+            CoachingDao coachingDao
+    ) {
         this.identityProvider = identityProvider;
+
+        this.profileDao = profileDao;
+        this.coachingDao = coachingDao;
     }
 
     public ProfileBean getProfileInfo() {
-        ProfileDao profileDao = DaoFactory.getInstance().getProfileDao();
 
         try {
             User user = profileDao.findById(identityProvider.getUserId())
@@ -38,8 +46,6 @@ public class ProfileController {
 
     public void updateProfileInfo(ProfileBean profileBean) {
         ProfileValidator.validateProfileBean(profileBean);
-
-        ProfileDao profileDao = DaoFactory.getInstance().getProfileDao();
 
         try {
             User oldUser = profileDao.findById(identityProvider.getUserId())
@@ -65,12 +71,10 @@ public class ProfileController {
     public ProfileBean getMyTrainer() {
         identityProvider.checkUserRole(Account.Role.ATHLETE);
 
-        CoachingDao coachingDao = DaoFactory.getInstance().getCoachingDao();
         try {
             String trainerId = coachingDao.findTrainerIdByAthleteId(identityProvider.getUserId())
                     .orElseThrow(() -> new ResourceNotFoundException("Non hai un trainer assegnato"));
 
-            ProfileDao profileDao = DaoFactory.getInstance().getProfileDao();
             User trainer = profileDao.findById(trainerId)
                     .orElseThrow(() -> new SystemException("Trainer non trovato"));
 
@@ -83,11 +87,8 @@ public class ProfileController {
     public List<ProfileBean> getMyAthletes() {
         identityProvider.checkUserRole(Account.Role.TRAINER);
 
-        CoachingDao coachingDao = DaoFactory.getInstance().getCoachingDao();
         try {
             List<String> athleteIds = coachingDao.findAthleteIdsByTrainerId(identityProvider.getUserId());
-
-            ProfileDao profileDao = DaoFactory.getInstance().getProfileDao();
 
             List<ProfileBean> athletes = new ArrayList<>();
             for(String athleteId : athleteIds) {
@@ -111,7 +112,6 @@ public class ProfileController {
             throw new WrongArgumentsException("Il codice di invito non può essere nullo");
         }
 
-        ProfileDao profileDao = DaoFactory.getInstance().getProfileDao();
         try {
             User trainer = profileDao.findByInvitationCode(invitationCodeBean.getInvitationCode())
                     .orElseThrow(() -> new ResourceNotFoundException("Codice di invito non valido"));
@@ -120,7 +120,6 @@ public class ProfileController {
                 // un atleta non può possedere un codice di invito per cui questa eventualità non dovrebbe avvenire
                 throw new SystemException("Non puoi collegarti a te stesso");
             } else {
-                CoachingDao coachingDao = DaoFactory.getInstance().getCoachingDao();
                 coachingDao.linkAthleteToTrainer(identityProvider.getUserId(), trainer.getId());
             }
 
@@ -132,7 +131,6 @@ public class ProfileController {
     public InvitationCodeBean getInvitationCode() {
         identityProvider.checkUserRole(Account.Role.TRAINER);
 
-        ProfileDao profileDao = DaoFactory.getInstance().getProfileDao();
         try {
             String invitationCode = profileDao.getInvitationCode(identityProvider.getUserId())
                     .orElseThrow(() -> new SystemException("Codice di invito non trovato"));

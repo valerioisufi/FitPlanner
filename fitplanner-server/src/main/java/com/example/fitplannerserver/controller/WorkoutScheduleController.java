@@ -3,7 +3,6 @@ package com.example.fitplannerserver.controller;
 import com.example.fitplannercommon.WorkoutScheduleBean;
 import com.example.fitplannercommon.WorkoutSessionBean;
 import com.example.fitplannercommon.WorkoutState;
-import com.example.fitplannerserver.dao.DaoFactory;
 import com.example.fitplannerserver.dao.SessionLogDao;
 import com.example.fitplannerserver.dao.WorkoutPlanDao;
 import com.example.fitplannerserver.exception.DaoException;
@@ -22,19 +21,25 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class WorkoutScheduleController {
-
     private final IdentityProvider identityProvider;
 
-    public WorkoutScheduleController(IdentityProvider identityProvider) {
+    private final WorkoutPlanDao workoutPlanDao;
+    private final SessionLogDao sessionLogDao;
+
+    public WorkoutScheduleController(
+            IdentityProvider identityProvider,
+            WorkoutPlanDao workoutPlanDao,
+            SessionLogDao sessionLogDao
+    ) {
         this.identityProvider = identityProvider;
+
+        this.workoutPlanDao = workoutPlanDao;
+        this.sessionLogDao = sessionLogDao;
     }
 
     public WorkoutScheduleBean getCurrentCycleSchedule() {
         identityProvider.checkUserRole(Account.Role.ATHLETE);
         String athleteId = identityProvider.getUserId();
-
-        WorkoutPlanDao workoutPlanDao = DaoFactory.getInstance().getWorkoutPlanDao();
-        SessionLogDao sessionLogDao = DaoFactory.getInstance().getSessionLogDao();
 
         try{
             WorkoutPlan activePlan = workoutPlanDao.findAssignedPlanByAthleteId(athleteId)

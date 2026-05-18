@@ -6,7 +6,6 @@ import com.example.fitplannercommon.RegisterBean;
 import com.example.fitplannercommon.TokenBean;
 import com.example.fitplannerserver.beanvalidator.AuthValidator;
 import com.example.fitplannerserver.dao.AccountDao;
-import com.example.fitplannerserver.dao.DaoFactory;
 import com.example.fitplannerserver.dao.ProfileDao;
 import com.example.fitplannerserver.exception.DaoException;
 import com.example.fitplannerserver.exception.InvalidCredentialsException;
@@ -24,15 +23,24 @@ public class AuthenticationController {
     private final JwtUtil jwtUtil;
     private final PasswordEncoder passwordEncoder;
 
-    public AuthenticationController(JwtUtil jwtUtil, PasswordEncoder passwordEncoder) {
+    private final AccountDao accountDao;
+    private final ProfileDao profileDao;
+
+    public AuthenticationController(
+            JwtUtil jwtUtil,
+            PasswordEncoder passwordEncoder,
+            AccountDao accountDao,
+            ProfileDao profileDao
+    ) {
         this.jwtUtil = jwtUtil;
         this.passwordEncoder = passwordEncoder;
+
+        this.accountDao = accountDao;
+        this.profileDao = profileDao;
     }
 
     public TokenBean login(LoginBean loginBean) {
         AuthValidator.validateLoginBean(loginBean);
-
-        AccountDao accountDao = DaoFactory.getInstance().getAccountDao();
 
         try {
             Optional<Account> accountFound = accountDao.findByEmail(loginBean.getEmail());
@@ -60,8 +68,6 @@ public class AuthenticationController {
 
     public TokenBean register(RegisterBean registerBean) {
         AuthValidator.validateRegisterBean(registerBean);
-
-        AccountDao accountDao = DaoFactory.getInstance().getAccountDao();
 
         Account.Role role = (registerBean.getProfile().getProfileType() == ProfileBean.ProfileType.ATHLETE)
                 ? Account.Role.ATHLETE
@@ -94,7 +100,6 @@ public class AuthenticationController {
                 if(role == Account.Role.TRAINER)
                     user.setInvitationCode(InvitationCodeGenerator.generateCode());
 
-                ProfileDao profileDao = DaoFactory.getInstance().getProfileDao();
                 profileDao.save(user);
 
                 // genero i token jwt per l'utente
@@ -113,8 +118,6 @@ public class AuthenticationController {
 
     public TokenBean refreshToken(TokenBean tokenBean) {
         AuthValidator.validateRefreshTokenBean(tokenBean);
-
-        AccountDao accountDao = DaoFactory.getInstance().getAccountDao();
 
         try {
             Optional<Account> account = accountDao.findByRefreshToken(tokenBean.getRefreshToken());
