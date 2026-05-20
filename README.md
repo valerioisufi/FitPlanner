@@ -1,5 +1,10 @@
 # FitPlanner
 
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=valerioisufi_ispw-project&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=valerioisufi_ispw-project)
+[![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=valerioisufi_ispw-project&metric=duplicated_lines_density)](https://sonarcloud.io/summary/new_code?id=valerioisufi_ispw-project)
+[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=valerioisufi_ispw-project&metric=ncloc)](https://sonarcloud.io/summary/new_code?id=valerioisufi_ispw-project)
+[![Technical Debt](https://sonarcloud.io/api/project_badges/measure?project=valerioisufi_ispw-project&metric=sqale_index)](https://sonarcloud.io/summary/new_code?id=valerioisufi_ispw-project)
+
 ## Prerequisites
 Before downloading the project, please ensure the following are installed on your computer:
 - **Java / JDK** (version 21 or higher)
