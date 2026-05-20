@@ -1,292 +1,296 @@
 package com.example.fitplannerclient.service;
 
-import com.example.fitplannerclient.exception.ConfigException;
 import com.example.fitplannerclient.exception.RequestException;
-import com.example.fitplannercommon.TokenBean;
+import com.example.fitplannercommon.ErrorResponseDTO;
+import com.example.fitplannercommon.TokenDTO;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.function.BiConsumer;
+import java.util.function.Supplier;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 public class HttpService {
     private static final Logger logger = Logger.getLogger(HttpService.class.getName());
+    private static final String CONTENT_TYPE = "application/json";
 
+    private final String baseUrl;
     private final SessionManager sessionManager;
     private final HttpClient httpClient;
     private final ObjectMapper objectMapper;
+    private final Supplier<CompletableFuture<Boolean>> onSessionExpired;
 
-    private static final String CONTENT_TYPE = "application/json";
-    private final String baseUrl;
-
-    // Callback to trigger when the refresh token is expired/invalid
-    private final Runnable onSessionExpired;
-
-    public HttpService(SessionManager sessionManager, Runnable onSessionExpired) {
+    public HttpService(String baseUrl, SessionManager sessionManager, Supplier<CompletableFuture<Boolean>> onSessionExpired) {
+        this.baseUrl = baseUrl;
         this.sessionManager = sessionManager;
-
+        this.onSessionExpired = onSessionExpired;
         this.httpClient = HttpClient.newHttpClient();
         this.objectMapper = new ObjectMapper();
+    }
 
-        this.onSessionExpired = onSessionExpired;
+    // --- PUBLIC API ---
 
-        Properties properties = new Properties();
+    public <T> CompletableFuture<T> getAsync(String url, Class<T> responseType) {
+        return performRequestAsync(url, "GET", null, responseType);
+    }
 
-        try (InputStream input = HttpService.class.getClassLoader().getResourceAsStream("config.properties")) {
-            if (input == null) {
-                throw new ConfigException("Impossibile trovare config.properties");
+    public <T, R> CompletableFuture<R> postAsync(String url, T body, Class<R> responseType) {
+        return performRequestAsync(url, "POST", body, responseType);
+    }
+
+    public <T, R> CompletableFuture<R> putAsync(String url, T body, Class<R> responseType) {
+        return performRequestAsync(url, "PUT", body, responseType);
+    }
+
+    public <T> CompletableFuture<T> deleteAsync(String url, Class<T> responseType) {
+        return performRequestAsync(url, "DELETE", null, responseType);
+    }
+
+    public CompletableFuture<Void> subscribeSseAsync(String url, BiConsumer<String, String> eventProcessor) {
+        HttpRequest.Builder builder = createRequestBuilder(url, "text/event-stream").GET();
+        return executeSseRequest(builder, eventProcessor, false);
+    }
+
+    // --- CORE REQUEST LOGIC ---
+
+    private <T, R> CompletableFuture<R> performRequestAsync(
+            String url,
+            String method,
+            T body,
+            Class<R> resType
+    ) {
+        HttpRequest.Builder builder = createRequestBuilder(url, CONTENT_TYPE);
+
+        if (body != null) {
+            builder.header("Content-Type", CONTENT_TYPE);
+            try {
+                builder.method(method, HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(body)));
+
+            } catch (JacksonException e) {
+                return CompletableFuture.failedFuture(new RequestException("Serialization error", e));
             }
-            // Carica le coppie chiave-valore dal file
-            properties.load(input);
-            baseUrl = properties.getProperty("api.url");
-            if (baseUrl == null) {
-                throw new ConfigException("La proprietà 'api.url' non è presente in config.properties");
+        } else {
+            builder.method(method, HttpRequest.BodyPublishers.noBody());
+        }
+
+        return executeRequest(builder, resType, false);
+    }
+
+    private <T> CompletableFuture<T> executeRequest(
+            HttpRequest.Builder builder,
+            Class<T> resType,
+            boolean isRetry
+    ) {
+        HttpRequest request = builder.build();
+
+        return withExceptionHandling(
+                httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                        .thenCompose(res -> processResponse(res, request, builder, resType, isRetry))
+        );
+    }
+
+    private CompletableFuture<Void> executeSseRequest(
+            HttpRequest.Builder builder,
+            BiConsumer<String, String> processor,
+            boolean isRetry
+    ) {
+        HttpRequest request = builder.build();
+        return withExceptionHandling(
+                httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofLines())
+                        .thenCompose(res -> processSseResponse(res, request, builder, processor, isRetry))
+        );
+    }
+
+    // --- RESPONSE PROCESSING ---
+
+    private <T> CompletableFuture<T> processResponse(
+            HttpResponse<String> res,
+            HttpRequest req,
+            HttpRequest.Builder builder,
+            Class<T> resType,
+            boolean isRetry
+    ) {
+        logger.info(String.format("Response: %d for %s\nBody: %s", res.statusCode(), req.uri(), res.body()));
+
+        if (res.statusCode() == 401 && !isRetry) {
+            return executeWithRetry(builder, () -> executeRequest(builder, resType, true), res.body());
+        }
+        if (res.statusCode() >= 300) {
+            return handleStandardError(res);
+        }
+        return handleSuccessfulResponse(res, resType);
+    }
+
+    private CompletableFuture<Void> processSseResponse(
+            HttpResponse<Stream<String>> res,
+            HttpRequest req,
+            HttpRequest.Builder builder,
+            BiConsumer<String, String> processor,
+            boolean isRetry
+    ) {
+        logger.info(String.format("SSE Status: %d for %s", res.statusCode(), req.uri()));
+
+        if (res.statusCode() == 401 && !isRetry) {
+            return executeWithRetry(builder, () -> executeSseRequest(builder, processor, true), "SSE Server Error (401)");
+        }
+        if (res.statusCode() >= 300) {
+            return CompletableFuture.failedFuture(new RequestException("SSE Server Error (" + res.statusCode() + ")", res.statusCode()));
+        }
+        return CompletableFuture.runAsync(() -> processSseStream(res.body(), processor));
+    }
+
+    // --- AUTH & RETRY LOGIC ---
+
+    private <R> CompletableFuture<R> executeWithRetry(
+            HttpRequest.Builder builder,
+            Supplier<CompletableFuture<R>> retryAction,
+            String errorBody
+    ) {
+        return handleRefreshToken().thenCompose(success -> {
+            if (success) {
+                applyAuthHeader(builder);
+                return retryAction.get();
             }
-        } catch (IOException ex) {
-            throw new ConfigException("Errore durante la lettura di config.properties");
-        }
+            // Token refresh fallito: proseguiamo con il login manuale (UI)
+            return onSessionExpired.get().thenCompose(manualLoginSuccess -> {
+                if (manualLoginSuccess) {
+                    applyAuthHeader(builder);
+                    return retryAction.get();
+                }
+                return CompletableFuture.failedFuture(new RequestException(errorBody != null ? errorBody : "Unauthorized", 401));
+            });
+        });
     }
 
-    /**
-     * Metodo interno per gestire le richieste
-     */
-    private <T> CompletableFuture<T> requestAsync(HttpRequest.Builder requestBuilder, Class<T> responseType, boolean isRetry) {
-        requestBuilder.header("Accept", CONTENT_TYPE);
-        addAuthorizationHeader(requestBuilder);
+    private CompletableFuture<Boolean> handleRefreshToken() {
+        String refreshToken = sessionManager.getRefreshToken();
+        if (refreshToken == null) return CompletableFuture.completedFuture(false);
 
-        HttpRequest request = requestBuilder.build();
-
-        return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
-                .thenCompose(response -> processResponse(response, request, requestBuilder, responseType, isRetry));
-    }
-
-    // Handle the authorization header injection
-    private void addAuthorizationHeader(HttpRequest.Builder requestBuilder) {
-        String token = sessionManager.getAccessToken();
-        if (token != null && !token.isEmpty()) {
-            requestBuilder.setHeader("Authorization", "Bearer " + token);
-        }
-    }
-
-    // Route the response based on the HTTP status code
-    private <T> CompletableFuture<T> processResponse(HttpResponse<String> response, HttpRequest request, HttpRequest.Builder requestBuilder, Class<T> responseType, boolean isRetry) {
-        logger.info("Response code: " + response.statusCode() + " for " + request.uri() + "\nBody: " + response.body());
-
-        if (response.statusCode() == 401 && !isRetry) {
-            return handleUnauthorizedRetry(requestBuilder, responseType, response.body());
-        }
-
-        if (response.statusCode() >= 300) {
-            return handleStandardError(response);
-        }
-
-        return handleSuccessfulResponse(response, responseType);
-    }
-
-    // Handle token refresh logic and retry mechanism
-    private <T> CompletableFuture<T> handleUnauthorizedRetry(HttpRequest.Builder requestBuilder, Class<T> responseType, String responseBody) {
-        return handleRefreshToken()
-                .thenCompose(success -> {
-                    if (success) {
-                        requestBuilder.setHeader("Authorization", "Bearer " + sessionManager.getAccessToken());
-                        return requestAsync(requestBuilder, responseType, true);
-                    } else {
-                        // Execute the onSessionExpired callback if the refresh operation fails
-                        this.onSessionExpired.run();
-                        return CompletableFuture.failedFuture(new RequestException(responseBody));
-                    }
-                });
-    }
-
-    // Handle standard HTTP errors (300+)
-    private <T> CompletableFuture<T> handleStandardError(HttpResponse<String> response) {
-        String errorMessage = response.body();
-
-        // Fallback to a generic error message if the response body is empty or blank
-        if (errorMessage == null || errorMessage.isBlank()) {
-            errorMessage = "Server error (" + response.statusCode() + ")";
-        }
-
-        return CompletableFuture.failedFuture(new RequestException(errorMessage));
-    }
-
-    // Handle successful payload deserialization
-    private <T> CompletableFuture<T> handleSuccessfulResponse(HttpResponse<String> response, Class<T> responseType) {
         try {
-            T result = objectMapper.readValue(response.body(), responseType);
-            return CompletableFuture.completedFuture(result);
+            TokenDTO dto = new TokenDTO();
+            dto.setRefreshToken(refreshToken);
+
+            HttpRequest refreshReq = createRequestBuilder("/auth/refresh", CONTENT_TYPE)
+                    .header("Content-Type", CONTENT_TYPE)
+                    .POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(dto)))
+                    .build();
+
+            return httpClient.sendAsync(refreshReq, HttpResponse.BodyHandlers.ofString())
+                    .thenApply(res -> {
+                        if (res.statusCode() == 200) {
+                            try {
+                                TokenDTO newToken = objectMapper.readValue(res.body(), TokenDTO.class);
+                                sessionManager.setAccessToken(newToken.getAccessToken());
+                                if (newToken.getRefreshToken() != null) {
+                                    sessionManager.setRefreshToken(newToken.getRefreshToken());
+                                }
+                                return true;
+                            } catch (JacksonException ignored) {}
+                        }
+                        sessionManager.logout();
+                        return false;
+                    });
+        } catch (JacksonException e) {
+            return CompletableFuture.completedFuture(false);
+        }
+    }
+
+    // --- UTILITY METHODS ---
+
+    private HttpRequest.Builder createRequestBuilder(String endpoint, String acceptType) {
+        HttpRequest.Builder builder = HttpRequest.newBuilder(URI.create(baseUrl + endpoint))
+                .header("Accept", acceptType);
+        applyAuthHeader(builder);
+        return builder;
+    }
+
+    private void applyAuthHeader(HttpRequest.Builder builder) {
+        String token = sessionManager.getAccessToken();
+        if (token != null && !token.isBlank()) {
+            builder.setHeader("Authorization", "Bearer " + token);
+        }
+    }
+
+    private <T> CompletableFuture<T> handleStandardError(HttpResponse<String> response) {
+        String rawBody = response.body();
+        String cleanMessage = "Server error (" + response.statusCode() + ")";
+
+        try {
+            if (rawBody != null && !rawBody.isBlank()) {
+                ErrorResponseDTO errorDto = objectMapper.readValue(rawBody, ErrorResponseDTO.class);
+                cleanMessage = errorDto.getMessage();
+            }
+        } catch (JacksonException e) {
+            logger.warning("Could not parse error response: " + rawBody);
+            cleanMessage = (rawBody != null && !rawBody.isBlank()) ? rawBody : cleanMessage;
+        }
+
+        return CompletableFuture.failedFuture(new RequestException(cleanMessage, response.statusCode()));
+    }
+
+    private <T> CompletableFuture<T> handleSuccessfulResponse(
+            HttpResponse<String> response,
+            Class<T> responseType
+    ) {
+        if (responseType == Void.class || response.body() == null || response.body().isBlank()) {
+            return CompletableFuture.completedFuture(null);
+        }
+        try {
+            return CompletableFuture.completedFuture(objectMapper.readValue(response.body(), responseType));
         } catch (JacksonException e) {
             return CompletableFuture.failedFuture(new RequestException("Deserialization error", e));
         }
     }
 
-    /**
-     * Logica specifica per eseguire il refresh del token.
-     * Restituisce true se il refresh ha successo, false altrimenti.
-     */
-    private CompletableFuture<Boolean> handleRefreshToken() {
-        String refreshToken = sessionManager.getRefreshToken();
-        if (refreshToken == null) {
-            return CompletableFuture.completedFuture(false);
-        }
-
-        TokenBean refreshBody = new TokenBean();
-        refreshBody.setRefreshToken(refreshToken);
-
-        String jsonBody;
-        try {
-            jsonBody = objectMapper.writeValueAsString(refreshBody);
-        } catch (JacksonException e) {
-            return CompletableFuture.completedFuture(false);
-        }
-
-        HttpRequest refreshRequest = HttpRequest.newBuilder()
-                .uri(URI.create(baseUrl + "/auth/refresh"))
-                .header("Content-Type", CONTENT_TYPE)
-                .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
-                .build();
-
-        return httpClient.sendAsync(refreshRequest, HttpResponse.BodyHandlers.ofString())
-                .thenApply(response -> {
-                    if (response.statusCode() == 200) {
-                        try {
-                            TokenBean newToken = objectMapper.readValue(response.body(), TokenBean.class);
-
-                            sessionManager.setAccessToken(newToken.getAccessToken());
-                            if(newToken.getRefreshToken() != null) {
-                                sessionManager.setRefreshToken(newToken.getRefreshToken());
-                            }
-                            return true;
-                        } catch (JacksonException e) {
-                            return false;
-                        }
-                    } else {
-                        // Il refresh token è scaduto o non valido -> Logout
-                        sessionManager.logout();
-                        return false;
-                    }
-                });
-    }
-
-    public <T> CompletableFuture<T> getAsync(String url, Class<T> responseType){
-        HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
-                .uri(URI.create(baseUrl + url))
-                .GET();
-
-        return requestAsync(requestBuilder, responseType, false);
-    }
-
-    public <T, R> CompletableFuture<R> postAsync(String url, T requestBody, Class<R> responseType){
-        String jsonRequestBody;
-        try {
-            jsonRequestBody = objectMapper.writeValueAsString(requestBody);
-        } catch (JacksonException e) {
-            return CompletableFuture.failedFuture(new RequestException("Errore serializzazione", e));
-        }
-
-        HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
-                .uri(URI.create(baseUrl + url))
-                .header("Content-Type", CONTENT_TYPE)
-                .POST(HttpRequest.BodyPublishers.ofString(jsonRequestBody));
-
-        return requestAsync(requestBuilder, responseType, false);
-    }
-
-    // --- NEW SSE METHODS ---
-
-    /**
-     * Subscribes to a Server-Sent Events (SSE) stream.
-     *
-     * @param url The relative endpoint URL.
-     * @param eventProcessor A callback to handle incoming events (eventName, payloadData).
-     * @return A CompletableFuture representing the active connection. Call .cancel(true) to close it.
-     */
-    public CompletableFuture<Void> subscribeSseAsync(String url, BiConsumer<String, String> eventProcessor) {
-        HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
-                .uri(URI.create(baseUrl + url))
-                .GET();
-
-        return requestSseAsync(requestBuilder, eventProcessor, false);
-    }
-
-    /**
-     * Internal method to handle SSE requests, including token refresh logic.
-     */
-    private CompletableFuture<Void> requestSseAsync(HttpRequest.Builder requestBuilder, BiConsumer<String, String> eventProcessor, boolean isRetry) {
-        requestBuilder.header("Accept", "text/event-stream");
-        addAuthorizationHeader(requestBuilder); // Reusing the header injection logic
-
-        HttpRequest request = requestBuilder.build();
-
-        return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofLines())
-                .thenCompose(response -> processSseResponse(response, request, requestBuilder, eventProcessor, isRetry));
-    }
-
-    // Extracted method to route the SSE response based on HTTP status
-    private CompletableFuture<Void> processSseResponse(HttpResponse<Stream<String>> response, HttpRequest request, HttpRequest.Builder requestBuilder, BiConsumer<String, String> eventProcessor, boolean isRetry) {
-        logger.info("SSE Connection status: " + response.statusCode() + " for " + request.uri());
-
-        if (response.statusCode() == 401 && !isRetry) {
-            return handleSseUnauthorizedRetry(requestBuilder, eventProcessor);
-        }
-
-        if (response.statusCode() >= 300) {
-            return CompletableFuture.failedFuture(new RequestException("SSE Server Error (" + response.statusCode() + ")"));
-        }
-
-        // Process the infinite stream asynchronously on a separate thread
-        return CompletableFuture.runAsync(() -> processSseStream(response.body(), eventProcessor));
-    }
-
-    // Extracted method to handle token refresh logic specifically for SSE streams
-    private CompletableFuture<Void> handleSseUnauthorizedRetry(HttpRequest.Builder requestBuilder, BiConsumer<String, String> eventProcessor) {
-        return handleRefreshToken()
-                .thenCompose(success -> {
-                    if (success) {
-                        requestBuilder.setHeader("Authorization", "Bearer " + sessionManager.getAccessToken());
-                        return requestSseAsync(requestBuilder, eventProcessor, true);
-                    } else {
-                        this.onSessionExpired.run();
-                        return CompletableFuture.failedFuture(new RequestException("Unauthorized: SSE token refresh failed"));
-                    }
-                });
-    }
-
-    // Extracted method to manage the lifecycle of the stream and the state buffers
-    private void processSseStream(Stream<String> lines, BiConsumer<String, String> eventProcessor) {
-        String[] currentEventName = {"message"};
+    private void processSseStream(
+            Stream<String> lines,
+            BiConsumer<String, String> eventProcessor
+    ) {
         StringBuilder dataBuffer = new StringBuilder();
+        String currentEventName = "message";
 
         try (lines) {
-            lines.forEach(line -> parseSseLine(line, currentEventName, dataBuffer, eventProcessor));
+            for (String line : (Iterable<String>) lines::iterator) {
+                if (line.startsWith("event:")) {
+                    currentEventName = line.substring(6).trim();
+                } else if (line.startsWith("data:")) {
+                    dataBuffer.append(line.substring(5).trim());
+                } else if (line.isBlank() && !dataBuffer.isEmpty()) {
+                    eventProcessor.accept(currentEventName, dataBuffer.toString());
+                    dataBuffer.setLength(0);
+                    currentEventName = "message";
+                }
+            }
         } catch (Exception e) {
             logger.warning("SSE Stream ended or interrupted: " + e.getMessage());
         }
     }
 
-    // Extracted method to process individual lines from the SSE payload
-    private void parseSseLine(String line, String[] currentEventName, StringBuilder dataBuffer, BiConsumer<String, String> eventProcessor) {
-        if (line.startsWith("event:")) {
-            currentEventName[0] = line.substring(6).trim();
-        } else if (line.startsWith("data:")) {
-            // Append data, handling potential multi-line JSON payloads
-            dataBuffer.append(line.substring(5).trim());
-        } else if (line.isBlank()) {
-            // An empty line indicates the end of a single SSE block
-            if (!dataBuffer.isEmpty()) {
-                eventProcessor.accept(currentEventName[0], dataBuffer.toString());
-                dataBuffer.setLength(0); // Reset buffer
-                currentEventName[0] = "message"; // Reset to default
+    private <T> CompletableFuture<T> withExceptionHandling(CompletableFuture<T> future) {
+        return future.exceptionally(ex -> {
+            Throwable cause = ex;
+            while (cause instanceof CompletionException && cause.getCause() != null) {
+                cause = cause.getCause();
             }
+            if (cause instanceof RequestException) {
+                throw new CompletionException(cause);
+            }
+            throw new CompletionException(new RequestException("Network error: Server is unreachable.", cause));
+        });
+    }
+
+    public static String extractErrorMessage(Throwable ex) {
+        Throwable root = ex;
+        while (root instanceof CompletionException && root.getCause() != null) {
+            root = root.getCause();
         }
+        return root.getMessage() != null ? root.getMessage() : "An unexpected error occurred.";
     }
 }

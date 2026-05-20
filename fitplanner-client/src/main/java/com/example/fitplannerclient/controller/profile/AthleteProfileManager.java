@@ -1,11 +1,11 @@
 package com.example.fitplannerclient.controller.profile;
 
 import com.example.fitplannerclient.exception.InvalidCodeException;
-import com.example.fitplannercommon.InvitationCodeBean;
+import com.example.fitplannercommon.InvitationCodeDTO;
 
 public class AthleteProfileManager extends ProfileManager {
 
-    public void addTrainerCode(InvitationCodeBean bean) throws InvalidCodeException {
+    public void addTrainerCode(InvitationCodeDTO bean) throws InvalidCodeException {
         String code= bean.getInvitationCode();
         // String athleteId = AthleteProfileServer.getAthleteId();
 

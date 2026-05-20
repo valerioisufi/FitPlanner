@@ -1,8 +1,8 @@
-package com.example.fitplannercommon;
+package com.example.fitplannerclient.bean.auth;
 
-public class ProfileBean {
-    private String userId; // utilizzato solo quando è il server a inviare il bean
-    private String username;
+public class RegisterBean {
+    private String email;
+    private String password;
 
     private String firstName;
     private String lastName;
@@ -12,35 +12,20 @@ public class ProfileBean {
 
     private ProfileType profileType;
 
-    public ProfileBean() {}
-
-    public ProfileBean(String userId, String username, String firstName, String lastName, String phoneNumber, String contactEmail, ProfileType profileType) {
-        this.userId = userId;
-        this.username = username;
-
-        this.firstName = firstName;
-        this.lastName = lastName;
-
-        this.phoneNumber = phoneNumber;
-        this.contactEmail = contactEmail;
-
-        this.profileType = profileType;
+    public String getEmail() {
+        return email;
     }
 
-    public String getUserId() {
-        return userId;
+    public void setEmail(String email) {
+        this.email = email;
     }
 
-    public void setUserId(String userId) {
-        this.userId = userId;
+    public String getPassword() {
+        return password;
     }
 
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public String getFirstName() {
@@ -83,7 +68,7 @@ public class ProfileBean {
         this.profileType = profileType;
     }
 
-    public enum ProfileType {
+    enum ProfileType {
         TRAINER,
         ATHLETE
     }

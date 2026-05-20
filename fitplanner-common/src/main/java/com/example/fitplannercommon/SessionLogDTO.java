@@ -2,7 +2,7 @@ package com.example.fitplannercommon;
 
 import java.util.List;
 
-public class SessionLogBean {
+public class SessionLogDTO {
     private String userId;
 
     private String notes;
@@ -12,11 +12,11 @@ public class SessionLogBean {
     private String planIdReference;
     private int workoutSessionDay;
 
-    private List<ExerciseLogBean> exerciseLogs;
+    private List<ExerciseLogDTO> exerciseLogs;
 
-    public SessionLogBean() {}
+    public SessionLogDTO() {}
 
-    public SessionLogBean(String userId, String notes, SessionStatus status, long date) {
+    public SessionLogDTO(String userId, String notes, SessionStatus status, long date) {
         this.userId = userId;
 
         this.notes = notes;
@@ -72,11 +72,11 @@ public class SessionLogBean {
         this.workoutSessionDay = workoutSessionDay;
     }
 
-    public List<ExerciseLogBean> getExerciseLogs() {
+    public List<ExerciseLogDTO> getExerciseLogs() {
         return exerciseLogs;
     }
 
-    public void setExerciseLogs(List<ExerciseLogBean> exerciseLogs) {
+    public void setExerciseLogs(List<ExerciseLogDTO> exerciseLogs) {
         this.exerciseLogs = exerciseLogs;
     }
 

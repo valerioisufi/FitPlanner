@@ -1,6 +1,6 @@
 package com.example.fitplannerclient.ui.fx.view.plan;
 
-import com.example.fitplannerclient.dto.plan.*;
+import com.example.fitplannerclient.bean.plan.*;
 import javafx.scene.control.ScrollPane;
 
 import java.util.ArrayList;

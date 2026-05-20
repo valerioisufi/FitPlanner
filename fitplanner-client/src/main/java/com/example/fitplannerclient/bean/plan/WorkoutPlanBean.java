@@ -1,4 +1,4 @@
-package com.example.fitplannerclient.dto.plan;
+package com.example.fitplannerclient.bean.plan;
 
 import java.util.List;
 

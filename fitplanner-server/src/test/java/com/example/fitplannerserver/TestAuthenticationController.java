@@ -1,9 +1,9 @@
 package com.example.fitplannerserver;
 
-import com.example.fitplannercommon.LoginBean;
-import com.example.fitplannercommon.ProfileBean;
-import com.example.fitplannercommon.RegisterBean;
-import com.example.fitplannercommon.TokenBean;
+import com.example.fitplannercommon.LoginDTO;
+import com.example.fitplannercommon.ProfileDTO;
+import com.example.fitplannercommon.RegisterDTO;
+import com.example.fitplannercommon.TokenDTO;
 import com.example.fitplannerserver.controller.AuthenticationController;
 import com.example.fitplannerserver.dao.AccountDao;
 import com.example.fitplannerserver.dao.ProfileDao;
@@ -61,12 +61,12 @@ class TestAuthenticationController {
 
         createAndSaveMockAccount(email, password, Account.Role.ATHLETE);
 
-        LoginBean loginBean = new LoginBean();
-        loginBean.setEmail(email);
-        loginBean.setPassword(password);
+        LoginDTO loginDTO = new LoginDTO();
+        loginDTO.setEmail(email);
+        loginDTO.setPassword(password);
 
         // Act
-        TokenBean result = controller.login(loginBean);
+        TokenDTO result = controller.login(loginDTO);
 
         // Assert
         assertNotNull(result, "Un login avvenuto con successo deve restituire un TokenBean valido");
@@ -81,13 +81,13 @@ class TestAuthenticationController {
 
         createAndSaveMockAccount(email, "correct_password", Account.Role.ATHLETE);
 
-        LoginBean loginBean = new LoginBean();
-        loginBean.setEmail(email);
-        loginBean.setPassword(wrongPassword);
+        LoginDTO loginDTO = new LoginDTO();
+        loginDTO.setEmail(email);
+        loginDTO.setPassword(wrongPassword);
 
         // Act & Assert
         assertThrows(InvalidCredentialsException.class, () -> {
-            controller.login(loginBean);
+            controller.login(loginDTO);
         });
     }
 
@@ -100,15 +100,15 @@ class TestAuthenticationController {
 
         createAndSaveMockAccount(email, "other_password", Account.Role.ATHLETE);
 
-        RegisterBean registerBean = new RegisterBean();
-        registerBean.setEmail(email);
-        registerBean.setPassword(password);
+        RegisterDTO registerDTO = new RegisterDTO();
+        registerDTO.setEmail(email);
+        registerDTO.setPassword(password);
 
-        registerBean.setProfile(createMockProfileBean());
+        registerDTO.setProfile(createMockProfileBean());
 
         // Act & Assert
         assertThrows(InvalidCredentialsException.class, () -> {
-            controller.register(registerBean);
+            controller.register(registerDTO);
         });
     }
 
@@ -118,14 +118,14 @@ class TestAuthenticationController {
         // Arrange
         String newEmail = "new@example.com";
 
-        RegisterBean registerBean = new RegisterBean();
-        registerBean.setEmail(newEmail);
-        registerBean.setPassword("password123");
+        RegisterDTO registerDTO = new RegisterDTO();
+        registerDTO.setEmail(newEmail);
+        registerDTO.setPassword("password123");
 
-        registerBean.setProfile(createMockProfileBean());
+        registerDTO.setProfile(createMockProfileBean());
 
         // Act
-        TokenBean result = controller.register(registerBean);
+        TokenDTO result = controller.register(registerDTO);
 
         // Assert
         assertNotNull(result, "La registrazione deve restituire un TokenBean valido");
@@ -139,7 +139,6 @@ class TestAuthenticationController {
         Optional<User> savedProfileOpt = profileDao.findById(generatedUserId);
 
         assertTrue(savedProfileOpt.isPresent(), "Il profilo utente deve essere stato salvato nel database");
-        assertEquals("user123", savedProfileOpt.get().getUsername(), "L'username salvato deve corrispondere a quello del bean");
     }
 
     @Test
@@ -148,11 +147,11 @@ class TestAuthenticationController {
         // Arrange
         Account savedAccount = createAndSaveMockAccount("testrefresh@example.com", "password123", Account.Role.TRAINER);
 
-        TokenBean requestTokenBean = new TokenBean();
-        requestTokenBean.setRefreshToken(savedAccount.getRefreshToken());
+        TokenDTO requestTokenDTO = new TokenDTO();
+        requestTokenDTO.setRefreshToken(savedAccount.getRefreshToken());
 
         // Act
-        TokenBean result = controller.refreshToken(requestTokenBean);
+        TokenDTO result = controller.refreshToken(requestTokenDTO);
 
         // Assert
         assertNotNull(result, "Il refresh deve restituire un nuovo TokenBean");
@@ -175,15 +174,14 @@ class TestAuthenticationController {
         return mockAccount;
     }
 
-    private ProfileBean createMockProfileBean(){
-        return new ProfileBean(
+    private ProfileDTO createMockProfileBean(){
+        return new ProfileDTO(
                 null,
-                "user123",
                 "Mario",
                 "Rossi",
                 "1234567890",
                 "contact@example.com",
-                ProfileBean.ProfileType.ATHLETE
+                ProfileDTO.ProfileType.ATHLETE
         );
     }
 

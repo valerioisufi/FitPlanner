@@ -1,9 +1,9 @@
 package com.example.fitplannerserver.controller;
 
-import com.example.fitplannercommon.LoginBean;
-import com.example.fitplannercommon.ProfileBean;
-import com.example.fitplannercommon.RegisterBean;
-import com.example.fitplannercommon.TokenBean;
+import com.example.fitplannercommon.LoginDTO;
+import com.example.fitplannercommon.ProfileDTO;
+import com.example.fitplannercommon.RegisterDTO;
+import com.example.fitplannercommon.TokenDTO;
 import com.example.fitplannerserver.beanvalidator.AuthValidator;
 import com.example.fitplannerserver.dao.AccountDao;
 import com.example.fitplannerserver.dao.ProfileDao;
@@ -39,13 +39,13 @@ public class AuthenticationController {
         this.profileDao = profileDao;
     }
 
-    public TokenBean login(LoginBean loginBean) {
-        AuthValidator.validateLoginBean(loginBean);
+    public TokenDTO login(LoginDTO loginDTO) {
+        AuthValidator.validateLoginBean(loginDTO);
 
         try {
-            Optional<Account> accountFound = accountDao.findByEmail(loginBean.getEmail());
+            Optional<Account> accountFound = accountDao.findByEmail(loginDTO.getEmail());
 
-            if (accountFound.isEmpty() || !passwordEncoder.matches(loginBean.getPassword(), accountFound.get().getPasswordHash())) {
+            if (accountFound.isEmpty() || !passwordEncoder.matches(loginDTO.getPassword(), accountFound.get().getPasswordHash())) {
                 throw new InvalidCredentialsException("Credenziali non valide");
             }
 
@@ -55,21 +55,21 @@ public class AuthenticationController {
             account.setRefreshToken(refreshToken);
             accountDao.save(account);
 
-            TokenBean tokenBean = new TokenBean();
+            TokenDTO tokenDTO = new TokenDTO();
 
-            tokenBean.setAccessToken(jwtUtil.generateAccessToken(account.getUserId(), account.getProfileType()));
-            tokenBean.setRefreshToken(refreshToken);
+            tokenDTO.setAccessToken(jwtUtil.generateAccessToken(account.getUserId(), account.getProfileType()));
+            tokenDTO.setRefreshToken(refreshToken);
 
-            return tokenBean;
+            return tokenDTO;
         } catch (DaoException e) {
             throw new SystemException("Errore durante il login");
         }
     }
 
-    public TokenBean register(RegisterBean registerBean) {
-        AuthValidator.validateRegisterBean(registerBean);
+    public TokenDTO register(RegisterDTO registerDTO) {
+        AuthValidator.validateRegisterBean(registerDTO);
 
-        Account.Role role = (registerBean.getProfile().getProfileType() == ProfileBean.ProfileType.ATHLETE)
+        Account.Role role = (registerDTO.getProfile().getProfileType() == ProfileDTO.ProfileType.ATHLETE)
                 ? Account.Role.ATHLETE
                 : Account.Role.TRAINER;
 
@@ -78,8 +78,8 @@ public class AuthenticationController {
 
         Account account = new Account(
                 newUserId,
-                registerBean.getEmail(),
-                passwordEncoder.encode(registerBean.getPassword()),
+                registerDTO.getEmail(),
+                passwordEncoder.encode(registerDTO.getPassword()),
                 JwtUtil.generateRefreshToken(),
                 role
         );
@@ -87,15 +87,14 @@ public class AuthenticationController {
         try {
             if (accountDao.create(account)) {
                 // l'account dell'utente è stato creato correttamente
-                ProfileBean profileBean = registerBean.getProfile();
+                ProfileDTO profileDTO = registerDTO.getProfile();
 
                 User user = new User(newUserId);
                 user.setUserProfileInfo(
-                        profileBean.getUsername().trim(),
-                        profileBean.getFirstName(),
-                        profileBean.getLastName(),
-                        profileBean.getContactEmail(),
-                        profileBean.getPhoneNumber()
+                        profileDTO.getFirstName(),
+                        profileDTO.getLastName(),
+                        profileDTO.getContactEmail(),
+                        profileDTO.getPhoneNumber()
                 );
                 if(role == Account.Role.TRAINER)
                     user.setInvitationCode(InvitationCodeGenerator.generateCode());
@@ -103,11 +102,11 @@ public class AuthenticationController {
                 profileDao.save(user);
 
                 // genero i token jwt per l'utente
-                TokenBean tokenBean = new TokenBean();
+                TokenDTO tokenDTO = new TokenDTO();
 
-                tokenBean.setAccessToken(jwtUtil.generateAccessToken(account.getUserId(), account.getProfileType()));
-                tokenBean.setRefreshToken(account.getRefreshToken());
-                return tokenBean;
+                tokenDTO.setAccessToken(jwtUtil.generateAccessToken(account.getUserId(), account.getProfileType()));
+                tokenDTO.setRefreshToken(account.getRefreshToken());
+                return tokenDTO;
             } else {
                 throw new InvalidCredentialsException("Email già utilizzata");
             }
@@ -116,17 +115,17 @@ public class AuthenticationController {
         }
     }
 
-    public TokenBean refreshToken(TokenBean tokenBean) {
-        AuthValidator.validateRefreshTokenBean(tokenBean);
+    public TokenDTO refreshToken(TokenDTO tokenDTO) {
+        AuthValidator.validateRefreshTokenBean(tokenDTO);
 
         try {
-            Optional<Account> account = accountDao.findByRefreshToken(tokenBean.getRefreshToken());
+            Optional<Account> account = accountDao.findByRefreshToken(tokenDTO.getRefreshToken());
 
             if (account.isPresent()) {
-                TokenBean newTokenBean = new TokenBean();
+                TokenDTO newTokenDTO = new TokenDTO();
 
-                newTokenBean.setAccessToken(jwtUtil.generateAccessToken(account.get().getUserId(), account.get().getProfileType()));
-                return newTokenBean;
+                newTokenDTO.setAccessToken(jwtUtil.generateAccessToken(account.get().getUserId(), account.get().getProfileType()));
+                return newTokenDTO;
             }
 
             throw new InvalidCredentialsException("Refresh token non valido");

@@ -4,6 +4,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.Menu;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
@@ -15,12 +16,16 @@ import java.util.List;
 import java.util.Objects;
 
 public class HeaderView extends HBox {
-    public record MenuConfig(String title, String icon) {}
+    public record MenuConfig(
+            String title,
+            String icon,
+            Runnable action
+    ) {}
 
     // 1. Aggiungiamo una lista per conservare i riferimenti ai pulsanti
     private final List<Button> menuButtons = new ArrayList<>();
 
-    public HeaderView(List<MenuConfig> menuItems, int activeBtnIndex) {
+    public HeaderView(List<MenuConfig> navItems, int activeNavItemIndex, List<MenuConfig> menuItems) {
         this.getStyleClass().add("header");
         this.setAlignment(Pos.CENTER_LEFT);
 
@@ -36,15 +41,12 @@ public class HeaderView extends HBox {
         navContainer.setAlignment(Pos.CENTER_RIGHT);
 
         int i = 0;
-        for (MenuConfig item : menuItems) {
-//            Region icon = new Region();
-//            icon.getStyleClass().add(item.icon);
-//            icon.setPrefSize(20, 20);
+        for (MenuConfig item : navItems) {
 
             Button btn = new Button(item.title);
             btn.getStyleClass().addAll("button-header");
 
-            if (i == activeBtnIndex) {
+            if (i == activeNavItemIndex) {
                 btn.getStyleClass().add("button-header-active");
             }
 
@@ -60,11 +62,41 @@ public class HeaderView extends HBox {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        //
+        // buttonsContainer
         HBox buttonsContainer = new HBox(16);
+        buttonsContainer.setFillHeight(false);
         buttonsContainer.setAlignment(Pos.CENTER_RIGHT);
 
-        this.getChildren().addAll(titleContainer, spacer);
+        for (MenuConfig item : menuItems) {
+            HBox btn = new HBox(4);
+            btn.setAlignment(Pos.CENTER);
+            btn.setFillHeight(false);
+
+            if (item.icon != null) {
+                Region icon = new Region();
+                icon.getStyleClass().add(item.icon);
+                icon.setPrefSize(20, 20);
+                icon.getStyleClass().add("button-header-icon");
+
+                btn.getChildren().add(icon);
+            }
+
+
+            if(item.title != null) {
+                Label text = new Label(item.title);
+                btn.getChildren().add(text);
+            }
+
+            btn.getStyleClass().addAll("button-header");
+
+            if(item.action != null) {
+                btn.setOnMousePressed(e -> item.action.run());
+            }
+
+            buttonsContainer.getChildren().add(btn);
+        }
+
+        this.getChildren().addAll(titleContainer, spacer, buttonsContainer);
     }
 
     // Metodo fondamentale per il Controller

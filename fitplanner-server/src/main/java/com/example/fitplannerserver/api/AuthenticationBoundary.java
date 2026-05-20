@@ -1,8 +1,8 @@
 package com.example.fitplannerserver.api;
 
-import com.example.fitplannercommon.LoginBean;
-import com.example.fitplannercommon.RegisterBean;
-import com.example.fitplannercommon.TokenBean;
+import com.example.fitplannercommon.LoginDTO;
+import com.example.fitplannercommon.RegisterDTO;
+import com.example.fitplannercommon.TokenDTO;
 import com.example.fitplannerserver.controller.AuthenticationController;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -20,18 +20,18 @@ public class AuthenticationBoundary {
     }
 
     @PostMapping("/login")
-    public TokenBean login(@RequestBody LoginBean loginBean) {
-        return authenticationController.login(loginBean);
+    public TokenDTO login(@RequestBody LoginDTO loginDTO) {
+        return authenticationController.login(loginDTO);
     }
 
     @PostMapping("/register")
-    public TokenBean register(@RequestBody RegisterBean registerBean) {
-        return authenticationController.register(registerBean);
+    public TokenDTO register(@RequestBody RegisterDTO registerDTO) {
+        return authenticationController.register(registerDTO);
     }
 
     @PostMapping("/refresh")
-    public TokenBean refreshToken(@RequestBody TokenBean tokenBean) {
-        return authenticationController.refreshToken(tokenBean);
+    public TokenDTO refreshToken(@RequestBody TokenDTO tokenDTO) {
+        return authenticationController.refreshToken(tokenDTO);
     }
 
 }

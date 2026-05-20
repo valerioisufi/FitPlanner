@@ -1,15 +1,14 @@
 package com.example.fitplannerclient.controller.profile;
 
-import com.example.fitplannercommon.ProfileBean;
+import com.example.fitplannercommon.ProfileDTO;
 import com.example.fitplannerclient.entity.profile.Profile;
 
 public abstract class ProfileManager {
     Profile profile;
 
 
-    public void setProfileInformation(ProfileBean bean){
+    public void setProfileInformation(ProfileDTO bean){
             this.profile = new Profile(
-                    bean.getUsername(),
                     bean.getFirstName(),
                     bean.getLastName(),
                     bean.getContactEmail(),

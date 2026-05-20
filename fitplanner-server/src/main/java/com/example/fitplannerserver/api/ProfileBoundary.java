@@ -1,7 +1,7 @@
 package com.example.fitplannerserver.api;
 
-import com.example.fitplannercommon.InvitationCodeBean;
-import com.example.fitplannercommon.ProfileBean;
+import com.example.fitplannercommon.InvitationCodeDTO;
+import com.example.fitplannercommon.ProfileDTO;
 import com.example.fitplannerserver.controller.ProfileController;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,36 +19,36 @@ public class ProfileBoundary {
 
     // Fetches the profile of the currently authenticated user
     @GetMapping("/me")
-    public ProfileBean getProfileInfo() {
+    public ProfileDTO getProfileInfo() {
         return profileController.getProfileInfo();
     }
 
     // Updates the profile of the currently authenticated user
     @PutMapping("/me")
-    public void updateProfileInfo(@RequestBody ProfileBean profileBean) {
-        profileController.updateProfileInfo(profileBean);
+    public void updateProfileInfo(@RequestBody ProfileDTO profileDTO) {
+        profileController.updateProfileInfo(profileDTO);
     }
 
     // Athlete fetches their assigned trainer's profile
     @GetMapping("/my-trainer")
-    public ProfileBean getMyTrainer() {
+    public ProfileDTO getMyTrainer() {
         return profileController.getMyTrainer();
     }
 
     // Trainer fetches a list of all their subscribed athletes
     @GetMapping("/my-athletes")
-    public List<ProfileBean> getMyAthletes() {
+    public List<ProfileDTO> getMyAthletes() {
         return profileController.getMyAthletes();
     }
 
     @PostMapping("/my-trainer/link")
-    public void linkTrainerWithCode(@RequestBody InvitationCodeBean invitationBean) {
+    public void linkTrainerWithCode(@RequestBody InvitationCodeDTO invitationBean) {
         profileController.linkTrainer(invitationBean);
     }
 
     // Trainer requests to get their invitation code
     @PostMapping("/my-code")
-    public InvitationCodeBean getCode() {
+    public InvitationCodeDTO getCode() {
         return profileController.getInvitationCode();
     }
 

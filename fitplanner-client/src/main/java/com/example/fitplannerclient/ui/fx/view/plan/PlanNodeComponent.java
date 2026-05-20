@@ -1,8 +1,8 @@
 package com.example.fitplannerclient.ui.fx.view.plan;
 
-import com.example.fitplannerclient.dto.plan.ExerciseModifierBean;
-import com.example.fitplannerclient.dto.plan.FlowDecoratorBean;
-import com.example.fitplannerclient.dto.plan.PlanNodeBean;
+import com.example.fitplannerclient.bean.plan.ExerciseModifierBean;
+import com.example.fitplannerclient.bean.plan.FlowDecoratorBean;
+import com.example.fitplannerclient.bean.plan.PlanNodeBean;
 import javafx.geometry.Pos;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.control.Label;

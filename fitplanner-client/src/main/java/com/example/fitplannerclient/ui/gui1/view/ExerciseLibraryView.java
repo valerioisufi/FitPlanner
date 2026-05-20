@@ -1,6 +1,6 @@
 package com.example.fitplannerclient.ui.gui1.view;
 
-import com.example.fitplannercommon.ExerciseDescriptionBean;
+import com.example.fitplannercommon.ExerciseDescriptionDTO;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -18,8 +18,8 @@ public class ExerciseLibraryView extends BaseView {
     private final VBox exerciseListContainer = new VBox(0); // Contenitore delle righe
 
     // Callback per gli eventi (simulazione)
-    private Consumer<ExerciseDescriptionBean> onEditAction;
-    private Consumer<ExerciseDescriptionBean> onDeleteAction;
+    private Consumer<ExerciseDescriptionDTO> onEditAction;
+    private Consumer<ExerciseDescriptionDTO> onDeleteAction;
 
     public ExerciseLibraryView() {
         // Applichiamo lo stile al bottone principale
@@ -96,11 +96,11 @@ public class ExerciseLibraryView extends BaseView {
     /**
      * Metodo chiamato dal Controller per popolare la lista
      */
-    public void setExerciseList(List<ExerciseDescriptionBean> exercises) {
+    public void setExerciseList(List<ExerciseDescriptionDTO> exercises) {
         exerciseListContainer.getChildren().clear();
 
         for (int i = 0; i < exercises.size(); i++) {
-            ExerciseDescriptionBean ex = exercises.get(i);
+            ExerciseDescriptionDTO ex = exercises.get(i);
             HBox row = createExerciseRow(ex);
 
             exerciseListContainer.getChildren().add(row);
@@ -115,7 +115,7 @@ public class ExerciseLibraryView extends BaseView {
         }
     }
 
-    private HBox createExerciseRow(ExerciseDescriptionBean exercise) {
+    private HBox createExerciseRow(ExerciseDescriptionDTO exercise) {
         HBox row = new HBox(20);
         row.setPadding(new Insets(20, 24, 20, 24));
         row.setAlignment(Pos.CENTER_LEFT);
@@ -186,6 +186,6 @@ public class ExerciseLibraryView extends BaseView {
     public void setOnAddAction(Runnable action) {
         btnAddExercise.setOnAction(e -> action.run());
     }
-    public void setOnEditAction(Consumer<ExerciseDescriptionBean> action) { this.onEditAction = action; }
-    public void setOnDeleteAction(Consumer<ExerciseDescriptionBean> action) { this.onDeleteAction = action; }
+    public void setOnEditAction(Consumer<ExerciseDescriptionDTO> action) { this.onEditAction = action; }
+    public void setOnDeleteAction(Consumer<ExerciseDescriptionDTO> action) { this.onDeleteAction = action; }
 }

@@ -1,6 +1,6 @@
 package com.example.fitplannerserver.api;
 
-import com.example.fitplannercommon.ExerciseDescriptionBean;
+import com.example.fitplannercommon.ExerciseDescriptionDTO;
 import com.example.fitplannerserver.controller.ManageExerciseLibraryController;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,7 +20,7 @@ public class ExerciseLibraryBoundary {
     // If Trainer -> returns their library. If Athlete -> returns their Trainer's library.
     // Supports an optional list of UUIDs to filter the results.
     @GetMapping
-    public List<ExerciseDescriptionBean> getExercises(
+    public List<ExerciseDescriptionDTO> getExercises(
             @RequestParam(required = false) List<String> uuids) {
 
         // If the client passed specific UUIDs, fetch only those
@@ -34,13 +34,13 @@ public class ExerciseLibraryBoundary {
 
     // Adds a new exercise to the trainer's library
     @PostMapping
-    public String addExercise(@RequestBody ExerciseDescriptionBean exerciseBean) {
+    public String addExercise(@RequestBody ExerciseDescriptionDTO exerciseBean) {
         return manageExerciseLibraryController.addExercise(exerciseBean);
     }
 
     // Updates an existing exercise in the library
     @PutMapping("/{uuid}")
-    public void updateExercise(@PathVariable String uuid, @RequestBody ExerciseDescriptionBean exerciseBean) {
+    public void updateExercise(@PathVariable String uuid, @RequestBody ExerciseDescriptionDTO exerciseBean) {
         exerciseBean.setExerciseId(uuid);
         manageExerciseLibraryController.updateExercise(exerciseBean);
     }

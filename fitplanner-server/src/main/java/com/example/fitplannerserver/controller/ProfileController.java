@@ -1,6 +1,6 @@
 package com.example.fitplannerserver.controller;
 
-import com.example.fitplannercommon.InvitationCodeBean;
+import com.example.fitplannercommon.InvitationCodeDTO;
 import com.example.fitplannerserver.beanvalidator.ProfileValidator;
 import com.example.fitplannerserver.dao.CoachingDao;
 import com.example.fitplannerserver.dao.ProfileDao;
@@ -8,7 +8,7 @@ import com.example.fitplannerserver.exception.*;
 import com.example.fitplannerserver.mapper.ProfileMapper;
 import com.example.fitplannerserver.model.Account;
 import com.example.fitplannerserver.model.User;
-import com.example.fitplannercommon.ProfileBean;
+import com.example.fitplannercommon.ProfileDTO;
 import com.example.fitplannerserver.security.IdentityProvider;
 
 import java.util.ArrayList;
@@ -31,7 +31,7 @@ public class ProfileController {
         this.coachingDao = coachingDao;
     }
 
-    public ProfileBean getProfileInfo() {
+    public ProfileDTO getProfileInfo() {
 
         try {
             User user = profileDao.findById(identityProvider.getUserId())
@@ -44,8 +44,8 @@ public class ProfileController {
         }
     }
 
-    public void updateProfileInfo(ProfileBean profileBean) {
-        ProfileValidator.validateProfileBean(profileBean);
+    public void updateProfileInfo(ProfileDTO profileDTO) {
+        ProfileValidator.validateProfileBean(profileDTO);
 
         try {
             User oldUser = profileDao.findById(identityProvider.getUserId())
@@ -53,11 +53,10 @@ public class ProfileController {
 
             User newUser = new User(oldUser);
             newUser.setUserProfileInfo(
-                    profileBean.getUsername().trim(),
-                    profileBean.getFirstName().trim(),
-                    profileBean.getLastName().trim(),
-                    profileBean.getContactEmail().trim(),
-                    profileBean.getPhoneNumber().trim()
+                    profileDTO.getFirstName().trim(),
+                    profileDTO.getLastName().trim(),
+                    profileDTO.getContactEmail().trim(),
+                    profileDTO.getPhoneNumber().trim()
             );
 
             profileDao.save(newUser);
@@ -68,7 +67,7 @@ public class ProfileController {
 
     }
 
-    public ProfileBean getMyTrainer() {
+    public ProfileDTO getMyTrainer() {
         identityProvider.checkUserRole(Account.Role.ATHLETE);
 
         try {
@@ -84,13 +83,13 @@ public class ProfileController {
         }
     }
 
-    public List<ProfileBean> getMyAthletes() {
+    public List<ProfileDTO> getMyAthletes() {
         identityProvider.checkUserRole(Account.Role.TRAINER);
 
         try {
             List<String> athleteIds = coachingDao.findAthleteIdsByTrainerId(identityProvider.getUserId());
 
-            List<ProfileBean> athletes = new ArrayList<>();
+            List<ProfileDTO> athletes = new ArrayList<>();
             for(String athleteId : athleteIds) {
                 User athlete = profileDao.findById(athleteId)
                         .orElseThrow(() -> new SystemException("Atleta non trovato"));
@@ -105,15 +104,15 @@ public class ProfileController {
         }
     }
 
-    public void linkTrainer(InvitationCodeBean invitationCodeBean){
+    public void linkTrainer(InvitationCodeDTO invitationCodeDTO){
         identityProvider.checkUserRole(Account.Role.ATHLETE);
 
-        if(invitationCodeBean == null || invitationCodeBean.getInvitationCode() == null){
+        if(invitationCodeDTO == null || invitationCodeDTO.getInvitationCode() == null){
             throw new WrongArgumentsException("Il codice di invito non può essere nullo");
         }
 
         try {
-            User trainer = profileDao.findByInvitationCode(invitationCodeBean.getInvitationCode())
+            User trainer = profileDao.findByInvitationCode(invitationCodeDTO.getInvitationCode())
                     .orElseThrow(() -> new ResourceNotFoundException("Codice di invito non valido"));
 
             if(trainer.getId().equals(identityProvider.getUserId())){
@@ -128,14 +127,14 @@ public class ProfileController {
         }
     }
 
-    public InvitationCodeBean getInvitationCode() {
+    public InvitationCodeDTO getInvitationCode() {
         identityProvider.checkUserRole(Account.Role.TRAINER);
 
         try {
             String invitationCode = profileDao.getInvitationCode(identityProvider.getUserId())
                     .orElseThrow(() -> new SystemException("Codice di invito non trovato"));
 
-            return new InvitationCodeBean(invitationCode);
+            return new InvitationCodeDTO(invitationCode);
         } catch (Exception e) {
             throw new SystemException("Errore durante il recupero del codice di invito");
         }

@@ -1,7 +1,7 @@
 package com.example.fitplannerserver.controller;
 
-import com.example.fitplannercommon.ExerciseLogBean;
-import com.example.fitplannercommon.SessionLogBean;
+import com.example.fitplannercommon.ExerciseLogDTO;
+import com.example.fitplannercommon.SessionLogDTO;
 import com.example.fitplannerserver.beanvalidator.LogValidator;
 import com.example.fitplannerserver.dao.CoachingDao;
 import com.example.fitplannerserver.dao.SessionLogDao;
@@ -37,7 +37,7 @@ public class SessionLogController {
         this.coachingDao = coachingDao;
     }
 
-    public List<SessionLogBean> getFilteredSessionLog(String athleteId, long startDate, long endDate) {
+    public List<SessionLogDTO> getFilteredSessionLog(String athleteId, long startDate, long endDate) {
         if (!ValidationUtils.isValidUuid(athleteId)) {
             throw new WrongArgumentsException("athleteId deve essere un UUID valido");
         }
@@ -66,18 +66,18 @@ public class SessionLogController {
         try {
             List<SessionLog> sessionLog = sessionLogDao.findLogsByAthleteIdAndDateRange(athleteId, startDate, endDate);
 
-            List<SessionLogBean> sessionLogBeans = new ArrayList<>();
+            List<SessionLogDTO> sessionLogDTOS = new ArrayList<>();
             for (SessionLog log : sessionLog) {
-                sessionLogBeans.add(toBean(log));
+                sessionLogDTOS.add(toBean(log));
             }
-            return sessionLogBeans;
+            return sessionLogDTOS;
 
         } catch (DaoException e) {
             throw new SystemException("Errore nel recuperare i session logs");
         }
     }
 
-    public void saveSessionLog(SessionLogBean logBean) {
+    public void saveSessionLog(SessionLogDTO logBean) {
         identityProvider.checkUserRole(Account.Role.ATHLETE);
         LogValidator.validateSessionLogBean(logBean);
 
@@ -91,7 +91,7 @@ public class SessionLogController {
         }
     }
 
-    public ExerciseLogBean getLastRecordForExercise(String exerciseId) {
+    public ExerciseLogDTO getLastRecordForExercise(String exerciseId) {
         identityProvider.checkUserRole(Account.Role.ATHLETE);
 
         if (!ValidationUtils.isValidUuid(exerciseId)) {

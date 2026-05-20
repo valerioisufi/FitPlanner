@@ -1,8 +1,8 @@
 package com.example.fitplannerserver.beanvalidator;
 
-import com.example.fitplannercommon.ExerciseDescriptionBean;
-import com.example.fitplannercommon.WorkoutPlanBean;
-import com.example.fitplannercommon.WorkoutSessionBean;
+import com.example.fitplannercommon.ExerciseDescriptionDTO;
+import com.example.fitplannercommon.WorkoutPlanDTO;
+import com.example.fitplannercommon.WorkoutSessionDTO;
 import com.example.fitplannerserver.exception.WrongArgumentsException;
 import com.example.fitplannerserver.util.ValidationUtils;
 
@@ -10,7 +10,7 @@ public class PlanValidator {
 
     private PlanValidator(){}
 
-    public static void validateExerciseDescriptionBean(ExerciseDescriptionBean bean){
+    public static void validateExerciseDescriptionBean(ExerciseDescriptionDTO bean){
         if(bean == null || bean.getName() == null || bean.getExecution() == null || bean.getMuscleGroups() == null){
             throw new WrongArgumentsException("ExerciseDescriptionBean e i suoi campi non possono essere nulli");
         }
@@ -34,7 +34,7 @@ public class PlanValidator {
 
     }
 
-    public static void validateWorkoutPlanBean(WorkoutPlanBean bean){
+    public static void validateWorkoutPlanBean(WorkoutPlanDTO bean){
         if (bean == null || bean.getName() == null || bean.getWorkoutSessions() == null) {
             throw new WrongArgumentsException("WorkoutPlanBean e i suoi campi name e sessions non possono essere nulli");
         }
@@ -51,13 +51,13 @@ public class PlanValidator {
             throw new WrongArgumentsException("Un WorkoutPlan deve contenere almeno una sessione");
         }
 
-        for(WorkoutSessionBean session: bean.getWorkoutSessions()){
+        for(WorkoutSessionDTO session: bean.getWorkoutSessions()){
             validateWorkoutSessionBean(session);
         }
 
     }
 
-    public static void validateWorkoutSessionBean(WorkoutSessionBean bean){
+    public static void validateWorkoutSessionBean(WorkoutSessionDTO bean){
         if(bean == null || bean.getContent() == null || bean.getName() == null){
             throw new WrongArgumentsException("WorkoutSessionBean e i suoi campi name e content non possono essere nulli");
         }

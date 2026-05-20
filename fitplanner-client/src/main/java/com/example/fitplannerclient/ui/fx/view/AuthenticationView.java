@@ -1,19 +1,20 @@
 package com.example.fitplannerclient.ui.fx.view;
 
-import com.example.fitplannerclient.ui.gui1.view.BaseView;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
-import javafx.scene.control.PasswordField;
+import javafx.scene.control.*;
 import javafx.scene.layout.*;
 
 public class AuthenticationView extends BorderPane {
 
-    private final TextField usernameFieldInput = new TextField();
+    private final TextField emailFieldInput = new TextField();
     private final PasswordField passwordFieldInput = new PasswordField();
     private final PasswordField confirmPasswordFieldInput = new PasswordField();
+
+    private final TextField firstNameFieldInput = new TextField();
+    private final TextField lastNameFieldInput = new TextField();
+    private final TextField contactEmailFieldInput = new TextField();
+    private final TextField phoneNumberFieldInput = new TextField();
 
     private final Button btnBack = new Button("Indietro");
     private final Button btnRegistration = new Button("Registrati");
@@ -21,7 +22,6 @@ public class AuthenticationView extends BorderPane {
     private Button btnNext;
 
     public AuthenticationView() {
-        // Apply secondary and primary button styles from typography.css/colors.css
         btnBack.getStyleClass().add("button-secondary");
         btnRegistration.getStyleClass().add("button-primary");
         btnLogin.getStyleClass().add("button-primary");
@@ -37,9 +37,17 @@ public class AuthenticationView extends BorderPane {
         this.btnLogin.setDefaultButton(false);
         this.btnRegistration.setDefaultButton(false);
 
+        Label title = new Label("FitPlanner");
+        title.getStyleClass().add("brand-logo");
+
         VBox card = createChooseLoginOrRegisterForm();
         styleCard(card);
-        this.setCenter(card);
+
+        VBox content = new VBox(10);
+        content.getChildren().addAll(title, card);
+
+        content.setAlignment(Pos.CENTER);
+        setCenterWithScroll(content);
     }
 
     public void showLoginForm() {
@@ -51,7 +59,7 @@ public class AuthenticationView extends BorderPane {
 
         VBox loginForm = createLoginForm();
         styleCard(loginForm);
-        this.setCenter(loginForm);
+        setCenterWithScroll(loginForm);
     }
 
     public void showRegistrationForm() {
@@ -63,7 +71,7 @@ public class AuthenticationView extends BorderPane {
 
         VBox registrationForm = createRegistrationForm();
         styleCard(registrationForm);
-        this.setCenter(registrationForm);
+        setCenterWithScroll(registrationForm);
     }
 
     private void styleCard(VBox card) {
@@ -72,7 +80,23 @@ public class AuthenticationView extends BorderPane {
         card.setMinWidth(380);
         card.setMaxWidth(400);
         card.setMaxHeight(Region.USE_PREF_SIZE);
-        StackPane.setAlignment(card, Pos.CENTER);
+
+    }
+
+    private void setCenterWithScroll(VBox content) {
+        VBox wrapper = new VBox(content);
+        wrapper.setAlignment(Pos.CENTER);
+
+        wrapper.setPadding(new Insets(20));
+
+        ScrollPane scrollPane = new ScrollPane(wrapper);
+
+        scrollPane.setFitToWidth(true);
+        scrollPane.setFitToHeight(true);
+
+        scrollPane.setStyle("-fx-background-color: transparent; -fx-control-inner-background: transparent;");
+
+        this.setCenter(scrollPane);
     }
 
     private VBox createChooseLoginOrRegisterForm() {
@@ -80,12 +104,7 @@ public class AuthenticationView extends BorderPane {
         formContainer.setAlignment(Pos.CENTER);
         formContainer.setPadding(new Insets(40, 30, 40, 30));
 
-        Label title = new Label("FitPlanner");
-        // Replaced "h1" with the correct typography class
-        title.getStyleClass().add("heading-h1");
-
         Label subtitle = new Label("Gestisci i tuoi allenamenti in modo semplice");
-        // Replaced "paragraph" with "body-base" to match the CSS
         subtitle.getStyleClass().add("body-base");
         subtitle.setWrapText(true);
         subtitle.setAlignment(Pos.CENTER);
@@ -93,7 +112,6 @@ public class AuthenticationView extends BorderPane {
         VBox buttons = new VBox(15);
         buttons.setAlignment(Pos.CENTER);
 
-        // Local buttons for navigation
         Button btnGoToLogin = new Button("Accedi");
         btnGoToLogin.getStyleClass().add("button-primary");
         btnGoToLogin.setMaxWidth(Double.MAX_VALUE);
@@ -105,7 +123,7 @@ public class AuthenticationView extends BorderPane {
         btnGoToRegister.setOnAction(e -> showRegistrationForm());
 
         buttons.getChildren().addAll(btnGoToLogin, btnGoToRegister);
-        formContainer.getChildren().addAll(title, subtitle, buttons);
+        formContainer.getChildren().addAll(subtitle, buttons);
 
         return formContainer;
     }
@@ -113,7 +131,7 @@ public class AuthenticationView extends BorderPane {
     private VBox createLoginForm() {
         VBox fields = new VBox(10);
         fields.getChildren().addAll(
-                createField("Username", "Inserisci il tuo username", usernameFieldInput),
+                createField("Email", "Inserisci la tua email", emailFieldInput),
                 createField("Password", "Inserisci la tua password", passwordFieldInput)
         );
 
@@ -121,12 +139,26 @@ public class AuthenticationView extends BorderPane {
     }
 
     private VBox createRegistrationForm() {
-        VBox fields = new VBox(10);
-        fields.getChildren().addAll(
-                createField("Username", "Scegli un username", usernameFieldInput),
+        VBox profileFields = new VBox(10);
+        profileFields.getChildren().addAll(
+                createField("Nome", "Inserisci il tuo nome", firstNameFieldInput),
+                createField("Cognome", "Inserisci il tuo cognome", lastNameFieldInput),
+                createField("Email di contatto", "Inserisci la tua email di contatto", contactEmailFieldInput),
+                createField("Numero di telefono", "Inserisci il tuo numero di telefono", phoneNumberFieldInput)
+        );
+
+        VBox registrationFields = new VBox(10);
+        registrationFields.getChildren().addAll(
+                createField("Email", "Scegli un username", emailFieldInput),
                 createField("Password", "Scegli una password", passwordFieldInput),
                 createField("Conferma Password", "Ripeti la password", confirmPasswordFieldInput)
         );
+
+        Separator separator = new Separator();
+        VBox.setMargin(separator, new Insets(15, 0, 15, 0));
+
+        VBox fields = new VBox(10);
+        fields.getChildren().addAll(profileFields, separator, registrationFields);
 
         return buildFinalLayout("Nuovo Account", fields);
     }
@@ -134,9 +166,9 @@ public class AuthenticationView extends BorderPane {
     private VBox buildFinalLayout(String titleStr, VBox fields) {
         VBox layout = new VBox(20);
         layout.setPadding(new Insets(30));
+        layout.setAlignment(Pos.CENTER);
 
         Label title = new Label(titleStr);
-        // Replaced "h2" with the correct typography class
         title.getStyleClass().add("heading-h2");
 
         layout.getChildren().addAll(title, fields, createButtonBox());
@@ -157,13 +189,10 @@ public class AuthenticationView extends BorderPane {
 
     private VBox createField(String labelText, String placeholder, TextField targetField) {
         Label label = new Label(labelText);
-        // "label-field" correctly maps to the CSS class provided
+
         label.getStyleClass().add("label-field");
 
         targetField.setPromptText(placeholder);
-
-        // JavaFX automatically adds ".text-field" and ".password-field" classes to instances of TextField and PasswordField.
-        // Therefore, we do not need to add them manually, the CSS will pick them up.
 
         VBox fieldGroup = new VBox(2);
         fieldGroup.getChildren().addAll(label, targetField);
@@ -171,9 +200,14 @@ public class AuthenticationView extends BorderPane {
     }
 
     private void clearFields() {
-        usernameFieldInput.clear();
+        emailFieldInput.clear();
         passwordFieldInput.clear();
         confirmPasswordFieldInput.clear();
+
+        firstNameFieldInput.clear();
+        lastNameFieldInput.clear();
+        contactEmailFieldInput.clear();
+        phoneNumberFieldInput.clear();
     }
 
     public void setRegistrationBtnAction(Runnable action) {
@@ -184,7 +218,12 @@ public class AuthenticationView extends BorderPane {
         btnLogin.setOnAction(event -> action.run());
     }
 
-    public String getUsername() { return usernameFieldInput.getText(); }
+    public String getEmail() { return emailFieldInput.getText(); }
     public String getPassword() { return passwordFieldInput.getText(); }
     public String getConfirmPassword() { return confirmPasswordFieldInput.getText(); }
+
+    public String getFirstName() { return firstNameFieldInput.getText(); }
+    public String getLastName() { return lastNameFieldInput.getText(); }
+    public String getContactEmail() { return contactEmailFieldInput.getText(); }
+    public String getPhoneNumber() { return phoneNumberFieldInput.getText(); }
 }

@@ -1,9 +1,9 @@
 package com.example.fitplannercommon;
 
-public class InvitationCodeBean {
+public class InvitationCodeDTO {
     private String invitationCode;
 
-    public InvitationCodeBean(String invitationCode) {
+    public InvitationCodeDTO(String invitationCode) {
         this.invitationCode = invitationCode;
     }
 

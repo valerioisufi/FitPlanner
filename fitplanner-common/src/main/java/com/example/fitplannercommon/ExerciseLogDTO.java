@@ -2,18 +2,18 @@ package com.example.fitplannercommon;
 
 import java.util.List;
 
-public class ExerciseLogBean {
+public class ExerciseLogDTO {
     private String name;
     private String exerciseId;
 
-    private List<ExerciseSetBean> sets;
+    private List<ExerciseSetDTO> sets;
     private int rpe;
 
     private String notes;
 
-    public ExerciseLogBean() {}
+    public ExerciseLogDTO() {}
 
-    public ExerciseLogBean(String name, String exerciseId, List<ExerciseSetBean> sets, int rpe, String notes) {
+    public ExerciseLogDTO(String name, String exerciseId, List<ExerciseSetDTO> sets, int rpe, String notes) {
         this.name = name;
         this.exerciseId = exerciseId;
         this.sets = sets;
@@ -37,11 +37,11 @@ public class ExerciseLogBean {
         this.exerciseId = exerciseId;
     }
 
-    public List<ExerciseSetBean> getSets() {
+    public List<ExerciseSetDTO> getSets() {
         return sets;
     }
 
-    public void setSets(List<ExerciseSetBean> sets) {
+    public void setSets(List<ExerciseSetDTO> sets) {
         this.sets = sets;
     }
 

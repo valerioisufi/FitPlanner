@@ -1,6 +1,6 @@
 package com.example.fitplannerserver.controller;
 
-import com.example.fitplannercommon.WorkoutPlanBean;
+import com.example.fitplannercommon.WorkoutPlanDTO;
 import com.example.fitplannerserver.beanvalidator.PlanValidator;
 import com.example.fitplannerserver.dao.CoachingDao;
 import com.example.fitplannerserver.dao.WorkoutPlanDao;
@@ -31,7 +31,7 @@ public class WorkoutPlanManagementController {
         this.coachingDao = coachingDao;
     }
 
-    public List<WorkoutPlanBean> getMyPlans() {
+    public List<WorkoutPlanDTO> getMyPlans() {
         identityProvider.checkUserRole(Account.Role.TRAINER);
 
         try {
@@ -45,7 +45,7 @@ public class WorkoutPlanManagementController {
         }
     }
 
-    public WorkoutPlanBean getAssignedPlan() {
+    public WorkoutPlanDTO getAssignedPlan() {
         identityProvider.checkUserRole(Account.Role.ATHLETE);
 
         try {
@@ -59,7 +59,7 @@ public class WorkoutPlanManagementController {
         }
     }
 
-    public String createPlan(WorkoutPlanBean planBean) {
+    public String createPlan(WorkoutPlanDTO planBean) {
         identityProvider.checkUserRole(Account.Role.TRAINER);
 
         PlanValidator.validateWorkoutPlanBean(planBean);
@@ -100,7 +100,7 @@ public class WorkoutPlanManagementController {
         }
     }
 
-    public void updatePlan(String planId, WorkoutPlanBean planBean) {
+    public void updatePlan(String planId, WorkoutPlanDTO planBean) {
         identityProvider.checkUserRole(Account.Role.TRAINER);
 
         if (!ValidationUtils.isValidUuid(planId)) {

@@ -2,8 +2,6 @@ package com.example.fitplannerserver.model;
 
 public class User {
     private final String id;
-
-    private String username;
     private String firstName;
     private String lastName;
     private String contactEmail;
@@ -17,7 +15,6 @@ public class User {
 
     public User(User user){
         this.id = user.id;
-        this.username = user.username;
         this.firstName = user.firstName;
         this.lastName = user.lastName;
         this.contactEmail = user.contactEmail;
@@ -27,17 +24,13 @@ public class User {
 
     public String getId(){return id;}
 
-    public void setUserProfileInfo(String username, String firstName, String lastName, String contactEmail, String phoneNumber){
-        this.username = username != null ? username.trim() : "";
+    public void setUserProfileInfo( String firstName, String lastName, String contactEmail, String phoneNumber){
         this.firstName = firstName != null ? firstName.trim() : "";
         this.lastName = lastName != null ? lastName.trim() : "";
         this.contactEmail = contactEmail != null ? contactEmail.trim() : "";
         this.phoneNumber = phoneNumber != null ? phoneNumber.trim() : "";
     }
 
-    public String getUsername() {
-        return username;
-    }
 
     public String getFirstName() {
         return firstName;

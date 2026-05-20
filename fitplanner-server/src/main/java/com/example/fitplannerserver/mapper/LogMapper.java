@@ -1,8 +1,8 @@
 package com.example.fitplannerserver.mapper;
 
-import com.example.fitplannercommon.ExerciseLogBean;
-import com.example.fitplannercommon.ExerciseSetBean;
-import com.example.fitplannercommon.SessionLogBean;
+import com.example.fitplannercommon.ExerciseLogDTO;
+import com.example.fitplannercommon.ExerciseSetDTO;
+import com.example.fitplannercommon.SessionLogDTO;
 import com.example.fitplannerserver.model.log.ExerciseLog;
 import com.example.fitplannerserver.model.log.SessionLog;
 
@@ -16,15 +16,15 @@ public class LogMapper {
 
     private LogMapper(){}
 
-    public static SessionLogBean toBean(SessionLog entity) {
+    public static SessionLogDTO toBean(SessionLog entity) {
         if (entity == null) return null;
 
-        SessionLogBean bean = new SessionLogBean();
+        SessionLogDTO bean = new SessionLogDTO();
         bean.setUserId(entity.getUserId());
         bean.setNotes(entity.getNotes());
 
         if (entity.getStatus() != null) {
-            bean.setStatus(SessionLogBean.SessionStatus.valueOf(entity.getStatus().name()));
+            bean.setStatus(SessionLogDTO.SessionStatus.valueOf(entity.getStatus().name()));
         }
 
         if (entity.getDate() != null) {
@@ -36,29 +36,29 @@ public class LogMapper {
         }
 
         if (entity.getExerciseLogs() != null) {
-            List<ExerciseLogBean> exerciseLogBeans = new ArrayList<>();
+            List<ExerciseLogDTO> exerciseLogDTOs = new ArrayList<>();
             for (ExerciseLog exLog : entity.getExerciseLogs()) {
-                exerciseLogBeans.add(toBean(exLog));
+                exerciseLogDTOs.add(toBean(exLog));
             }
-            bean.setExerciseLogs(exerciseLogBeans);
+            bean.setExerciseLogs(exerciseLogDTOs);
         }
 
         return bean;
     }
 
-    public static ExerciseLogBean toBean(ExerciseLog entity) {
+    public static ExerciseLogDTO toBean(ExerciseLog entity) {
         if (entity == null) return null;
 
-        ExerciseLogBean bean = new ExerciseLogBean();
+        ExerciseLogDTO bean = new ExerciseLogDTO();
         bean.setName(entity.getName());
         bean.setExerciseId(entity.getExerciseId());
         bean.setRpe(entity.getRpe());
         bean.setNotes(entity.getNotes());
 
         if (entity.getSets() != null) {
-            List<ExerciseSetBean> setBeans = new ArrayList<>();
+            List<ExerciseSetDTO> setBeans = new ArrayList<>();
             for (ExerciseLog.ExerciseSet set : entity.getSets()) {
-                setBeans.add(new ExerciseSetBean(set.reps(), set.load()));
+                setBeans.add(new ExerciseSetDTO(set.reps(), set.load()));
             }
             bean.setSets(setBeans);
         }
@@ -66,7 +66,7 @@ public class LogMapper {
         return bean;
     }
 
-    public static SessionLog toEntity(String userId, SessionLogBean bean) {
+    public static SessionLog toEntity(String userId, SessionLogDTO bean) {
 
         SessionLog.SessionStatus status = SessionLog.SessionStatus.valueOf(bean.getStatus().name());
 
@@ -82,17 +82,17 @@ public class LogMapper {
                 date
         );
 
-        for (ExerciseLogBean exBean : bean.getExerciseLogs()) {
+        for (ExerciseLogDTO exBean : bean.getExerciseLogs()) {
             entity.addExerciseLog(toEntity(exBean));
         }
 
         return entity;
     }
 
-    public static ExerciseLog toEntity(ExerciseLogBean bean) {
+    public static ExerciseLog toEntity(ExerciseLogDTO bean) {
 
         List<ExerciseLog.ExerciseSet> sets = new ArrayList<>();
-        for (ExerciseSetBean setBean : bean.getSets()) {
+        for (ExerciseSetDTO setBean : bean.getSets()) {
             sets.add(new ExerciseLog.ExerciseSet(setBean.getReps(), setBean.getLoad()));
         }
 

@@ -2,16 +2,16 @@ package com.example.fitplannercommon;
 
 import java.util.List;
 
-public class ExerciseDescriptionBean {
+public class ExerciseDescriptionDTO {
     private String exerciseId;
 
     private String name;
     private String execution;
     private List<String> muscleGroups;
 
-    public ExerciseDescriptionBean(){}
+    public ExerciseDescriptionDTO(){}
 
-    public ExerciseDescriptionBean(String exerciseId, String name, String execution, List<String> muscleGroups) {
+    public ExerciseDescriptionDTO(String exerciseId, String name, String execution, List<String> muscleGroups) {
         this.exerciseId = exerciseId;
 
         this.name = name;

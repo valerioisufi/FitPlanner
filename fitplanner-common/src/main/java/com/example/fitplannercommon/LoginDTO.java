@@ -1,12 +1,12 @@
 package com.example.fitplannercommon;
 
-public class LoginBean {
+public class LoginDTO {
     private String email;
     private String password;
 
-    public LoginBean() {}
+    public LoginDTO() {}
 
-    public LoginBean(String email, String password) {
+    public LoginDTO(String email, String password) {
         this.email = email;
         this.password = password;
     }

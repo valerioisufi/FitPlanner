@@ -1,7 +1,7 @@
 package com.example.fitplannerserver.api;
 
-import com.example.fitplannercommon.ExerciseLogBean;
-import com.example.fitplannercommon.SessionLogBean;
+import com.example.fitplannercommon.ExerciseLogDTO;
+import com.example.fitplannercommon.SessionLogDTO;
 import com.example.fitplannerserver.controller.SessionLogController;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,12 +18,12 @@ public class SessionLogBoundary {
     }
 
     @PutMapping("/session")
-    public void saveSessionLog(@RequestBody SessionLogBean logBean) {
+    public void saveSessionLog(@RequestBody SessionLogDTO logBean) {
         sessionLogController.saveSessionLog(logBean);
     }
 
     @GetMapping("/session")
-    public List<SessionLogBean> getFilteredSessionLogs(
+    public List<SessionLogDTO> getFilteredSessionLogs(
             @RequestParam(required = false) String athleteUuid,
             @RequestParam long startTimestamp,
             @RequestParam long endTimestamp) {
@@ -31,7 +31,7 @@ public class SessionLogBoundary {
     }
 
     @GetMapping("/exercises/{exerciseId}/latest")
-    public ExerciseLogBean getLastWeightUsed(@PathVariable String exerciseId) {
+    public ExerciseLogDTO getLastWeightUsed(@PathVariable String exerciseId) {
         return sessionLogController.getLastRecordForExercise(exerciseId);
     }
 }

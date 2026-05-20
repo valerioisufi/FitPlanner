@@ -1,11 +1,11 @@
 package com.example.fitplannercommon;
 
-public class ErrorResponseBean {
+public class ErrorResponseDTO {
     private int status;
     private String error;
     private String message;
 
-    public ErrorResponseBean(int status, String error, String message) {
+    public ErrorResponseDTO(int status, String error, String message) {
         this.status = status;
         this.error = error;
         this.message = message;

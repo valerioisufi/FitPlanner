@@ -1,14 +1,14 @@
 package com.example.fitplannercommon;
 
-public class WorkoutSessionBean {
+public class WorkoutSessionDTO {
     private String name;
     private String content;
 
     private int day;
 
-    public WorkoutSessionBean(){}
+    public WorkoutSessionDTO(){}
 
-    public WorkoutSessionBean(String name, String content, int day) {
+    public WorkoutSessionDTO(String name, String content, int day) {
         this.name = name;
         this.content = content;
 

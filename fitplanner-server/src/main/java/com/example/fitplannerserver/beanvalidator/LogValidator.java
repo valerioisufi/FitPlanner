@@ -1,7 +1,7 @@
 package com.example.fitplannerserver.beanvalidator;
 
-import com.example.fitplannercommon.ExerciseLogBean;
-import com.example.fitplannercommon.SessionLogBean;
+import com.example.fitplannercommon.ExerciseLogDTO;
+import com.example.fitplannercommon.SessionLogDTO;
 import com.example.fitplannerserver.exception.WrongArgumentsException;
 import com.example.fitplannerserver.util.ValidationUtils;
 
@@ -9,7 +9,7 @@ public class LogValidator {
 
     private LogValidator(){}
 
-    public static void validateSessionLogBean(SessionLogBean bean) {
+    public static void validateSessionLogBean(SessionLogDTO bean) {
         if (bean == null) {
             throw new WrongArgumentsException("session log non può essere nullo");
         }
@@ -25,12 +25,12 @@ public class LogValidator {
             throw new WrongArgumentsException("Il campo date non può essere negativo");
         }
 
-        for (ExerciseLogBean exLog : bean.getExerciseLogs()) {
+        for (ExerciseLogDTO exLog : bean.getExerciseLogs()) {
             validateExerciseLogBean(exLog);
         }
     }
 
-    private static void validateExerciseLogBean(ExerciseLogBean bean){
+    private static void validateExerciseLogBean(ExerciseLogDTO bean){
         if(bean == null){
             throw new WrongArgumentsException("exercise log non può essere nullo");
         }

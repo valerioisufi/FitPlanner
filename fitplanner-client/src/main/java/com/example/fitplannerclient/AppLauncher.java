@@ -1,5 +1,6 @@
 package com.example.fitplannerclient;
 
+import com.example.fitplannerclient.config.ConfigurationManager;
 import com.example.fitplannerclient.service.AuthFacade;
 import com.example.fitplannerclient.service.HttpService;
 import com.example.fitplannerclient.service.SessionManager;
@@ -11,6 +12,7 @@ import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 
 public class AppLauncher extends Application {
 
@@ -25,11 +27,18 @@ public class AppLauncher extends Application {
         stage.setTitle("FitPlanner");
         stage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/app_icon.png"))));
 
+        // 1. Initialize Configuration
+        ConfigurationManager configManager = new ConfigurationManager();
+
+        // 2. Initialize Core Services
         SessionManager sessionManager = new SessionManager();
 
-        HttpService httpService = new HttpService(sessionManager, () -> {
-            // If network fails to refresh token, force UI to go to login
-            Platform.runLater(() -> this.navigator.requireAuthentication());
+        HttpService httpService = new HttpService(configManager.getApiUrl(), sessionManager, () -> {
+            CompletableFuture<Boolean> manualLoginFuture = new CompletableFuture<>();
+            Platform.runLater(() -> {
+                this.navigator.requireAuthenticationOverlay(() -> manualLoginFuture.complete(true));
+            });
+            return manualLoginFuture;
         });
 
         AuthFacade authFacade = new AuthFacade(httpService, sessionManager);
@@ -38,7 +47,7 @@ public class AppLauncher extends Application {
         GuiManager guiManager = new GuiManager(stage);
         this.navigator = new Navigator(guiManager, factory, sessionManager);
 
-        // Start the flow!
+        // 3. Start the flow
         this.navigator.startHomeController();
 
         stage.show();

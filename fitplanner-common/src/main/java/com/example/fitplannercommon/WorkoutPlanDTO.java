@@ -2,12 +2,12 @@ package com.example.fitplannercommon;
 
 import java.util.List;
 
-public class WorkoutPlanBean {
+public class WorkoutPlanDTO {
     private String planId;
 
     private String name;
     private int cycleLength;
-    private List<WorkoutSessionBean> workoutSessions;
+    private List<WorkoutSessionDTO> workoutSessions;
 
     public String getPlanId() {
         return planId;
@@ -30,10 +30,10 @@ public class WorkoutPlanBean {
         this.cycleLength = cycleLength;
     }
 
-    public List<WorkoutSessionBean> getWorkoutSessions() {
+    public List<WorkoutSessionDTO> getWorkoutSessions() {
         return workoutSessions;
     }
-    public void setWorkoutSessions(List<WorkoutSessionBean> workoutSessions) {
+    public void setWorkoutSessions(List<WorkoutSessionDTO> workoutSessions) {
         this.workoutSessions = workoutSessions;
     }
 

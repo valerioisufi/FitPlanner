@@ -1,6 +1,6 @@
 package com.example.fitplannerserver.controller;
 
-import com.example.fitplannercommon.ExerciseDescriptionBean;
+import com.example.fitplannercommon.ExerciseDescriptionDTO;
 import com.example.fitplannerserver.beanvalidator.PlanValidator;
 import com.example.fitplannerserver.dao.CoachingDao;
 import com.example.fitplannerserver.dao.ExerciseLibraryDao;
@@ -33,7 +33,7 @@ public class ManageExerciseLibraryController {
         this.coachingDao = coachingDao;
     }
 
-    public String addExercise(ExerciseDescriptionBean exerciseBean) {
+    public String addExercise(ExerciseDescriptionDTO exerciseBean) {
         identityProvider.checkUserRole(Account.Role.TRAINER);
         PlanValidator.validateExerciseDescriptionBean(exerciseBean);
 
@@ -55,7 +55,7 @@ public class ManageExerciseLibraryController {
         return newExerciseId;
     }
 
-    public void updateExercise(ExerciseDescriptionBean exerciseBean) {
+    public void updateExercise(ExerciseDescriptionDTO exerciseBean) {
         identityProvider.checkUserRole(Account.Role.TRAINER);
         PlanValidator.validateExerciseDescriptionBean(exerciseBean);
         ValidationUtils.isValidUuid(exerciseBean.getExerciseId());
@@ -97,7 +97,7 @@ public class ManageExerciseLibraryController {
 
     }
 
-    public List<ExerciseDescriptionBean> getExercisesByIds(List<String> exerciseIds) {
+    public List<ExerciseDescriptionDTO> getExercisesByIds(List<String> exerciseIds) {
         if(exerciseIds == null || exerciseIds.isEmpty()){
             throw new WrongArgumentsException("exerciseIds non può essere null o vuoto");
         }
@@ -117,7 +117,7 @@ public class ManageExerciseLibraryController {
             return exerciseLibraryDao.findByIds(exerciseIds)
                     .stream()
                     .filter(e -> e.getTrainerId().equals(trainerId))
-                    .map(e -> new ExerciseDescriptionBean(
+                    .map(e -> new ExerciseDescriptionDTO(
                             e.getExerciseId(),
                             e.getName(),
                             e.getExecution(),
@@ -130,7 +130,7 @@ public class ManageExerciseLibraryController {
         }
     }
 
-    public List<ExerciseDescriptionBean> getLibrary() {
+    public List<ExerciseDescriptionDTO> getLibrary() {
 
         try{
             String trainerId = switch(identityProvider.getUserRole()){
@@ -141,7 +141,7 @@ public class ManageExerciseLibraryController {
 
             return exerciseLibraryDao.findAllByTrainerId(trainerId)
                     .stream()
-                    .map(e -> new ExerciseDescriptionBean(
+                    .map(e -> new ExerciseDescriptionDTO(
                             e.getExerciseId(),
                             e.getName(),
                             e.getExecution(),

@@ -1,4 +1,4 @@
-package com.example.fitplannerclient.dto.plan;
+package com.example.fitplannerclient.bean.plan;
 
 public class ExerciseModifierBean {
     private String id;

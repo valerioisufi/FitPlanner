@@ -1,6 +1,6 @@
 package com.example.fitplannercommon;
 
-public class TokenBean {
+public class TokenDTO {
     private String accessToken;
     private String refreshToken;
 

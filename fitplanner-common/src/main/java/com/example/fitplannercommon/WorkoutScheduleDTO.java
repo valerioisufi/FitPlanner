@@ -2,7 +2,7 @@ package com.example.fitplannercommon;
 
 import java.util.List;
 
-public class WorkoutScheduleBean {
+public class WorkoutScheduleDTO {
     private String planId;
     private String planTitle;
 
@@ -13,11 +13,11 @@ public class WorkoutScheduleBean {
 
     private List<WorkoutState> workoutStates;
 
-    private WorkoutSessionBean nextSuggestedSession;
+    private WorkoutSessionDTO nextSuggestedSession;
 
-    public WorkoutScheduleBean() {}
+    public WorkoutScheduleDTO() {}
 
-    public WorkoutScheduleBean(String planId, String planTitle, long cycleStartDate, long cycleEndDate, int currentCycleDay) {
+    public WorkoutScheduleDTO(String planId, String planTitle, long cycleStartDate, long cycleEndDate, int currentCycleDay) {
         this.planId = planId;
         this.planTitle = planTitle;
 
@@ -74,11 +74,11 @@ public class WorkoutScheduleBean {
         this.workoutStates = workoutStates;
     }
 
-    public WorkoutSessionBean getNextSuggestedSession() {
+    public WorkoutSessionDTO getNextSuggestedSession() {
         return nextSuggestedSession;
     }
 
-    public void setNextSuggestedSession(WorkoutSessionBean nextSuggestedSession) {
+    public void setNextSuggestedSession(WorkoutSessionDTO nextSuggestedSession) {
         this.nextSuggestedSession = nextSuggestedSession;
     }
 

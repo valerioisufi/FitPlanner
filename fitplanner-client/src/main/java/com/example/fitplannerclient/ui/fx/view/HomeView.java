@@ -33,16 +33,16 @@ public class HomeView extends BorderPane {
 
     }
 
-    private Text welcomeTitle;
-    private Text welcomeSubtitle;
+    private Label welcomeTitle;
+    private Label welcomeSubtitle;
     private VBox createWelcomeSection() {
         VBox box = new VBox(5);
 
-        welcomeTitle = new Text("Benvenuto in FitPlanner!");
-        welcomeTitle.getStyleClass().add("h1");
+        welcomeTitle = new Label("Benvenuto in FitPlanner!");
+        welcomeTitle.getStyleClass().add("heading-h1");
 
-        welcomeSubtitle = new Text("Oggi è il momento perfetto per superare i tuoi limiti");
-        welcomeSubtitle.getStyleClass().add("subtitle");
+        welcomeSubtitle = new Label("Oggi è il momento perfetto per superare i tuoi limiti");
+        welcomeSubtitle.getStyleClass().add("body-base");
 
         box.getChildren().addAll(welcomeTitle, welcomeSubtitle);
         return box;

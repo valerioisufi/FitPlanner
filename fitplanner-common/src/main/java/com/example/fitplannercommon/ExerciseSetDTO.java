@@ -1,12 +1,12 @@
 package com.example.fitplannercommon;
 
-public class ExerciseSetBean {
+public class ExerciseSetDTO {
     private int reps;
     private double load;
 
-    public ExerciseSetBean() {}
+    public ExerciseSetDTO() {}
 
-    public ExerciseSetBean(int reps, double load) {
+    public ExerciseSetDTO(int reps, double load) {
         this.reps = reps;
         this.load = load;
     }

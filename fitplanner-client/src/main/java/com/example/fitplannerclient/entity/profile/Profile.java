@@ -1,26 +1,16 @@
 package com.example.fitplannerclient.entity.profile;
 
 public class Profile {
-    private String username;
     private String firstName;
     private String lastName;
     private String email;
     private String phoneNumber;
 
-    public Profile(String username, String firstName, String lastName, String email, String phoneNumber) {
-        this.username = username;
+    public Profile(String firstName, String lastName, String email, String phoneNumber) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
         this.phoneNumber = phoneNumber;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
     }
 
     public String getFirstName() {

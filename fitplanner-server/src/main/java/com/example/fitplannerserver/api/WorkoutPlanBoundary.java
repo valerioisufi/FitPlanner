@@ -1,7 +1,7 @@
 package com.example.fitplannerserver.api;
 
-import com.example.fitplannercommon.WorkoutPlanBean;
-import com.example.fitplannercommon.WorkoutScheduleBean;
+import com.example.fitplannercommon.WorkoutPlanDTO;
+import com.example.fitplannercommon.WorkoutScheduleDTO;
 import com.example.fitplannerserver.controller.WorkoutPlanManagementController;
 import com.example.fitplannerserver.controller.WorkoutScheduleController;
 import org.springframework.web.bind.annotation.*;
@@ -22,24 +22,24 @@ public class WorkoutPlanBoundary {
 
     // Fetch all workout plans created by the trainer
     @GetMapping
-    public List<WorkoutPlanBean> getMyCreatedPlans() {
+    public List<WorkoutPlanDTO> getMyCreatedPlans() {
         return workoutPlanManagementController.getMyPlans();
     }
 
     // Athlete fetches their currently assigned workout plan
     @GetMapping("/assigned")
-    public WorkoutPlanBean getAssignedPlan() {
+    public WorkoutPlanDTO getAssignedPlan() {
         return workoutPlanManagementController.getAssignedPlan();
     }
 
     @GetMapping("/schedule")
-    public WorkoutScheduleBean getCurrentCycleSchedule() {
+    public WorkoutScheduleDTO getCurrentCycleSchedule() {
         return workoutScheduleController.getCurrentCycleSchedule();
     }
 
     // Creates a new, empty workout plan. Returns the generated UUID.
     @PostMapping
-    public String createPlan(@RequestBody WorkoutPlanBean planBean) {
+    public String createPlan(@RequestBody WorkoutPlanDTO planBean) {
         return workoutPlanManagementController.createPlan(planBean);
     }
 
@@ -51,7 +51,7 @@ public class WorkoutPlanBoundary {
 
     // Updates the general content/title of a workout plan
     @PutMapping("/{planId}")
-    public void updatePlan(@PathVariable String planId, @RequestBody WorkoutPlanBean planBean) {
+    public void updatePlan(@PathVariable String planId, @RequestBody WorkoutPlanDTO planBean) {
         workoutPlanManagementController.updatePlan(planId, planBean);
     }
 

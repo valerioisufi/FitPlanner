@@ -1,18 +1,14 @@
-package com.example.fitplannercommon;
+package com.example.fitplannerclient.bean.auth;
 
-public class RegisterBean {
+public class LoginBean {
     private String email;
     private String password;
 
-    private ProfileBean profile;
+    public LoginBean() {}
 
-    public RegisterBean() {}
-
-    public RegisterBean(String email, String password, ProfileBean profile) {
+    public LoginBean(String email, String password) {
         this.email = email;
         this.password = password;
-
-        this.profile = profile;
     }
 
     public String getEmail() {
@@ -31,11 +27,5 @@ public class RegisterBean {
         this.password = password;
     }
 
-    public ProfileBean getProfile() {
-        return profile;
-    }
-    public void setProfile(ProfileBean profile) {
-        this.profile = profile;
-    }
-
 }
+

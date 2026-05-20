@@ -1,7 +1,7 @@
 package com.example.fitplannerserver.controller;
 
-import com.example.fitplannercommon.WorkoutScheduleBean;
-import com.example.fitplannercommon.WorkoutSessionBean;
+import com.example.fitplannercommon.WorkoutScheduleDTO;
+import com.example.fitplannercommon.WorkoutSessionDTO;
 import com.example.fitplannercommon.WorkoutState;
 import com.example.fitplannerserver.dao.SessionLogDao;
 import com.example.fitplannerserver.dao.WorkoutPlanDao;
@@ -37,7 +37,7 @@ public class WorkoutScheduleController {
         this.sessionLogDao = sessionLogDao;
     }
 
-    public WorkoutScheduleBean getCurrentCycleSchedule() {
+    public WorkoutScheduleDTO getCurrentCycleSchedule() {
         identityProvider.checkUserRole(Account.Role.ATHLETE);
         String athleteId = identityProvider.getUserId();
 
@@ -62,7 +62,7 @@ public class WorkoutScheduleController {
                     athleteId, startMillis, endMillis
             );
 
-            WorkoutScheduleBean schedule = new WorkoutScheduleBean(
+            WorkoutScheduleDTO schedule = new WorkoutScheduleDTO(
                     activePlan.getPlanId(),
                     activePlan.getTitle(),
                     startMillis,
@@ -71,7 +71,7 @@ public class WorkoutScheduleController {
             );
 
             List<WorkoutState> states = new ArrayList<>();
-            WorkoutSessionBean nextSuggested = null;
+            WorkoutSessionDTO nextSuggested = null;
             boolean foundNextSuggested = false;
 
             long daysElapsedSinceStart = ChronoUnit.DAYS.between(activePlan.getStartDate(), today);
@@ -96,7 +96,7 @@ public class WorkoutScheduleController {
                     states.add(WorkoutState.TO_DO);
 
                     if (!foundNextSuggested) {
-                        nextSuggested = new WorkoutSessionBean(
+                        nextSuggested = new WorkoutSessionDTO(
                                 template.getTitle(),
                                 template.getContent(),
                                 relativeDayInCycle
@@ -114,7 +114,7 @@ public class WorkoutScheduleController {
                     states.add(workoutState);
 
                     if (workoutState == WorkoutState.IN_PROGRESS && !foundNextSuggested) {
-                        nextSuggested = new WorkoutSessionBean(
+                        nextSuggested = new WorkoutSessionDTO(
                                 template.getTitle(),
                                 template.getContent(),
                                 absoluteDay
