@@ -75,7 +75,7 @@ public class HeaderView extends HBox {
             if (item.icon != null) {
                 Region icon = new Region();
                 icon.getStyleClass().add(item.icon);
-                icon.setPrefSize(20, 20);
+                icon.setPrefSize(24, 24);
                 icon.getStyleClass().add("button-header-icon");
 
                 btn.getChildren().add(icon);

@@ -32,7 +32,7 @@ public class AuthenticationViewController implements GuiController {
     private void bindValidators() {
         // Login Validation
         view.getLoginEmailField().setValidator(ValidationUtils::validateEmail);
-        view.getLoginPasswordField().setValidator(ValidationUtils::validatePassword);
+        view.getLoginPasswordField().setValidator(confirm -> ValidationUtils.validateRequired(confirm, "Password", 32));
 
         // Registration Validation
         view.getRegFirstNameField().setValidator(name -> ValidationUtils.validateName(name, "Nome", 50));

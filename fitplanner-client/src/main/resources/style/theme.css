@@ -40,8 +40,7 @@
 }
 
 .button-header {
-    -fx-font-family: 'Space Grotesk';
-    -fx-font-weight: 500;
+    -fx-font-family: 'Space Grotesk Medium';
     -fx-font-size: 16px;
 
     -fx-background-color: transparent;
@@ -132,7 +131,7 @@
     -fx-text-fill: -fx-color-text-inverse;
     -fx-background-radius: 6px;
     -fx-padding: 10 20 10 20;
-    -fx-font-weight: bold;
+    -fx-font-family: Manrope Bold;
     -fx-cursor: hand;
 }
 .button-primary:hover {
@@ -150,7 +149,7 @@
     -fx-border-width: 1px;
     -fx-text-fill: -fx-radix-slate-11;
     -fx-padding: 8 18 8 18;
-    -fx-font-weight: bold;
+    -fx-font-family: Manrope Bold;
     -fx-cursor: hand;
 }
 .button-secondary:hover {
@@ -167,14 +166,14 @@
     -fx-background-color: -color-accent;
     -fx-text-fill: -fx-color-text-inverse;
     -fx-background-radius: 6px;
-    -fx-font-weight: bold;
+    -fx-font-family: Manrope Bold;
     -fx-effect: dropshadow(three-pass-box, rgba(255, 87, 34, 0.3), 10, 0, 0, 4);
 }
 
 .label-field {
     -fx-text-fill: #2C3E50;
     -fx-font-size: 14px;
-    -fx-font-weight: bold;
+    -fx-font-family: 'Space Grotesk Bold';
     -fx-padding: 10px 0 5px 0;
 }
 

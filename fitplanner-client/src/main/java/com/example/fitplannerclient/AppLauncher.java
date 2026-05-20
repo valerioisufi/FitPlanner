@@ -48,7 +48,7 @@ public class AppLauncher extends Application {
         this.navigator = new Navigator(guiManager, factory, sessionManager);
 
         // 3. Start the flow
-        sessionManager.logout();
+//        sessionManager.logout();
         this.navigator.startHomeController();
 
         stage.show();
