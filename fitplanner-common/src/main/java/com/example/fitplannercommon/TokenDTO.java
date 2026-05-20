@@ -4,6 +4,8 @@ public class TokenDTO {
     private String accessToken;
     private String refreshToken;
 
+    public TokenDTO() {}
+
     public String getAccessToken() {
         return accessToken;
     }

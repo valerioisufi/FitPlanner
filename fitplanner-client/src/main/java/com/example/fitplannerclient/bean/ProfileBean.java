@@ -1,19 +1,22 @@
-package com.example.fitplannerclient.entity.profile;
+package com.example.fitplannerclient.bean;
 
-public class Profile {
+public class ProfileBean {
     private String userId;
     private String firstName;
     private String lastName;
-    private String email;
     private String phoneNumber;
-    private final ProfileType profileType;
+    private String contactEmail;
+    private ProfileType profileType;
 
-    public Profile(String userId, String firstName, String lastName, String email, String phoneNumber, ProfileType profileType) {
+    public ProfileBean() {}
+
+    public ProfileBean(String userId, String firstName, String lastName, String phoneNumber, String contactEmail, ProfileType profileType) {
+        this.userId = userId;
         this.firstName = firstName;
         this.lastName = lastName;
-        this.email = email;
         this.phoneNumber = phoneNumber;
-        this.profileType =  profileType;
+        this.contactEmail = contactEmail;
+        this.profileType = profileType;
     }
 
     public String getFirstName() {
@@ -32,14 +35,6 @@ public class Profile {
         this.lastName = lastName;
     }
 
-    public String getContactEmail() {
-        return email;
-    }
-
-    public void setContactEmail(String email) {
-        this.email = email;
-    }
-
     public String getPhoneNumber() {
         return phoneNumber;
     }
@@ -48,8 +43,12 @@ public class Profile {
         this.phoneNumber = phoneNumber;
     }
 
-    public ProfileType getProfileType() {
-        return profileType;
+    public String getContactEmail() {
+        return contactEmail;
+    }
+
+    public void setContactEmail(String contactEmail) {
+        this.contactEmail = contactEmail;
     }
 
     public String getUserId() {
@@ -60,10 +59,16 @@ public class Profile {
         this.userId = userId;
     }
 
-    public enum ProfileType{
+    public ProfileType getProfileType() {
+        return profileType;
+    }
+
+    public void setProfileType(ProfileType profileType) {
+        this.profileType = profileType;
+    }
+
+    public enum ProfileType {
         TRAINER,
         ATHLETE
     }
-
 }
-

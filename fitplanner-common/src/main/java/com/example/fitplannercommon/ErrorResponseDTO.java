@@ -5,6 +5,8 @@ public class ErrorResponseDTO {
     private String error;
     private String message;
 
+    public ErrorResponseDTO(){}
+
     public ErrorResponseDTO(int status, String error, String message) {
         this.status = status;
         this.error = error;

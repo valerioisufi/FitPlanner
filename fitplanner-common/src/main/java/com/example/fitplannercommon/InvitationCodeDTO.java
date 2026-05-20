@@ -3,6 +3,8 @@ package com.example.fitplannercommon;
 public class InvitationCodeDTO {
     private String invitationCode;
 
+    public InvitationCodeDTO() {}
+
     public InvitationCodeDTO(String invitationCode) {
         this.invitationCode = invitationCode;
     }

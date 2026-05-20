@@ -3,13 +3,13 @@ package com.example.fitplannercommon;
 public class ProfileDTO {
     private String userId; // utilizzato solo quando è il server a inviare il bean
 
-    private String firstName;
-    private String lastName;
+    private String firstName; // required, max 50 characters
+    private String lastName; // required, max 50 characters
 
-    private String phoneNumber;
-    private String contactEmail;
+    private String phoneNumber; // optional
+    private String contactEmail; // required
 
-    private ProfileType profileType;
+    private ProfileType profileType; // required
 
     public ProfileDTO() {}
 

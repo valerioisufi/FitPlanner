@@ -14,11 +14,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(UnauthorizedException.class)
     public ResponseEntity<ErrorResponseDTO> handleUnauthorizedException(UnauthorizedException ex) {
         ErrorResponseDTO error = new ErrorResponseDTO(
-                HttpStatus.UNAUTHORIZED.value(),
-                "Unauthorized",
+                HttpStatus.FORBIDDEN.value(),
+                "Forbidden",
                 ex.getMessage()
         );
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
     }
 
     // 401 - Credenziali non valide

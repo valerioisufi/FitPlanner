@@ -119,8 +119,12 @@ public class HttpService {
     ) {
         logger.info(String.format("Response: %d for %s\nBody: %s", res.statusCode(), req.uri(), res.body()));
 
-        if (res.statusCode() == 401 && !isRetry) {
-            return executeWithRetry(builder, () -> executeRequest(builder, resType, true), res.body());
+        if (res.statusCode() == 401 && !isRetry && !req.uri().getPath().contains("/auth")) {
+            return executeWithRetry(
+                    builder,
+                    () -> executeRequest(builder, resType, true),
+                    res.body()
+            );
         }
         if (res.statusCode() >= 300) {
             return handleStandardError(res);
@@ -229,7 +233,7 @@ public class HttpService {
             }
         } catch (JacksonException e) {
             logger.warning("Could not parse error response: " + rawBody);
-            cleanMessage = (rawBody != null && !rawBody.isBlank()) ? rawBody : cleanMessage;
+            cleanMessage = !rawBody.isBlank() ? rawBody : cleanMessage;
         }
 
         return CompletableFuture.failedFuture(new RequestException(cleanMessage, response.statusCode()));
@@ -282,7 +286,7 @@ public class HttpService {
             if (cause instanceof RequestException) {
                 throw new CompletionException(cause);
             }
-            throw new CompletionException(new RequestException("Network error: Server is unreachable.", cause));
+            throw new CompletionException(new RequestException("Errore di rete. Il server è irraggiungibile", cause));
         });
     }
 

@@ -196,9 +196,19 @@
 .text-field:focused, .password-field:focused, .combo-box:focused {
     -fx-background-color: #FFFFFF;
     -fx-border-color: -fx-radix-blue-8;
-
 }
 
+.label-error {
+    -fx-text-fill: #d32f2f;
+    -fx-font-size: 12px;
+}
+
+.input-error {
+    -fx-border-color: #d32f2f;
+    -fx-border-width: 1px;
+    -fx-border-radius: 4px;
+    -fx-focus-color: #d32f2f;
+}
 
 
 /* ==========================================

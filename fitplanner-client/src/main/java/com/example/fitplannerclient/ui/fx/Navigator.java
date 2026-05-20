@@ -39,7 +39,6 @@ public class Navigator {
         Runnable finalSuccessAction = (onSuccess != null) ? onSuccess : this::startHomeController;
 
         AuthenticationViewController authGuiController = new AuthenticationViewController(
-                this,
                 guiManager,
                 authAppController,
                 finalSuccessAction
@@ -60,7 +59,7 @@ public class Navigator {
         };
 
         AuthenticationViewController authGuiController = new AuthenticationViewController(
-                this, guiManager, authAppController, onLoginSuccess
+                guiManager, authAppController, onLoginSuccess
         );
 
         guiManager.showOverlay(authGuiController.getView());

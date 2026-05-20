@@ -9,6 +9,8 @@ public class WorkoutPlanDTO {
     private int cycleLength;
     private List<WorkoutSessionDTO> workoutSessions;
 
+    public WorkoutPlanDTO() {}
+
     public String getPlanId() {
         return planId;
     }

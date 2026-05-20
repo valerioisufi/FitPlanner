@@ -12,6 +12,7 @@ public class ValidationUtils {
     private static final Pattern UUID_PATTERN =
             Pattern.compile("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
 
+    private static final Pattern NAME_PATTERN = Pattern.compile("^[\\p{L}\\s.'-]+$");
 
     private ValidationUtils() {}
 
@@ -33,6 +34,11 @@ public class ValidationUtils {
     public static boolean isValidUuid(String uuid) {
         if (isNullOrBlank(uuid)) return false;
         return UUID_PATTERN.matcher(uuid).matches();
+    }
+
+    public static boolean isValidName(String name) {
+        if (isNullOrBlank(name)) return false;
+        return NAME_PATTERN.matcher(name.trim()).matches();
     }
 
     public static boolean isValidEmail(String email) {

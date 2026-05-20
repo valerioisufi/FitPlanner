@@ -28,6 +28,7 @@ public class AuthFacade {
                 })
                 .exceptionally(throwable -> {
                     String msg = HttpService.extractErrorMessage(throwable);
+                    System.out.println(msg);
 
                     throw new CompletionException(new NotAuthenticatedException(msg));
                 });

@@ -1,5 +1,6 @@
 package com.example.fitplannerclient.ui.fx.view;
 
+import com.example.fitplannerclient.ui.fx.components.FormField;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
@@ -7,14 +8,21 @@ import javafx.scene.layout.*;
 
 public class AuthenticationView extends BorderPane {
 
-    private final TextField emailFieldInput = new TextField();
-    private final PasswordField passwordFieldInput = new PasswordField();
-    private final PasswordField confirmPasswordFieldInput = new PasswordField();
+    // --- Login Fields ---
+    private final FormField loginEmailField = new FormField("Email", "Inserisci la tua email", new TextField());
+    private final FormField loginPasswordField = new FormField("Password", "Inserisci la tua password", new PasswordField());
 
-    private final TextField firstNameFieldInput = new TextField();
-    private final TextField lastNameFieldInput = new TextField();
-    private final TextField contactEmailFieldInput = new TextField();
-    private final TextField phoneNumberFieldInput = new TextField();
+    // --- Registration Fields ---
+    private final FormField regFirstNameField = new FormField("Nome", "Inserisci il tuo nome", new TextField());
+    private final FormField regLastNameField = new FormField("Cognome", "Inserisci il tuo cognome", new TextField());
+    private final FormField regContactEmailField = new FormField("Email di contatto", "Inserisci la tua email di contatto", new TextField());
+    private final FormField regPhoneField = new FormField("Numero di telefono", "Inserisci il tuo numero di telefono", new TextField());
+
+    private final FormField regEmailField = new FormField("Email", "Scegli un username", new TextField());
+    private final FormField regPasswordField = new FormField("Password", "Scegli una password", new PasswordField());
+    private final FormField regConfirmPasswordField = new FormField("Conferma Password", "Ripeti la password", new PasswordField());
+
+    private final ComboBox<String> roleComboBox = new ComboBox<>();
 
     private final Button btnBack = new Button("Indietro");
     private final Button btnRegistration = new Button("Registrati");
@@ -26,9 +34,9 @@ public class AuthenticationView extends BorderPane {
         btnRegistration.getStyleClass().add("button-primary");
         btnLogin.getStyleClass().add("button-primary");
 
-        btnBack.setOnAction(e -> {
-            showSelectionMenu();
-        });
+        roleComboBox.getItems().addAll("Atleta", "Trainer");
+
+        btnBack.setOnAction(e -> showSelectionMenu());
 
         showSelectionMenu();
     }
@@ -37,13 +45,13 @@ public class AuthenticationView extends BorderPane {
         this.btnLogin.setDefaultButton(false);
         this.btnRegistration.setDefaultButton(false);
 
-        Label title = new Label("FitPlanner");
+        Label title = new Label("FIT PLANNER");
         title.getStyleClass().add("brand-logo");
 
         VBox card = createChooseLoginOrRegisterForm();
         styleCard(card);
 
-        VBox content = new VBox(10);
+        VBox content = new VBox(24);
         content.getChildren().addAll(title, card);
 
         content.setAlignment(Pos.CENTER);
@@ -53,11 +61,13 @@ public class AuthenticationView extends BorderPane {
     public void showLoginForm() {
         clearFields();
         this.btnNext = this.btnLogin;
-
         this.btnLogin.setDefaultButton(true);
         this.btnRegistration.setDefaultButton(false);
 
-        VBox loginForm = createLoginForm();
+        VBox fields = new VBox(10);
+        fields.getChildren().addAll(loginEmailField, loginPasswordField);
+
+        VBox loginForm = buildFinalLayout("Bentornato!", fields);
         styleCard(loginForm);
         setCenterWithScroll(loginForm);
     }
@@ -65,35 +75,44 @@ public class AuthenticationView extends BorderPane {
     public void showRegistrationForm() {
         clearFields();
         this.btnNext = this.btnRegistration;
-
         this.btnLogin.setDefaultButton(false);
         this.btnRegistration.setDefaultButton(true);
 
-        VBox registrationForm = createRegistrationForm();
+        VBox profileFields = new VBox(10);
+        profileFields.getChildren().addAll(regFirstNameField, regLastNameField, regContactEmailField, regPhoneField);
+
+        VBox registrationFields = new VBox(10);
+        registrationFields.getChildren().addAll(
+                createComboField("Ruolo", "Scegli il tuo ruolo", roleComboBox),
+                regEmailField, regPasswordField, regConfirmPasswordField
+        );
+
+        Separator separator = new Separator();
+        VBox.setMargin(separator, new Insets(15, 0, 15, 0));
+
+        VBox fields = new VBox(10);
+        fields.getChildren().addAll(profileFields, separator, registrationFields);
+
+        VBox registrationForm = buildFinalLayout("Nuovo Account", fields);
         styleCard(registrationForm);
         setCenterWithScroll(registrationForm);
     }
 
     private void styleCard(VBox card) {
-        // Apply the card style defined in the CSS
         card.getStyleClass().add("card");
         card.setMinWidth(380);
         card.setMaxWidth(400);
         card.setMaxHeight(Region.USE_PREF_SIZE);
-
     }
 
     private void setCenterWithScroll(VBox content) {
         VBox wrapper = new VBox(content);
         wrapper.setAlignment(Pos.CENTER);
-
         wrapper.setPadding(new Insets(20));
 
         ScrollPane scrollPane = new ScrollPane(wrapper);
-
         scrollPane.setFitToWidth(true);
         scrollPane.setFitToHeight(true);
-
         scrollPane.setStyle("-fx-background-color: transparent; -fx-control-inner-background: transparent;");
 
         this.setCenter(scrollPane);
@@ -128,41 +147,6 @@ public class AuthenticationView extends BorderPane {
         return formContainer;
     }
 
-    private VBox createLoginForm() {
-        VBox fields = new VBox(10);
-        fields.getChildren().addAll(
-                createField("Email", "Inserisci la tua email", emailFieldInput),
-                createField("Password", "Inserisci la tua password", passwordFieldInput)
-        );
-
-        return buildFinalLayout("Bentornato!", fields);
-    }
-
-    private VBox createRegistrationForm() {
-        VBox profileFields = new VBox(10);
-        profileFields.getChildren().addAll(
-                createField("Nome", "Inserisci il tuo nome", firstNameFieldInput),
-                createField("Cognome", "Inserisci il tuo cognome", lastNameFieldInput),
-                createField("Email di contatto", "Inserisci la tua email di contatto", contactEmailFieldInput),
-                createField("Numero di telefono", "Inserisci il tuo numero di telefono", phoneNumberFieldInput)
-        );
-
-        VBox registrationFields = new VBox(10);
-        registrationFields.getChildren().addAll(
-                createField("Email", "Scegli un username", emailFieldInput),
-                createField("Password", "Scegli una password", passwordFieldInput),
-                createField("Conferma Password", "Ripeti la password", confirmPasswordFieldInput)
-        );
-
-        Separator separator = new Separator();
-        VBox.setMargin(separator, new Insets(15, 0, 15, 0));
-
-        VBox fields = new VBox(10);
-        fields.getChildren().addAll(profileFields, separator, registrationFields);
-
-        return buildFinalLayout("Nuovo Account", fields);
-    }
-
     private VBox buildFinalLayout(String titleStr, VBox fields) {
         VBox layout = new VBox(20);
         layout.setPadding(new Insets(30));
@@ -187,43 +171,57 @@ public class AuthenticationView extends BorderPane {
         return buttonBox;
     }
 
-    private VBox createField(String labelText, String placeholder, TextField targetField) {
-        Label label = new Label(labelText);
+    private VBox createComboField(String label, String placeholder, ComboBox<String> targetBox) {
+        Label labelField = new Label(label);
+        labelField.getStyleClass().add("label-field");
 
-        label.getStyleClass().add("label-field");
-
-        targetField.setPromptText(placeholder);
+        targetBox.setPromptText(placeholder);
+        targetBox.setMaxWidth(Double.MAX_VALUE);
 
         VBox fieldGroup = new VBox(2);
-        fieldGroup.getChildren().addAll(label, targetField);
+        fieldGroup.getChildren().addAll(labelField, targetBox);
         return fieldGroup;
     }
 
     private void clearFields() {
-        emailFieldInput.clear();
-        passwordFieldInput.clear();
-        confirmPasswordFieldInput.clear();
+        loginEmailField.clearError();
+        loginPasswordField.clearError();
 
-        firstNameFieldInput.clear();
-        lastNameFieldInput.clear();
-        contactEmailFieldInput.clear();
-        phoneNumberFieldInput.clear();
+        regFirstNameField.clearError();
+        regLastNameField.clearError();
+        regContactEmailField.clearError();
+        regPhoneField.clearError();
+        regEmailField.clearError();
+        regPasswordField.clearError();
+        regConfirmPasswordField.clearError();
+
+        roleComboBox.getSelectionModel().clearSelection();
     }
 
-    public void setRegistrationBtnAction(Runnable action) {
-        btnRegistration.setOnAction(event -> action.run());
-    }
+    // --- Actions ---
+    public void setRegistrationBtnAction(Runnable action) { btnRegistration.setOnAction(event -> action.run()); }
+    public void setLoginBtnAction(Runnable action) { btnLogin.setOnAction(event -> action.run()); }
 
-    public void setLoginBtnAction(Runnable action) {
-        btnLogin.setOnAction(event -> action.run());
-    }
+    // --- Getters ---
+    public FormField getLoginEmailField() { return loginEmailField; }
+    public FormField getLoginPasswordField() { return loginPasswordField; }
+    public FormField getRegFirstNameField() { return regFirstNameField; }
+    public FormField getRegLastNameField() { return regLastNameField; }
+    public FormField getRegContactEmailField() { return regContactEmailField; }
+    public FormField getRegPhoneField() { return regPhoneField; }
+    public FormField getRegEmailField() { return regEmailField; }
+    public FormField getRegPasswordField() { return regPasswordField; }
+    public FormField getRegConfirmPasswordField() { return regConfirmPasswordField; }
 
-    public String getEmail() { return emailFieldInput.getText(); }
-    public String getPassword() { return passwordFieldInput.getText(); }
-    public String getConfirmPassword() { return confirmPasswordFieldInput.getText(); }
+    public String getLoginEmail() { return loginEmailField.getText(); }
+    public String getLoginPassword() { return loginPasswordField.getText(); }
 
-    public String getFirstName() { return firstNameFieldInput.getText(); }
-    public String getLastName() { return lastNameFieldInput.getText(); }
-    public String getContactEmail() { return contactEmailFieldInput.getText(); }
-    public String getPhoneNumber() { return phoneNumberFieldInput.getText(); }
+    public String getRegFirstName() { return regFirstNameField.getText(); }
+    public String getRegLastName() { return regLastNameField.getText(); }
+    public String getRegContactEmail() { return regContactEmailField.getText(); }
+    public String getRegPhoneNumber() { return regPhoneField.getText(); }
+    public String getRegEmail() { return regEmailField.getText(); }
+    public String getRegPassword() { return regPasswordField.getText(); }
+
+    public String getRole() { return roleComboBox.getValue(); }
 }

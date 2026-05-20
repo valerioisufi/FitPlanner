@@ -1,5 +1,6 @@
 package com.example.fitplannerclient;
 
+import com.example.fitplannerclient.ui.fx.view.ProfileView;
 import com.example.fitplannerclient.ui.fx.view.plan.PlanViewer;
 import javafx.application.Application;
 import javafx.scene.Scene;
@@ -21,9 +22,10 @@ public class UIDebugger extends Application {
         VBox root = new VBox();
         root.getStyleClass().addAll("card");
         PlanViewer planViewer = new PlanViewer();
+        ProfileView profileView = new ProfileView();
 
-        VBox.setVgrow(planViewer, Priority.ALWAYS);
-        root.getChildren().add(planViewer);
+        VBox.setVgrow(profileView, Priority.ALWAYS);
+        root.getChildren().add(profileView);
 
         Scene scene = new Scene(root, 1200, 800);
 

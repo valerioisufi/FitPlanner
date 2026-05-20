@@ -1,11 +1,13 @@
 package com.example.fitplannerclient.controller;
 
+import com.example.fitplannerclient.bean.ProfileBean;
 import com.example.fitplannerclient.bean.auth.LoginBean;
 import com.example.fitplannerclient.bean.auth.RegisterBean;
 import com.example.fitplannerclient.service.AuthFacade;
 import com.example.fitplannercommon.LoginDTO;
 import com.example.fitplannercommon.ProfileDTO;
 import com.example.fitplannercommon.RegisterDTO;
+import com.example.fitplannerclient.util.ValidationUtils;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -18,8 +20,12 @@ public class AuthManager {
     }
 
     public CompletableFuture<Void> loginAsync(LoginBean loginBean) {
-        if (loginBean.getEmail() == null || loginBean.getEmail().isBlank()) {
-            return CompletableFuture.failedFuture(new IllegalArgumentException("Email cannot be empty"));
+        // Validate login inputs
+        String emailError = ValidationUtils.validateEmail(loginBean.getEmail());
+        String passError = ValidationUtils.validateRequired(loginBean.getPassword(), "Password", 32);
+
+        if (emailError != null || passError != null) {
+            return CompletableFuture.failedFuture(new IllegalArgumentException("Credenziali non valide"));
         }
 
         // Map Bean -> DTO
@@ -31,8 +37,20 @@ public class AuthManager {
     }
 
     public CompletableFuture<Void> registerAsync(RegisterBean registerBean) {
-        if (registerBean.getPassword() == null || registerBean.getPassword().length() < 8) {
-            return CompletableFuture.failedFuture(new IllegalArgumentException("Password must be at least 8 characters long"));
+        // Validate auth inputs
+        String emailError = ValidationUtils.validateEmail(registerBean.getEmail());
+        String passError = ValidationUtils.validatePassword(registerBean.getPassword());
+
+        // Validate profile inputs
+        ProfileBean profileBean = registerBean.getProfile();
+        String nameError = ValidationUtils.validateName(profileBean.getFirstName(), "Nome", 50);
+        String lastNameError = ValidationUtils.validateName(profileBean.getLastName(), "Cognome", 50);
+        String contactEmailError = ValidationUtils.validateEmail(profileBean.getContactEmail());
+        String phoneError = ValidationUtils.validatePhone(profileBean.getPhoneNumber());
+
+        if (emailError != null || passError != null || nameError != null ||
+                lastNameError != null || contactEmailError != null || phoneError != null) {
+            return CompletableFuture.failedFuture(new IllegalArgumentException("Dati di registrazione non validi"));
         }
 
         // Map Bean -> DTO
@@ -41,16 +59,16 @@ public class AuthManager {
         registerDTO.setPassword(registerBean.getPassword());
 
         ProfileDTO profileDTO = new ProfileDTO();
-        profileDTO.setFirstName(registerBean.getFirstName());
-        profileDTO.setLastName(registerBean.getLastName());
-        profileDTO.setPhoneNumber(registerBean.getPhoneNumber());
-        profileDTO.setContactEmail(registerBean.getContactEmail());
-        registerDTO.setProfile(profileDTO);
+        profileDTO.setFirstName(profileBean.getFirstName());
+        profileDTO.setLastName(profileBean.getLastName());
+        profileDTO.setPhoneNumber(profileBean.getPhoneNumber());
+        profileDTO.setContactEmail(profileBean.getContactEmail());
 
-        // Assuming RegisterDTO has a String or Enum field for ProfileType
-        if (registerBean.getProfileType() != null) {
-            // registerDTO.setProfileType(registerBean.getProfileType().name());
+        if (profileBean.getProfileType() != null) {
+            profileDTO.setProfileType(ProfileDTO.ProfileType.valueOf(profileBean.getProfileType().name()));
         }
+
+        registerDTO.setProfile(profileDTO);
 
         return authFacade.registerAsync(registerDTO);
     }
