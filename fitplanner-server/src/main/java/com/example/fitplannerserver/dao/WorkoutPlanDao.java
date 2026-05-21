@@ -2,7 +2,7 @@ package com.example.fitplannerserver.dao;
 
 import com.example.fitplannerserver.exception.DaoException;
 import com.example.fitplannerserver.model.plan.WorkoutPlan;
-import com.example.fitplannerserver.model.plan.WorkoutSession;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -16,9 +16,6 @@ public interface WorkoutPlanDao {
 
     // Retrieves a specific plan by its ID
     Optional<WorkoutPlan> findPlanById(String planId) throws DaoException;
-
-    // Assigns an existing plan to an athlete
-    void assignPlanToAthlete(String planId, String athleteId) throws DaoException;
 
     // Retrieves the active plan assigned to an athlete
     Optional<WorkoutPlan> findAssignedPlanByAthleteId(String athleteId) throws DaoException;

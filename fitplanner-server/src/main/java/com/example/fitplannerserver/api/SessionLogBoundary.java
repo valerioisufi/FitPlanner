@@ -24,10 +24,10 @@ public class SessionLogBoundary {
 
     @GetMapping("/session")
     public List<SessionLogDTO> getFilteredSessionLogs(
-            @RequestParam(required = false) String athleteUuid,
+            @RequestParam(required = false) String athleteId,
             @RequestParam long startTimestamp,
             @RequestParam long endTimestamp) {
-        return sessionLogController.getFilteredSessionLog(athleteUuid, startTimestamp, endTimestamp);
+        return sessionLogController.getFilteredSessionLog(athleteId, startTimestamp, endTimestamp);
     }
 
     @GetMapping("/exercises/{exerciseId}/latest")

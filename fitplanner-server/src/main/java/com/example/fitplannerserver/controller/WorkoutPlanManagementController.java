@@ -13,6 +13,7 @@ import com.example.fitplannerserver.util.ValidationUtils;
 import com.github.f4b6a3.uuid.UuidCreator;
 
 import java.util.List;
+import java.util.Optional;
 
 public class WorkoutPlanManagementController {
     private final IdentityProvider identityProvider;
@@ -87,13 +88,32 @@ public class WorkoutPlanManagementController {
         }
 
         identityProvider.checkUserRole(Account.Role.TRAINER);
-
         String trainerId = identityProvider.getUserId();
+
         try {
             if(!coachingDao.isClientOf(trainerId, athleteId))
                 throw new UnauthorizedException("L'utente non è tuo cliente");
 
-            workoutPlanDao.assignPlanToAthlete(planId, athleteId);
+            WorkoutPlan templatePlan = workoutPlanDao.findPlanById(planId)
+                    .orElseThrow(() -> new ResourceNotFoundException("WorkoutPlan non trovato"));
+
+            if (templatePlan.getAuthorId() == null || !templatePlan.getAuthorId().equals(trainerId)) {
+                throw new UnauthorizedException("Non puoi assegnare un WorkoutPlan che non ti appartiene");
+            }
+
+            // un atleta può avere un solo WorkoutPlan assegnato
+            Optional<WorkoutPlan> oldPlanOpt = workoutPlanDao.findAssignedPlanByAthleteId(athleteId);
+
+            if (oldPlanOpt.isPresent()) {
+                // il piano precedente dell'atleta viene eliminato
+                workoutPlanDao.deletePlan(oldPlanOpt.get().getPlanId());
+            }
+
+            String newInstanceId = UuidCreator.getTimeOrderedEpoch().toString();
+            WorkoutPlan athleteSpecificPlan = new WorkoutPlan(templatePlan, newInstanceId);
+
+            athleteSpecificPlan.assignTo(athleteId);
+            workoutPlanDao.savePlan(athleteSpecificPlan);
 
         } catch (DaoException e) {
             throw new SystemException("Errore nell'assegnare il WorkoutPlan");

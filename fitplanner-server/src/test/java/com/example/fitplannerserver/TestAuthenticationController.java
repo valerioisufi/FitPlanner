@@ -57,7 +57,7 @@ class TestAuthenticationController {
     void testLoginSuccess() throws Exception {
         // Arrange
         String email = "test@example.com";
-        String password = "password123";
+        String password = "Password123";
 
         createAndSaveMockAccount(email, password, Account.Role.ATHLETE);
 
@@ -77,9 +77,9 @@ class TestAuthenticationController {
     void testLoginInvalidCredentials() throws Exception {
         // Arrange
         String email = "test@example.com";
-        String wrongPassword = "wrong_password";
+        String wrongPassword = "Wrongpass123";
 
-        createAndSaveMockAccount(email, "correct_password", Account.Role.ATHLETE);
+        createAndSaveMockAccount(email, "Correctpass123", Account.Role.ATHLETE);
 
         LoginDTO loginDTO = new LoginDTO();
         loginDTO.setEmail(email);
@@ -96,9 +96,9 @@ class TestAuthenticationController {
     void testRegisterEmailAlreadyUsed() throws Exception {
         // Arrange
         String email = "duplicate@example.com";
-        String password = "password123";
+        String password = "Password123";
 
-        createAndSaveMockAccount(email, "other_password", Account.Role.ATHLETE);
+        createAndSaveMockAccount(email, "Otherpass123", Account.Role.ATHLETE);
 
         RegisterDTO registerDTO = new RegisterDTO();
         registerDTO.setEmail(email);
@@ -120,7 +120,7 @@ class TestAuthenticationController {
 
         RegisterDTO registerDTO = new RegisterDTO();
         registerDTO.setEmail(newEmail);
-        registerDTO.setPassword("password123");
+        registerDTO.setPassword("Password123");
 
         registerDTO.setProfile(createMockProfileBean());
 
@@ -145,7 +145,7 @@ class TestAuthenticationController {
     @DisplayName("Dato un refresh token valido, deve restituire un nuovo TokenBean con successo")
     void testRefreshTokenSuccess() throws Exception {
         // Arrange
-        Account savedAccount = createAndSaveMockAccount("testrefresh@example.com", "password123", Account.Role.TRAINER);
+        Account savedAccount = createAndSaveMockAccount("testrefresh@example.com", "Password123", Account.Role.TRAINER);
 
         TokenDTO requestTokenDTO = new TokenDTO();
         requestTokenDTO.setRefreshToken(savedAccount.getRefreshToken());

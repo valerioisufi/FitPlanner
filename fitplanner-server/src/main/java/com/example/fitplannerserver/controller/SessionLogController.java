@@ -38,21 +38,19 @@ public class SessionLogController {
     }
 
     public List<SessionLogDTO> getFilteredSessionLog(String athleteId, long startDate, long endDate) {
-        if (!ValidationUtils.isValidUuid(athleteId)) {
-            throw new WrongArgumentsException("athleteId deve essere un UUID valido");
-        }
         if (startDate > endDate) {
             throw new WrongArgumentsException("startDate non può essere successivo a endDate");
         }
 
-        if(identityProvider.getUserRole() == Account.Role.ATHLETE && !Objects.equals(identityProvider.getUserId(), athleteId)){
+        if(identityProvider.getUserRole() == Account.Role.ATHLETE && athleteId != null && !Objects.equals(identityProvider.getUserId(), athleteId)){
             throw new UnauthorizedException("Gli atleti possono solo accedere ai propri session logs");
         }
 
-        if(identityProvider.getUserRole() == Account.Role.TRAINER){
+        String userId = (identityProvider.getUserRole() == Account.Role.ATHLETE) ? identityProvider.getUserId() : athleteId;
 
+        if(identityProvider.getUserRole() == Account.Role.TRAINER){
             try {
-                boolean isTrainerOfAthlete = coachingDao.isClientOf(identityProvider.getUserId(), athleteId);
+                boolean isTrainerOfAthlete = coachingDao.isClientOf(identityProvider.getUserId(), userId);
                 if (!isTrainerOfAthlete) {
                     throw new UnauthorizedException("I trainer possono accedere solo ai session logs dei propri atleti");
                 }
@@ -60,11 +58,10 @@ public class SessionLogController {
             } catch (DaoException e) {
                 throw new SystemException("Errore durante la verifica del rapporto trainer-atleta");
             }
-
         }
 
         try {
-            List<SessionLog> sessionLog = sessionLogDao.findLogsByAthleteIdAndDateRange(athleteId, startDate, endDate);
+            List<SessionLog> sessionLog = sessionLogDao.findLogsByAthleteIdAndDateRange(userId, startDate, endDate);
 
             List<SessionLogDTO> sessionLogDTOS = new ArrayList<>();
             for (SessionLog log : sessionLog) {

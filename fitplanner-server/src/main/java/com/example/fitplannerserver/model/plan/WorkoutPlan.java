@@ -32,9 +32,28 @@ public class WorkoutPlan {
         this.planId = old.planId;
         this.title = old.title;
 
+        this.cycleLength = old.cycleLength;
+        this.startDate = old.startDate;
+
         this.sessions = new TreeMap<>();
 
         this.assignedToId = old.assignedToId;
+        this.authorTrainerId = old.authorTrainerId;
+
+        for (WorkoutSession session : old.sessions.values()){
+            this.sessions.put(session.getDay(), new WorkoutSession(session));
+        }
+    }
+
+    public WorkoutPlan(WorkoutPlan old, String newPlanId){
+        this.planId = newPlanId;
+        this.title = old.title;
+
+        this.cycleLength = old.cycleLength;
+        this.startDate = old.startDate;
+
+        this.sessions = new TreeMap<>();
+
         this.authorTrainerId = old.authorTrainerId;
 
         for (WorkoutSession session : old.sessions.values()){
