@@ -43,7 +43,7 @@ public class SessionLogController {
         }
 
         if(identityProvider.getUserRole() == Account.Role.ATHLETE && athleteId != null && !Objects.equals(identityProvider.getUserId(), athleteId)){
-            throw new UnauthorizedException("Gli atleti possono solo accedere ai propri session logs");
+            throw new ForbiddenException("Gli atleti possono solo accedere ai propri session logs");
         }
 
         String userId = (identityProvider.getUserRole() == Account.Role.ATHLETE) ? identityProvider.getUserId() : athleteId;
@@ -52,7 +52,7 @@ public class SessionLogController {
             try {
                 boolean isTrainerOfAthlete = coachingDao.isClientOf(identityProvider.getUserId(), userId);
                 if (!isTrainerOfAthlete) {
-                    throw new UnauthorizedException("I trainer possono accedere solo ai session logs dei propri atleti");
+                    throw new ForbiddenException("I trainer possono accedere solo ai session logs dei propri atleti");
                 }
 
             } catch (DaoException e) {

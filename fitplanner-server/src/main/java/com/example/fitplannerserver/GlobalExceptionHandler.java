@@ -10,9 +10,9 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    // 401 - Non autorizzato ad accedere alla risorsa o a eseguire l'operazione
-    @ExceptionHandler(UnauthorizedException.class)
-    public ResponseEntity<ErrorResponseDTO> handleUnauthorizedException(UnauthorizedException ex) {
+    // 403 - Non autorizzato ad accedere alla risorsa o a eseguire l'operazione
+    @ExceptionHandler(ForbiddenException.class)
+    public ResponseEntity<ErrorResponseDTO> handleUnauthorizedException(ForbiddenException ex) {
         ErrorResponseDTO error = new ErrorResponseDTO(
                 HttpStatus.FORBIDDEN.value(),
                 "Forbidden",

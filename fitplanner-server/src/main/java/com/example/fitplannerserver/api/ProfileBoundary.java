@@ -47,7 +47,7 @@ public class ProfileBoundary {
     }
 
     // Trainer requests to get their invitation code
-    @PostMapping("/my-code")
+    @GetMapping("/my-code")
     public InvitationCodeDTO getCode() {
         return profileController.getInvitationCode();
     }

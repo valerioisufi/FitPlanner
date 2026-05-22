@@ -92,13 +92,13 @@ public class WorkoutPlanManagementController {
 
         try {
             if(!coachingDao.isClientOf(trainerId, athleteId))
-                throw new UnauthorizedException("L'utente non è tuo cliente");
+                throw new ForbiddenException("L'utente non è tuo cliente");
 
             WorkoutPlan templatePlan = workoutPlanDao.findPlanById(planId)
                     .orElseThrow(() -> new ResourceNotFoundException("WorkoutPlan non trovato"));
 
             if (templatePlan.getAuthorId() == null || !templatePlan.getAuthorId().equals(trainerId)) {
-                throw new UnauthorizedException("Non puoi assegnare un WorkoutPlan che non ti appartiene");
+                throw new ForbiddenException("Non puoi assegnare un WorkoutPlan che non ti appartiene");
             }
 
             // un atleta può avere un solo WorkoutPlan assegnato
@@ -133,7 +133,7 @@ public class WorkoutPlanManagementController {
                     .orElseThrow(() -> new ResourceNotFoundException("WorkoutPlan non trovato"));
 
             if(oldPlan.getAuthorId() == null || !oldPlan.getAuthorId().equals(identityProvider.getUserId())) {
-                throw new UnauthorizedException("Il WorkoutPlan non ti appartiene");
+                throw new ForbiddenException("Il WorkoutPlan non ti appartiene");
             }
 
             WorkoutPlan newPlan = PlanMapper.toEntity(planBean, planId);
@@ -160,7 +160,7 @@ public class WorkoutPlanManagementController {
                     .orElseThrow(() -> new ResourceNotFoundException("WorkoutPlan non trovato"));
 
             if(plan.getAuthorId() == null || !plan.getAuthorId().equals(identityProvider.getUserId())) {
-                throw new UnauthorizedException("Il WorkoutPlan non ti appartiene");
+                throw new ForbiddenException("Il WorkoutPlan non ti appartiene");
             }
 
             workoutPlanDao.deletePlan(planId);
