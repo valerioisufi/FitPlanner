@@ -3,7 +3,7 @@ package com.example.fitplannerclient.controller;
 import com.example.fitplannerclient.bean.ProfileBean;
 import com.example.fitplannerclient.bean.auth.LoginBean;
 import com.example.fitplannerclient.bean.auth.RegisterBean;
-import com.example.fitplannerclient.service.AuthFacade;
+import com.example.fitplannerclient.service.facade.AuthFacade;
 import com.example.fitplannercommon.LoginDTO;
 import com.example.fitplannercommon.ProfileDTO;
 import com.example.fitplannercommon.RegisterDTO;

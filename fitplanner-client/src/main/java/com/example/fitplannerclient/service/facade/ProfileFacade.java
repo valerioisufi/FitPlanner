@@ -1,5 +1,6 @@
-package com.example.fitplannerclient.service;
+package com.example.fitplannerclient.service.facade;
 
+import com.example.fitplannerclient.service.HttpService;
 import com.example.fitplannercommon.InvitationCodeDTO;
 import com.example.fitplannercommon.ProfileDTO;
 
@@ -38,7 +39,6 @@ public class ProfileFacade {
 
     /**
      * Permette a un trainer di recuperare la lista dei suoi atleti.
-     * Si usa l'array di DTO per aggirare la type erasure sui generics e poi si mappa a List.
      */
     public CompletableFuture<List<ProfileDTO>> getMyAthletesAsync() {
         return httpService.getAsync("/profiles/my-athletes", ProfileDTO[].class)
@@ -54,9 +54,8 @@ public class ProfileFacade {
 
     /**
      * Permette a un trainer di generare o recuperare il proprio codice di invito.
-     * Dato che il backend prevede una POST senza un @RequestBody, passiamo null come body.
      */
     public CompletableFuture<InvitationCodeDTO> getInvitationCodeAsync() {
-        return httpService.postAsync("/profiles/my-code", null, InvitationCodeDTO.class);
+        return httpService.getAsync("/profiles/my-code", InvitationCodeDTO.class);
     }
 }

@@ -1,9 +1,8 @@
 package com.example.fitplannerclient;
 
 import com.example.fitplannerclient.config.ConfigurationManager;
-import com.example.fitplannerclient.service.AuthFacade;
-import com.example.fitplannerclient.service.HttpService;
-import com.example.fitplannerclient.service.SessionManager;
+import com.example.fitplannerclient.service.*;
+import com.example.fitplannerclient.service.facade.*;
 import com.example.fitplannerclient.ui.fx.GuiManager;
 import com.example.fitplannerclient.ui.fx.Navigator;
 import javafx.application.Application;
@@ -42,7 +41,14 @@ public class AppLauncher extends Application {
         });
 
         AuthFacade authFacade = new AuthFacade(httpService, sessionManager);
-        AppControllerFactory factory = new AppControllerFactory(authFacade);
+        ProfileFacade profileFacade = new ProfileFacade(httpService);
+        ExerciseLibraryFacade exerciseLibraryFacade = new ExerciseLibraryFacade(httpService);
+        WorkoutPlanFacade workoutPlanFacade = new WorkoutPlanFacade(httpService);
+        SessionLogFacade sessionLogFacade = new SessionLogFacade(httpService);
+
+        AppControllerFactory factory = new AppControllerFactory(
+                authFacade, profileFacade, exerciseLibraryFacade, workoutPlanFacade, sessionLogFacade
+        );
 
         GuiManager guiManager = new GuiManager(stage);
         this.navigator = new Navigator(guiManager, factory, sessionManager);
