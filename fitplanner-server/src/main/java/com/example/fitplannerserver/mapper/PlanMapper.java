@@ -1,6 +1,7 @@
 package com.example.fitplannerserver.mapper;
 
 import com.example.fitplannercommon.WorkoutPlanDTO;
+import com.example.fitplannercommon.WorkoutPlanSummaryDTO;
 import com.example.fitplannercommon.WorkoutSessionDTO;
 import com.example.fitplannerserver.model.plan.WorkoutPlan;
 import com.example.fitplannerserver.model.plan.WorkoutSession;
@@ -12,46 +13,53 @@ public class PlanMapper {
 
     private PlanMapper(){}
 
-    public static WorkoutPlanDTO toBean(WorkoutPlan entity){
-        WorkoutPlanDTO bean = new WorkoutPlanDTO();
+    public static WorkoutPlanDTO toDto(WorkoutPlan entity){
+        WorkoutPlanDTO dto = new WorkoutPlanDTO();
 
-        bean.setPlanId(entity.getPlanId());
-        bean.setName(entity.getTitle());
+        dto.setPlanId(entity.getPlanId());
+        dto.setName(entity.getTitle());
 
         List<WorkoutSessionDTO> sessionBeans = new ArrayList<>();
         for(int day: entity.getSessionsDay()){
-            sessionBeans.add(toBean(entity.getSession(day)));
+            sessionBeans.add(toDto(entity.getSession(day)));
         }
-        bean.setWorkoutSessions(sessionBeans);
-        return bean;
+        dto.setWorkoutSessions(sessionBeans);
+        return dto;
     }
 
-    private static WorkoutSessionDTO toBean(WorkoutSession entity){
-        WorkoutSessionDTO bean = new WorkoutSessionDTO(
+    private static WorkoutSessionDTO toDto(WorkoutSession entity){
+        return new WorkoutSessionDTO(
                 entity.getTitle(),
                 entity.getContent(),
                 entity.getDay()
         );
-
-        return bean;
     }
 
-    public static WorkoutPlan toEntity(WorkoutPlanDTO bean, String planId){
-        WorkoutPlan entity = new WorkoutPlan(planId, bean.getName(), bean.getCycleLength());
+    public static WorkoutPlanSummaryDTO toSummaryDto(WorkoutPlan entity){
+        WorkoutPlanSummaryDTO dto = new WorkoutPlanSummaryDTO();
+        dto.setPlanId(entity.getPlanId());
+        dto.setPlanTitle(entity.getTitle());
+        dto.setAssignedTo(entity.getAssignedToId());
 
-        for(WorkoutSessionDTO sessionBean: bean.getWorkoutSessions()){
+        return dto;
+    }
+
+    public static WorkoutPlan toEntity(WorkoutPlanDTO dto, String planId){
+        WorkoutPlan entity = new WorkoutPlan(planId, dto.getName(), dto.getCycleLength());
+
+        for(WorkoutSessionDTO sessionBean: dto.getWorkoutSessions()){
             entity.addSession(toEntity(sessionBean));
         }
 
         return entity;
     }
 
-    private static WorkoutSession toEntity(WorkoutSessionDTO bean){
+    private static WorkoutSession toEntity(WorkoutSessionDTO dto){
 
         return new WorkoutSession(
-                bean.getName(),
-                bean.getContent(),
-                bean.getDay()
+                dto.getName(),
+                dto.getContent(),
+                dto.getDay()
         );
 
     }

@@ -5,5 +5,6 @@ public enum PlanNodeState {
     RUNNING,
     WAITING,
     COMPLETED,
-    REVERT
+    REVERT,
+    SKIPPED
 }

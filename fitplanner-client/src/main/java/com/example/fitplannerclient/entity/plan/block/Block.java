@@ -1,14 +1,15 @@
 package com.example.fitplannerclient.entity.plan.block;
 
-import com.example.fitplannerclient.controller.plan.WorkoutPlanVisitor;
+import com.example.fitplannerclient.controller.plan.visitor.WorkoutPlanVisitor;
 import com.example.fitplannerclient.entity.plan.PlanNode;
+import com.example.fitplannerclient.entity.plan.context.ExecutionContext;
+import com.example.fitplannerclient.entity.plan.context.ExecutionResult;
 
 public class Block extends GroupNode{
     private String title;
 
-    @Override
-    public void addNodeAt(int index, PlanNode node) {
-
+    public Block(String title) {
+        this.title = title;
     }
 
     @Override
@@ -22,12 +23,21 @@ public class Block extends GroupNode{
     }
 
     @Override
-    public void execute() {
-
+    public ExecutionResult execute(ExecutionContext context) {
+        // TODO
+        return null;
     }
 
     @Override
     public void reset() {
 
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 }

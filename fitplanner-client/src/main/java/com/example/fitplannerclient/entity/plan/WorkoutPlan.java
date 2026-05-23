@@ -1,31 +1,32 @@
 package com.example.fitplannerclient.entity.plan;
 
-import com.example.fitplannerclient.controller.plan.AcceptWorkoutPlanVisitor;
-import com.example.fitplannerclient.controller.plan.WorkoutPlanVisitor;
-import com.example.fitplannerclient.util.IDGenerator;
+import com.example.fitplannerclient.controller.plan.visitor.AcceptWorkoutPlanVisitor;
+import com.example.fitplannerclient.controller.plan.visitor.WorkoutPlanVisitor;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class WorkoutPlan implements AcceptWorkoutPlanVisitor {
     private String name;
-    private String id;
+    private String planId;
 
-    private List<WorkoutSession> sessions;
+    private int cycleLength;
 
-    public WorkoutPlan(String name, String id) {
+    private final List<WorkoutSession> sessions = new ArrayList<>();
+    private WorkoutSession currentSession;
+
+    public WorkoutPlan(String name, String planId) {
         this.name = name;
-        this.id = id;
-        this.sessions = new ArrayList<>();
+        this.planId = planId;
+    }
+
+    public WorkoutPlan(String name){
+        this.name = name;
     }
 
     @Override
     public void accept(WorkoutPlanVisitor visitor) {
         visitor.visit(this);
-    }
-
-    public WorkoutPlan(String name){
-        this(name, IDGenerator.generateUUID());
     }
 
     public void changeName(String newName){
@@ -36,8 +37,12 @@ public class WorkoutPlan implements AcceptWorkoutPlanVisitor {
         return name;
     }
 
-    public String getId() {
-        return id;
+    public String getPlanId() {
+        return planId;
+    }
+
+    public void setPlanId(String planId) {
+        this.planId = planId;
     }
 
     public List<WorkoutSession> getSessions() {
@@ -48,12 +53,20 @@ public class WorkoutPlan implements AcceptWorkoutPlanVisitor {
         this.sessions.add(session);
     }
 
-    public void removeSession(String sessionId){
+    public void removeSession(int sessionDay){
         for (WorkoutSession session : sessions) {
-            if (session.getId().equals(sessionId)) {
+            if (session.getDay() == sessionDay) {
                 sessions.remove(session);
                 return;
             }
         }
+    }
+
+    public int getCycleLength() {
+        return cycleLength;
+    }
+
+    public void setCycleLength(int cycleLength) {
+        this.cycleLength = cycleLength;
     }
 }

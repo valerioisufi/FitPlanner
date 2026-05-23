@@ -6,7 +6,11 @@ public class WorkoutPlanBean {
     private String id;
     private String name;
 
+    private int cycleLength;
+
     private List<WorkoutSessionBean> sessions;
+
+    public WorkoutPlanBean() {}
 
     public WorkoutPlanBean(String id, String name, List<WorkoutSessionBean> sessions) {
         this.id = id;
@@ -28,6 +32,14 @@ public class WorkoutPlanBean {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public int getCycleLength() {
+        return cycleLength;
+    }
+
+    public void setCycleLength(int cycleLength) {
+        this.cycleLength = cycleLength;
     }
 
     public List<WorkoutSessionBean> getSessions(){

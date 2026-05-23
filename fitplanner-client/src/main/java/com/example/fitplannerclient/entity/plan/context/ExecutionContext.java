@@ -3,12 +3,12 @@ package com.example.fitplannerclient.entity.plan.context;
 import java.util.HashMap;
 
 public class ExecutionContext {
-    private final HashMap<String, String> parameters;
+    private final HashMap<String, String> parameters = new HashMap<>();
     private ControlSignal currentSignal;
+
     private int tickDelta;
 
     public ExecutionContext() {
-        this.parameters = new HashMap<>();
     }
 
     public void setParameter(String key, String value) {
@@ -21,6 +21,14 @@ public class ExecutionContext {
 
     public void injectSignal(ControlSignal signal){
         this.currentSignal = signal;
+    }
+
+    public boolean consumeSignal(ControlSignal signal){
+        if(this.currentSignal == signal) {
+            this.currentSignal = ControlSignal.NONE;
+            return true;
+        }
+        return false;
     }
 
     public ControlSignal getCurrentSignal() {

@@ -1,9 +1,11 @@
 package com.example.fitplannerclient.entity.plan.block;
 
-import com.example.fitplannerclient.controller.plan.WorkoutPlanVisitor;
+import com.example.fitplannerclient.controller.plan.visitor.WorkoutPlanVisitor;
 import com.example.fitplannerclient.entity.plan.PlanNode;
-import com.example.fitplannerclient.entity.plan.block.strategy.CompositionRule;
-import com.example.fitplannerclient.entity.plan.block.strategy.ValidationRule;
+import com.example.fitplannerclient.entity.plan.block.strategy.composition.CompositionRule;
+import com.example.fitplannerclient.entity.plan.block.strategy.validation.ValidationRule;
+import com.example.fitplannerclient.entity.plan.context.ExecutionContext;
+import com.example.fitplannerclient.entity.plan.context.ExecutionResult;
 
 import java.util.List;
 
@@ -30,12 +32,29 @@ public class ProtocolBlock extends GroupNode{
     }
 
     @Override
-    public void execute() {
-
+    public ExecutionResult execute(ExecutionContext context) {
+        // TODO
+        return null;
     }
 
     @Override
     public void reset() {
 
+    }
+
+    public String getSemanticType() {
+        return semanticType;
+    }
+
+    public void setSemanticType(String semanticType) {
+        this.semanticType = semanticType;
+    }
+
+    public PlanNode getInternalExecutionRoot() {
+        return internalExecutionRoot;
+    }
+
+    public void setInternalExecutionRoot(PlanNode internalExecutionRoot) {
+        this.internalExecutionRoot = internalExecutionRoot;
     }
 }

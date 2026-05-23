@@ -1,7 +1,10 @@
 package com.example.fitplannerclient.entity.plan.decorator;
 
-import com.example.fitplannerclient.controller.plan.WorkoutPlanVisitor;
+import com.example.fitplannerclient.controller.plan.visitor.WorkoutPlanVisitor;
 import com.example.fitplannerclient.entity.plan.PlanNode;
+import com.example.fitplannerclient.entity.plan.context.ExecutionContext;
+import com.example.fitplannerclient.entity.plan.context.ExecutionResult;
+import com.example.fitplannerclient.entity.plan.context.PlanNodeState;
 
 public class RestDecorator extends FlowDecorator{
     private int restDuration;
@@ -17,13 +20,23 @@ public class RestDecorator extends FlowDecorator{
     }
 
     @Override
-    public void execute() {
-        wrappedNode.execute();
+    public ExecutionResult execute(ExecutionContext context) {
+        // TODO
+        return null;
     }
 
     @Override
     public void reset() {
+        this.state = PlanNodeState.IDLE;
         wrappedNode.reset();
+    }
+
+    public int getRestDuration() {
+        return restDuration;
+    }
+
+    public void setRestDuration(int restDuration) {
+        this.restDuration = restDuration;
     }
 
 
