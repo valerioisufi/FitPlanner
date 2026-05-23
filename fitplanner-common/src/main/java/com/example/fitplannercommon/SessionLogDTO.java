@@ -16,12 +16,15 @@ public class SessionLogDTO {
 
     public SessionLogDTO() {}
 
-    public SessionLogDTO(String userId, String notes, SessionStatus status, long date) {
+    public SessionLogDTO(String userId, String notes, SessionStatus status, long date, String planIdReference, int workoutSessionDay, List<ExerciseLogDTO>
+                         exerciseLogs) {
         this.userId = userId;
-
         this.notes = notes;
         this.status = status;
         this.date = date;
+        this.planIdReference = planIdReference;
+        this.workoutSessionDay = workoutSessionDay;
+        this.exerciseLogs = exerciseLogs;
     }
 
     public String getUserId() {

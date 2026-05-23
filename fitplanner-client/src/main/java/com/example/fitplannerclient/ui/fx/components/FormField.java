@@ -1,7 +1,7 @@
 package com.example.fitplannerclient.ui.fx.components;
 
 import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
+import javafx.scene.control.TextInputControl;
 import javafx.scene.layout.VBox;
 
 import java.util.function.Function;
@@ -9,13 +9,13 @@ import java.util.function.Function;
 public class FormField extends VBox {
 
     private final Label titleLabel;
-    private final TextField inputField;
+    private final TextInputControl inputField;
     private final Label errorLabel;
 
     // lambda that takes the input text and returns an error message (or null if valid)
     private Function<String, String> validator;
 
-    public FormField(String labelText, String placeholder, TextField targetField) {
+    public FormField(String labelText, String placeholder, TextInputControl targetField) {
         this.inputField = targetField;
         this.inputField.setPromptText(placeholder);
 
@@ -42,6 +42,15 @@ public class FormField extends VBox {
 
     public String getText() {
         return inputField.getText();
+    }
+
+    public void setText(String text) {
+        inputField.setText(text);
+    }
+
+    public void clear() {
+        inputField.clear();
+        clearError();
     }
 
     public void setValidator(Function<String, String> validator) {

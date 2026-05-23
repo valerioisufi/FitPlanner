@@ -1,4 +1,4 @@
-package com.example.fitplannerclient.bean;
+package com.example.fitplannerclient.bean.profile;
 
 public class ProfileBean {
     private String userId;

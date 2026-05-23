@@ -1,28 +1,28 @@
 package com.example.fitplannerclient.ui.fx.view;
 
+import com.example.fitplannerclient.ui.fx.components.Icon;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.Menu;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+import java.util.function.Consumer;
 
 public class HeaderView extends HBox {
+
+    // Change Runnable to Consumer<Node>
     public record MenuConfig(
             String title,
             String icon,
-            Runnable action
+            Consumer<Node> action
     ) {}
 
-    // 1. Aggiungiamo una lista per conservare i riferimenti ai pulsanti
     private final List<Button> menuButtons = new ArrayList<>();
 
     public HeaderView(List<MenuConfig> navItems, int activeNavItemIndex, List<MenuConfig> menuItems) {
@@ -42,17 +42,20 @@ public class HeaderView extends HBox {
 
         int i = 0;
         for (MenuConfig item : navItems) {
-
-            Button btn = new Button(item.title);
+            Button btn = new Button(item.title());
             btn.getStyleClass().addAll("button-header");
 
             if (i == activeNavItemIndex) {
                 btn.getStyleClass().add("button-header-active");
             }
 
+            if (item.action() != null) {
+                // Pass the button as the anchor node
+                btn.setOnAction(e -> item.action().accept(btn));
+            }
+
             menuButtons.add(btn);
             navContainer.getChildren().add(btn);
-
             i++;
         }
 
@@ -72,25 +75,20 @@ public class HeaderView extends HBox {
             btn.setAlignment(Pos.CENTER);
             btn.setFillHeight(false);
 
-            if (item.icon != null) {
-                Region icon = new Region();
-                icon.getStyleClass().add(item.icon);
-                icon.setPrefSize(24, 24);
-                icon.getStyleClass().add("button-header-icon");
-
+            if (item.icon() != null) {
+                Icon icon = new Icon(item.icon(), List.of("button-header-icon"));
                 btn.getChildren().add(icon);
             }
 
-
-            if(item.title != null) {
-                Label text = new Label(item.title);
+            if(item.title() != null) {
+                Label text = new Label(item.title());
                 btn.getChildren().add(text);
             }
 
             btn.getStyleClass().addAll("button-header");
 
-            if(item.action != null) {
-                btn.setOnMousePressed(e -> item.action.run());
+            if(item.action() != null) {
+                btn.setOnMousePressed(e -> item.action().accept(btn));
             }
 
             buttonsContainer.getChildren().add(btn);
@@ -99,7 +97,6 @@ public class HeaderView extends HBox {
         this.getChildren().addAll(titleContainer, spacer, buttonsContainer);
     }
 
-    // Metodo fondamentale per il Controller
     public List<Button> getMenuButtons() {
         return menuButtons;
     }

@@ -1,6 +1,6 @@
 package com.example.fitplannerclient.ui.fx.guicontroller;
 
-import com.example.fitplannerclient.bean.ProfileBean;
+import com.example.fitplannerclient.bean.profile.ProfileBean;
 import com.example.fitplannerclient.controller.AuthManager;
 import com.example.fitplannerclient.bean.auth.LoginBean;
 import com.example.fitplannerclient.bean.auth.RegisterBean;
@@ -61,7 +61,7 @@ public class AuthenticationViewController implements GuiController {
         authManager.loginAsync(loginBean)
                 .thenRun(onLoginSuccess)
                 .exceptionally(ex -> {
-                    Platform.runLater(() -> this.guiManager.showNotification(ex.getCause().getMessage()));
+                    Platform.runLater(() -> this.guiManager.showNotification(GuiManager.NotificationType.ERROR, ex.getCause().getMessage()));
                     return null;
                 });
     }
@@ -81,7 +81,7 @@ public class AuthenticationViewController implements GuiController {
 
         String selectRole = this.view.getRole();
         if (selectRole == null) {
-            this.guiManager.showNotification("Attenzione, devi selezionare un ruolo per registrarti");
+            this.guiManager.showNotification(GuiManager.NotificationType.ERROR, "Attenzione, devi selezionare un ruolo per registrarti");
             return;
         }
 
@@ -106,7 +106,7 @@ public class AuthenticationViewController implements GuiController {
         authManager.registerAsync(registerBean)
                 .thenRun(onLoginSuccess)
                 .exceptionally(ex -> {
-                    Platform.runLater(() -> this.guiManager.showNotification(ex.getCause().getMessage()));
+                    Platform.runLater(() -> this.guiManager.showNotification(GuiManager.NotificationType.ERROR, ex.getCause().getMessage()));
                     return null;
                 });
     }

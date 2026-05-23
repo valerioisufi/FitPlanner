@@ -1,6 +1,10 @@
 package com.example.fitplannerclient.ui.fx.view;
 
-import com.example.fitplannerclient.ui.gui1.view.BaseView;
+import com.example.fitplannerclient.bean.plan.WorkoutPlanBean;
+import com.example.fitplannerclient.bean.plan.WorkoutSessionBean;
+import com.example.fitplannerclient.bean.plan.PlanNodeBean;
+import com.example.fitplannerclient.bean.plan.NodeType;
+import com.example.fitplannerclient.bean.plan.ExerciseModifierBean;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -8,223 +12,213 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.*;
-import javafx.scene.text.Text;
+import java.util.List;
 
 public class HomeView extends BorderPane {
-    private Button primaryButton;
+
+    private final VBox contentBox;
+    private final Label welcomeTitle;
+    private final Label welcomeSubtitle;
 
     public HomeView(Node header) {
-        if (header != null) this.setTop(header);
+        if (header != null) {
+            this.setTop(header);
+        }
 
-        VBox content = new VBox(20);
-        content.setPadding(new Insets(20));
+        contentBox = new VBox(24);
+        contentBox.setPadding(new Insets(32));
+        contentBox.setAlignment(Pos.TOP_LEFT);
 
-        VBox welcomeSection = createWelcomeSection();
-        VBox workoutCard = createWorkoutCard();
+        // --- Welcome Section ---
+        VBox welcomeSection = new VBox(8);
+        welcomeTitle = new Label("Benvenuto in FitPlanner!");
+        welcomeTitle.getStyleClass().add("heading-h1");
+        welcomeSubtitle = new Label("Oggi è il momento perfetto per superare i tuoi limiti.");
+        welcomeSubtitle.getStyleClass().add("body-base");
+        welcomeSection.getChildren().addAll(welcomeTitle, welcomeSubtitle);
 
-        content.getChildren().addAll(welcomeSection, workoutCard);
+        contentBox.getChildren().add(welcomeSection);
 
-        ScrollPane scrollPane = new ScrollPane(content);
+        ScrollPane scrollPane = new ScrollPane(contentBox);
         scrollPane.setFitToWidth(true);
-        scrollPane.setFitToHeight(false);
+        scrollPane.setFitToHeight(true);
         scrollPane.setStyle("-fx-background-color: transparent; -fx-background: transparent;");
 
         this.setCenter(scrollPane);
-
     }
 
-    private Label welcomeTitle;
-    private Label welcomeSubtitle;
-    private VBox createWelcomeSection() {
-        VBox box = new VBox(5);
-
-        welcomeTitle = new Label("Benvenuto in FitPlanner!");
-        welcomeTitle.getStyleClass().add("heading-h1");
-
-        welcomeSubtitle = new Label("Oggi è il momento perfetto per superare i tuoi limiti");
-        welcomeSubtitle.getStyleClass().add("body-base");
-
-        box.getChildren().addAll(welcomeTitle, welcomeSubtitle);
-        return box;
+    public void setWelcomeMessage(String title, String subtitle) {
+        welcomeTitle.setText(title);
+        welcomeSubtitle.setText(subtitle);
     }
 
-    public void setWelcomeTitle(String title) { welcomeTitle.setText(title); }
+    public void showAthleteDashboard(WorkoutPlanBean plan, WorkoutSessionBean session, Runnable onStartSession) {
+        // Clear old dashboard cards (keep welcome section)
+        while (contentBox.getChildren().size() > 1) {
+            contentBox.getChildren().remove(1);
+        }
 
-    private VBox createWorkoutCard() {
-        VBox card = new VBox(15);
+        if (plan == null || session == null) {
+            showNoPlanAssigned();
+            return;
+        }
+
+        // --- Workout Card ---
+        VBox card = new VBox(20);
         card.getStyleClass().add("card");
         card.setPadding(new Insets(25));
 
-        BorderPane header = new BorderPane();
+        BorderPane cardHeader = new BorderPane();
 
-        // Tag "Day 2: Pull"
-        Label tag = new Label("Day 2: Pull");
-        tag.getStyleClass().addAll("tag", "tag-blue");
+        Label tag = new Label(session.getName());
+        tag.getStyleClass().addAll("badge");
+        tag.setStyle("-fx-background-color: -fx-radix-blue-3; -fx-text-fill: -fx-radix-blue-11; -fx-font-family: 'Space Grotesk Bold'; -fx-font-size: 14px;");
 
-        // Titolo Centrale
-        VBox centerTitle = new VBox(5);
-        centerTitle.setAlignment(Pos.CENTER);
-        Label mainTitle = new Label("Today's Workout");
-        mainTitle.getStyleClass().add("card-title");
-        Label subTitle = new Label("Back and Biceps Focus");
-        subTitle.getStyleClass().add("card-subtitle");
-        centerTitle.getChildren().addAll(mainTitle, subTitle);
+        VBox titleBox = new VBox(4);
+        titleBox.setAlignment(Pos.CENTER);
+        Label mainTitle = new Label("Allenamento di Oggi");
+        mainTitle.getStyleClass().add("heading-h2");
+        Label subTitle = new Label(plan.getName());
+        subTitle.setStyle("-fx-text-fill: -fx-color-text-light; -fx-font-size: 14px;");
+        titleBox.getChildren().addAll(mainTitle, subTitle);
 
-        // Durata
         Label duration = new Label("~60 min");
-        duration.getStyleClass().add("duration-label");
-        // Opzionale: Aggiungi icona orologio qui
+        duration.setStyle("-fx-font-family: 'Space Grotesk Medium'; -fx-text-fill: -fx-color-text-light; -fx-font-size: 14px;");
 
-        header.setLeft(tag);
-        header.setCenter(centerTitle);
-        header.setRight(duration);
+        cardHeader.setLeft(tag);
+        cardHeader.setCenter(titleBox);
+        cardHeader.setRight(duration);
 
-        // -- Lista Esercizi --
+        // --- Exercise List ---
         VBox exercisesList = new VBox(10);
-        exercisesList.getChildren().addAll(
-                createExerciseRow(1, "Pull-ups", "4 sets x 8-12 reps", "Bar"),
-                createExerciseRow(2, "Barbell Rows", "4 sets x 8-10 reps", "Barbell"),
-                createExerciseRow(3, "Lat Pulldowns", "3 sets x 10-12 reps", "Cable"),
-                createExerciseRow(4, "Dumbbell Curls", "3 sets x 12-15 reps", "Dumbbells"),
-                createExerciseRow(5, "Face Pulls", "3 sets x 15-20 reps", "Cable")
-        );
+        int index = 1;
+        if (session.getPlanRoot() != null && session.getPlanRoot().getChildren() != null) {
+            for (PlanNodeBean child : session.getPlanRoot().getChildren()) {
+                if (child.getType() == NodeType.EXERCISE) {
+                    String detailText = "RPE target / sets";
+                    if (child.getModifiers() != null && !child.getModifiers().isEmpty()) {
+                        StringBuilder sb = new StringBuilder();
+                        for (ExerciseModifierBean mod : child.getModifiers()) {
+                            if (!sb.isEmpty()) sb.append(", ");
+                            sb.append(mod.getName()).append(": ").append(mod.getValue());
+                        }
+                        detailText = sb.toString();
+                    }
+                    exercisesList.getChildren().add(createExerciseRow(index++, child.getName(), detailText, "Libero"));
+                }
+            }
+        }
 
-        // -- Footer (Bottoni) --
+        if (exercisesList.getChildren().isEmpty()) {
+            Label noExercises = new Label("Nessun esercizio presente in questa sessione.");
+            noExercises.setStyle("-fx-text-fill: -fx-color-text-light; -fx-font-style: italic;");
+            exercisesList.getChildren().add(noExercises);
+        }
+
+        // --- Footer (Buttons) ---
         HBox footer = new HBox(15);
         footer.setAlignment(Pos.CENTER_RIGHT);
 
-        Button btnReschedule = new Button("Reschedule");
-        btnReschedule.getStyleClass().add("button-secondary");
-
-        Button btnStart = new Button("Start Session");
+        Button btnStart = new Button("Inizia Allenamento");
         btnStart.getStyleClass().add("button-primary");
-        // Aggiungi icona play al bottone se vuoi
-
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-
-        footer.getChildren().addAll(btnReschedule, spacer, btnStart);
-        HBox.setHgrow(btnStart, Priority.ALWAYS); // Il bottone start si allarga come nell'img
         btnStart.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(btnStart, Priority.ALWAYS);
+        btnStart.setOnAction(e -> onStartSession.run());
 
-        card.getChildren().addAll(header, exercisesList, footer);
-        return card;
+        footer.getChildren().add(btnStart);
+
+        card.getChildren().addAll(cardHeader, exercisesList, footer);
+        contentBox.getChildren().add(card);
+    }
+
+    public void showNoPlanAssigned() {
+        // Clear old cards
+        while (contentBox.getChildren().size() > 1) {
+            contentBox.getChildren().remove(1);
+        }
+
+        VBox card = new VBox(15);
+        card.getStyleClass().add("card");
+        card.setAlignment(Pos.CENTER);
+        card.setPadding(new Insets(30));
+
+        Label noPlanLabel = new Label("Nessun piano di allenamento attivo");
+        noPlanLabel.getStyleClass().add("heading-h2");
+
+        Label detailLabel = new Label("Richiedi un piano al tuo trainer per iniziare ad allenarti.");
+        detailLabel.getStyleClass().add("body-base");
+
+        card.getChildren().addAll(noPlanLabel, detailLabel);
+        contentBox.getChildren().add(card);
+    }
+
+    public void showTrainerDashboard(Runnable onGoToLibrary, Runnable onGoToPlans) {
+        while (contentBox.getChildren().size() > 1) {
+            contentBox.getChildren().remove(1);
+        }
+
+        GridPane grid = new GridPane();
+        grid.setHgap(20);
+        grid.setVgap(20);
+
+        // Card 1: Libreria Esercizi
+        VBox card1 = new VBox(15);
+        card1.getStyleClass().add("card");
+        card1.setPrefWidth(300);
+        Label title1 = new Label("Libreria Esercizi");
+        title1.getStyleClass().add("heading-h2");
+        Label desc1 = new Label("Visualizza, crea, modifica e cancella gli esercizi della libreria globale.");
+        desc1.getStyleClass().add("body-base");
+        desc1.setWrapText(true);
+        Button btn1 = new Button("Gestisci Esercizi");
+        btn1.getStyleClass().add("button-primary");
+        btn1.setOnAction(e -> onGoToLibrary.run());
+        card1.getChildren().addAll(title1, desc1, btn1);
+
+        // Card 2: Gestione Piani
+        VBox card2 = new VBox(15);
+        card2.getStyleClass().add("card");
+        card2.setPrefWidth(300);
+        Label title2 = new Label("Gestione Piani");
+        title2.getStyleClass().add("heading-h2");
+        Label desc2 = new Label("Crea nuovi schemi di allenamento settimanali e assegnali ai tuoi atleti.");
+        desc2.getStyleClass().add("body-base");
+        desc2.setWrapText(true);
+        Button btn2 = new Button("Pianifica Allenamenti");
+        btn2.getStyleClass().add("button-primary");
+        btn2.setOnAction(e -> onGoToPlans.run());
+        card2.getChildren().addAll(title2, desc2, btn2);
+
+        grid.add(card1, 0, 0);
+        grid.add(card2, 1, 0);
+
+        contentBox.getChildren().add(grid);
     }
 
     private HBox createExerciseRow(int index, String name, String details, String equipment) {
         HBox row = new HBox(15);
         row.getStyleClass().add("exercise-row");
         row.setAlignment(Pos.CENTER_LEFT);
-        row.setPadding(new Insets(10, 15, 10, 15));
+        row.setPadding(new Insets(12, 18, 12, 18));
+        row.setStyle("-fx-background-color: #F8FAFC; -fx-background-radius: 8px; -fx-border-color: #E2E8F0; -fx-border-radius: 8px;");
 
-        // Indice (Cerchio o numero)
         Label idxLabel = new Label(String.valueOf(index));
-        idxLabel.getStyleClass().add("index-label");
+        idxLabel.setStyle("-fx-font-family: 'Space Grotesk Bold'; -fx-text-fill: -fx-radix-blue-9; -fx-font-size: 14px;");
 
-        // Nome
         Label nameLabel = new Label(name);
-        nameLabel.getStyleClass().add("exercise-name");
+        nameLabel.setStyle("-fx-font-family: 'Space Grotesk Medium'; -fx-text-fill: -fx-color-text-body; -fx-font-size: 14px;");
         nameLabel.setMinWidth(150);
 
-        // Dettagli (Sets/Reps) - Spazio flessibile
         Label detailsLabel = new Label(details);
-        detailsLabel.getStyleClass().add("exercise-details");
+        detailsLabel.setStyle("-fx-text-fill: -fx-color-text-light; -fx-font-size: 13px;");
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        // Equipment Tag
         Label equipLabel = new Label(equipment);
-        equipLabel.getStyleClass().add("equipment-tag");
+        equipLabel.setStyle("-fx-background-color: #E2E8F0; -fx-text-fill: #475569; -fx-padding: 2px 8px; -fx-background-radius: 4px; -fx-font-size: 11px;");
 
         row.getChildren().addAll(idxLabel, nameLabel, spacer, detailsLabel, equipLabel);
         return row;
     }
-
-    private VBox createScheduleCard() {
-        VBox card = new VBox(15);
-        card.getStyleClass().add("card");
-        card.setPadding(new Insets(20));
-
-        // -- Header --
-        BorderPane header = new BorderPane();
-        Label title = new Label("This Week");
-        title.getStyleClass().add("card-title-small");
-        Label dateRange = new Label("Nov 13 - Nov 19");
-        dateRange.getStyleClass().add("card-subtitle");
-
-        VBox titleBox = new VBox(2, title, dateRange);
-
-        // Frecce fittizie per navigazione
-        Label arrows = new Label("<   >");
-        arrows.setStyle("-fx-font-weight: bold; -fx-cursor: hand;");
-
-        header.setLeft(titleBox);
-        header.setRight(arrows);
-
-        // -- Giorni --
-        VBox daysList = new VBox(10);
-        daysList.getChildren().addAll(
-                createDayRow("Mon", "13", "Push", "Completed", "status-success"),
-                createDayRow("Tue", "14", "Pull", "Today", "status-active"),
-                createDayRow("Wed", "15", "Legs", "", "status-future"),
-                createDayRow("Thu", "16", "Rest", "", "status-rest"),
-                createDayRow("Fri", "17", "Push", "", "status-future"),
-                createDayRow("Sat", "18", "Pull", "", "status-future"),
-                createDayRow("Sun", "19", "Rest", "", "status-rest")
-        );
-
-        card.getChildren().addAll(header, daysList);
-        return card;
-    }
-
-    private HBox createDayRow(String dayName, String dayNum, String workoutType, String statusText, String statusClass) {
-        HBox row = new HBox(10);
-        row.getStyleClass().addAll("day-row", statusClass);
-        row.setPadding(new Insets(10));
-        row.setAlignment(Pos.CENTER_LEFT);
-
-        VBox dateBox = new VBox(0);
-        Label dayLbl = new Label(dayName);
-        dayLbl.getStyleClass().add("day-name");
-        Label numLbl = new Label(dayNum);
-        numLbl.getStyleClass().add("day-number");
-        dateBox.getChildren().addAll(dayLbl, numLbl);
-        dateBox.setMinWidth(30);
-
-        VBox infoBox = new VBox(2);
-        Label typeLbl = new Label(workoutType);
-        typeLbl.getStyleClass().add("workout-type");
-
-        infoBox.getChildren().add(typeLbl);
-        if (!statusText.isEmpty()) {
-            Label statusLbl = new Label(statusText);
-            statusLbl.getStyleClass().add("workout-status");
-            infoBox.getChildren().add(statusLbl);
-        }
-
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-
-        row.getChildren().addAll(dateBox, infoBox, spacer);
-
-        // Aggiungi spunta verde se completato
-        if (statusText.equals("Completed")) {
-            Label check = new Label("✔");
-            check.setStyle("-fx-text-fill: white; -fx-background-color: #22c55e; -fx-background-radius: 10; -fx-padding: 2 5;");
-            row.getChildren().add(check);
-        }
-
-        // Aggiungi pallino blu se oggi
-        if (statusText.equals("Today")) {
-            Region dot = new Region();
-            dot.setPrefSize(6,6);
-            dot.setStyle("-fx-background-color: #3b82f6; -fx-background-radius: 50%;");
-            row.getChildren().add(dot);
-        }
-
-        return row;
-    }
-
-
 }

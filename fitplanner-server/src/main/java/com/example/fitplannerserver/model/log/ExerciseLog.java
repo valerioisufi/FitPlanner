@@ -50,14 +50,6 @@ public class ExerciseLog {
 
     public String getNotes() { return notes; }
 
-    public double exerciseVolume() {
-        double volume = 0;
-        for (ExerciseSet set : this.sets) {
-            volume += set.reps() * set.load();
-        }
-        return volume;
-    }
-
     public record ExerciseSet(int reps, double load) {}
 
 }

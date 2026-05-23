@@ -1,13 +1,17 @@
 package com.example.fitplannerclient.controller.profile;
 
-import com.example.fitplannerclient.bean.ProfileBean;
-import com.example.fitplannerclient.service.ProfileFacade;
+import com.example.fitplannerclient.bean.profile.ProfileBean;
+import com.example.fitplannerclient.service.facade.ProfileFacade;
+import com.example.fitplannercommon.InvitationCodeDTO;
 import com.example.fitplannercommon.ProfileDTO;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public class ProfileManager {
     private final ProfileFacade profileFacade;
+    private ProfileBean cachedProfile;
+    private String previousUserId;
 
     public ProfileManager(ProfileFacade profileFacade){
         this.profileFacade = profileFacade;
@@ -15,16 +19,49 @@ public class ProfileManager {
 
     public CompletableFuture<ProfileBean> getProfileInfoAsync() {
         return profileFacade.getProfileInfoAsync()
-                .thenApply(this::dtoToBean);
+                .thenApply(this::dtoToBean)
+                .thenApply(profile -> {
+                    this.previousUserId = (this.cachedProfile != null) ? this.cachedProfile.getUserId() : this.previousUserId;
+                    this.cachedProfile = profile;
+                    return profile;
+                });
+    }
+
+    public boolean didUserChange() {
+        if (cachedProfile == null) return false;
+        return previousUserId != null && !previousUserId.equals(cachedProfile.getUserId());
+    }
+
+    public ProfileBean getCachedProfile() {
+        return cachedProfile;
+    }
+
+    public void clearCachedProfile() {
+        this.previousUserId = (this.cachedProfile != null) ? this.cachedProfile.getUserId() : this.previousUserId;
+        this.cachedProfile = null;
     }
 
     public CompletableFuture<Void> updateProfileInfoAsync(ProfileBean bean) {
         return profileFacade.updateProfileInfoAsync(beanToDto(bean));
     }
+
     public CompletableFuture<ProfileBean> getMyTrainerAsync() {
         return profileFacade.getMyTrainerAsync()
                 .thenApply(this::dtoToBean);
 
+    }
+
+    public CompletableFuture<List<ProfileBean>> getMyAthletesAsync() {
+        return profileFacade.getMyAthletesAsync()
+                .thenApply(list -> list.stream().map(this::dtoToBean).toList());
+    }
+
+    public CompletableFuture<String> getInvitationCodeAsync(){
+        return profileFacade.getInvitationCodeAsync().thenApply(InvitationCodeDTO::getInvitationCode);
+    }
+
+    public CompletableFuture<Void> linkTrainerAsync(String invitationCode){
+        return profileFacade.linkTrainerAsync(new InvitationCodeDTO(invitationCode));
     }
 
 

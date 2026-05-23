@@ -14,6 +14,11 @@ public class AppControllerFactory {
     private final WorkoutPlanFacade workoutPlanFacade;
     private final SessionLogFacade sessionLogFacade;
 
+    private AuthManager authManager;
+    private ProfileManager profileManager;
+    private ExerciseLibraryManager exerciseLibraryManager;
+    private WorkoutPlanManager workoutPlanManager;
+
     public AppControllerFactory(
             AuthFacade authFacade,
             ProfileFacade profileFacade,
@@ -29,22 +34,46 @@ public class AppControllerFactory {
     }
 
     public AuthManager createAuthManager() {
-        return new AuthManager(authFacade);
+        if (authManager == null) {
+            authManager = new AuthManager(authFacade);
+        }
+        return authManager;
     }
 
     public ProfileManager createProfileManager() {
-        return new ProfileManager(profileFacade);
+        if (profileManager == null) {
+            profileManager = new ProfileManager(profileFacade);
+        }
+        return profileManager;
     }
 
     public ExerciseLibraryManager createExerciseLibraryManager() {
-        return new ExerciseLibraryManager(exerciseLibraryFacade);
+        if (exerciseLibraryManager == null) {
+            exerciseLibraryManager = new ExerciseLibraryManager(exerciseLibraryFacade);
+        }
+        return exerciseLibraryManager;
     }
 
     public WorkoutPlanManager createWorkoutPlanManager() {
-        return new WorkoutPlanManager(workoutPlanFacade, sessionLogFacade);
+        if (workoutPlanManager == null) {
+            workoutPlanManager = new WorkoutPlanManager(workoutPlanFacade, sessionLogFacade);
+        }
+        return workoutPlanManager;
     }
 
     public SessionLogFacade createSessionLogFacade() {
         return sessionLogFacade;
+    }
+
+    public void resetManagers() {
+        this.authManager = null;
+        this.profileManager = null;
+        this.exerciseLibraryManager = null;
+        this.workoutPlanManager = null;
+    }
+
+    public void resetDataManagers() {
+        this.exerciseLibraryManager = null;
+        this.workoutPlanManager = null;
     }
 }

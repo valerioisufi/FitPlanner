@@ -18,8 +18,8 @@ public class SessionLogFacade {
     /**
      * Salva il log di una sessione di allenamento eseguita.
      */
-    public CompletableFuture<Void> saveSessionLogAsync(SessionLogDTO logBean) {
-        return httpService.putAsync("/logs/session", logBean, Void.class);
+    public CompletableFuture<Void> saveSessionLogAsync(SessionLogDTO logDTO) {
+        return httpService.putAsync("/logs/session", logDTO, Void.class);
     }
 
     /**

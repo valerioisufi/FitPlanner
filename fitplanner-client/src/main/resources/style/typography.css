@@ -59,7 +59,7 @@
 
 .heading-h3 {
     -fx-font-family: 'Space Grotesk Bold';
-    -fx-font-size: 18px;
+    -fx-font-size: 16px;
     -fx-text-fill: -fx-color-text-header;
 }
 
@@ -87,7 +87,7 @@
 .body-small {
     -fx-font-family: 'Space Grotesk Medium';
     -fx-font-size: 14px;
-    -fx-text-fill: -color-text-body;
+    -fx-text-fill: -fx-color-text-light;
 }
 
 .ui-calendar-day {

@@ -70,12 +70,28 @@ public class GuiManager {
         });
     }
 
+    public enum NotificationType {
+        SUCCESS, ERROR, INFO
+    }
+
     /**
      * Mostra una notifica
      */
-    public void showNotification(String message) {
+    public void showNotification(NotificationType type, String message) {
         Label notification = new Label(message);
         notification.getStyleClass().add("notification-toast");
+        
+        switch (type) {
+            case ERROR:
+                notification.getStyleClass().add("notification-toast-error");
+                break;
+            case SUCCESS:
+                notification.getStyleClass().add("notification-toast-success");
+                break;
+            default:
+                notification.getStyleClass().add("notification-toast-info");
+                break;
+        }
         notification.setWrapText(true);
 
         Platform.runLater(() -> {

@@ -246,6 +246,9 @@ public class HttpService {
         if (responseType == Void.class || response.body() == null || response.body().isBlank()) {
             return CompletableFuture.completedFuture(null);
         }
+        if (responseType == String.class) {
+            return CompletableFuture.completedFuture(responseType.cast(response.body()));
+        }
         try {
             return CompletableFuture.completedFuture(objectMapper.readValue(response.body(), responseType));
         } catch (JacksonException e) {

@@ -8,6 +8,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
 public class ProfileView extends VBox {
@@ -32,19 +33,35 @@ public class ProfileView extends VBox {
     public ProfileView() {
         setSpacing(25);
         setPadding(new Insets(30));
-        setAlignment(Pos.TOP_LEFT);
+        setAlignment(Pos.TOP_CENTER);
 
-        // --- Title ---
+        VBox card = new VBox(25);
+        card.getStyleClass().add("card");
+        card.setMaxWidth(800);
+        card.setAlignment(Pos.TOP_LEFT);
+
+        // --- Header (Title + Role Box) ---
+        HBox headerBox = new HBox();
+        headerBox.setAlignment(Pos.CENTER_LEFT);
+
         Label title = new Label("Informazioni profilo");
         title.getStyleClass().add("heading-h2");
 
-        // --- Role Indicator (Read-Only) ---
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
         HBox roleBox = new HBox(10);
-        roleBox.setAlignment(Pos.CENTER_LEFT);
+        roleBox.setAlignment(Pos.CENTER_RIGHT); // This ensures vertical centering of items
         Label roleLabel = new Label("Tipo di profilo:");
         roleLabel.getStyleClass().add("label-field");
-        roleValueLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
+        
+        // Remove bottom padding/margin if any from label-field to align perfectly
+        roleLabel.setStyle("-fx-padding: 0;");
+        
+        roleValueLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 0;");
         roleBox.getChildren().addAll(roleLabel, roleValueLabel);
+
+        headerBox.getChildren().addAll(title, spacer, roleBox);
 
         // --- Horizontal Field Pairs ---
         HBox row1 = createFieldRow(firstNameField, lastNameField);
@@ -53,8 +70,11 @@ public class ProfileView extends VBox {
         // --- Actions Box ---
         HBox buttonBox = createButtonBox();
 
-        // Add everything to main layout
-        this.getChildren().addAll(title, roleBox, row1, row2, buttonBox);
+        // Add everything to card layout
+        card.getChildren().addAll(headerBox, row1, row2, buttonBox);
+        
+        // Add card to main layout
+        this.getChildren().add(card);
 
         // Initialize state
         setFieldsEditable(false);

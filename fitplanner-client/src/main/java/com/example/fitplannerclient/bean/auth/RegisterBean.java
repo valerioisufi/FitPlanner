@@ -1,6 +1,6 @@
 package com.example.fitplannerclient.bean.auth;
 
-import com.example.fitplannerclient.bean.ProfileBean;
+import com.example.fitplannerclient.bean.profile.ProfileBean;
 
 public class RegisterBean {
     private String email;
