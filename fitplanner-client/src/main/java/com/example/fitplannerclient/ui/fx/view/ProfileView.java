@@ -30,6 +30,11 @@ public class ProfileView extends VBox {
     private final Button btnEdit = new Button("Modifica");
     private final Button btnSave = new Button("Salva");
 
+    // --- Trainer Link Section ---
+    private final TextField inviteCodeInput = new TextField();
+    private final Button btnLinkTrainer = new Button("Collega Trainer");
+    private final HBox trainerLinkBox = new HBox(10);
+
     public ProfileView() {
         setSpacing(25);
         setPadding(new Insets(30));
@@ -70,8 +75,19 @@ public class ProfileView extends VBox {
         // --- Actions Box ---
         HBox buttonBox = createButtonBox();
 
+        // --- Trainer Link Box ---
+        trainerLinkBox.setAlignment(Pos.CENTER_LEFT);
+        Label inviteLabel = new Label("Codice Invito Trainer:");
+        inviteLabel.getStyleClass().add("label-field");
+        inviteCodeInput.setPromptText("Es. XYZ123");
+        inviteCodeInput.getStyleClass().add("text-field");
+        btnLinkTrainer.getStyleClass().add("button-secondary");
+        trainerLinkBox.getChildren().addAll(inviteLabel, inviteCodeInput, btnLinkTrainer);
+        trainerLinkBox.setVisible(false);
+        trainerLinkBox.setManaged(false);
+
         // Add everything to card layout
-        card.getChildren().addAll(headerBox, row1, row2, buttonBox);
+        card.getChildren().addAll(headerBox, row1, row2, trainerLinkBox, buttonBox);
         
         // Add card to main layout
         this.getChildren().add(card);
@@ -137,6 +153,20 @@ public class ProfileView extends VBox {
 
     public void setRoleIndicator(String role) {
         roleValueLabel.setText(role);
+    }
+
+    public void showTrainerLinkSection(boolean show) {
+        trainerLinkBox.setVisible(show);
+        trainerLinkBox.setManaged(show);
+    }
+
+    public void setLinkTrainerAction(java.util.function.Consumer<String> action) {
+        btnLinkTrainer.setOnAction(e -> {
+            if (!inviteCodeInput.getText().isBlank()) {
+                action.accept(inviteCodeInput.getText().trim());
+                inviteCodeInput.clear();
+            }
+        });
     }
 
     public void setProfileData(String firstName, String lastName, String email, String phone) {

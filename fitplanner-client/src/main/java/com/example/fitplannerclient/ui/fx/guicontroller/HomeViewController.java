@@ -4,6 +4,7 @@ import com.example.fitplannerclient.bean.profile.ProfileBean;
 import com.example.fitplannerclient.controller.plan.WorkoutPlanManager;
 import com.example.fitplannerclient.controller.profile.ProfileManager;
 import com.example.fitplannerclient.ui.fx.GuiController;
+import com.example.fitplannerclient.ui.fx.GuiManager;
 import com.example.fitplannerclient.ui.fx.Navigator;
 import com.example.fitplannerclient.ui.fx.view.HomeView;
 import javafx.application.Platform;
@@ -41,8 +42,25 @@ public class HomeViewController implements GuiController {
         if (isTrainer) {
             view.showTrainerDashboard(
                     () -> Navigator.getInstance().goToExerciseLibrary(),
-                    () -> Navigator.getInstance().goToWorkoutPlanEditor()
+                    () -> Navigator.getInstance().goToPlanManagement()
             );
+
+            // Fetch and set invite code
+            profileManager.getInvitationCodeAsync()
+                    .thenAccept(code -> javafx.application.Platform.runLater(() -> view.setInviteCode(code)))
+                    .exceptionally(ex -> null);
+
+            // Fetch and set athletes
+            profileManager.getMyAthletesAsync()
+                    .thenAccept(athletes -> javafx.application.Platform.runLater(() -> 
+                            view.showAthleteList(athletes, athlete -> Navigator.getInstance().goToAthleteDashboard(athlete))
+                    ))
+                    .exceptionally(ex -> {
+                        javafx.application.Platform.runLater(() -> Navigator.getInstance().getGuiManager().showNotification(
+                            GuiManager.NotificationType.ERROR, "Errore nel caricamento degli atleti"
+                        ));
+                        return null;
+                    });
         } else {
             // Load athlete plan and suggested session
             planManager.getAssignedPlanAsync()
@@ -51,14 +69,36 @@ public class HomeViewController implements GuiController {
                             view.showAthleteDashboard(plan, session, () -> {
                                 Navigator.getInstance().goToWorkoutExecution(session);
                             });
+                            checkAndShowTrainerInvite();
                         });
                         return null;
                     })
                     .exceptionally(ex -> {
-                        Platform.runLater(() -> view.showNoPlanAssigned());
+                        Platform.runLater(() -> {
+                            view.showNoPlanAssigned();
+                            checkAndShowTrainerInvite();
+                        });
                         return null;
                     });
         }
+    }
+
+    private void checkAndShowTrainerInvite() {
+        profileManager.getMyTrainerAsync().thenAccept(trainer -> {
+            if (trainer == null) {
+                Platform.runLater(() -> view.showTrainerInviteCard(code -> {
+                    profileManager.linkTrainerAsync(code).thenRun(() -> {
+                        Platform.runLater(() -> {
+                            Navigator.getInstance().getGuiManager().showNotification(GuiManager.NotificationType.SUCCESS, "Trainer collegato con successo!");
+                            start(); // Refresh home view
+                        });
+                    }).exceptionally(e -> {
+                        Platform.runLater(() -> Navigator.getInstance().getGuiManager().showNotification(GuiManager.NotificationType.ERROR, "Codice invito non valido o errore di rete."));
+                        return null;
+                    });
+                }));
+            }
+        }).exceptionally(e -> null);
     }
 
     @Override

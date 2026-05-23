@@ -38,6 +38,18 @@ public class ProfileViewController implements GuiController {
         );
         this.profileView.setRoleIndicator(profile.getProfileType().name());
 
+        if (profile.getProfileType() == ProfileBean.ProfileType.ATHLETE) {
+            profileView.showTrainerLinkSection(true);
+            profileView.setLinkTrainerAction(code -> {
+                profileManager.linkTrainerAsync(code).thenRun(() -> {
+                    Platform.runLater(() -> Navigator.getInstance().getGuiManager().showNotification(GuiManager.NotificationType.SUCCESS, "Trainer collegato con successo!"));
+                }).exceptionally(ex -> {
+                    Platform.runLater(() -> Navigator.getInstance().getGuiManager().showNotification(GuiManager.NotificationType.ERROR, "Codice invito non valido"));
+                    return null;
+                });
+            });
+        }
+
         this.profileView.setSaveAction(this::handleSave);
     }
 

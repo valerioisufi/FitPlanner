@@ -40,6 +40,9 @@ public class PlanNodeComponent extends VBox {
     private Consumer<BadgeTransformationEvent> onBadgeTransformationCallback;
     private Consumer<NodeTransformationEvent> onNodeTransformationCallback;
 
+    private Consumer<PlanNodeComponent> onEditNameClicked;
+    private Consumer<BadgeComponent> onEditBadgeClicked;
+
     // Static fields to track the currently dragged elements across the UI
     private static PlanNodeComponent draggedNode;
     private static BadgeDragContext activeBadgeDrag;
@@ -62,6 +65,13 @@ public class PlanNodeComponent extends VBox {
 
         this.nameLabel = new Label(bean.getName());
         nameLabel.getStyleClass().add("heading-h3");
+        nameLabel.setStyle("-fx-cursor: text;");
+        nameLabel.setOnMouseClicked(e -> {
+            if (e.getClickCount() == 1) {
+                fireEditNameClicked();
+                e.consume();
+            }
+        });
 
         inlineDecoratorsBox = new HBox(8);
         inlineDecoratorsBox.setAlignment(Pos.CENTER_LEFT);
@@ -69,16 +79,44 @@ public class PlanNodeComponent extends VBox {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        HBox titleBox = new HBox(16, nameLabel, inlineDecoratorsBox, spacer);
+        javafx.scene.control.Button btnDeleteNode = new javafx.scene.control.Button("✕");
+        btnDeleteNode.setStyle("-fx-background-color: transparent; -fx-text-fill: #d32f2f; -fx-padding: 2; -fx-font-weight: bold; -fx-cursor: hand;");
+        btnDeleteNode.setOnAction(e -> {
+            if (this.parentWrapper != null) {
+                this.parentWrapper.childrenContainer.getChildren().remove(this);
+                this.parentWrapper.originalBean.getChildren().remove(this.originalBean);
+            }
+            e.consume();
+        });
+
+        childrenContainer = new VBox();
+
+        HBox titleBox = new HBox(12);
         titleBox.setAlignment(Pos.CENTER_LEFT);
+        titleBox.getChildren().addAll(nameLabel, inlineDecoratorsBox, spacer);
+
+        if (bean.getType() == com.example.fitplannerclient.bean.plan.NodeType.BLOCK) {
+            javafx.scene.control.Button btnAddSubBlock = new javafx.scene.control.Button("+ Blocco");
+            btnAddSubBlock.setStyle("-fx-background-color: #E2E8F0; -fx-text-fill: #475569; -fx-padding: 2 6; -fx-font-size: 10px; -fx-background-radius: 4; -fx-cursor: hand;");
+            btnAddSubBlock.setOnAction(e -> {
+                String blockId = java.util.UUID.randomUUID().toString();
+                PlanNodeBean newBlock = new PlanNodeBean(blockId, "Nuovo Blocco", com.example.fitplannerclient.bean.plan.NodeType.BLOCK);
+                newBlock.addFlowDecorator(new FlowDecoratorBean(java.util.UUID.randomUUID().toString(), com.example.fitplannerclient.bean.plan.FlowDecoratorType.REST, "60s"));
+                PlanNodeComponent newComp = new PlanNodeComponent(newBlock, true, this);
+                this.childrenContainer.getChildren().add(newComp);
+                this.originalBean.addChild(newBlock);
+                e.consume();
+            });
+            titleBox.getChildren().add(btnAddSubBlock);
+        }
+
+        titleBox.getChildren().add(btnDeleteNode);
 
         badgesBox = new FlowPane(8, 8);
         badgesBox.setAlignment(Pos.CENTER_LEFT);
 
         VBox headerBox = new VBox(8, titleBox, badgesBox);
         headerBox.setStyle("-fx-cursor: hand;");
-
-        childrenContainer = new VBox();
 
         Rectangle clipRect = new Rectangle();
         clipRect.widthProperty().bind(childrenContainer.widthProperty());
@@ -88,9 +126,9 @@ public class PlanNodeComponent extends VBox {
         isExpanded = startExpanded;
         updateExpansionState();
 
-        // Expand/Collapse logic on click
+        // Expand/Collapse logic on click (only when header is clicked, not buttons)
         headerBox.setOnMouseClicked(e -> {
-            if (e.isStillSincePress()) {
+            if (e.isStillSincePress() && !(e.getTarget() instanceof javafx.scene.control.Button)) {
                 isExpanded = !isExpanded;
                 updateExpansionState();
             }
@@ -127,6 +165,10 @@ public class PlanNodeComponent extends VBox {
         return this.planNodeId;
     }
 
+    public String getNodeName() {
+        return this.originalBean.getName();
+    }
+
     public void addChildNode(PlanNodeComponent child) {
         childrenContainer.getChildren().add(child);
     }
@@ -139,6 +181,38 @@ public class PlanNodeComponent extends VBox {
 
     public void setOnNodeTransformationCallback(Consumer<NodeTransformationEvent> callback) {
         this.onNodeTransformationCallback = callback;
+    }
+
+    public void setOnEditNameClicked(Consumer<PlanNodeComponent> callback) {
+        this.onEditNameClicked = callback;
+    }
+
+    public void setOnEditBadgeClicked(Consumer<BadgeComponent> callback) {
+        this.onEditBadgeClicked = callback;
+    }
+
+    private void fireEditNameClicked() {
+        if (this.onEditNameClicked != null) {
+            this.onEditNameClicked.accept(this);
+        } else if (this.parentWrapper != null) {
+            this.parentWrapper.fireEditNameClicked(this);
+        }
+    }
+
+    private void fireEditNameClicked(PlanNodeComponent target) {
+        if (this.onEditNameClicked != null) {
+            this.onEditNameClicked.accept(target);
+        } else if (this.parentWrapper != null) {
+            this.parentWrapper.fireEditNameClicked(target);
+        }
+    }
+
+    private void fireEditBadgeClicked(BadgeComponent badge) {
+        if (this.onEditBadgeClicked != null) {
+            this.onEditBadgeClicked.accept(badge);
+        } else if (this.parentWrapper != null) {
+            this.parentWrapper.fireEditBadgeClicked(badge);
+        }
     }
 
     // --- RENDERING METHODS ---
@@ -155,13 +229,14 @@ public class PlanNodeComponent extends VBox {
 
             for (ExerciseModifierBean modifier : exerciseModifierBeans) {
                 BadgeComponent.BadgeColor color = resolveColorFromName(modifier.getName());
-                Region badge = new BadgeComponent(
+                BadgeComponent badge = new BadgeComponent(
                         modifier.getId(),
                         BadgeComponent.BadgeType.MODIFIER,
                         modifier.getName(),
                         modifier.getValue(),
                         color
                 );
+                badge.setOnEditClicked(this::fireEditBadgeClicked);
                 setupBadgeDragAndDrop(badge, modifier, BadgeComponent.BadgeType.MODIFIER);
                 badgesBox.getChildren().add(badge);
             }
@@ -179,7 +254,8 @@ public class PlanNodeComponent extends VBox {
             String typeName = decorator.getType().name().replace("_", " ");
             BadgeComponent.BadgeColor color = resolveColorFromName(typeName);
 
-            Region badge = new BadgeComponent(decorator.getId(), BadgeComponent.BadgeType.DECORATOR, typeName, decorator.getValue(), color);
+            BadgeComponent badge = new BadgeComponent(decorator.getId(), BadgeComponent.BadgeType.DECORATOR, typeName, decorator.getValue(), color);
+            badge.setOnEditClicked(this::fireEditBadgeClicked);
 
             setupBadgeDragAndDrop(badge, decorator, BadgeComponent.BadgeType.DECORATOR);
             inlineDecoratorsBox.getChildren().add(badge);
@@ -218,6 +294,12 @@ public class PlanNodeComponent extends VBox {
 
                 this.getStyleClass().removeAll("drop-above", "drop-below");
                 this.getStyleClass().add(dropAbove ? "drop-above" : "drop-below");
+            } else if (event.getDragboard().hasString() && event.getDragboard().getString().startsWith("EXERCISE:")) {
+                event.acceptTransferModes(TransferMode.COPY);
+                boolean dropAbove = event.getY() < (this.getHeight() / 2);
+
+                this.getStyleClass().removeAll("drop-above", "drop-below");
+                this.getStyleClass().add(dropAbove ? "drop-above" : "drop-below");
             }
             event.consume();
         });
@@ -229,6 +311,7 @@ public class PlanNodeComponent extends VBox {
 
         this.setOnDragDropped(event -> {
             boolean success = false;
+            Dragboard db = event.getDragboard();
             if (draggedNode != null && draggedNode != this && isNotAncestorOf(draggedNode, this)) {
 
                 boolean dropAbove = event.getY() < (this.getHeight() / 2);
@@ -262,6 +345,28 @@ public class PlanNodeComponent extends VBox {
                                 isCopy
                         ));
                     }
+                    success = true;
+                }
+            } else if (db.hasString() && db.getString().startsWith("EXERCISE:")) {
+                String exerciseName = db.getString().substring("EXERCISE:".length());
+                boolean dropAbove = event.getY() < (this.getHeight() / 2);
+
+                String newId = java.util.UUID.randomUUID().toString();
+                PlanNodeBean newEx = new PlanNodeBean(newId, exerciseName, com.example.fitplannerclient.bean.plan.NodeType.EXERCISE);
+                newEx.addModifier(new ExerciseModifierBean(java.util.UUID.randomUUID().toString(), "Sets", "3"));
+                newEx.addModifier(new ExerciseModifierBean(java.util.UUID.randomUUID().toString(), "Reps", "10"));
+
+                if (this.originalBean.getType() == com.example.fitplannerclient.bean.plan.NodeType.BLOCK) {
+                    PlanNodeComponent newComp = new PlanNodeComponent(newEx, true, this);
+                    this.childrenContainer.getChildren().add(newComp);
+                    this.originalBean.addChild(newEx);
+                    success = true;
+                } else if (this.parentWrapper != null) {
+                    PlanNodeComponent newComp = new PlanNodeComponent(newEx, true, this.parentWrapper);
+                    int targetIndex = this.parentWrapper.childrenContainer.getChildren().indexOf(this);
+                    if (!dropAbove) targetIndex++;
+                    this.parentWrapper.childrenContainer.getChildren().add(targetIndex, newComp);
+                    this.parentWrapper.originalBean.getChildren().add(targetIndex, newEx);
                     success = true;
                 }
             }
@@ -470,4 +575,9 @@ public class PlanNodeComponent extends VBox {
             int targetIndex,
             boolean isCopy
     ) { }
+
+    public void updateName(String newName) {
+        this.originalBean.setName(newName);
+        this.nameLabel.setText(newName);
+    }
 }

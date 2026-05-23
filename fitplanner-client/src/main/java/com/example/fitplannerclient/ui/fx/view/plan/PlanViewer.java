@@ -3,20 +3,24 @@ package com.example.fitplannerclient.ui.fx.view.plan;
 import com.example.fitplannerclient.bean.plan.*;
 import javafx.scene.control.ScrollPane;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.function.Consumer;
 
 public class PlanViewer extends ScrollPane {
+
+    private Consumer<PlanNodeComponent> onNodeEditRequest;
+    private Consumer<BadgeComponent> onBadgeEditRequest;
 
     public PlanViewer() {
         this.setFitToWidth(true);
         this.setStyle("-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;");
+    }
 
-        WorkoutPlanBean plan = createComplexPlanBean();
-        PlanNodeBean rootBean = plan.getSessions().getFirst().getPlanRoot();
-
+    public void setRootNode(PlanNodeBean rootBean) {
+        if (rootBean == null) {
+            this.setContent(null);
+            return;
+        }
         PlanNodeComponent rootWrapper = buildTree(rootBean, true, null);
-
         this.setContent(rootWrapper);
     }
 
@@ -33,6 +37,14 @@ public class PlanViewer extends ScrollPane {
             // TODO: controller.handleBadgeMove(event);
         });
 
+        wrapper.setOnEditNameClicked(nodeComponent -> {
+            if (onNodeEditRequest != null) onNodeEditRequest.accept(nodeComponent);
+        });
+
+        wrapper.setOnEditBadgeClicked(badgeComponent -> {
+            if (onBadgeEditRequest != null) onBadgeEditRequest.accept(badgeComponent);
+        });
+
         for (PlanNodeBean childBean : bean.getChildren()) {
             wrapper.addChildNode(buildTree(childBean, false, wrapper));
         }
@@ -40,37 +52,11 @@ public class PlanViewer extends ScrollPane {
         return wrapper;
     }
 
-    public WorkoutPlanBean createComplexPlanBean() {
-        List<WorkoutSessionBean> sessions = new ArrayList<>();
-        WorkoutPlanBean plan = new WorkoutPlanBean("plan-stress-test", "Performance Stress Test Plan", sessions);
+    public void setOnNodeEditRequest(Consumer<PlanNodeComponent> onNodeEditRequest) {
+        this.onNodeEditRequest = onNodeEditRequest;
+    }
 
-        PlanNodeBean session1Root = new PlanNodeBean("s1-root", "Massive Stress Test Container", NodeType.BLOCK);
-        session1Root.addFlowDecorator(new FlowDecoratorBean("fd-root-time", FlowDecoratorType.TIME_LIMIT, "999 Mins"));
-
-        int numBlocks = 100;
-        int exercisesPerBlock = 50;
-
-        for (int i = 0; i < numBlocks; i++) {
-            PlanNodeBean blockNode = new PlanNodeBean("block-" + i, "Stress Block " + i, NodeType.BLOCK);
-            blockNode.addFlowDecorator(new FlowDecoratorBean("fd-loop-" + i, FlowDecoratorType.LOOP, (i % 4 + 1) + " Rounds"));
-            blockNode.addFlowDecorator(new FlowDecoratorBean("fd-rest-" + i, FlowDecoratorType.REST, "60s"));
-
-            for (int j = 0; j < exercisesPerBlock; j++) {
-                PlanNodeBean exerciseNode = new PlanNodeBean("ex-" + i + "-" + j, "Generated Exercise " + i + " - " + j, NodeType.EXERCISE);
-                exerciseNode.addModifier(new ExerciseModifierBean("mod-set-" + i + "-" + j, "Sets", "4"));
-                exerciseNode.addModifier(new ExerciseModifierBean("mod-rep-" + i + "-" + j, "Reps", String.valueOf(8 + (j % 10))));
-
-                if (j % 2 == 0) exerciseNode.addModifier(new ExerciseModifierBean("mod-tut-" + i + "-" + j, "TUT", "3-0-1-0"));
-                if (j % 3 == 0) exerciseNode.addModifier(new ExerciseModifierBean("mod-rpe-" + i + "-" + j, "RPE", "8.5"));
-
-                exerciseNode.addFlowDecorator(new FlowDecoratorBean("fd-ex-rest-" + i + "-" + j, FlowDecoratorType.REST, "30s"));
-                blockNode.addChild(exerciseNode);
-            }
-            session1Root.addChild(blockNode);
-        }
-
-        WorkoutSessionBean session1 = new WorkoutSessionBean("session-1", "Stress Test Day", session1Root);
-        plan.addSession(session1);
-        return plan;
+    public void setOnBadgeEditRequest(Consumer<BadgeComponent> onBadgeEditRequest) {
+        this.onBadgeEditRequest = onBadgeEditRequest;
     }
 }

@@ -2,6 +2,7 @@ package com.example.fitplannerclient.ui.fx;
 
 import com.example.fitplannerclient.AppControllerFactory;
 import com.example.fitplannerclient.bean.plan.WorkoutSessionBean;
+import com.example.fitplannerclient.bean.profile.ProfileBean;
 import com.example.fitplannerclient.controller.AuthManager;
 import com.example.fitplannerclient.service.SessionManager;
 import com.example.fitplannerclient.ui.fx.guicontroller.*;
@@ -146,13 +147,23 @@ public class Navigator {
         Platform.runLater(() -> navigateTo(controller));
     }
 
-    public void goToWorkoutPlanEditor() {
-        WorkoutPlanEditorViewController controller = new WorkoutPlanEditorViewController(appControllerFactory.createWorkoutPlanManager(), appControllerFactory.createExerciseLibraryManager(), appControllerFactory.createProfileManager());
+    public void goToPlanManagement() {
+        PlanManagementViewController controller = new PlanManagementViewController(appControllerFactory.createWorkoutPlanManager(), appControllerFactory.createProfileManager(), guiManager);
+        Platform.runLater(() -> navigateTo(controller));
+    }
+
+    public void goToWorkoutPlanEditor(com.example.fitplannerclient.bean.plan.WorkoutPlanBean planToEdit) {
+        WorkoutPlanEditorViewController controller = new WorkoutPlanEditorViewController(planToEdit, appControllerFactory.createWorkoutPlanManager(), appControllerFactory.createExerciseLibraryManager(), appControllerFactory.createProfileManager());
         Platform.runLater(() -> navigateTo(controller));
     }
 
     public void goToWorkoutExecution(WorkoutSessionBean session) {
         WorkoutExecutionViewController controller = new WorkoutExecutionViewController(session, appControllerFactory.createSessionLogFacade(), appControllerFactory.createProfileManager());
+        Platform.runLater(() -> navigateTo(controller));
+    }
+
+    public void goToAthleteDashboard(ProfileBean athlete) {
+        AthleteDashboardViewController controller = new AthleteDashboardViewController(athlete, appControllerFactory.createProfileManager(), appControllerFactory.createWorkoutPlanManager(), guiManager);
         Platform.runLater(() -> navigateTo(controller));
     }
 }

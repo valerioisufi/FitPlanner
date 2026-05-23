@@ -12,6 +12,8 @@ public class BadgeComponent extends HBox {
     private String value;
     private BadgeColor color;
 
+    private java.util.function.Consumer<BadgeComponent> onEditClicked;
+
     public BadgeComponent(String planNodeId, BadgeType badgeType, String name, String value, BadgeColor color) {
         this.planNodeId = planNodeId;
         this.badgeType = badgeType;
@@ -32,10 +34,35 @@ public class BadgeComponent extends HBox {
         valueLabel.getStyleClass().addAll("label-badge-value", "badge-label-value-" + colorSuffix);
 
         this.getChildren().addAll(nameLabel, valueLabel);
+
+        this.setOnMouseClicked(e -> {
+            if (!e.isDragDetect() && onEditClicked != null) {
+                onEditClicked.accept(this);
+            }
+        });
+    }
+
+    public void setOnEditClicked(java.util.function.Consumer<BadgeComponent> onEditClicked) {
+        this.onEditClicked = onEditClicked;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getValue() {
+        return value;
     }
 
     public String getPlanNodeId() {
         return planNodeId;
+    }
+
+    public void updateBadge(String newName, String newValue) {
+        this.name = newName;
+        this.value = newValue;
+        ((Label) this.getChildren().get(0)).setText(newName.toUpperCase());
+        ((Label) this.getChildren().get(1)).setText(newValue);
     }
 
     public BadgeType getBadgeType() {

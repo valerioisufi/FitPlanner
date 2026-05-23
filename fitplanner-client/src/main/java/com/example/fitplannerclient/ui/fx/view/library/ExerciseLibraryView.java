@@ -9,6 +9,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import com.example.fitplannerclient.ui.fx.components.ModalOverlay;
+import com.example.fitplannerclient.ui.fx.components.CardListView;
 import javafx.scene.layout.*;
 
 import java.util.List;
@@ -17,7 +18,7 @@ import java.util.function.Consumer;
 public class ExerciseLibraryView extends StackPane {
 
     private final BorderPane mainPane;
-    private final VBox itemsContainer;
+    private final CardListView<ExerciseDescriptionBean> cardListView;
     private final Label nameHeader;
 
     private final ModalOverlay modalOverlay;
@@ -65,26 +66,16 @@ public class ExerciseLibraryView extends StackPane {
         header.getChildren().addAll(titleBox, spacer, addBtn);
 
         // --- LIST CONTAINER ---
-        VBox card = new VBox();
-        card.getStyleClass().add("card");
-
-        // list Header
-        HBox listHeader = new HBox();
-        listHeader.getStyleClass().add("list-header-row");
         nameHeader = new Label("Nome Esercizio");
-        nameHeader.getStyleClass().add("heading-h3");
         nameHeader.setPrefWidth(400);
         nameHeader.setMinWidth(150);
 
         Label muscleHeader = new Label("Gruppi Muscolari");
-        muscleHeader.getStyleClass().add("heading-h3");
-        listHeader.getChildren().addAll(nameHeader, muscleHeader);
 
-        // list Items
-        itemsContainer = new VBox();
+        cardListView = new com.example.fitplannerclient.ui.fx.components.CardListView<>(List.of(nameHeader, muscleHeader));
+        cardListView.setRowRenderer(this::createExerciseRow);
 
-        card.getChildren().addAll(listHeader, itemsContainer);
-        contentBox.getChildren().addAll(header, card);
+        contentBox.getChildren().addAll(header, cardListView);
 
         ScrollPane mainScroll = new ScrollPane(contentBox);
         mainScroll.setFitToWidth(true);
@@ -116,21 +107,7 @@ public class ExerciseLibraryView extends StackPane {
     }
 
     public void setExerciseList(List<ExerciseDescriptionBean> exercises) {
-        itemsContainer.getChildren().clear();
-
-        if (exercises == null || exercises.isEmpty()) {
-            Label emptyLbl = new Label("Nessun esercizio presente nella libreria.");
-            emptyLbl.getStyleClass().add("body-base");
-            emptyLbl.setPadding(new Insets(16));
-
-            itemsContainer.getChildren().add(emptyLbl);
-            return;
-        }
-
-        for (int i = 0; i < exercises.size(); i++) {
-            boolean isLast = (i == exercises.size() - 1);
-            itemsContainer.getChildren().add(createExerciseRow(exercises.get(i), isLast));
-        }
+        cardListView.setItems(exercises, "Nessun esercizio presente nella libreria.");
     }
 
     public void setOnAddAction(Runnable onAddAction) {

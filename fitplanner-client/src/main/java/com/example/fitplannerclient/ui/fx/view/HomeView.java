@@ -30,13 +30,16 @@ public class HomeView extends BorderPane {
         contentBox.setAlignment(Pos.TOP_LEFT);
 
         // --- Welcome Section ---
-        VBox welcomeSection = new VBox(8);
+        BorderPane welcomeSection = new BorderPane();
+        
+        VBox titles = new VBox(8);
         welcomeTitle = new Label("Benvenuto in FitPlanner!");
         welcomeTitle.getStyleClass().add("heading-h1");
         welcomeSubtitle = new Label("Oggi è il momento perfetto per superare i tuoi limiti.");
         welcomeSubtitle.getStyleClass().add("body-base");
-        welcomeSection.getChildren().addAll(welcomeTitle, welcomeSubtitle);
+        titles.getChildren().addAll(welcomeTitle, welcomeSubtitle);
 
+        welcomeSection.setLeft(titles);
         contentBox.getChildren().add(welcomeSection);
 
         ScrollPane scrollPane = new ScrollPane(contentBox);
@@ -45,6 +48,21 @@ public class HomeView extends BorderPane {
         scrollPane.setStyle("-fx-background-color: transparent; -fx-background: transparent;");
 
         this.setCenter(scrollPane);
+    }
+
+    public void setInviteCode(String code) {
+        if (code != null) {
+            VBox codeBox = new VBox(4);
+            codeBox.setAlignment(Pos.CENTER_RIGHT);
+            Label lbl = new Label("Il tuo Codice Invito:");
+            lbl.setStyle("-fx-font-size: 12px; -fx-text-fill: -fx-color-text-light;");
+            Label codeLabel = new Label(code);
+            codeLabel.setStyle("-fx-font-family: 'Space Grotesk Bold'; -fx-font-size: 16px; -fx-text-fill: -fx-radix-blue-11; -fx-background-color: -fx-radix-blue-3; -fx-padding: 4px 12px; -fx-background-radius: 6px;");
+            codeBox.getChildren().addAll(lbl, codeLabel);
+
+            BorderPane welcomeSection = (BorderPane) contentBox.getChildren().get(0);
+            welcomeSection.setRight(codeBox);
+        }
     }
 
     public void setWelcomeMessage(String title, String subtitle) {
@@ -152,6 +170,36 @@ public class HomeView extends BorderPane {
         contentBox.getChildren().add(card);
     }
 
+    public void showTrainerInviteCard(java.util.function.Consumer<String> onSubmit) {
+        VBox card = new VBox(15);
+        card.getStyleClass().add("card");
+        card.setPadding(new Insets(25));
+
+        Label title = new Label("Collegati a un Trainer");
+        title.getStyleClass().add("heading-h3");
+        Label subtitle = new Label("Inserisci il codice invito fornito dal tuo trainer per collegarti e ricevere i suoi piani di allenamento.");
+        subtitle.getStyleClass().addAll("body-base", "text-color-light");
+
+        HBox inputBox = new HBox(10);
+        javafx.scene.control.TextField codeInput = new javafx.scene.control.TextField();
+        codeInput.setPromptText("Es. ABC123XYZ");
+        codeInput.getStyleClass().add("text-field");
+        HBox.setHgrow(codeInput, Priority.ALWAYS);
+
+        Button submitBtn = new Button("Collegati");
+        submitBtn.getStyleClass().add("button-primary");
+        submitBtn.setOnAction(e -> {
+            if (onSubmit != null && !codeInput.getText().isBlank()) {
+                onSubmit.accept(codeInput.getText().trim());
+            }
+        });
+
+        inputBox.getChildren().addAll(codeInput, submitBtn);
+
+        card.getChildren().addAll(title, subtitle, inputBox);
+        contentBox.getChildren().add(card);
+    }
+
     public void showTrainerDashboard(Runnable onGoToLibrary, Runnable onGoToPlans) {
         while (contentBox.getChildren().size() > 1) {
             contentBox.getChildren().remove(1);
@@ -193,6 +241,54 @@ public class HomeView extends BorderPane {
         grid.add(card2, 1, 0);
 
         contentBox.getChildren().add(grid);
+    }
+
+    public void showAthleteList(List<com.example.fitplannerclient.bean.profile.ProfileBean> athletes, java.util.function.Consumer<com.example.fitplannerclient.bean.profile.ProfileBean> onAthleteSelected) {
+        VBox athletesSection = new VBox(15);
+        athletesSection.setPadding(new Insets(20, 0, 0, 0));
+
+        Label sectionTitle = new Label("I Miei Atleti");
+        sectionTitle.getStyleClass().add("heading-h2");
+        athletesSection.getChildren().add(sectionTitle);
+
+        if (athletes == null || athletes.isEmpty()) {
+            Label noAthletes = new Label("Non hai ancora nessun atleta collegato.");
+            noAthletes.setStyle("-fx-text-fill: -fx-color-text-light; -fx-font-style: italic;");
+            athletesSection.getChildren().add(noAthletes);
+        } else {
+            VBox listContainer = new VBox(10);
+            for (com.example.fitplannerclient.bean.profile.ProfileBean athlete : athletes) {
+                HBox row = new HBox(15);
+                row.setAlignment(Pos.CENTER_LEFT);
+                row.getStyleClass().add("card");
+                row.setStyle("-fx-padding: 15px; -fx-cursor: hand;");
+                row.setOnMouseClicked(e -> onAthleteSelected.accept(athlete));
+
+                VBox nameBox = new VBox(4);
+                Label nameLabel = new Label(athlete.getFirstName() + " " + athlete.getLastName());
+                nameLabel.setStyle("-fx-font-family: 'Space Grotesk Bold'; -fx-font-size: 15px; -fx-text-fill: -fx-color-text-body;");
+                Label emailLabel = new Label(athlete.getContactEmail());
+                emailLabel.setStyle("-fx-text-fill: -fx-color-text-light; -fx-font-size: 13px;");
+                nameBox.getChildren().addAll(nameLabel, emailLabel);
+
+                Region spacer = new Region();
+                HBox.setHgrow(spacer, Priority.ALWAYS);
+
+                Label viewLabel = new Label("Vedi Dettagli ➔");
+                viewLabel.setStyle("-fx-text-fill: -fx-radix-blue-11; -fx-font-family: 'Space Grotesk Medium'; -fx-font-size: 13px;");
+
+                row.getChildren().addAll(nameBox, spacer, viewLabel);
+                
+                // Add hover effect
+                row.setOnMouseEntered(e -> row.setStyle("-fx-padding: 15px; -fx-cursor: hand; -fx-background-color: -fx-radix-slate-2; -fx-border-color: -fx-radix-slate-6; -fx-border-radius: 8px; -fx-background-radius: 8px;"));
+                row.setOnMouseExited(e -> row.setStyle("-fx-padding: 15px; -fx-cursor: hand; -fx-background-color: white; -fx-border-color: transparent; -fx-border-radius: 8px; -fx-background-radius: 8px;"));
+
+                listContainer.getChildren().add(row);
+            }
+            athletesSection.getChildren().add(listContainer);
+        }
+
+        contentBox.getChildren().add(athletesSection);
     }
 
     private HBox createExerciseRow(int index, String name, String details, String equipment) {
