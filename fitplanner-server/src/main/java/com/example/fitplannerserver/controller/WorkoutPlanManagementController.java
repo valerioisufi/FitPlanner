@@ -1,6 +1,7 @@
 package com.example.fitplannerserver.controller;
 
 import com.example.fitplannercommon.WorkoutPlanDTO;
+import com.example.fitplannercommon.WorkoutPlanSummaryDTO;
 import com.example.fitplannerserver.beanvalidator.PlanValidator;
 import com.example.fitplannerserver.dao.CoachingDao;
 import com.example.fitplannerserver.dao.WorkoutPlanDao;
@@ -32,14 +33,31 @@ public class WorkoutPlanManagementController {
         this.coachingDao = coachingDao;
     }
 
-    public List<WorkoutPlanDTO> getMyPlans() {
+    public List<WorkoutPlanSummaryDTO> getMyPlansSummary() {
         identityProvider.checkUserRole(Account.Role.TRAINER);
 
         try {
             return workoutPlanDao.findPlansByTrainerId(identityProvider.getUserId())
                     .stream()
-                    .map(PlanMapper::toBean)
+                    .map(PlanMapper::toSummaryDto)
                     .toList();
+
+        } catch (DaoException e) {
+            throw new SystemException("Errore nel recuperare i WorkoutPlan creati");
+        }
+    }
+
+    public WorkoutPlanDTO getPlanDetails(String planId) {
+        identityProvider.checkUserRole(Account.Role.TRAINER);
+
+        try {
+            WorkoutPlan workoutPlan = workoutPlanDao.findPlanById(planId)
+                    .orElseThrow(() -> new ResourceNotFoundException("WorkoutPlan non trovato"));
+
+            if(!workoutPlan.getAuthorId().equals(identityProvider.getUserId()))
+                throw new ForbiddenException("Non puoi visualizzare i dettagli di un WorkoutPlan che non ti appartiene");
+
+            return PlanMapper.toDto(workoutPlan);
 
         } catch (DaoException e) {
             throw new SystemException("Errore nel recuperare i WorkoutPlan creati");
@@ -50,7 +68,7 @@ public class WorkoutPlanManagementController {
         identityProvider.checkUserRole(Account.Role.ATHLETE);
 
         try {
-            return PlanMapper.toBean(
+            return PlanMapper.toDto(
                     workoutPlanDao.findAssignedPlanByAthleteId(identityProvider.getUserId())
                             .orElseThrow(() -> new ResourceNotFoundException("Non hai un piano assegnato"))
             );

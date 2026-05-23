@@ -2,6 +2,7 @@ package com.example.fitplannerclient.service.facade;
 
 import com.example.fitplannerclient.service.HttpService;
 import com.example.fitplannercommon.WorkoutPlanDTO;
+import com.example.fitplannercommon.WorkoutPlanSummaryDTO;
 import com.example.fitplannercommon.WorkoutScheduleDTO;
 import java.util.Arrays;
 import java.util.List;
@@ -18,9 +19,13 @@ public class WorkoutPlanFacade {
     /**
      * Recupera tutti i piani di allenamento creati dal trainer.
      */
-    public CompletableFuture<List<WorkoutPlanDTO>> getMyCreatedPlansAsync() {
-        return httpService.getAsync("/plan", WorkoutPlanDTO[].class)
+    public CompletableFuture<List<WorkoutPlanSummaryDTO>> getMyCreatedPlansSummaryAsync() {
+        return httpService.getAsync("/plan", WorkoutPlanSummaryDTO[].class)
                 .thenApply(Arrays::asList);
+    }
+
+    public CompletableFuture<WorkoutPlanDTO> getPlanDetailsByIdAsync(String planId) {
+        return httpService.getAsync("/plan/" + planId, WorkoutPlanDTO.class);
     }
 
     /**
