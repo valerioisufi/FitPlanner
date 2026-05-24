@@ -23,17 +23,40 @@ public class LoopDecorator extends FlowDecorator {
 
     @Override
     public ExecutionResult execute(ExecutionContext context) {
-        if(currentRound <= rounds) {
-            ExecutionResult result = wrappedNode.execute(context);
-            if(result.getState() == PlanNodeState.COMPLETED) {
-                currentRound++;
-                wrappedNode.reset();
-            }
-
-            return new ExecutionResult(PlanNodeState.RUNNING, result.getRequestedSleepMillis());
-        } else {
-            return new ExecutionResult(PlanNodeState.COMPLETED, 0);
+        if (this.state == PlanNodeState.COMPLETED) {
+            return new ExecutionResult(PlanNodeState.COMPLETED);
         }
+
+        this.state = PlanNodeState.RUNNING;
+
+        ExecutionResult result = wrappedNode.execute(context);
+
+        if (result.getState() == PlanNodeState.COMPLETED || result.getState() == PlanNodeState.SKIPPED) {
+            currentRound++;
+
+            if (currentRound < rounds) {
+                wrappedNode.reset();
+                return this.execute(context);
+
+            } else {
+                // ho terminato tutti i round
+                this.state = PlanNodeState.COMPLETED;
+                return new ExecutionResult(PlanNodeState.COMPLETED);
+            }
+        } else if (result.getState() == PlanNodeState.REVERT) {
+            if(currentRound > 0) {
+                currentRound = currentRound - 1;
+                wrappedNode.reset();
+                return this.execute(context);
+            } else {
+                wrappedNode.reset();
+                return new ExecutionResult(PlanNodeState.REVERT);
+
+            }
+        }
+
+        // se il figlio è RUNNING o WAITING, lo lascio passare
+        return result;
 
     }
 

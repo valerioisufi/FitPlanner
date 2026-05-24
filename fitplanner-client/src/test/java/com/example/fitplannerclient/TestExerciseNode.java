@@ -27,7 +27,7 @@ public class TestExerciseNode {
 
         // Assert
         assertEquals(PlanNodeState.RUNNING, result.getState());
-        assertEquals(0, result.getRequestedSleepMillis());
+        assertEquals(-1, result.getRequestedSleepMillis());
 
     }
 
@@ -45,7 +45,7 @@ public class TestExerciseNode {
 
         // Assert
         assertEquals(PlanNodeState.COMPLETED, result.getState());
-        assertEquals(0, result.getRequestedSleepMillis());
+        assertEquals(-1, result.getRequestedSleepMillis());
 
     }
 
@@ -63,7 +63,7 @@ public class TestExerciseNode {
 
         // Assert
         assertEquals(PlanNodeState.SKIPPED, result.getState());
-        assertEquals(0, result.getRequestedSleepMillis());
+        assertEquals(-1, result.getRequestedSleepMillis());
         assertEquals(PlanNodeState.SKIPPED, node.getState()); // l'esercizio deve tornare allo stato iniziale
     }
 
@@ -81,7 +81,7 @@ public class TestExerciseNode {
 
         // Assert
         assertEquals(PlanNodeState.REVERT, result.getState());
-        assertEquals(0, result.getRequestedSleepMillis());
+        assertEquals(-1, result.getRequestedSleepMillis());
         assertEquals(PlanNodeState.IDLE, node.getState()); // l'esercizio deve tornare allo stato iniziale
     }
 
