@@ -1,37 +1,53 @@
 package com.example.fitplannerserver.dao.database;
 
-import com.example.fitplannerserver.dao.*;
+import com.example.fitplannerserver.dao.DaoFactory;
 
 public class DatabaseDaoFactory extends DaoFactory {
 
-    @Override
-    public AccountDao getAccountDao() {
-        return null;
+    private final DatabaseAccountDao accountDao;
+    private final DatabaseProfileDao profileDao;
+    private final DatabaseSessionLogDao sessionLogDao;
+    private final DatabaseExerciseLibraryDao exerciseLibraryDao;
+    private final DatabaseWorkoutPlanDao workoutPlanDao;
+    private final DatabaseCoachingDao coachingDao;
+
+    public DatabaseDaoFactory(){
+        this.accountDao = new DatabaseAccountDao();
+        this.profileDao = new DatabaseProfileDao();
+        this.sessionLogDao = new DatabaseSessionLogDao();
+        this.exerciseLibraryDao = new DatabaseExerciseLibraryDao();
+        this.workoutPlanDao = new DatabaseWorkoutPlanDao();
+        this.coachingDao = new DatabaseCoachingDao();
     }
 
     @Override
-    public ProfileDao getProfileDao() {
-        return null;
+    public DatabaseAccountDao getAccountDao() {
+        return this.accountDao;
     }
 
     @Override
-    public SessionLogDao getSessionLogDao() {
-        return null;
+    public DatabaseProfileDao getProfileDao() {
+        return this.profileDao;
     }
 
     @Override
-    public ExerciseLibraryDao getExerciseLibraryDao() {
-        return null;
+    public DatabaseSessionLogDao getSessionLogDao() {
+            return this.sessionLogDao;
     }
 
     @Override
-    public WorkoutPlanDao getWorkoutPlanDao() {
-        return null;
+    public DatabaseExerciseLibraryDao getExerciseLibraryDao() {
+        return this.exerciseLibraryDao;
     }
 
     @Override
-    public CoachingDao getCoachingDao() {
-        return null;
+    public DatabaseWorkoutPlanDao getWorkoutPlanDao() {
+        return this.workoutPlanDao;
+    }
+
+    @Override
+    public DatabaseCoachingDao getCoachingDao() {
+        return this.coachingDao;
     }
 
 }
