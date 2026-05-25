@@ -3,6 +3,7 @@ package com.example.fitplannerclient.entity.plan.block;
 import com.example.fitplannerclient.controller.plan.visitor.WorkoutPlanVisitor;
 import com.example.fitplannerclient.entity.plan.PlanNode;
 import com.example.fitplannerclient.entity.plan.block.strategy.composition.CompositionRule;
+import com.example.fitplannerclient.entity.plan.block.strategy.validation.ValidationResult;
 import com.example.fitplannerclient.entity.plan.block.strategy.validation.ValidationRule;
 import com.example.fitplannerclient.entity.plan.context.ExecutionContext;
 import com.example.fitplannerclient.entity.plan.context.ExecutionResult;
@@ -145,13 +146,16 @@ public class ProtocolBlock extends PlanNode implements GroupNode {
         return node;
     }
 
-    public boolean validate() {
-        if (validationRules == null) return true;
+    public ValidationResult validate() {
+        ValidationResult result = new ValidationResult();
+
+        if (validationRules == null) return result;
+
         for (ValidationRule rule : validationRules) {
-            if (!rule.validate(this)) {
-                return false;
-            }
+            ValidationResult ruleResult = rule.validate(this);
+            result.getErrors().addAll(ruleResult.getErrors());
         }
-        return true;
+
+        return result;
     }
 }

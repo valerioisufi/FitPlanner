@@ -1,4 +1,4 @@
-package com.example.fitplannerclient.entity.plan.block.strategy.composition;
+package com.example.fitplannerclient.entity.plan.block.strategy.validation;
 
 import com.example.fitplannerclient.controller.plan.visitor.WorkoutPlanVisitor;
 import com.example.fitplannerclient.entity.plan.PlanNode;
@@ -7,39 +7,33 @@ import com.example.fitplannerclient.entity.plan.WorkoutSession;
 import com.example.fitplannerclient.entity.plan.block.Block;
 import com.example.fitplannerclient.entity.plan.block.ProtocolBlock;
 import com.example.fitplannerclient.entity.plan.decorator.*;
-import com.example.fitplannerclient.entity.plan.exercise.ExerciseModifier;
 import com.example.fitplannerclient.entity.plan.exercise.ExerciseNode;
+import com.example.fitplannerclient.entity.plan.exercise.ModifierType;
 
-public class DefaultModifierRule implements CompositionRule {
-    private final ExerciseModifier modifier;
+public class RequiredModifierRule implements ValidationRule {
+    private final ModifierType requiredType;
 
-    public DefaultModifierRule(ExerciseModifier modifier) {
-        this.modifier = modifier;
+    public RequiredModifierRule(ModifierType requiredType) {
+        this.requiredType = requiredType;
     }
 
     @Override
-    public PlanNode apply(PlanNode node) {
+    public ValidationResult validate(ProtocolBlock block) {
+        ValidationResult result = new ValidationResult();
 
-        WorkoutPlanVisitor visitor = new WorkoutPlanVisitor() {
+        WorkoutPlanVisitor checker = new WorkoutPlanVisitor() {
             @Override public void visit(WorkoutPlan workoutPlan) {}
             @Override public void visit(WorkoutSession workoutSession) {}
+            @Override public void visit(Block blockNode) {}
+            @Override public void visit(ProtocolBlock protocolBlock) {}
 
             @Override
             public void visit(ExerciseNode exerciseNode) {
-                exerciseNode.addModifier(new ExerciseModifier(modifier));
-            }
-
-            @Override
-            public void visit(Block block) {
-                for (PlanNode child : block.getChildren()) {
-                    child.accept(this);
-                }
-            }
-
-            @Override
-            public void visit(ProtocolBlock protocolBlock) {
-                for (PlanNode child : protocolBlock.getChildren()) {
-                    child.accept(this);
+                if (!exerciseNode.hasModifier(requiredType)) {
+                    result.addError(
+                            "L'esercizio manca di un modificatore obbligatorio per questo blocco: " + requiredType,
+                            exerciseNode.getId()
+                    );
                 }
             }
 
@@ -50,7 +44,10 @@ public class DefaultModifierRule implements CompositionRule {
             @Override public void visit(IntervalDecorator intervalDecorator) { intervalDecorator.getWrappedNode().accept(this); }
         };
 
-        node.accept(visitor);
-        return node;
+        for (PlanNode child : block.getChildren()) {
+            child.accept(checker);
+        }
+
+        return result;
     }
 }

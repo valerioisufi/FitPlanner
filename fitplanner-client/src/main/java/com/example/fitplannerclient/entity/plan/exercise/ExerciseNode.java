@@ -83,6 +83,10 @@ public class ExerciseNode extends PlanNode {
         this.modifiers.add(modifier);
     }
 
+    public boolean hasModifier(com.example.fitplannerclient.entity.plan.exercise.ModifierType type) {
+        return modifiers.stream().anyMatch(m -> m.getType() == type);
+    }
+
 }
 
 
