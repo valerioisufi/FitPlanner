@@ -13,4 +13,5 @@ public abstract class FlowDecorator extends PlanNode{
         return wrappedNode;
     }
 
+    public abstract FlowDecorator cloneWithNode(PlanNode newWrappedNode);
 }

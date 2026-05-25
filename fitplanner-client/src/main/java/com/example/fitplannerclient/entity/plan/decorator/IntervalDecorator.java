@@ -110,4 +110,9 @@ public class IntervalDecorator extends FlowDecorator {
     public void setIntervalDurationMillis(int intervalDurationMillis) {
         this.intervalDurationMillis = intervalDurationMillis;
     }
+
+    @Override
+    public IntervalDecorator cloneWithNode(PlanNode newWrappedNode) {
+        return new IntervalDecorator(newWrappedNode, this.intervalDurationMillis);
+    }
 }

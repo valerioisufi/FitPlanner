@@ -82,4 +82,9 @@ public class TimeLimitDecorator extends FlowDecorator {
     public void setTimeLimitMillis(int timeLimitMillis) {
         this.timeLimitMillis = timeLimitMillis;
     }
+
+    @Override
+    public TimeLimitDecorator cloneWithNode(PlanNode newWrappedNode) {
+        return new TimeLimitDecorator(newWrappedNode, this.timeLimitMillis);
+    }
 }

@@ -40,4 +40,11 @@ public class ProgressionDecorator extends FlowDecorator {
 
         return progressionString.toString();
     }
+
+    @Override
+    public ProgressionDecorator cloneWithNode(PlanNode newWrappedNode) {
+        ProgressionDecorator copy = new ProgressionDecorator(newWrappedNode);
+        copy.progression = this.progression;
+        return copy;
+    }
 }

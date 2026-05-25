@@ -7,11 +7,12 @@ import com.example.fitplannerclient.entity.plan.context.ExecutionContext;
 import com.example.fitplannerclient.entity.plan.context.ExecutionResult;
 import com.example.fitplannerclient.entity.plan.context.PlanNodeState;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ExerciseNode extends PlanNode {
     private String resourceId;
-    private List<ExerciseModifier> modifiers;
+    private List<ExerciseModifier> modifiers = new ArrayList<>();
 
     @Override
     public void accept(WorkoutPlanVisitor visitor) {
@@ -76,6 +77,10 @@ public class ExerciseNode extends PlanNode {
 
     public void setModifiers(List<ExerciseModifier> modifiers) {
         this.modifiers = modifiers;
+    }
+
+    public void addModifier(ExerciseModifier modifier) {
+        this.modifiers.add(modifier);
     }
 
 }

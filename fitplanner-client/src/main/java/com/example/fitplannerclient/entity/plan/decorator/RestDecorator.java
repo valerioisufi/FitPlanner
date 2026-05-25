@@ -89,13 +89,16 @@ public class RestDecorator extends FlowDecorator{
         wrappedNode.reset();
     }
 
-    public int getRestDuration() {
+    public int getRestDurationMillis() {
         return restDurationMillis;
     }
 
-    public void setRestDuration(int restDurationMillis) {
+    public void setRestDurationMillis(int restDurationMillis) {
         this.restDurationMillis = restDurationMillis;
     }
 
-
+    @Override
+    public RestDecorator cloneWithNode(PlanNode newWrappedNode) {
+        return new RestDecorator(newWrappedNode, this.restDurationMillis);
+    }
 }

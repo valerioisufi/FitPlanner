@@ -75,4 +75,9 @@ public class LoopDecorator extends FlowDecorator {
     public void setRounds(int rounds) {
         this.rounds = rounds;
     }
+
+    @Override
+    public LoopDecorator cloneWithNode(PlanNode newWrappedNode) {
+        return new LoopDecorator(newWrappedNode, this.rounds);
+    }
 }
