@@ -58,6 +58,7 @@ public class IntervalDecorator extends FlowDecorator {
             } else if (result.getState() == PlanNodeState.RUNNING) {
                 int childSleep = result.getRequestedSleepMillis();
                 int sleepTime = (childSleep < 0) ? this.timeLeftMillis : Math.min(childSleep, this.timeLeftMillis);
+
                 return new ExecutionResult(PlanNodeState.RUNNING, sleepTime);
             }
 

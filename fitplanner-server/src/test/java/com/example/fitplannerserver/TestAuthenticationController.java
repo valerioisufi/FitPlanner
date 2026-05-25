@@ -28,7 +28,6 @@ import static org.junit.jupiter.api.Assertions.*;
  * e il successivo login degli utenti
  * @author Valerio Isufi
  */
-
 class TestAuthenticationController {
 
     private PasswordEncoder passwordEncoder;
