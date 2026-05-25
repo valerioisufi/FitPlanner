@@ -2,15 +2,9 @@ package com.example.fitplannerclient.entity.plan.block.strategy.validation;
 
 import com.example.fitplannerclient.entity.plan.block.ProtocolBlock;
 
-public class ExactNodeCountRule implements ValidationRule {
-    private final int count;
-
-    public ExactNodeCountRule(int count) {
-        this.count = count;
-    }
-
+public class ForbiddenModifierRule implements ValidationRule {
     @Override
     public Boolean validate(ProtocolBlock block) {
-        return block.getChildrenCount() == count;
+        return null;
     }
 }
