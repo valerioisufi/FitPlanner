@@ -98,7 +98,7 @@ public class    DatabaseAccountDao implements AccountDao {
                 stm.executeUpdate();
             }
         } catch (SQLException | InterruptedException e) {
-            throw new DaoException("Errore critico durante l'aggiornamento (save) dell'account nel database.", e);
+            throw new DaoException("Errore critico durante l'aggiornamento dell'account nel database.", e);
         } finally {
             if (conn != null){
                 DbConnection.getInstance().releaseConnection(conn);
