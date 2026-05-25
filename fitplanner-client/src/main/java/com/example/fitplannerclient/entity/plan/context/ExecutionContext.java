@@ -43,4 +43,8 @@ public class ExecutionContext {
         return tickDelta;
     }
 
+    public void consumeTickDelta(int amount){
+        this.tickDelta = Math.max(0, this.tickDelta - amount);
+    }
+
 }

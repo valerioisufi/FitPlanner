@@ -2,14 +2,18 @@ package com.example.fitplannerclient.entity.plan.decorator;
 
 import com.example.fitplannerclient.controller.plan.visitor.WorkoutPlanVisitor;
 import com.example.fitplannerclient.entity.plan.PlanNode;
+import com.example.fitplannerclient.entity.plan.context.ControlSignal;
 import com.example.fitplannerclient.entity.plan.context.ExecutionContext;
 import com.example.fitplannerclient.entity.plan.context.ExecutionResult;
+import com.example.fitplannerclient.entity.plan.context.PlanNodeState;
 
-public class IntervalDecorator extends FlowDecorator{
-    private int intervalDuration;
+public class IntervalDecorator extends FlowDecorator {
+    private int intervalDurationMillis;
+    private int timeLeftMillis = 0;
 
-    public IntervalDecorator(PlanNode wrappedNode) {
+    public IntervalDecorator(PlanNode wrappedNode, int intervalDurationMillis) {
         super(wrappedNode);
+        this.intervalDurationMillis = intervalDurationMillis;
     }
 
     @Override
@@ -19,20 +23,90 @@ public class IntervalDecorator extends FlowDecorator{
 
     @Override
     public ExecutionResult execute(ExecutionContext context) {
-        // TODO
-        return null;
+        if (this.state == PlanNodeState.COMPLETED) {
+            return new ExecutionResult(PlanNodeState.COMPLETED);
+        }
+
+        if (this.state == PlanNodeState.IDLE) {
+            this.state = PlanNodeState.RUNNING;
+            this.timeLeftMillis = intervalDurationMillis;
+        }
+
+        int delta = context.getTickDelta();
+
+        if (this.state == PlanNodeState.RUNNING) {
+            int consumed = Math.min(this.timeLeftMillis, delta);
+            this.timeLeftMillis -= consumed;
+
+            if (this.timeLeftMillis == 0) {
+                this.state = PlanNodeState.COMPLETED;
+                context.consumeTickDelta(consumed);
+
+                return new ExecutionResult(PlanNodeState.COMPLETED);
+            }
+
+            ExecutionResult result = wrappedNode.execute(context);
+
+            if (result.getState() == PlanNodeState.COMPLETED || result.getState() == PlanNodeState.SKIPPED) {
+                // il figlio ha finito prima del tempo dell'intervallo
+                this.state = PlanNodeState.WAITING;
+                return new ExecutionResult(PlanNodeState.WAITING, this.timeLeftMillis);
+
+            } else if (result.getState() == PlanNodeState.REVERT) {
+                this.reset();
+                return new ExecutionResult(PlanNodeState.REVERT);
+            } else if (result.getState() == PlanNodeState.RUNNING) {
+                int childSleep = result.getRequestedSleepMillis();
+                int sleepTime = (childSleep < 0) ? this.timeLeftMillis : Math.min(childSleep, this.timeLeftMillis);
+                return new ExecutionResult(PlanNodeState.RUNNING, sleepTime);
+            }
+
+            return result;
+
+        } else if (this.state == PlanNodeState.WAITING) {
+
+            if (context.consumeSignal(ControlSignal.SKIP_NEXT)) {
+                // l'utente salta il resto del riposo
+                context.consumeTickDelta(context.getTickDelta());
+
+                this.state = PlanNodeState.COMPLETED;
+                return new ExecutionResult(PlanNodeState.COMPLETED);
+            }
+            if (context.consumeSignal(ControlSignal.SKIP_PREVIOUS)) {
+                context.consumeTickDelta(context.getTickDelta());
+
+                this.reset();
+                return new ExecutionResult(PlanNodeState.REVERT);
+            }
+
+            int consumed = Math.min(this.timeLeftMillis, delta);
+            this.timeLeftMillis -= consumed;
+            context.consumeTickDelta(consumed);
+
+            if (this.timeLeftMillis == 0) {
+                this.state = PlanNodeState.COMPLETED;
+                return new ExecutionResult(PlanNodeState.COMPLETED);
+            } else {
+                return new ExecutionResult(PlanNodeState.WAITING, this.timeLeftMillis);
+            }
+        }
+
+        return new ExecutionResult(this.state);
     }
 
     @Override
     public void reset() {
+        this.state = PlanNodeState.IDLE;
+        this.timeLeftMillis = 0;
 
+        this.wrappedNode.reset();
     }
 
-    public int getIntervalDuration() {
-        return intervalDuration;
+    public int getIntervalDurationMillis() {
+        return intervalDurationMillis;
     }
 
-    public void setIntervalDuration(int intervalDuration) {
-        this.intervalDuration = intervalDuration;
+    public void setIntervalDurationMillis(int intervalDurationMillis) {
+        this.intervalDurationMillis = intervalDurationMillis;
     }
 }

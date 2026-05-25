@@ -20,11 +20,19 @@ public class ExerciseNode extends PlanNode {
 
     @Override
     public ExecutionResult execute(ExecutionContext context) {
+        if (this.state == PlanNodeState.COMPLETED) {
+            return new ExecutionResult(PlanNodeState.COMPLETED);
+        }
+
         if (context.consumeSignal(ControlSignal.SKIP_NEXT)) {
+            context.consumeTickDelta(context.getTickDelta());
+
             this.state = PlanNodeState.SKIPPED;
             return new ExecutionResult(PlanNodeState.SKIPPED);
         }
         else if (context.consumeSignal(ControlSignal.SKIP_PREVIOUS)) {
+            context.consumeTickDelta(context.getTickDelta());
+
             this.state = PlanNodeState.IDLE;
             return new ExecutionResult(PlanNodeState.REVERT);
         }
@@ -37,6 +45,8 @@ public class ExerciseNode extends PlanNode {
 
             if (context.consumeSignal(ControlSignal.DONE)) {
                 // l'esercizio è stato contrassegnato come completato
+                context.consumeTickDelta(context.getTickDelta());
+
                 this.state = PlanNodeState.COMPLETED;
                 return new ExecutionResult(PlanNodeState.COMPLETED);
             }

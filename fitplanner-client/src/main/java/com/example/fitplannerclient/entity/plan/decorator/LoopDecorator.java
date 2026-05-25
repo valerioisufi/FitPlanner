@@ -62,7 +62,9 @@ public class LoopDecorator extends FlowDecorator {
 
     @Override
     public void reset() {
+        this.state = PlanNodeState.IDLE;
         currentRound = 0;
+
         wrappedNode.reset();
     }
 

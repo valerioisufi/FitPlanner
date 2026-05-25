@@ -1,7 +1,5 @@
 package com.example.fitplannerclient;
 
-import com.example.fitplannerclient.controller.plan.visitor.WorkoutPlanVisitor;
-import com.example.fitplannerclient.entity.plan.PlanNode;
 import com.example.fitplannerclient.entity.plan.context.ExecutionContext;
 import com.example.fitplannerclient.entity.plan.context.ExecutionResult;
 import com.example.fitplannerclient.entity.plan.context.PlanNodeState;
@@ -15,7 +13,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * Test dell'esecuzione di un LoopDecorator
  * @author Valerio Isufi
  */
-
 public class TestLoopDecorator {
 
     @Test
