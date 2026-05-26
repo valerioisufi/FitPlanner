@@ -23,6 +23,14 @@ public class ExerciseDescription {
         this.muscleGroups = other.muscleGroups;
     }
 
+    public ExerciseDescription(String trainerId, String exerciseId, String name, String execution, List<String> muscleGroups){
+        this.trainerId = trainerId;
+        this.exerciseId = exerciseId;
+        this.name = name;
+        this.execution = execution;
+        this.muscleGroups = muscleGroups;
+    }
+
     public void setDescription(String name, String execution, List<String> muscleGroups){
         this.name = name;
         this.execution = execution;

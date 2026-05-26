@@ -22,6 +22,15 @@ public class User {
         this.invitationCode = user.invitationCode;
     }
 
+    public User(String id, String firstName, String lastName, String contactEmail, String phoneNumber, String invitationCode){
+        this.id = id;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.contactEmail = contactEmail;
+        this.phoneNumber = phoneNumber;
+        this.invitationCode = invitationCode;
+    }
+
     public String getId(){return id;}
 
     public void setUserProfileInfo( String firstName, String lastName, String contactEmail, String phoneNumber){

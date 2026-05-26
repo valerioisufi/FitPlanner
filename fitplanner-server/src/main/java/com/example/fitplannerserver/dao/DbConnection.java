@@ -1,5 +1,8 @@
 package com.example.fitplannerserver.dao;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
@@ -12,6 +15,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class DbConnection {
+
+    private static final Logger logger = LoggerFactory.getLogger(DbConnection.class);
 
     private static final Properties config = new Properties();
 
@@ -35,13 +40,12 @@ public class DbConnection {
 //        }
     }
 
-    // 2. Singleton Thread-Safe
     private static class Wrapper {
         static final DbConnection INSTANCE = new DbConnection(
                 config.getProperty("db.url"),
                 config.getProperty("db.user"),
                 config.getProperty("db.password"),
-                Integer.parseInt(config.getProperty("db.pool.size", "10")) // Default 10 se manca
+                Integer.parseInt(config.getProperty("db.pool.size", "10")) // default 10
         );
     }
 
@@ -49,32 +53,40 @@ public class DbConnection {
         return Wrapper.INSTANCE;
     }
 
-    private final String url, user, password;
+    private final String url;
+    private final String user;
+    private final String password;
+
     private final BlockingQueue<Connection> pool;
     private final int maxPoolSize;
     private final AtomicInteger currentPoolSize = new AtomicInteger(0);
 
     private DbConnection(String url, String user, String password, int maxPoolSize) {
+        if (url == null || url.trim().isEmpty()) {
+            throw new IllegalArgumentException("Il parametro 'db.url' non può essere nullo o vuoto");
+        }
         this.url = url;
         this.user = user;
         this.password = password;
         this.maxPoolSize = maxPoolSize;
         this.pool = new ArrayBlockingQueue<>(maxPoolSize);
 
-        // TODO lanciare un'eccezione se i parametri sono null
-
         initPool(1);
     }
 
     private void initPool(int initialSize) {
-        try {
-            for (int i = 0; i < initialSize; i++) {
-                boolean inserted = pool.offer(createNewConnection());
-                if (!inserted) return;
+        for (int i = 0; i < initialSize; i++) {
+            try {
+                Connection conn = createNewConnection();
+                boolean inserted = pool.offer(conn);
+                if (!inserted) {
+                    conn.close();
+                    return;
+                }
                 currentPoolSize.incrementAndGet();
+            } catch (SQLException e) {
+                logger.error("Avviso: Impossibile creare la connessione iniziale. Verrà effettuato un nuovo tentativo alla prima richiesta.", e);
             }
-        } catch (SQLException e) {
-            throw new RuntimeException("Errore critico inizializzazione pool", e);
         }
     }
 
@@ -82,71 +94,92 @@ public class DbConnection {
         return DriverManager.getConnection(url, user, password);
     }
 
-    public Connection getConnection() throws SQLException, InterruptedException {
+    public Connection getConnection() throws SQLException {
         long startTime = System.currentTimeMillis();
-        long timeoutMs = 5000; // 5 secondi totali
+        long timeoutMs = 5000; // 5 secondi totali di timeout
 
         while (true) {
-            // Calcola quanto tempo rimane per evitare loop infiniti se il DB è giù
             if (System.currentTimeMillis() - startTime > timeoutMs) {
                 throw new SQLException("Timeout: Impossibile ottenere una connessione valida.");
             }
 
-            // Prova a prendere dal pool
+            // provo a prendere una connessione dal pool
             Connection conn = pool.poll();
 
             if (conn == null) {
-                // Se vuoto, prova a creare (Double-Checked Locking)
-                if (currentPoolSize.get() < maxPoolSize) {
-                    synchronized (this) {
-                        if (currentPoolSize.get() < maxPoolSize) {
-                            Connection newConn = createNewConnection();
-                            currentPoolSize.incrementAndGet();
-                            return newConn; // Le nuove connessioni sono sicuramente valide
-                        }
-                    }
+                // se vuoto, prova a creare una nuova connessione se non abbiamo raggiunto il limite massimo
+                conn = tryCreateConnection();
+                if (conn != null) {
+                    return conn;
                 }
 
-                // Se non ho potuto creare (pool pieno), aspetto
-                // Nota: calcoliamo il tempo residuo per il poll
-                long remaining = timeoutMs - (System.currentTimeMillis() - startTime);
-                if (remaining <= 0) remaining = 1; // Evita numeri negativi
-
-                conn = pool.poll(remaining, TimeUnit.MILLISECONDS);
-
-                if (conn == null) {
-                    throw new SQLException("Timeout: Nessuna connessione disponibile nel pool.");
-                }
+                // se non ho potuto creare una nuova connessione (pool pieno), attendo
+                conn = awaitConnectionFromPool(startTime, timeoutMs);
             }
 
-            // Validazione
+            // validazione
             if (conn.isValid(2)) {
                 return conn;
             } else {
-                // Se invalida: decrementiamo, chiudiamo la risorsa reale e il ciclo while ricomincia
+                // se la connessione non è valida:
+                // decrementiamo, chiudiamo la risorsa reale e il ciclo while ricomincia
                 currentPoolSize.decrementAndGet();
-                try { conn.close(); } catch (Exception ignored) {} // Pulizia
+                try { conn.close(); } catch (Exception ignored) {}
             }
+        }
+    }
+
+    private Connection tryCreateConnection() throws SQLException {
+        if (currentPoolSize.get() < maxPoolSize) {
+
+            synchronized (this) {
+                if (currentPoolSize.get() < maxPoolSize) {
+                    Connection newConn = createNewConnection();
+                    currentPoolSize.incrementAndGet();
+
+                    return newConn;
+                }
+            }
+        }
+        return null;
+    }
+
+    private Connection awaitConnectionFromPool(long startTime, long timeoutMs) throws SQLException {
+        long remaining = timeoutMs - (System.currentTimeMillis() - startTime); // tempo residuo per il poll
+        if (remaining <= 0) remaining = 1;
+
+        try {
+            Connection conn = pool.poll(remaining, TimeUnit.MILLISECONDS);
+
+            if (conn == null) {
+                throw new SQLException("Timeout: Nessuna connessione disponibile nel pool.");
+            }
+
+            return conn;
+
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new SQLException("Il thread è stato interrotto durante l'attesa di una connessione dal pool.", e);
         }
     }
 
     public void releaseConnection(Connection conn) {
         if (conn != null) {
             try {
-                // Se la connessione è chiusa, non rimetterla nel pool
+                // se la connessione è chiusa, non rimetterla nel pool
                 if (conn.isClosed()) {
                     currentPoolSize.decrementAndGet();
                 } else {
-                    // Rimettila in coda
+                    // rimetto la connessione nel pool
                     boolean inserted = pool.offer(conn);
                     if (!inserted) {
-                        // Se il pool è pieno (caso raro/errore), chiudila per evitare leak
+                        // se il pool è pieno, chiudo la connessione
                         conn.close();
                         currentPoolSize.decrementAndGet();
                     }
                 }
             } catch (SQLException e) {
-                e.printStackTrace();
+                logger.error("Errore durante il rilascio della connessione", e);
             }
         }
     }

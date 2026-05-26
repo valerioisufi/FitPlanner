@@ -34,7 +34,7 @@ public class DatabaseProfileDao implements ProfileDao {
             } catch (SQLException e) {
                 throw new RuntimeException("Errore SQL: Impossibile creare la tabella 'profiles'.", e);
             }
-        } catch (SQLException | InterruptedException e) {
+        } catch (SQLException e) {
             throw new RuntimeException("Errore di Connessione: Impossibile inizializzare la tabella 'profiles'.", e);
         } finally {
             DbConnection.getInstance().releaseConnection(conn);
@@ -66,7 +66,7 @@ public class DatabaseProfileDao implements ProfileDao {
                     }
                 }
             }
-        } catch (SQLException | InterruptedException e){
+        } catch (SQLException e){
             throw new DaoException("Errore critico durante la ricerca dell'utente nel database", e);
         } finally {
             if (conn != null){
@@ -96,7 +96,7 @@ public class DatabaseProfileDao implements ProfileDao {
                 stm.setString(6, user.getId());
                 stm.executeUpdate();
             }
-        } catch (SQLException | InterruptedException e){
+        } catch (SQLException e){
             throw new DaoException("Errore critico durante l'aggiornamento (save) dell'utente nel database.", e);
         } finally {
             if (conn != null){
@@ -132,7 +132,7 @@ public class DatabaseProfileDao implements ProfileDao {
                     }
                 }
             }
-        }catch (SQLException | InterruptedException e){
+        }catch (SQLException e){
                 throw new DaoException("Errore critico durante la ricerca dell'utente nel database", e);
         }finally {
             if (conn != null){
@@ -161,7 +161,7 @@ public class DatabaseProfileDao implements ProfileDao {
                     }
                 }
             }
-        } catch (SQLException | InterruptedException e){
+        } catch (SQLException e){
             throw new DaoException("Errore critico durante la ricerca dell'utente nel database", e);
         } finally {
             if (conn != null){

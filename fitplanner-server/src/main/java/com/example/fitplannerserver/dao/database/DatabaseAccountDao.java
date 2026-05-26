@@ -12,11 +12,15 @@ import java.util.Optional;
 
 public class    DatabaseAccountDao implements AccountDao {
 
+    private static final String nullAccMsg= "account cannot be null";
+    private static final String nullEmailMsg= "email cannot be null";
+    private static final String nullIdMsg= "userId cannot be null";
+
     public DatabaseAccountDao(){
         createTableIfNotExist();
     }
 
-    private void createTableIfNotExist(){
+    private void createTableIfNotExist() {
         String sql="""
                 CREATE TABLE IF NOT EXISTS accounts(
                 user_id VARCHAR(36) PRIMARY KEY,
@@ -34,7 +38,7 @@ public class    DatabaseAccountDao implements AccountDao {
                 throw new RuntimeException("Errore SQL: Impossibile creare la tabella 'accounts'. " +
                         "Verifica la query o i permessi utente su MySQL.", e);
             }
-        } catch (SQLException | InterruptedException e) {
+        } catch (SQLException e) {
                 throw new RuntimeException("Errore critico: impossibile inizializzare la tabella 'accounts'. " +
                         "Il database è irraggiungibile o i permessi sono errati.", e);
         } finally {
@@ -46,8 +50,8 @@ public class    DatabaseAccountDao implements AccountDao {
 
     @Override
     public boolean create(Account account) throws DaoException {
-        Objects.requireNonNull(account, "Account cannot be null");
-        Objects.requireNonNull(account.getEmail(), "Account email cannot be null");
+        Objects.requireNonNull(account, nullAccMsg);
+        Objects.requireNonNull(account.getEmail(), nullEmailMsg);
 
         String sql = "INSERT INTO accounts(user_id, email, password_hash, refreshToken, profileType) VALUES (?,?,?,?,?)";
         Connection conn = null;
@@ -62,7 +66,7 @@ public class    DatabaseAccountDao implements AccountDao {
                 int rowsAffected = stm.executeUpdate();
                 return rowsAffected > 0;
             }
-        } catch (SQLException | InterruptedException e) {
+        } catch (SQLException e) {
             if (e instanceof SQLException sqlException && sqlException.getSQLState() != null
                     && sqlException.getSQLState().startsWith("23")) {
                 return false;
@@ -78,9 +82,9 @@ public class    DatabaseAccountDao implements AccountDao {
 
     @Override
     public void save(Account account) throws DaoException {
-        Objects.requireNonNull(account, "Account cannot be null");
-        Objects.requireNonNull(account.getUserId(), "Account userId cannot be null");
-        Objects.requireNonNull(account.getEmail(), "Account email cannot be null");
+        Objects.requireNonNull(account, nullAccMsg);
+        Objects.requireNonNull(account.getUserId(), nullIdMsg);
+        Objects.requireNonNull(account.getEmail(), nullEmailMsg);
 
         String sql = """
                 UPDATE accounts SET email=?, password_hash=?, refreshToken=?, profileType=? WHERE user_id = ?;
@@ -97,7 +101,7 @@ public class    DatabaseAccountDao implements AccountDao {
                 stm.setString(5, account.getUserId());
                 stm.executeUpdate();
             }
-        } catch (SQLException | InterruptedException e) {
+        } catch (SQLException e) {
             throw new DaoException("Errore critico durante l'aggiornamento dell'account nel database.", e);
         } finally {
             if (conn != null){
@@ -108,9 +112,9 @@ public class    DatabaseAccountDao implements AccountDao {
 
     @Override
     public Optional<Account> findByEmail(String email) throws DaoException {
-        Objects.requireNonNull(email, "Email cannot be null" );
+        Objects.requireNonNull(email, nullEmailMsg );
 
-        String sql = "SELECT * FROM accounts WHERE email=?";
+        String sql = "SELECT (user_id, email, password_hash, refreshToken, profileType) FROM accounts WHERE email=?";
         Connection conn = null;
 
         try {
@@ -130,7 +134,7 @@ public class    DatabaseAccountDao implements AccountDao {
                     }
                 }
             }
-        } catch (SQLException | InterruptedException e){
+        } catch (SQLException e){
             throw new DaoException("Errore critico durante la ricerca dell'account nel database", e);
         } finally {
             if (conn != null){
@@ -146,7 +150,7 @@ public class    DatabaseAccountDao implements AccountDao {
             return Optional.empty();
         }
 
-        String sql = "SELECT * FROM accounts WHERE refreshToken=?";
+        String sql = "SELECT (user_id, email, password_hash, refreshToken, profileType) FROM accounts WHERE refreshToken=?";
         Connection conn = null;
 
         try {
@@ -166,7 +170,7 @@ public class    DatabaseAccountDao implements AccountDao {
                     }
                 }
             }
-        }catch (SQLException | InterruptedException e){
+        }catch (SQLException e){
                 throw new DaoException("Errore critico durante la ricerca dell'account nel database", e);
         } finally {
             if (conn != null){
@@ -178,8 +182,8 @@ public class    DatabaseAccountDao implements AccountDao {
 
     @Override
     public void delete(Account account) throws DaoException {
-        Objects.requireNonNull(account, "Account cannot be null");
-        Objects.requireNonNull(account.getUserId(), "Account userId cannot be null");
+        Objects.requireNonNull(account, nullEmailMsg);
+        Objects.requireNonNull(account.getUserId(), nullIdMsg);
 
         String sql = "DELETE FROM accounts WHERE user_id=?";
         Connection conn = null;
@@ -190,7 +194,7 @@ public class    DatabaseAccountDao implements AccountDao {
                 stm.setString(1, account.getUserId());
                 stm.executeUpdate();
             }
-        } catch (SQLException | InterruptedException e) {
+        } catch (SQLException e) {
             throw new DaoException("Errore critico durante la cancellazione dell'account nel database.", e);
         } finally {
             if (conn != null){

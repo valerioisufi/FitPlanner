@@ -33,7 +33,7 @@ public class DatabaseCoachingDao implements CoachingDao {
                 throw new RuntimeException("Errore SQL: Impossibile creare la tabella 'coaching'. " +
                         "Verifica la query o i permessi utente su MySQL.", e);
             }
-        } catch (SQLException | InterruptedException e) {
+        } catch (SQLException e) {
             throw new RuntimeException("Errore critico: impossibile inizializzare la tabella 'coaching'. " +
                     "Il database è irraggiungibile o i permessi sono errati.", e);
         } finally {
@@ -58,7 +58,7 @@ public class DatabaseCoachingDao implements CoachingDao {
                     stm.setString(2, athleteId);
                     stm.executeUpdate();
                 }
-            } catch (SQLException | InterruptedException e) {
+            } catch (SQLException e) {
                 throw new DaoException("Errore critico durante l'aggiunta dell'atleta al proprio trainer nel database", e);
             } finally {
                 if (conn != null) {
@@ -84,7 +84,7 @@ public class DatabaseCoachingDao implements CoachingDao {
                     stm.setString(2, athleteId);
                     stm.executeUpdate();
                 }
-            }catch (SQLException | InterruptedException e){
+            }catch (SQLException e){
                 throw new DaoException("Errore critico durante la rimozione dell'atleta dal proprio trainer nel database", e);
             } finally {
                 if (conn != null) {
@@ -110,7 +110,7 @@ public class DatabaseCoachingDao implements CoachingDao {
                     return rs.next();
                 }
             }
-        }catch(SQLException | InterruptedException e){
+        }catch (SQLException e){
             throw new DaoException("Errore critico durante la ricerca dell'atleta e/o del trainer nel database", e);
         }finally {
             if (conn != null) {
@@ -139,7 +139,7 @@ public class DatabaseCoachingDao implements CoachingDao {
                     return athleteIds;
                 }
             }
-        }catch (SQLException | InterruptedException e){
+        }catch (SQLException e){
             throw new DaoException("Errore critico durante la ricerca dell'atleta nel database", e);
         }finally {
             if (conn != null) {
@@ -166,7 +166,7 @@ public class DatabaseCoachingDao implements CoachingDao {
                     }
                 }
             }
-        }catch (SQLException | InterruptedException e){
+        }catch (SQLException e){
             throw new DaoException("Errore critico durante la ricerca dell'trainer nel database", e);
         }finally {
             if (conn != null) {
