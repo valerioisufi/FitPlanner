@@ -8,13 +8,13 @@ import com.example.fitplannerclient.entity.plan.context.ExecutionResult;
 import com.example.fitplannerclient.entity.plan.context.PlanNodeState;
 
 public class RestDecorator extends FlowDecorator{
-    private int restDurationMillis;
+    private String restDuration;
 
     private int sleepTimeMillis = 0;
 
-    public RestDecorator(PlanNode wrappedNode, int restDurationMillis) {
+    public RestDecorator(PlanNode wrappedNode, String restDuration) {
         super(wrappedNode);
-        this.restDurationMillis = restDurationMillis;
+        this.restDuration = restDuration;
     }
 
     @Override
@@ -62,16 +62,18 @@ public class RestDecorator extends FlowDecorator{
         ExecutionResult result = wrappedNode.execute(context);
 
         if (result.getState() == PlanNodeState.COMPLETED || result.getState() == PlanNodeState.SKIPPED) {
-            if (restDurationMillis <= 0) {
+            int actualRest = context.resolveAsInteger(restDuration, 0);
+
+            if (actualRest <= 0) {
                 this.state = PlanNodeState.COMPLETED;
                 return new ExecutionResult(PlanNodeState.COMPLETED);
             }
 
             // passo allo stato di riposo
             this.state = PlanNodeState.WAITING;
-            this.sleepTimeMillis = restDurationMillis;
+            this.sleepTimeMillis = actualRest;
 
-            return new ExecutionResult(PlanNodeState.WAITING, restDurationMillis);
+            return new ExecutionResult(PlanNodeState.WAITING, actualRest);
         } else if (result.getState() == PlanNodeState.REVERT) {
             this.reset();
 
@@ -89,16 +91,16 @@ public class RestDecorator extends FlowDecorator{
         wrappedNode.reset();
     }
 
-    public int getRestDurationMillis() {
-        return restDurationMillis;
+    public String getRestDuration() {
+        return restDuration;
     }
 
-    public void setRestDurationMillis(int restDurationMillis) {
-        this.restDurationMillis = restDurationMillis;
+    public void setRestDuration(String restDuration) {
+        this.restDuration = restDuration;
     }
 
     @Override
     public RestDecorator cloneWithNode(PlanNode newWrappedNode) {
-        return new RestDecorator(newWrappedNode, this.restDurationMillis);
+        return new RestDecorator(newWrappedNode, this.restDuration);
     }
 }

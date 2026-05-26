@@ -83,10 +83,24 @@ public class ExerciseNode extends PlanNode {
         this.modifiers.add(modifier);
     }
 
-    public boolean hasModifier(com.example.fitplannerclient.entity.plan.exercise.ModifierType type) {
+    public boolean hasModifier(ModifierType type) {
         return modifiers.stream().anyMatch(m -> m.getType() == type);
     }
 
+    public List<ExerciseModifier> getResolvedModifiers(ExecutionContext context) {
+        if (context == null) {
+            return new ArrayList<>(modifiers);
+        }
+        
+        List<ExerciseModifier> resolved = new ArrayList<>();
+
+        for (ExerciseModifier mod : modifiers) {
+            String resolvedValue = context.resolveVariables(mod.getValue());
+            resolved.add(new ExerciseModifier(mod.getType(), resolvedValue));
+        }
+
+        return resolved;
+    }
 }
 
 

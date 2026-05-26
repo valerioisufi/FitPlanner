@@ -7,12 +7,12 @@ import com.example.fitplannerclient.entity.plan.context.ExecutionResult;
 import com.example.fitplannerclient.entity.plan.context.PlanNodeState;
 
 public class TimeLimitDecorator extends FlowDecorator {
-    private int timeLimitMillis;
+    private String timeLimit;
     private int timeLeftMillis = 0;
 
-    public TimeLimitDecorator(PlanNode wrappedNode, int timeLimitMillis) {
+    public TimeLimitDecorator(PlanNode wrappedNode, String timeLimit) {
         super(wrappedNode);
-        this.timeLimitMillis = timeLimitMillis;
+        this.timeLimit = timeLimit;
     }
 
     @Override
@@ -28,7 +28,7 @@ public class TimeLimitDecorator extends FlowDecorator {
 
         if (this.state == PlanNodeState.IDLE) {
             this.state = PlanNodeState.RUNNING;
-            this.timeLeftMillis = timeLimitMillis;
+            this.timeLeftMillis = context.resolveAsInteger(timeLimit, 0);
         }
 
         int delta = context.getTickDelta();
@@ -75,16 +75,16 @@ public class TimeLimitDecorator extends FlowDecorator {
         this.wrappedNode.reset();
     }
 
-    public int getTimeLimitMillis() {
-        return timeLimitMillis;
+    public String getTimeLimit() {
+        return timeLimit;
     }
 
-    public void setTimeLimitMillis(int timeLimitMillis) {
-        this.timeLimitMillis = timeLimitMillis;
+    public void setTimeLimit(String timeLimit) {
+        this.timeLimit = timeLimit;
     }
 
     @Override
     public TimeLimitDecorator cloneWithNode(PlanNode newWrappedNode) {
-        return new TimeLimitDecorator(newWrappedNode, this.timeLimitMillis);
+        return new TimeLimitDecorator(newWrappedNode, this.timeLimit);
     }
 }

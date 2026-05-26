@@ -9,7 +9,7 @@ import com.example.fitplannerclient.entity.plan.context.PlanNodeState;
 public class LoopDecorator extends FlowDecorator {
     private int rounds;
 
-    private int currentRound = 0;
+    protected int currentRound = 0;
 
     public LoopDecorator(PlanNode wrappedNode, int rounds) {
         super(wrappedNode);

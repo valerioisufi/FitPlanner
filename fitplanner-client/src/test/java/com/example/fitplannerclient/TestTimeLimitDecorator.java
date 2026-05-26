@@ -22,7 +22,7 @@ public class TestTimeLimitDecorator {
         DummyPlanNode child = new DummyPlanNode();
         child.setNextResult(PlanNodeState.RUNNING);
 
-        TimeLimitDecorator timeLimit = new TimeLimitDecorator(child, 60000); // 60s
+        TimeLimitDecorator timeLimit = new TimeLimitDecorator(child, "60000"); // 60s
         ExecutionContext context = new ExecutionContext();
         context.setTickDelta(1000); // passa 1 secondo
 
@@ -42,7 +42,7 @@ public class TestTimeLimitDecorator {
         DummyPlanNode child = new DummyPlanNode();
         child.setNextResult(PlanNodeState.RUNNING);
         
-        TimeLimitDecorator timeLimit = new TimeLimitDecorator(child, 500);
+        TimeLimitDecorator timeLimit = new TimeLimitDecorator(child, "500");
         ExecutionContext context = new ExecutionContext();
 
         context.setTickDelta(1000); 
@@ -62,7 +62,7 @@ public class TestTimeLimitDecorator {
         DummyPlanNode child = new DummyPlanNode();
         child.setNextResult(PlanNodeState.COMPLETED);
         
-        TimeLimitDecorator timeLimit = new TimeLimitDecorator(child, 60000);
+        TimeLimitDecorator timeLimit = new TimeLimitDecorator(child, "60000");
         ExecutionContext context = new ExecutionContext();
         context.setTickDelta(5000);
 
@@ -80,7 +80,7 @@ public class TestTimeLimitDecorator {
         DummyPlanNode child = new DummyPlanNode();
         child.setNextResult(PlanNodeState.SKIPPED);
         
-        TimeLimitDecorator timeLimit = new TimeLimitDecorator(child, 60000);
+        TimeLimitDecorator timeLimit = new TimeLimitDecorator(child, "60000");
         ExecutionContext context = new ExecutionContext();
 
         // Act
@@ -94,7 +94,7 @@ public class TestTimeLimitDecorator {
     void TestExecuteChildReverts() {
         // Arrange
         DummyPlanNode child = new DummyPlanNode();
-        TimeLimitDecorator timeLimit = new TimeLimitDecorator(child, 60000);
+        TimeLimitDecorator timeLimit = new TimeLimitDecorator(child, "60000");
         ExecutionContext context = new ExecutionContext();
 
         child.setNextResult(PlanNodeState.RUNNING);
