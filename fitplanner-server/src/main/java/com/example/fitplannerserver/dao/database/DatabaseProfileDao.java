@@ -5,41 +5,14 @@ import com.example.fitplannerserver.dao.ProfileDao;
 import com.example.fitplannerserver.exception.DaoException;
 import com.example.fitplannerserver.model.User;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Objects;
 import java.util.Optional;
 
 public class DatabaseProfileDao implements ProfileDao {
-
-    public DatabaseProfileDao(){
-        createTableIfNotExist();
-    }
-
-    private void createTableIfNotExist(){
-        String sql= """
-                CREATE TABLE IF NOT EXISTS profiles(
-                user_id VARCHAR(36) PRIMARY KEY,
-                first_name VARCHAR(255) NOT NULL,
-                last_name VARCHAR(255) NOT NULL,
-                email VARCHAR(320),
-                phone_number VARCHAR(15),
-                invitation_code VARCHAR(255),
-                FOREIGN KEY (user_id) REFERENCES accounts(user_id) ON DELETE CASCADE)
-                """;
-        Connection conn = null;
-        try {
-            conn = DbConnection.getInstance().getConnection();
-            try (Statement stmt = conn.createStatement()) {
-                stmt.execute(sql);
-            } catch (SQLException e) {
-                throw new RuntimeException("Errore SQL: Impossibile creare la tabella 'profiles'.", e);
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException("Errore di Connessione: Impossibile inizializzare la tabella 'profiles'.", e);
-        } finally {
-            DbConnection.getInstance().releaseConnection(conn);
-        }
-    }
 
     @Override
     public Optional<User> findById(String userId) throws DaoException {
@@ -66,10 +39,10 @@ public class DatabaseProfileDao implements ProfileDao {
                     }
                 }
             }
-        } catch (SQLException e){
+        } catch (SQLException e) {
             throw new DaoException("Errore critico durante la ricerca dell'utente nel database", e);
         } finally {
-            if (conn != null){
+            if (conn != null) {
                 DbConnection.getInstance().releaseConnection(conn);
             }
         }
@@ -80,12 +53,12 @@ public class DatabaseProfileDao implements ProfileDao {
     public void save(User user) throws DaoException {
         Objects.requireNonNull(user, "user cannot be null");
 
-        String sql= """
-                UPDATE profiles SET first_name=?, last_name=?, email=?, phone_number=?, invitation_code=? WHERE user_id=?;
+        String sql = """
+                UPDATE profiles SET first_name=?, last_name=?, contact_email=?, phone_number=?, invitation_code=? WHERE user_id=?;
                 """;
         Connection conn = null;
 
-        try{
+        try {
             conn = DbConnection.getInstance().getConnection();
             try (PreparedStatement stm = conn.prepareStatement(sql)) {
                 stm.setString(1, user.getFirstName());
@@ -96,10 +69,10 @@ public class DatabaseProfileDao implements ProfileDao {
                 stm.setString(6, user.getId());
                 stm.executeUpdate();
             }
-        } catch (SQLException e){
+        } catch (SQLException e) {
             throw new DaoException("Errore critico durante l'aggiornamento (save) dell'utente nel database.", e);
         } finally {
-            if (conn != null){
+            if (conn != null) {
                 DbConnection.getInstance().releaseConnection(conn);
             }
         }
@@ -124,7 +97,7 @@ public class DatabaseProfileDao implements ProfileDao {
                                 rs.getString("user_id"),
                                 rs.getString("first_name"),
                                 rs.getString("last_name"),
-                                rs.getString("email"),
+                                rs.getString("contact_email"),
                                 rs.getString("phone_number"),
                                 rs.getString("invitation_code")
                         );
@@ -132,10 +105,10 @@ public class DatabaseProfileDao implements ProfileDao {
                     }
                 }
             }
-        }catch (SQLException e){
-                throw new DaoException("Errore critico durante la ricerca dell'utente nel database", e);
-        }finally {
-            if (conn != null){
+        } catch (SQLException e) {
+            throw new DaoException("Errore critico durante la ricerca dell'utente nel database", e);
+        } finally {
+            if (conn != null) {
                 DbConnection.getInstance().releaseConnection(conn);
             }
         }
@@ -153,7 +126,7 @@ public class DatabaseProfileDao implements ProfileDao {
 
         try {
             conn = DbConnection.getInstance().getConnection();
-            try (PreparedStatement stm = conn.prepareStatement(sql)){
+            try (PreparedStatement stm = conn.prepareStatement(sql)) {
                 stm.setString(1, userId);
                 try (ResultSet rs = stm.executeQuery()) {
                     if (rs.next()) {
@@ -161,10 +134,10 @@ public class DatabaseProfileDao implements ProfileDao {
                     }
                 }
             }
-        } catch (SQLException e){
+        } catch (SQLException e) {
             throw new DaoException("Errore critico durante la ricerca dell'utente nel database", e);
         } finally {
-            if (conn != null){
+            if (conn != null) {
                 DbConnection.getInstance().releaseConnection(conn);
             }
         }

@@ -1,0 +1,23 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: fitplanner-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+
+      MYSQL_DATABASE: fitplanner_db
+      MYSQL_USER: fitplanner_user
+      MYSQL_PASSWORD: fitplanner_password
+    ports:
+      # mappa la porta 3306 del container alla porta 3306 dell'host
+      - "3306:3306"
+    volumes:
+      # volume gestito da Docker per la persistenza dei dati del database
+      - db_data:/var/lib/mysql
+      # mappatura della cartella locale degli script SQL
+      - ./database/init:/docker-entrypoint-initdb.d
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+
+volumes:
+  db_data:

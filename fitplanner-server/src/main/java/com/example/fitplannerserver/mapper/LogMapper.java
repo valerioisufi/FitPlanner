@@ -77,9 +77,11 @@ public class LogMapper {
 
         SessionLog entity = new SessionLog(
                 userId,
-                bean.getNotes().trim(),
+                bean.getNotes() == null ? "" : bean.getNotes().trim(),
                 status,
-                date
+                date,
+                bean.getPlanIdReference(),
+                bean.getWorkoutSessionDay()
         );
 
         for (ExerciseLogDTO exBean : bean.getExerciseLogs()) {

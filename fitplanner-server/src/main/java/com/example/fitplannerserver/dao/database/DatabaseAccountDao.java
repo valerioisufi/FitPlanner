@@ -5,48 +5,19 @@ import com.example.fitplannerserver.dao.DbConnection;
 import com.example.fitplannerserver.exception.DaoException;
 import com.example.fitplannerserver.model.Account;
 
-
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Objects;
 import java.util.Optional;
 
-public class    DatabaseAccountDao implements AccountDao {
+public class DatabaseAccountDao implements AccountDao {
 
-    private static final String nullAccMsg= "account cannot be null";
-    private static final String nullEmailMsg= "email cannot be null";
-    private static final String nullIdMsg= "userId cannot be null";
+    private static final String nullAccMsg = "account cannot be null";
+    private static final String nullEmailMsg = "email cannot be null";
+    private static final String nullIdMsg = "userId cannot be null";
 
-    public DatabaseAccountDao(){
-        createTableIfNotExist();
-    }
-
-    private void createTableIfNotExist() {
-        String sql="""
-                CREATE TABLE IF NOT EXISTS accounts(
-                user_id VARCHAR(36) PRIMARY KEY,
-                email VARCHAR(320) NOT NULL UNIQUE,
-                password_hash VARCHAR(255) NOT NULL,
-                refreshToken VARCHAR(255),
-                profile_type VARCHAR(50) NOT NULL);
-                """;
-        Connection conn= null;
-        try{
-            conn = DbConnection.getInstance().getConnection();
-            try (Statement stm= conn.createStatement()) {
-                stm.execute(sql);
-            } catch (SQLException e) {
-                throw new RuntimeException("Errore SQL: Impossibile creare la tabella 'accounts'. " +
-                        "Verifica la query o i permessi utente su MySQL.", e);
-            }
-        } catch (SQLException e) {
-                throw new RuntimeException("Errore critico: impossibile inizializzare la tabella 'accounts'. " +
-                        "Il database è irraggiungibile o i permessi sono errati.", e);
-        } finally {
-            if (conn != null){
-                DbConnection.getInstance().releaseConnection(conn);
-                }
-        }
-    }
 
     @Override
     public boolean create(Account account) throws DaoException {
@@ -68,12 +39,12 @@ public class    DatabaseAccountDao implements AccountDao {
             }
         } catch (SQLException e) {
             if (e instanceof SQLException sqlException && sqlException.getSQLState() != null
-                    && sqlException.getSQLState().startsWith("23")) {
+                && sqlException.getSQLState().startsWith("23")) {
                 return false;
             }
             throw new DaoException("Errore durante la creazione dell'account o di rete", e);
         } finally {
-            if (conn != null){
+            if (conn != null) {
                 DbConnection.getInstance().releaseConnection(conn);
             }
 
@@ -104,7 +75,7 @@ public class    DatabaseAccountDao implements AccountDao {
         } catch (SQLException e) {
             throw new DaoException("Errore critico durante l'aggiornamento dell'account nel database.", e);
         } finally {
-            if (conn != null){
+            if (conn != null) {
                 DbConnection.getInstance().releaseConnection(conn);
             }
         }
@@ -112,7 +83,7 @@ public class    DatabaseAccountDao implements AccountDao {
 
     @Override
     public Optional<Account> findByEmail(String email) throws DaoException {
-        Objects.requireNonNull(email, nullEmailMsg );
+        Objects.requireNonNull(email, nullEmailMsg);
 
         String sql = "SELECT (user_id, email, password_hash, refreshToken, profileType) FROM accounts WHERE email=?";
         Connection conn = null;
@@ -134,10 +105,10 @@ public class    DatabaseAccountDao implements AccountDao {
                     }
                 }
             }
-        } catch (SQLException e){
+        } catch (SQLException e) {
             throw new DaoException("Errore critico durante la ricerca dell'account nel database", e);
         } finally {
-            if (conn != null){
+            if (conn != null) {
                 DbConnection.getInstance().releaseConnection(conn);
             }
         }
@@ -170,10 +141,10 @@ public class    DatabaseAccountDao implements AccountDao {
                     }
                 }
             }
-        }catch (SQLException e){
-                throw new DaoException("Errore critico durante la ricerca dell'account nel database", e);
+        } catch (SQLException e) {
+            throw new DaoException("Errore critico durante la ricerca dell'account nel database", e);
         } finally {
-            if (conn != null){
+            if (conn != null) {
                 DbConnection.getInstance().releaseConnection(conn);
             }
         }
@@ -197,7 +168,7 @@ public class    DatabaseAccountDao implements AccountDao {
         } catch (SQLException e) {
             throw new DaoException("Errore critico durante la cancellazione dell'account nel database.", e);
         } finally {
-            if (conn != null){
+            if (conn != null) {
                 DbConnection.getInstance().releaseConnection(conn);
             }
         }

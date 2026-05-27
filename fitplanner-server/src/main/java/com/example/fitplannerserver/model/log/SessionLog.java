@@ -15,13 +15,12 @@ public class SessionLog {
 
     private List<ExerciseLog> exerciseLogs;
 
-    public SessionLog(String userId, String notes, SessionStatus status, LocalDateTime date,
-                      PlanReference planReference) {
+    public SessionLog(String userId, String notes, SessionStatus status, LocalDateTime date, String planId, int workoutSessionDay) {
         this.userId = userId;
         this.notes = notes;
         this.status = status;
-        this.planReference = planReference;
         this.date = date;
+        this.planReference = new PlanReference(planId, workoutSessionDay);
 
         this.exerciseLogs = new ArrayList<>();
     }

@@ -5,47 +5,15 @@ import com.example.fitplannerserver.dao.ExerciseLibraryDao;
 import com.example.fitplannerserver.exception.DaoException;
 import com.example.fitplannerserver.model.plan.ExerciseDescription;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
 public class DatabaseExerciseLibraryDao implements ExerciseLibraryDao {
-
-    public DatabaseExerciseLibraryDao(){
-        createTableIfNotExist();
-    }
-
-    private void createTableIfNotExist(){
-        String sql= """
-                CREATE TABLE IF NOT EXISTS exercise_library(
-                exercise_id VARCHAR(36) NOT NULL,
-                trainer_id VARCHAR(36) NOT NULL,
-                name VARCHAR(255) NOT NULL,
-                execution TEXT NOT NULL,
-                muscle_groups VARCHAR(255) NOT NULL,
-                PRIMARY KEY exercise_id,
-                FOREIGN KEY (trainer_id) REFERENCES accounts(user_id) ON DELETE CASCADE);
-                """;
-
-        Connection conn= null;
-        try{
-            conn = DbConnection.getInstance().getConnection();
-            try (Statement stm= conn.createStatement()) {
-                stm.execute(sql);
-            } catch (SQLException e) {
-                throw new RuntimeException("Errore SQL: Impossibile creare la tabella 'exercise_library'. " +
-                        "Verifica la query o i permessi utente su MySQL.", e);
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException("Errore critico: impossibile inizializzare la tabella 'exercise_library'. " +
-                    "Il database è irraggiungibile o i permessi sono errati.", e);
-        } finally {
-            if (conn != null){
-                DbConnection.getInstance().releaseConnection(conn);
-            }
-        }
-    }
 
     @Override
     public void saveExercise(ExerciseDescription exercise) throws DaoException {
@@ -53,14 +21,14 @@ public class DatabaseExerciseLibraryDao implements ExerciseLibraryDao {
         Objects.requireNonNull(exercise.getExerciseId(), "exercise id cannot be null");
         Objects.requireNonNull(exercise.getTrainerId(), "trainer id cannot be null");
 
-        String sql= """
+        String sql = """
                 UPDATE exercise_library SET name=?, execution=?, muscle_groups=? WHERE (trainer_id=? AND exercise_id=?)
                 """;
         Connection conn = null;
 
-        try{
+        try {
             conn = DbConnection.getInstance().getConnection();
-            try (PreparedStatement stm = conn.prepareStatement(sql)){
+            try (PreparedStatement stm = conn.prepareStatement(sql)) {
                 stm.setString(1, exercise.getName());
                 stm.setString(2, exercise.getExecution());
                 stm.setString(3, String.join(",", exercise.getMuscleGroups()));
@@ -68,10 +36,10 @@ public class DatabaseExerciseLibraryDao implements ExerciseLibraryDao {
                 stm.setString(5, exercise.getExerciseId());
                 stm.executeUpdate();
             }
-        }catch (SQLException e){
+        } catch (SQLException e) {
             throw new DaoException("Errore critico durante l'aggiornamento dell'esercizio nel database.", e);
-        }finally {
-            if (conn != null){
+        } finally {
+            if (conn != null) {
                 DbConnection.getInstance().releaseConnection(conn);
             }
         }
@@ -81,21 +49,21 @@ public class DatabaseExerciseLibraryDao implements ExerciseLibraryDao {
     public void deleteExercise(String exerciseId) throws DaoException {
         Objects.requireNonNull(exerciseId, "exerciseId cannot be null");
 
-        String sql= """
+        String sql = """
                 DELETE FROM exercise_library WHERE exercise_id=?;
                 """;
         Connection conn = null;
 
-        try{
+        try {
             conn = DbConnection.getInstance().getConnection();
-            try (PreparedStatement stm = conn.prepareStatement(sql)){
+            try (PreparedStatement stm = conn.prepareStatement(sql)) {
                 stm.setString(1, exerciseId);
                 stm.executeUpdate();
             }
-        }catch (SQLException e){
+        } catch (SQLException e) {
             throw new DaoException("Errore critico durante la cancellazione dell'esercizio nel database.", e);
-        }finally {
-                DbConnection.getInstance().releaseConnection(conn);
+        } finally {
+            DbConnection.getInstance().releaseConnection(conn);
         }
     }
 
@@ -103,7 +71,7 @@ public class DatabaseExerciseLibraryDao implements ExerciseLibraryDao {
     public Optional<ExerciseDescription> findById(String exerciseId) throws DaoException {
         Objects.requireNonNull(exerciseId, "exerciseId cannot be null");
 
-        String sql= """
+        String sql = """
                 SELECT * FROM exercise_library WHERE exercise_id=?;
                 """;
         Connection conn = null;
@@ -124,10 +92,10 @@ public class DatabaseExerciseLibraryDao implements ExerciseLibraryDao {
                     }
                 }
             }
-        }catch (SQLException e){
-                throw new DaoException("Errore critico durante la ricerca dell'esercizio nel database.", e);
-        }finally {
-                DbConnection.getInstance().releaseConnection(conn);
+        } catch (SQLException e) {
+            throw new DaoException("Errore critico durante la ricerca dell'esercizio nel database.", e);
+        } finally {
+            DbConnection.getInstance().releaseConnection(conn);
         }
         return Optional.empty();
     }
@@ -136,7 +104,7 @@ public class DatabaseExerciseLibraryDao implements ExerciseLibraryDao {
     public List<ExerciseDescription> findAllByTrainerId(String trainerId) throws DaoException {
         Objects.requireNonNull(trainerId, "trainerId cannot be null");
 
-        String sql= """
+        String sql = """
                 SELECT * FROM exercise_library WHERE trainer_id=?;
                 """;
         Connection conn = null;
@@ -159,10 +127,10 @@ public class DatabaseExerciseLibraryDao implements ExerciseLibraryDao {
                     return exercises;
                 }
             }
-        }catch (SQLException e){
-                throw new DaoException("Errore critico durante la ricerca dell'esercizio nel database.", e);
-        }finally {
-                DbConnection.getInstance().releaseConnection(conn);
+        } catch (SQLException e) {
+            throw new DaoException("Errore critico durante la ricerca dell'esercizio nel database.", e);
+        } finally {
+            DbConnection.getInstance().releaseConnection(conn);
         }
     }
 
@@ -171,7 +139,7 @@ public class DatabaseExerciseLibraryDao implements ExerciseLibraryDao {
         Objects.requireNonNull(exerciseIds, "exerciseIds cannot be null");
 
         List<ExerciseDescription> exercises = new java.util.ArrayList<>();
-        String sql= """
+        String sql = """
                 SELECT * FROM exercise_library WHERE exercise_id IN (?);
                 """;
         Connection conn = null;
@@ -193,10 +161,10 @@ public class DatabaseExerciseLibraryDao implements ExerciseLibraryDao {
                     return exercises;
                 }
             }
-        }catch (SQLException e){
-                    throw new DaoException("Errore critico durante la ricerca dell'esercizio nel database.", e);
-        }finally {
-                    DbConnection.getInstance().releaseConnection(conn);
+        } catch (SQLException e) {
+            throw new DaoException("Errore critico durante la ricerca dell'esercizio nel database.", e);
+        } finally {
+            DbConnection.getInstance().releaseConnection(conn);
         }
     }
 
