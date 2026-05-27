@@ -60,8 +60,34 @@ public class EditWorkoutPlanManager {
         return planFacade.getPlanDetailsByIdAsync(planId)
                 .thenAccept(planDto -> {
                     this.plan = deserializer.toEntity(planDto);
+                    workoutPlanSubject.notifyObservers();
                 });
+    }
 
+    public void addExercise(String parentBlockId, String exerciseId) {
+        // TODO: Create and execute AddExerciseCommand
+        // WorkoutPlanEditorCommand cmd = new AddExerciseCommand(plan, parentBlockId, exerciseId);
+        // executeCommand(cmd);
+        
+        System.out.println("Esercizio aggiunto al blocco: " + parentBlockId);
+    }
+
+    public void removeNode(String nodeId) {
+        // TODO: Create and execute RemoveNodeCommand
+        // executeCommand(new RemoveNodeCommand(plan, nodeId));
+    }
+
+    public void setRestTime(String nodeId, int timeMillis) {
+        // TODO: Create and execute SetRestTimeCommand
+    }
+
+    public CompletableFuture<Void> saveChanges() {
+        if (plan == null || plan.getPlanId() == null) {
+            return CompletableFuture.failedFuture(new IllegalStateException("Nessun piano in modifica"));
+        }
+        PlanToDtoVisitor serializer = new PlanToDtoVisitor();
+        plan.accept(serializer);
+        return planFacade.updatePlanAsync(plan.getPlanId(), serializer.getPlanDto());
     }
 
     private void executeCommand(WorkoutPlanEditorCommand command) {

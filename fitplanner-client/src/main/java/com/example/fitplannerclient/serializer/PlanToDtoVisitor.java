@@ -30,6 +30,7 @@ public class PlanToDtoVisitor implements WorkoutPlanVisitor {
     @Override
     public void visit(WorkoutPlan workoutPlan) {
         this.planDto = new WorkoutPlanDTO();
+        this.planDto.setPlanId(workoutPlan.getPlanId());
         this.planDto.setName(workoutPlan.getName());
         this.planDto.setCycleLength(workoutPlan.getCycleLength());
 
@@ -69,7 +70,7 @@ public class PlanToDtoVisitor implements WorkoutPlanVisitor {
                 .stream()
                 .map(modifier ->
                         new PlanNodeDTO.Modifier(
-                                modifier.getName(),
+                                PlanNodeDTO.ModifierType.valueOf(modifier.getType().name()),
                                 modifier.getValue()
                         )
                 )
@@ -94,12 +95,26 @@ public class PlanToDtoVisitor implements WorkoutPlanVisitor {
             child.accept(this);
         }
 
+        currentNodeDto = thisNodeDto;
     }
 
     @Override
     public void visit(ProtocolBlock protocolBlock) {
         currentNodeDto.setType(PlanNodeDTO.NodeType.PROTOCOL_BLOCK);
+        currentNodeDto.setName(protocolBlock.getSemanticType());
 
+        PlanNodeDTO thisNodeDto = currentNodeDto;
+
+        for (int i = 0; i < protocolBlock.getChildrenCount(); i++) {
+            PlanNode child = protocolBlock.getNodeAt(i);
+
+            currentNodeDto = new PlanNodeDTO();
+            thisNodeDto.getChildren().add(currentNodeDto);
+
+            child.accept(this);
+        }
+
+        currentNodeDto = thisNodeDto;
     }
 
     @Override
@@ -117,7 +132,7 @@ public class PlanToDtoVisitor implements WorkoutPlanVisitor {
         visitFlowDecorator(
                 restDecorator,
                 PlanNodeDTO.FlowDecoratorType.REST,
-                String.valueOf(restDecorator.getRestDuration())
+                restDecorator.getRestDuration()
         );
 
     }
@@ -127,7 +142,7 @@ public class PlanToDtoVisitor implements WorkoutPlanVisitor {
         visitFlowDecorator(
                 timeLimitDecorator,
                 PlanNodeDTO.FlowDecoratorType.TIME_LIMIT,
-                String.valueOf(timeLimitDecorator.getTimeLimit())
+                timeLimitDecorator.getTimeLimit()
         );
 
     }
@@ -137,7 +152,7 @@ public class PlanToDtoVisitor implements WorkoutPlanVisitor {
         visitFlowDecorator(
                 progressionDecorator,
                 PlanNodeDTO.FlowDecoratorType.PROGRESSION,
-                progressionDecorator.getProgression()
+                progressionDecorator.getProgressionString()
         );
 
     }
@@ -147,7 +162,7 @@ public class PlanToDtoVisitor implements WorkoutPlanVisitor {
         visitFlowDecorator(
                 intervalDecorator,
                 PlanNodeDTO.FlowDecoratorType.INTERVAL,
-                String.valueOf(intervalDecorator.getIntervalDuration())
+                intervalDecorator.getIntervalDuration()
         );
     }
 
@@ -163,6 +178,8 @@ public class PlanToDtoVisitor implements WorkoutPlanVisitor {
         previousNodeDto.getChildren().add(currentNodeDto);
 
         flowDecorator.getWrappedNode().accept(this);
+
+        currentNodeDto = previousNodeDto;
     }
 
 }

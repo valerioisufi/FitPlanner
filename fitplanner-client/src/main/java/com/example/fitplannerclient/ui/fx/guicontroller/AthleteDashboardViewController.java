@@ -1,6 +1,7 @@
 package com.example.fitplannerclient.ui.fx.guicontroller;
 
 import com.example.fitplannerclient.bean.profile.ProfileBean;
+import com.example.fitplannerclient.controller.log.WorkoutHistoryManager;
 import com.example.fitplannerclient.controller.plan.WorkoutPlanManager;
 import com.example.fitplannerclient.controller.profile.ProfileManager;
 import com.example.fitplannerclient.ui.fx.GuiController;
@@ -18,11 +19,13 @@ public class AthleteDashboardViewController implements GuiController {
     private final HeaderViewController headerViewController;
     private final ProfileBean athlete;
     private final WorkoutPlanManager planManager;
+    private final WorkoutHistoryManager historyManager;
     private final GuiManager guiManager;
 
-    public AthleteDashboardViewController(ProfileBean athlete, ProfileManager profileManager, WorkoutPlanManager planManager, GuiManager guiManager) {
+    public AthleteDashboardViewController(ProfileBean athlete, ProfileManager profileManager, WorkoutPlanManager planManager, WorkoutHistoryManager historyManager, GuiManager guiManager) {
         this.athlete = athlete;
         this.planManager = planManager;
+        this.historyManager = historyManager;
         this.guiManager = guiManager;
 
         // Header view using index -1 (nessuna tab evidenziata) o index 0 (Home)
@@ -49,7 +52,7 @@ public class AthleteDashboardViewController implements GuiController {
         long endTimestamp = Instant.now().toEpochMilli();
         long startTimestamp = Instant.now().minus(30, ChronoUnit.DAYS).toEpochMilli();
 
-        planManager.getFilteredSessionLogsAsync(athlete.getUserId(), startTimestamp, endTimestamp)
+        historyManager.getFilteredSessionLogsAsync(athlete.getUserId(), startTimestamp, endTimestamp)
                 .thenAccept(logs -> Platform.runLater(() -> view.setSessionLogs(logs)))
                 .exceptionally(ex -> {
                     Platform.runLater(() -> guiManager.showNotification(

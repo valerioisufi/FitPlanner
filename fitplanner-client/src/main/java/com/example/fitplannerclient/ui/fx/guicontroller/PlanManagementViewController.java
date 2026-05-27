@@ -1,0 +1,149 @@
+package com.example.fitplannerclient.ui.fx.guicontroller;
+
+import com.example.fitplannerclient.bean.plan.WorkoutPlanBean;
+import com.example.fitplannerclient.bean.profile.ProfileBean;
+import com.example.fitplannerclient.controller.plan.WorkoutPlanManager;
+import com.example.fitplannerclient.controller.profile.ProfileManager;
+import com.example.fitplannerclient.ui.fx.GuiController;
+import com.example.fitplannerclient.ui.fx.GuiManager;
+import com.example.fitplannerclient.ui.fx.Navigator;
+import com.example.fitplannerclient.ui.fx.view.plan.PlanManagementView;
+import javafx.application.Platform;
+import javafx.scene.control.Alert;
+import javafx.scene.layout.Pane;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class PlanManagementViewController implements GuiController {
+
+    private final PlanManagementView view;
+    private final HeaderViewController headerViewController;
+
+    private final WorkoutPlanManager planManager;
+    private final ProfileManager profileManager;
+    private final GuiManager guiManager;
+
+    private List<ProfileBean> athletesCache = new ArrayList<>();
+
+    public PlanManagementViewController(WorkoutPlanManager planManager, ProfileManager profileManager, GuiManager guiManager) {
+        this.planManager = planManager;
+        this.profileManager = profileManager;
+        this.guiManager = guiManager;
+
+        this.headerViewController = new HeaderViewController(2, profileManager);
+        this.view = new PlanManagementView();
+        this.view.setHeaderView(this.headerViewController.getView());
+
+        bindActions();
+    }
+
+    private void bindActions() {
+        view.setOnNewPlanAction(() -> {
+            WorkoutPlanBean emptyPlan = new WorkoutPlanBean(java.util.UUID.randomUUID().toString(), "Nuovo Piano", new ArrayList<>());
+            Navigator.getInstance().goToWorkoutPlanEditor(emptyPlan);
+        });
+
+        view.setOnEditAction(plan -> {
+            Navigator.getInstance().goToWorkoutPlanEditor(plan);
+        });
+
+        view.setOnDeleteAction(plan -> {
+            planManager.deletePlanAsync(plan.getId())
+                .thenRun(() -> {
+                    Platform.runLater(() -> {
+                        guiManager.showNotification(GuiManager.NotificationType.SUCCESS, "Piano eliminato con successo");
+                        loadPlans();
+                    });
+                })
+                .exceptionally(ex -> {
+                    Platform.runLater(() -> guiManager.showNotification(GuiManager.NotificationType.ERROR, "Errore nell'eliminazione: " + ex.getMessage()));
+                    return null;
+                });
+        });
+
+        view.setOnCloneAction(plan -> {
+            WorkoutPlanBean clonedPlan = new WorkoutPlanBean(java.util.UUID.randomUUID().toString(), "Copia di " + plan.getName(), new ArrayList<>(plan.getSessions()));
+            planManager.createPlanAsync(clonedPlan)
+                .thenRun(() -> {
+                    Platform.runLater(() -> {
+                        guiManager.showNotification(GuiManager.NotificationType.SUCCESS, "Piano duplicato con successo");
+                        loadPlans();
+                    });
+                })
+                .exceptionally(ex -> {
+                    Platform.runLater(() -> guiManager.showNotification(GuiManager.NotificationType.ERROR, "Errore nella duplicazione"));
+                    return null;
+                });
+        });
+
+        // Assign Button logic
+        view.setOnAssignButtonClick(plan -> {
+            if (athletesCache.isEmpty()) {
+                // Fetch athletes if not already cached
+                profileManager.getMyAthletesAsync().thenAccept(athletes -> {
+                    athletesCache = athletes;
+                    Platform.runLater(() -> view.showModal(plan, athletes));
+                }).exceptionally(ex -> {
+                    Platform.runLater(() -> guiManager.showNotification(GuiManager.NotificationType.ERROR, "Impossibile recuperare gli atleti"));
+                    return null;
+                });
+            } else {
+                view.showModal(plan, athletesCache);
+            }
+        });
+
+        // Modal close/assign logic
+        view.getAssignModal().setOnCloseAction(() -> view.hideModal());
+        
+        view.getAssignModal().setOnAssignAction(athlete -> {
+            WorkoutPlanBean planToAssign = view.getAssignModal().getCurrentPlan();
+            if (planToAssign != null) {
+                planManager.assignPlanToAthleteAsync(planToAssign.getId(), athlete.getUserId())
+                    .thenRun(() -> {
+                        Platform.runLater(() -> {
+                            view.hideModal();
+                            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                            alert.setTitle("Piano Assegnato");
+                            alert.setHeaderText(null);
+                            alert.setContentText("Il piano \"" + planToAssign.getName() + "\" è stato assegnato a " + athlete.getFirstName() + " " + athlete.getLastName());
+                            alert.showAndWait();
+                        });
+                    })
+                    .exceptionally(ex -> {
+                        Platform.runLater(() -> {
+                            view.hideModal();
+                            guiManager.showNotification(GuiManager.NotificationType.ERROR, "Errore nell'assegnazione: " + ex.getMessage());
+                        });
+                        return null;
+                    });
+            }
+        });
+    }
+
+    @Override
+    public void start() {
+        loadPlans();
+        
+        // Pre-fetch athletes for faster modal open
+        profileManager.getMyAthletesAsync().thenAccept(athletes -> athletesCache = athletes).exceptionally(ex -> null);
+    }
+
+    private void loadPlans() {
+//        planManager.getMyCreatedPlansAsync()
+//            .thenAccept(plans -> Platform.runLater(() -> view.setPlansList(plans)))
+//            .exceptionally(ex -> {
+//                Platform.runLater(() -> guiManager.showNotification(GuiManager.NotificationType.ERROR, "Errore nel caricamento dei piani"));
+//                return null;
+//            });
+    }
+
+    @Override
+    public void stop() {
+    }
+
+    @Override
+    public Pane getView() {
+        return this.view;
+    }
+}

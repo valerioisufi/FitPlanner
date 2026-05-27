@@ -163,7 +163,12 @@ public class Navigator {
     }
 
     public void goToAthleteDashboard(ProfileBean athlete) {
-        AthleteDashboardViewController controller = new AthleteDashboardViewController(athlete, appControllerFactory.createProfileManager(), appControllerFactory.createWorkoutPlanManager(), guiManager);
+        AthleteDashboardViewController controller = new AthleteDashboardViewController(
+                athlete, 
+                appControllerFactory.createProfileManager(), 
+                appControllerFactory.createWorkoutPlanManager(), 
+                appControllerFactory.createWorkoutHistoryManager(),
+                guiManager);
         Platform.runLater(() -> navigateTo(controller));
     }
 }
