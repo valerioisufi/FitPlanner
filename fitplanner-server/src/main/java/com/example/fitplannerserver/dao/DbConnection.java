@@ -124,7 +124,11 @@ public class DbConnection {
                 // se la connessione non è valida:
                 // decrementiamo, chiudiamo la risorsa reale e il ciclo while ricomincia
                 currentPoolSize.decrementAndGet();
-                try { conn.close(); } catch (Exception ignored) {}
+                try {
+                    conn.close();
+                } catch (Exception e) {
+                    logger.warn("Impossibile chiudere la connessione invalida: {}", e.getMessage());
+                }
             }
         }
     }
