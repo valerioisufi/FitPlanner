@@ -1,16 +1,17 @@
 package com.example.fitplannerclient.serializer;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class PlanNodeDTO {
     private NodeType type;
 
-    private List<PlanNodeDTO> children;
+    private List<PlanNodeDTO> children = new ArrayList<>();
 
     private String name;
 
     private String resourceId; // solo per type == EXERCISE
-    private List<Modifier> modifiers; // solo per type == EXERCISE
+    private List<Modifier> modifiers = new ArrayList<>();
 
     private FlowDecorator flowDecorator; // solo per type == FLOW_DECORATOR
 
@@ -29,10 +30,17 @@ public class PlanNodeDTO {
         PROGRESSION
     }
 
-    public record Modifier(String name, String value) {
+    public enum ModifierType {
+        REPS, WEIGHT, TUT, RPE
     }
 
-    public record FlowDecorator(FlowDecoratorType type, String value) {}
+    public record Modifier(ModifierType type, String value) {
+    }
+
+    public record FlowDecorator(
+            FlowDecoratorType type,
+            String value
+    ) {}
 
 
     public NodeType getType() {

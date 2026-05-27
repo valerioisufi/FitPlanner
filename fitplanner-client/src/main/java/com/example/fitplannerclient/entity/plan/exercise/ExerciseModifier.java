@@ -1,16 +1,21 @@
 package com.example.fitplannerclient.entity.plan.exercise;
 
 public class ExerciseModifier {
-    private String name;
-    private String value;
+    private final ModifierType type;
+    private final String value;
 
-    public ExerciseModifier(String name, String value) {
-        this.name = name;
+    public ExerciseModifier(ModifierType type, String value) {
+        this.type = type;
         this.value = value;
     }
 
-    public String getName() {
-        return name;
+    public ExerciseModifier(ExerciseModifier other) {
+        this.type = other.type;
+        this.value = other.value;
+    }
+
+    public ModifierType getType() {
+        return type;
     }
 
     public String getValue() {

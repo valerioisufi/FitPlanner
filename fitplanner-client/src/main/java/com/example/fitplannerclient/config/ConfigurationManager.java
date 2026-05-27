@@ -17,29 +17,28 @@ public class ConfigurationManager {
     private void loadProperties() {
         try (InputStream input = getClass().getResourceAsStream("/config.properties")) {
             if (input == null) {
-                throw new ConfigException("Cannot find config.properties in the classpath");
+                throw new ConfigException("Impossibile trovare config.properties nel classpath");
             }
+
             properties.load(input);
+
         } catch (IOException ex) {
-            throw new ConfigException("Error reading config.properties");
+            throw new ConfigException("Errore durante la lettura di config.properties");
         }
+
     }
 
     /**
-     * Gets the base API URL.
-     * Throws an exception immediately if the required property is missing.
+     * Gets the base API URL
      */
     public String getApiUrl() {
         String url = properties.getProperty("api.url");
+
         if (url == null || url.isBlank()) {
-            throw new ConfigException("Property 'api.url' is missing or empty in config.properties");
+            throw new ConfigException("La proprietà 'api.url' è mancante o vuota in config.properties");
         }
+
         return url;
     }
 
-    // You can easily add more typed properties here later, with default fallbacks
-    // public int getTimeoutSeconds() {
-    //     String timeout = properties.getProperty("http.timeout", "30");
-    //     return Integer.parseInt(timeout);
-    // }
 }

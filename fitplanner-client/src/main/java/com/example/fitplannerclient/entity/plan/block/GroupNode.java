@@ -1,36 +1,28 @@
 package com.example.fitplannerclient.entity.plan.block;
 
 import com.example.fitplannerclient.entity.plan.PlanNode;
+import com.example.fitplannerclient.entity.plan.context.ExecutionContext;
+import com.example.fitplannerclient.entity.plan.context.ExecutionResult;
+import com.example.fitplannerclient.entity.plan.context.PlanNodeState;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-public abstract class GroupNode extends PlanNode {
-    protected List<PlanNode> children;
+public interface GroupNode extends Iterable<PlanNode> {
+    void addNode(PlanNode node);
 
-    public void addNode(PlanNode node){
-        children.add(node);
-    }
+    void addNodeAt(int index, PlanNode node);
 
-    public void addNodeAt(int index, PlanNode node) {
-        children.add(index, node);
-    }
+    boolean removeNode(PlanNode node);
 
-    public void removeNode(PlanNode node){
-        children.remove(node);
-    }
+    PlanNode removeNodeAt(int index);
 
-    public void removeNodeAt(int index) {
-        children.remove(index);
-    }
+    PlanNode replaceNode(int index, PlanNode newNode);
 
-    public int getChildrenCount() {
-        return children.size();
-    }
+    int getChildrenCount();
 
-    public PlanNode getNodeAt(int index) {
-        return children.get(index);
-    }
+    PlanNode getNodeAt(int index);
 
-    public abstract void replaceNode();
-
+    int indexOf(PlanNode node);
 }

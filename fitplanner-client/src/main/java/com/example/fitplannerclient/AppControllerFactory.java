@@ -56,7 +56,7 @@ public class AppControllerFactory {
 
     public WorkoutPlanManager createWorkoutPlanManager() {
         if (workoutPlanManager == null) {
-            workoutPlanManager = new WorkoutPlanManager(workoutPlanFacade, sessionLogFacade);
+            workoutPlanManager = new WorkoutPlanManager(workoutPlanFacade);
         }
         return workoutPlanManager;
     }
@@ -75,5 +75,9 @@ public class AppControllerFactory {
     public void resetDataManagers() {
         this.exerciseLibraryManager = null;
         this.workoutPlanManager = null;
+    }
+
+    public com.example.fitplannerclient.controller.log.WorkoutHistoryManager createWorkoutHistoryManager() {
+        return new com.example.fitplannerclient.controller.log.WorkoutHistoryManager(sessionLogFacade);
     }
 }

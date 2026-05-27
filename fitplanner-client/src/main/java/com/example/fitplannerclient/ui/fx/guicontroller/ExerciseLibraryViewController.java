@@ -72,8 +72,9 @@ public class ExerciseLibraryViewController implements GuiController {
     }
 
     private void saveExercise(ExerciseDescriptionBean bean) {
-        boolean isValid = view.getEditModal().getNameField().validate() &
-                          view.getEditModal().getDescField().validate();
+        boolean isNameValid = view.getEditModal().getNameField().validate();
+        boolean isDescValid = view.getEditModal().getDescField().validate();
+        boolean isValid = isNameValid && isDescValid;
 
         if (!isValid) return;
         

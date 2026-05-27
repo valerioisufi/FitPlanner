@@ -7,6 +7,7 @@ public class PlanNodeBean {
     private String id;
     private String name;
     private NodeType type;
+    private String resourceId; // solo per type == EXERCISE
 
     private List<ExerciseModifierBean> modifiers;
     private List<FlowDecoratorBean> flowDecorators;
@@ -49,6 +50,14 @@ public class PlanNodeBean {
 
     public void setType(NodeType type) {
         this.type = type;
+    }
+
+    public String getResourceId() {
+        return resourceId;
+    }
+
+    public void setResourceId(String resourceId) {
+        this.resourceId = resourceId;
     }
 
     public List<PlanNodeBean> getChildren() {

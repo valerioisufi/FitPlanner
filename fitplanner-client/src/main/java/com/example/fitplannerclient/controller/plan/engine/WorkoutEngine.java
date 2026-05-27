@@ -1,5 +1,7 @@
 package com.example.fitplannerclient.controller.plan.engine;
 
+import com.example.fitplannerclient.entity.plan.exercise.ExerciseNode;
+
 public interface WorkoutEngine {
     void play();
     void pause();
@@ -7,4 +9,13 @@ public interface WorkoutEngine {
 
     void skipPrevious();
     void skipNext();
+    void done();
+
+    @FunctionalInterface
+    interface UpdateCallback {
+        void onUpdate(EngineState state, ExerciseNode activeNode, int timeRemainingMillis);
+    }
+
+    void setOnUpdateListener(UpdateCallback callback);
+    EngineState getState();
 }
