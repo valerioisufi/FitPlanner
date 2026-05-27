@@ -1,5 +1,7 @@
 package com.example.fitplannerclient.entity.plan.context;
 
+import com.example.fitplannerclient.entity.plan.exercise.ExerciseNode;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -12,8 +14,23 @@ public class ExecutionContext {
     private static final Pattern pattern = Pattern.compile("\\$\\{([^}]+)\\}");
 
     private int tickDelta;
+    private ExerciseNode activeNode;
 
     public ExecutionContext() {
+    }
+
+    public void setActiveNode(ExerciseNode node) {
+        this.activeNode = node;
+    }
+
+    public ExerciseNode getActiveNode() {
+        return this.activeNode;
+    }
+
+    public void reset() {
+        this.currentSignal = ControlSignal.NONE;
+        this.tickDelta = 0;
+        this.activeNode = null;
     }
 
     public void setParameter(String key, String value) {

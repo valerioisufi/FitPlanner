@@ -1,4 +1,22 @@
 package com.example.fitplannerclient.controller.plan.engine;
 
-public class StopState {
+import com.example.fitplannerclient.entity.plan.context.WorkoutStatus;
+
+public class StopState extends EngineState {
+
+    @Override
+    public WorkoutStatus getStatus() {
+        return WorkoutStatus.STOPPED;
+    }
+
+    @Override
+    public void entry(WorkoutEngineImpl engine) {
+        engine.reset();
+    }
+
+    @Override
+    public void play(WorkoutEngineImpl engine) {
+        engine.changeToState(new PlayState());
+    }
+
 }

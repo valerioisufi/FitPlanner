@@ -39,6 +39,7 @@ public class ExerciseNode extends PlanNode {
 
         if (this.state == PlanNodeState.IDLE) {
             // l'esercizio è iniziato
+            context.setActiveNode(this);
             this.state = PlanNodeState.RUNNING;
             return new ExecutionResult(PlanNodeState.RUNNING);
         } else if (this.state == PlanNodeState.RUNNING) {
