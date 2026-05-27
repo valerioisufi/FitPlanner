@@ -50,9 +50,10 @@ public class AuthenticationViewController implements GuiController {
     }
 
     private void onLogin() {
-        // Use single '&' to prevent short-circuiting so ALL fields show their errors at once
-        boolean isValid = view.getLoginEmailField().validate() &
-                view.getLoginPasswordField().validate();
+        // Evaluate validations separately to prevent short-circuiting so ALL fields show their errors at once
+        boolean isEmailValid = view.getLoginEmailField().validate();
+        boolean isPasswordValid = view.getLoginPasswordField().validate();
+        boolean isValid = isEmailValid && isPasswordValid;
 
         if (!isValid) return; // Stop here if UI validation fails
 
@@ -68,14 +69,16 @@ public class AuthenticationViewController implements GuiController {
 
     private void onRegister() {
         // Validate all fields simultaneously
-        boolean isProfileValid = view.getRegFirstNameField().validate() &
-                view.getRegLastNameField().validate() &
-                view.getRegContactEmailField().validate() &
-                view.getRegPhoneField().validate();
+        boolean isFirstNameValid = view.getRegFirstNameField().validate();
+        boolean isLastNameValid = view.getRegLastNameField().validate();
+        boolean isContactEmailValid = view.getRegContactEmailField().validate();
+        boolean isPhoneValid = view.getRegPhoneField().validate();
+        boolean isProfileValid = isFirstNameValid && isLastNameValid && isContactEmailValid && isPhoneValid;
 
-        boolean isAuthValid = view.getRegEmailField().validate() &
-                view.getRegPasswordField().validate() &
-                view.getRegConfirmPasswordField().validate();
+        boolean isRegEmailValid = view.getRegEmailField().validate();
+        boolean isRegPasswordValid = view.getRegPasswordField().validate();
+        boolean isRegConfirmPasswordValid = view.getRegConfirmPasswordField().validate();
+        boolean isAuthValid = isRegEmailValid && isRegPasswordValid && isRegConfirmPasswordValid;
 
         if (!isProfileValid || !isAuthValid) return;
 
