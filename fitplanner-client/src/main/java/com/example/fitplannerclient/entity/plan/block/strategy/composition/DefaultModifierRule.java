@@ -31,14 +31,14 @@ public class DefaultModifierRule implements CompositionRule {
 
             @Override
             public void visit(Block block) {
-                for (PlanNode child : block.getChildren()) {
+                for (PlanNode child : block) {
                     child.accept(this);
                 }
             }
 
             @Override
             public void visit(ProtocolBlock protocolBlock) {
-                for (PlanNode child : protocolBlock.getChildren()) {
+                for (PlanNode child : protocolBlock) {
                     child.accept(this);
                 }
             }

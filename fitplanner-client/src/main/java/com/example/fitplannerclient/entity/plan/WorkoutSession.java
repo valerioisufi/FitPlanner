@@ -25,8 +25,16 @@ public class WorkoutSession implements AcceptWorkoutPlanVisitor {
         return this.name;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public int getDay(){
         return this.day;
+    }
+
+    public void setDay(int day) {
+        this.day = day;
     }
 
     public PlanNode getRoot(){

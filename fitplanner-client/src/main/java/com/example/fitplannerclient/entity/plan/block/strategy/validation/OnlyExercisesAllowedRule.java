@@ -41,7 +41,7 @@ public class OnlyExercisesAllowedRule implements ValidationRule {
             }
         };
 
-        for (PlanNode child : block.getChildren()) {
+        for (PlanNode child : block) {
             child.accept(checker);
         }
 

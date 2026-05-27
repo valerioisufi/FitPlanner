@@ -5,6 +5,8 @@ import com.example.fitplannerclient.controller.plan.visitor.WorkoutPlanVisitor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 public class WorkoutPlan implements AcceptWorkoutPlanVisitor {
     private String name;
@@ -12,7 +14,7 @@ public class WorkoutPlan implements AcceptWorkoutPlanVisitor {
 
     private int cycleLength;
 
-    private final List<WorkoutSession> sessions = new ArrayList<>();
+    private final Map<Integer, WorkoutSession> sessions = new TreeMap<>();
     private WorkoutSession currentSession;
 
     public WorkoutPlan(String name, String planId) {
@@ -45,21 +47,17 @@ public class WorkoutPlan implements AcceptWorkoutPlanVisitor {
         this.planId = planId;
     }
 
-    public List<WorkoutSession> getSessions() {
-        return sessions;
-    }
 
     public void addSession(WorkoutSession session) {
-        this.sessions.add(session);
+        this.sessions.put(session.getDay(), session);
     }
 
-    public void removeSession(int sessionDay){
-        for (WorkoutSession session : sessions) {
-            if (session.getDay() == sessionDay) {
-                sessions.remove(session);
-                return;
-            }
-        }
+    public WorkoutSession removeSession(int sessionDay) {
+        return this.sessions.remove(sessionDay);
+    }
+
+    public List<WorkoutSession> getSessions() {
+        return new ArrayList<>(sessions.values());
     }
 
     public int getCycleLength() {

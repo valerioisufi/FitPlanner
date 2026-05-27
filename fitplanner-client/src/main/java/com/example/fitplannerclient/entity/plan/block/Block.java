@@ -6,9 +6,7 @@ import com.example.fitplannerclient.entity.plan.context.ExecutionContext;
 import com.example.fitplannerclient.entity.plan.context.ExecutionResult;
 import com.example.fitplannerclient.entity.plan.context.PlanNodeState;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 public class Block extends PlanNode implements GroupNode {
     private String title;
@@ -31,13 +29,13 @@ public class Block extends PlanNode implements GroupNode {
     }
 
     @Override
-    public void removeNode(PlanNode node) {
-        children.remove(node);
+    public boolean removeNode(PlanNode node) {
+        return children.remove(node);
     }
 
     @Override
-    public void removeNodeAt(int index) {
-        children.remove(index);
+    public PlanNode removeNodeAt(int index) {
+        return children.remove(index);
     }
 
     @Override
@@ -51,19 +49,16 @@ public class Block extends PlanNode implements GroupNode {
     }
 
     @Override
-    public void replaceNode(int index, PlanNode newNode) {
-        children.remove(index);
+    public PlanNode replaceNode(int index, PlanNode newNode) {
+        PlanNode oldNode = children.remove(index);
         children.add(index, newNode);
+
+        return oldNode;
     }
 
     @Override
     public int indexOf(PlanNode node) {
         return children.indexOf(node);
-    }
-
-    @Override
-    public List<PlanNode> getChildren() {
-        return Collections.unmodifiableList(children);
     }
 
     @Override
@@ -125,5 +120,10 @@ public class Block extends PlanNode implements GroupNode {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    @Override
+    public Iterator<PlanNode> iterator() {
+        return Collections.unmodifiableList(children).iterator();
     }
 }

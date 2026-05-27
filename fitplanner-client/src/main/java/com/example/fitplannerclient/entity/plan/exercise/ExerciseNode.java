@@ -7,12 +7,11 @@ import com.example.fitplannerclient.entity.plan.context.ExecutionContext;
 import com.example.fitplannerclient.entity.plan.context.ExecutionResult;
 import com.example.fitplannerclient.entity.plan.context.PlanNodeState;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class ExerciseNode extends PlanNode {
     private String resourceId;
-    private List<ExerciseModifier> modifiers = new ArrayList<>();
+    private Map<ModifierType, ExerciseModifier> modifiers = new EnumMap<>(ModifierType.class);
 
     @Override
     public void accept(WorkoutPlanVisitor visitor) {
@@ -71,30 +70,34 @@ public class ExerciseNode extends PlanNode {
         this.resourceId = resourceId;
     }
 
-    public List<ExerciseModifier> getModifiers() {
-        return modifiers;
-    }
-
-    public void setModifiers(List<ExerciseModifier> modifiers) {
-        this.modifiers = modifiers;
+    public Collection<ExerciseModifier> getModifiers() {
+        return Collections.unmodifiableCollection(modifiers.values());
     }
 
     public void addModifier(ExerciseModifier modifier) {
-        this.modifiers.add(modifier);
+        modifiers.put(modifier.getType(), modifier);
+    }
+
+    public ExerciseModifier removeModifier(ModifierType type) {
+        return modifiers.remove(type);
+    }
+
+    public ExerciseModifier getModifier(ModifierType type) {
+        return modifiers.get(type);
     }
 
     public boolean hasModifier(ModifierType type) {
-        return modifiers.stream().anyMatch(m -> m.getType() == type);
+        return modifiers.containsKey(type);
     }
 
     public List<ExerciseModifier> getResolvedModifiers(ExecutionContext context) {
         if (context == null) {
-            return new ArrayList<>(modifiers);
+            return new ArrayList<>(modifiers.values());
         }
         
         List<ExerciseModifier> resolved = new ArrayList<>();
 
-        for (ExerciseModifier mod : modifiers) {
+        for (ExerciseModifier mod : modifiers.values()) {
             String resolvedValue = context.resolveVariables(mod.getValue());
             resolved.add(new ExerciseModifier(mod.getType(), resolvedValue));
         }

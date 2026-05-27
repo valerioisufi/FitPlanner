@@ -8,12 +8,12 @@ import com.example.fitplannerclient.entity.plan.context.ExecutionResult;
 import com.example.fitplannerclient.entity.plan.context.PlanNodeState;
 
 public class IntervalDecorator extends FlowDecorator {
-    private int intervalDurationMillis;
+    private String intervalDuration;
     private int timeLeftMillis = 0;
 
-    public IntervalDecorator(PlanNode wrappedNode, int intervalDurationMillis) {
+    public IntervalDecorator(PlanNode wrappedNode, String intervalDuration) {
         super(wrappedNode);
-        this.intervalDurationMillis = intervalDurationMillis;
+        this.intervalDuration = intervalDuration;
     }
 
     @Override
@@ -29,7 +29,7 @@ public class IntervalDecorator extends FlowDecorator {
 
         if (this.state == PlanNodeState.IDLE) {
             this.state = PlanNodeState.RUNNING;
-            this.timeLeftMillis = intervalDurationMillis;
+            this.timeLeftMillis = context.resolveAsInteger(intervalDuration, 0);
         }
 
         int delta = context.getTickDelta();
@@ -103,16 +103,16 @@ public class IntervalDecorator extends FlowDecorator {
         this.wrappedNode.reset();
     }
 
-    public int getIntervalDurationMillis() {
-        return intervalDurationMillis;
+    public String getIntervalDuration() {
+        return intervalDuration;
     }
 
-    public void setIntervalDurationMillis(int intervalDurationMillis) {
-        this.intervalDurationMillis = intervalDurationMillis;
+    public void setIntervalDuration(String intervalDuration) {
+        this.intervalDuration = intervalDuration;
     }
 
     @Override
     public IntervalDecorator cloneWithNode(PlanNode newWrappedNode) {
-        return new IntervalDecorator(newWrappedNode, this.intervalDurationMillis);
+        return new IntervalDecorator(newWrappedNode, this.intervalDuration);
     }
 }

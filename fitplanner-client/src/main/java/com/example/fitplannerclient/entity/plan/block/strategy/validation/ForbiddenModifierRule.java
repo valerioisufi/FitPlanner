@@ -44,7 +44,7 @@ public class ForbiddenModifierRule implements ValidationRule {
             @Override public void visit(IntervalDecorator intervalDecorator) { intervalDecorator.getWrappedNode().accept(this); }
         };
 
-        for (PlanNode child : block.getChildren()) {
+        for (PlanNode child : block) {
             child.accept(checker);
         }
 

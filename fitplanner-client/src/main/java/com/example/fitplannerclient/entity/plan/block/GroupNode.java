@@ -9,22 +9,20 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public interface GroupNode {
+public interface GroupNode extends Iterable<PlanNode> {
     void addNode(PlanNode node);
 
     void addNodeAt(int index, PlanNode node);
 
-    void removeNode(PlanNode node);
+    boolean removeNode(PlanNode node);
 
-    void removeNodeAt(int index);
+    PlanNode removeNodeAt(int index);
+
+    PlanNode replaceNode(int index, PlanNode newNode);
 
     int getChildrenCount();
 
     PlanNode getNodeAt(int index);
 
-    void replaceNode(int index, PlanNode newNode);
-
     int indexOf(PlanNode node);
-
-    List<PlanNode> getChildren();
 }

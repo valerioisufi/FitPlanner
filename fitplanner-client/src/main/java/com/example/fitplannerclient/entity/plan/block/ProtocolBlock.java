@@ -9,6 +9,7 @@ import com.example.fitplannerclient.entity.plan.context.ExecutionContext;
 import com.example.fitplannerclient.entity.plan.context.ExecutionResult;
 import com.example.fitplannerclient.entity.plan.context.PlanNodeState;
 
+import java.util.Iterator;
 import java.util.List;
 
 public class ProtocolBlock extends PlanNode implements GroupNode {
@@ -59,24 +60,30 @@ public class ProtocolBlock extends PlanNode implements GroupNode {
     }
 
     @Override
-    public void removeNode(PlanNode node) {
+    public boolean removeNode(PlanNode node) {
         int idx = rawGroup.indexOf(node);
         if (idx != -1) {
             rawGroup.removeNodeAt(idx);
             decoratedGroup.removeNodeAt(idx);
+            return true;
         }
+        return false;
     }
 
     @Override
-    public void removeNodeAt(int index) {
-        rawGroup.removeNodeAt(index);
+    public PlanNode removeNodeAt(int index) {
+        PlanNode removedNode = rawGroup.removeNodeAt(index);
         decoratedGroup.removeNodeAt(index);
+
+        return removedNode;
     }
 
     @Override
-    public void replaceNode(int index, PlanNode newNode) {
-        rawGroup.replaceNode(index, newNode);
+    public PlanNode replaceNode(int index, PlanNode newNode) {
+        PlanNode oldNode = rawGroup.replaceNode(index, newNode);
         decoratedGroup.replaceNode(index, applyCompositionRules(newNode));
+
+        return oldNode;
     }
 
     @Override
@@ -92,11 +99,6 @@ public class ProtocolBlock extends PlanNode implements GroupNode {
     @Override
     public int indexOf(PlanNode node) {
         return rawGroup.indexOf(node);
-    }
-
-    @Override
-    public List<PlanNode> getChildren() {
-        return rawGroup.getChildren();
     }
 
     @Override
@@ -157,5 +159,10 @@ public class ProtocolBlock extends PlanNode implements GroupNode {
         }
 
         return result;
+    }
+
+    @Override
+    public Iterator<PlanNode> iterator() {
+        return rawGroup.iterator();
     }
 }
