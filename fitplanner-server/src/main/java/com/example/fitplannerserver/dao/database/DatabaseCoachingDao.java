@@ -69,7 +69,7 @@ public class DatabaseCoachingDao implements CoachingDao {
         Objects.requireNonNull(trainerId, "trainerId cannot be NULL");
         Objects.requireNonNull(athleteId, "athleteId cannot be NULL");
 
-        String sql = "SELECT * FROM coaching WHERE trainer=? AND athlete=?";
+        String sql = "SELECT athlete FROM coaching WHERE trainer=? AND athlete=?";
         Connection conn = null;
 
         try {

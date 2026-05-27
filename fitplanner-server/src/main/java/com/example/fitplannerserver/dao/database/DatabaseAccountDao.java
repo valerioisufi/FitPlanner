@@ -14,15 +14,15 @@ import java.util.Optional;
 
 public class DatabaseAccountDao implements AccountDao {
 
-    private static final String nullAccMsg = "account cannot be null";
-    private static final String nullEmailMsg = "email cannot be null";
-    private static final String nullIdMsg = "userId cannot be null";
+    private static final String NULL_ACC_MSG = "account cannot be null";
+    private static final String NULL_EMAIL_MSG = "email cannot be null";
+    private static final String NULL_ID_MSG = "userId cannot be null";
 
 
     @Override
     public boolean create(Account account) throws DaoException {
-        Objects.requireNonNull(account, nullAccMsg);
-        Objects.requireNonNull(account.getEmail(), nullEmailMsg);
+        Objects.requireNonNull(account, NULL_ACC_MSG);
+        Objects.requireNonNull(account.getEmail(), NULL_EMAIL_MSG);
 
         String sql = "INSERT INTO accounts(user_id, email, password_hash, refreshToken, profileType) VALUES (?,?,?,?,?)";
         Connection conn = null;
@@ -53,9 +53,9 @@ public class DatabaseAccountDao implements AccountDao {
 
     @Override
     public void save(Account account) throws DaoException {
-        Objects.requireNonNull(account, nullAccMsg);
-        Objects.requireNonNull(account.getUserId(), nullIdMsg);
-        Objects.requireNonNull(account.getEmail(), nullEmailMsg);
+        Objects.requireNonNull(account, NULL_ACC_MSG);
+        Objects.requireNonNull(account.getUserId(), NULL_ID_MSG);
+        Objects.requireNonNull(account.getEmail(), NULL_EMAIL_MSG);
 
         String sql = """
                 UPDATE accounts SET email=?, password_hash=?, refreshToken=?, profileType=? WHERE user_id = ?;
@@ -83,7 +83,7 @@ public class DatabaseAccountDao implements AccountDao {
 
     @Override
     public Optional<Account> findByEmail(String email) throws DaoException {
-        Objects.requireNonNull(email, nullEmailMsg);
+        Objects.requireNonNull(email, NULL_EMAIL_MSG);
 
         String sql = "SELECT (user_id, email, password_hash, refreshToken, profileType) FROM accounts WHERE email=?";
         Connection conn = null;
@@ -153,8 +153,8 @@ public class DatabaseAccountDao implements AccountDao {
 
     @Override
     public void delete(Account account) throws DaoException {
-        Objects.requireNonNull(account, nullEmailMsg);
-        Objects.requireNonNull(account.getUserId(), nullIdMsg);
+        Objects.requireNonNull(account, NULL_EMAIL_MSG);
+        Objects.requireNonNull(account.getUserId(), NULL_ID_MSG);
 
         String sql = "DELETE FROM accounts WHERE user_id=?";
         Connection conn = null;

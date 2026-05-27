@@ -14,11 +14,13 @@ import java.util.Optional;
 
 public class DatabaseProfileDao implements ProfileDao {
 
+    private static final String INVITATION_CODE="invitation_code";
+
     @Override
     public Optional<User> findById(String userId) throws DaoException {
         Objects.requireNonNull(userId, "userId cannot be null");
 
-        String sql = "SELECT * FROM profiles WHERE user_id=?";
+        String sql = "SELECT (user_id, first_name, last_name, contact_email, phone_number, invitation_code) FROM profiles WHERE user_id=?";
         Connection conn = null;
 
         try {
@@ -33,7 +35,7 @@ public class DatabaseProfileDao implements ProfileDao {
                                 rs.getString("last_name"),
                                 rs.getString("email"),
                                 rs.getString("phone_number"),
-                                rs.getString("invitation_code")
+                                rs.getString(INVITATION_CODE)
                         );
                         return Optional.of(user);
                     }
@@ -84,7 +86,7 @@ public class DatabaseProfileDao implements ProfileDao {
             return Optional.empty();
         }
 
-        String sql = "SELECT * FROM profiles WHERE invitation_code=?";
+        String sql = "SELECT (user_id, first_name, last_name, contact_email, phone_number, invitation_code) FROM profiles WHERE invitation_code=?";
         Connection conn = null;
 
         try {
@@ -99,7 +101,7 @@ public class DatabaseProfileDao implements ProfileDao {
                                 rs.getString("last_name"),
                                 rs.getString("contact_email"),
                                 rs.getString("phone_number"),
-                                rs.getString("invitation_code")
+                                rs.getString(INVITATION_CODE)
                         );
                         return Optional.of(user);
                     }
@@ -130,7 +132,7 @@ public class DatabaseProfileDao implements ProfileDao {
                 stm.setString(1, userId);
                 try (ResultSet rs = stm.executeQuery()) {
                     if (rs.next()) {
-                        return Optional.ofNullable(rs.getString("invitation_code"));
+                        return Optional.ofNullable(rs.getString(INVITATION_CODE));
                     }
                 }
             }

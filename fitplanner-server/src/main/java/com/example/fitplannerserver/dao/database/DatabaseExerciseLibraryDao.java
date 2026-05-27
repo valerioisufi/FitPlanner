@@ -14,6 +14,10 @@ import java.util.Objects;
 import java.util.Optional;
 
 public class DatabaseExerciseLibraryDao implements ExerciseLibraryDao {
+    
+    private static final String TRAINER_ID="trainer_id";
+    private static final String EXERCISE_ID="exercise_id";
+    private static final String EXECUTION="execution";
 
     @Override
     public void saveExercise(ExerciseDescription exercise) throws DaoException {
@@ -72,7 +76,7 @@ public class DatabaseExerciseLibraryDao implements ExerciseLibraryDao {
         Objects.requireNonNull(exerciseId, "exerciseId cannot be null");
 
         String sql = """
-                SELECT * FROM exercise_library WHERE exercise_id=?;
+                SELECT (exercise_id, trainer_id, name, execution, muscle_groups) FROM exercise_library WHERE exercise_id=?;
                 """;
         Connection conn = null;
 
@@ -83,10 +87,10 @@ public class DatabaseExerciseLibraryDao implements ExerciseLibraryDao {
                 try (ResultSet rs = stm.executeQuery()) {
                     if (rs.next()) {
                         ExerciseDescription exercise = new ExerciseDescription(
-                                rs.getString("trainer_id"),
-                                rs.getString("exercise_id"),
+                                rs.getString(TRAINER_ID),
+                                rs.getString(EXERCISE_ID),
                                 rs.getString("name"),
-                                rs.getString("execution"),
+                                rs.getString(EXECUTION),
                                 List.of(rs.getString("muscle_groups").split(",")));
                         return Optional.of(exercise);
                     }
@@ -105,7 +109,7 @@ public class DatabaseExerciseLibraryDao implements ExerciseLibraryDao {
         Objects.requireNonNull(trainerId, "trainerId cannot be null");
 
         String sql = """
-                SELECT * FROM exercise_library WHERE trainer_id=?;
+                SELECT (exercise_id, trainer_id, name, execution, muscle_groups) FROM exercise_library WHERE trainer_id=?;
                 """;
         Connection conn = null;
 
@@ -117,10 +121,10 @@ public class DatabaseExerciseLibraryDao implements ExerciseLibraryDao {
                     List<ExerciseDescription> exercises = new java.util.ArrayList<>();
                     while (rs.next()) {
                         ExerciseDescription exercise = new ExerciseDescription(
-                                rs.getString("exercise_id"),
-                                rs.getString("trainer_id"),
+                                rs.getString(EXERCISE_ID),
+                                rs.getString(TRAINER_ID),
                                 rs.getString("name"),
-                                rs.getString("execution"),
+                                rs.getString(EXECUTION),
                                 List.of(rs.getString("muscle_group").split(",")));
                         exercises.add(exercise);
                     }
@@ -140,7 +144,7 @@ public class DatabaseExerciseLibraryDao implements ExerciseLibraryDao {
 
         List<ExerciseDescription> exercises = new java.util.ArrayList<>();
         String sql = """
-                SELECT * FROM exercise_library WHERE exercise_id IN (?);
+                SELECT (exercise_id, trainer_id, name, execution, muscle_groups) FROM exercise_library WHERE exercise_id IN (?);
                 """;
         Connection conn = null;
 
@@ -151,10 +155,10 @@ public class DatabaseExerciseLibraryDao implements ExerciseLibraryDao {
                 try (ResultSet rs = stm.executeQuery()) {
                     while (rs.next()) {
                         ExerciseDescription exercise = new ExerciseDescription(
-                                rs.getString("exercise_id"),
-                                rs.getString("trainer_id"),
+                                rs.getString(EXERCISE_ID),
+                                rs.getString(TRAINER_ID),
                                 rs.getString("name"),
-                                rs.getString("execution"),
+                                rs.getString(EXECUTION),
                                 List.of(rs.getString("muscle_group").split(",")));
                         exercises.add(exercise);
                     }
