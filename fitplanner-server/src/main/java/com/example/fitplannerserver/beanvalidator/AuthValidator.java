@@ -30,8 +30,6 @@ public class AuthValidator {
             throw new WrongArgumentsException("Email non valida");
         }
 
-        validatePassword(bean.getPassword());
-
     }
 
     public static void validateRegisterBean(RegisterDTO bean){
