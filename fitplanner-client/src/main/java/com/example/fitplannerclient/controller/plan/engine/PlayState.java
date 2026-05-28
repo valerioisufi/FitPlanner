@@ -29,6 +29,7 @@ public class PlayState extends EngineState {
             long lastWakeUpTime = System.currentTimeMillis();
 
             while (engine.getState().isPlaying()) {
+                Thread.interrupted();
                 ExecutionResult result = engine.execute(context);
                 
                 engine.notifyUpdate(this, context.getActiveNode(), result.getRequestedSleepMillis());
@@ -45,6 +46,7 @@ public class PlayState extends EngineState {
                     try {
                         Thread.sleep(Integer.MAX_VALUE);
                     } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
                         long now = System.currentTimeMillis();
                         context.setTickDelta((int) (now - lastWakeUpTime));
                         lastWakeUpTime = now;
@@ -57,6 +59,7 @@ public class PlayState extends EngineState {
                         context.setTickDelta(sleepTime);
                         lastWakeUpTime = System.currentTimeMillis();
                     } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
                         long now = System.currentTimeMillis();
                         context.setTickDelta((int) (now - lastWakeUpTime));
                         lastWakeUpTime = now;
