@@ -1,4 +1,4 @@
-package com.example.fitplannerclient.service.facade;
+package com.example.fitplannerclient.service.api;
 
 import com.example.fitplannerclient.service.HttpService;
 import com.example.fitplannercommon.ExerciseLogDTO;
@@ -7,17 +7,18 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-public class SessionLogFacade {
+public class HttpSessionLogApi implements SessionLogApi {
 
     private final HttpService httpService;
 
-    public SessionLogFacade(HttpService httpService) {
+    public HttpSessionLogApi(HttpService httpService) {
         this.httpService = httpService;
     }
 
     /**
      * Salva il log di una sessione di allenamento eseguita.
      */
+    @Override
     public CompletableFuture<Void> saveSessionLogAsync(SessionLogDTO logDTO) {
         return httpService.putAsync("/logs/session", logDTO, Void.class);
     }
@@ -25,6 +26,7 @@ public class SessionLogFacade {
     /**
      * Recupera i log delle sessioni filtrati per data.
      */
+    @Override
     public CompletableFuture<List<SessionLogDTO>> getFilteredSessionLogsAsync(
             String athleteUuid, long startTimestamp, long endTimestamp) {
         
@@ -39,6 +41,7 @@ public class SessionLogFacade {
     /**
      * Recupera l'ultimo record per un determinato esercizio.
      */
+    @Override
     public CompletableFuture<ExerciseLogDTO> getLastWeightUsedAsync(String exerciseId) {
         return httpService.getAsync("/logs/exercises/" + exerciseId + "/latest", ExerciseLogDTO.class);
     }

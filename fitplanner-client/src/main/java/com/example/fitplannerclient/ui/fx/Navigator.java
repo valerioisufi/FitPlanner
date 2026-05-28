@@ -158,7 +158,7 @@ public class Navigator {
     }
 
     public void goToWorkoutExecution(WorkoutSessionBean session) {
-        WorkoutExecutionViewController controller = new WorkoutExecutionViewController(session, appControllerFactory.createSessionLogFacade(), appControllerFactory.createProfileManager());
+        WorkoutExecutionViewController controller = new WorkoutExecutionViewController(session, appControllerFactory.createSessionLogApi(), appControllerFactory.createProfileManager());
         Platform.runLater(() -> navigateTo(controller));
     }
 

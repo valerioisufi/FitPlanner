@@ -2,7 +2,7 @@ package com.example.fitplannerclient.controller.exercise;
 
 import com.example.fitplannerclient.bean.exercise.ExerciseDescriptionBean;
 import com.example.fitplannerclient.entity.ExerciseDescription;
-import com.example.fitplannerclient.service.facade.ExerciseLibraryFacade;
+import com.example.fitplannerclient.service.api.ExerciseLibraryApi;
 import com.example.fitplannerclient.util.ValidationUtils;
 import com.example.fitplannercommon.ExerciseDescriptionDTO;
 
@@ -10,18 +10,18 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 public class ExerciseLibraryManager {
-    private final ExerciseLibraryFacade facade;
+    private final ExerciseLibraryApi api;
 
     private final Map<String, ExerciseDescription> exerciseCache;
 
-    public ExerciseLibraryManager(ExerciseLibraryFacade facade) {
-        this.facade = facade;
+    public ExerciseLibraryManager(ExerciseLibraryApi api) {
+        this.api = api;
         this.exerciseCache = new HashMap<>();
     }
 
     public CompletableFuture<List<ExerciseDescriptionBean>> getExercisesAsync(List<String> uuids) {
         if (uuids == null || uuids.isEmpty()) {
-            return facade.getExercisesAsync(null)
+            return api.getExercisesAsync(null)
                     .thenApply(fetchedDtos -> {
                         List<ExerciseDescriptionBean> beans = new ArrayList<>();
                         for (ExerciseDescriptionDTO dto : fetchedDtos) {
@@ -48,8 +48,8 @@ public class ExerciseLibraryManager {
                     .toList();
             return CompletableFuture.completedFuture(beans);
         }
-        // richiedo alla Facade solo gli UUID mancanti
-        return facade.getExercisesAsync(missingUuids)
+        // richiedo alla Api solo gli UUID mancanti
+        return api.getExercisesAsync(missingUuids)
                 .thenApply(fetchedDtos -> {
                     // aggiorno la cache locale con le nuove entità arrivate dal server
                     fetchedDtos.forEach(dto -> {
@@ -75,7 +75,7 @@ public class ExerciseLibraryManager {
         ExerciseDescription entity = beanToEntity(bean);
         ExerciseDescriptionDTO dto = entityToDto(entity);
 
-        return facade.addExerciseAsync(dto)
+        return api.addExerciseAsync(dto)
                 .thenApply(newId -> {
                     ExerciseDescription newEntity = new ExerciseDescription(
                             newId,
@@ -99,7 +99,7 @@ public class ExerciseLibraryManager {
 
         ExerciseDescription updatedEntity = beanToEntity(bean);
 
-        return facade.updateExerciseAsync(exerciseId, entityToDto(updatedEntity))
+        return api.updateExerciseAsync(exerciseId, entityToDto(updatedEntity))
                 .thenAccept(v -> {
                     // aggiorno la cache locale se l'aggiornamento della descrizione dell'esercizio ha avuto successo
                     exerciseCache.put(exerciseId, updatedEntity);
@@ -107,7 +107,7 @@ public class ExerciseLibraryManager {
     }
 
     public CompletableFuture<Void> removeExerciseAsync(String exerciseId) {
-        return facade.removeExerciseAsync(exerciseId)
+        return api.removeExerciseAsync(exerciseId)
                 .thenAccept(v -> {
                     // rimuovo l'elemento dalla cache solo se la rimozione remota è completata con successo
                     exerciseCache.remove(exerciseId);

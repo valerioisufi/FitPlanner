@@ -4,15 +4,15 @@ import com.example.fitplannerclient.controller.AuthManager;
 import com.example.fitplannerclient.controller.exercise.ExerciseLibraryManager;
 import com.example.fitplannerclient.controller.plan.WorkoutPlanManager;
 import com.example.fitplannerclient.controller.profile.ProfileManager;
-import com.example.fitplannerclient.service.facade.*;
+import com.example.fitplannerclient.service.api.*;
 
 public class AppControllerFactory {
 
-    private final AuthFacade authFacade;
-    private final ProfileFacade profileFacade;
-    private final ExerciseLibraryFacade exerciseLibraryFacade;
-    private final WorkoutPlanFacade workoutPlanFacade;
-    private final SessionLogFacade sessionLogFacade;
+    private final AuthApi authApi;
+    private final ProfileApi profileApi;
+    private final ExerciseLibraryApi exerciseLibraryApi;
+    private final WorkoutPlanApi workoutPlanApi;
+    private final SessionLogApi sessionLogApi;
 
     private AuthManager authManager;
     private ProfileManager profileManager;
@@ -20,49 +20,49 @@ public class AppControllerFactory {
     private WorkoutPlanManager workoutPlanManager;
 
     public AppControllerFactory(
-            AuthFacade authFacade,
-            ProfileFacade profileFacade,
-            ExerciseLibraryFacade exerciseLibraryFacade,
-            WorkoutPlanFacade workoutPlanFacade,
-            SessionLogFacade sessionLogFacade
+            AuthApi authApi,
+            ProfileApi profileApi,
+            ExerciseLibraryApi exerciseLibraryApi,
+            WorkoutPlanApi workoutPlanApi,
+            SessionLogApi sessionLogApi
     ) {
-        this.authFacade = authFacade;
-        this.profileFacade = profileFacade;
-        this.exerciseLibraryFacade = exerciseLibraryFacade;
-        this.workoutPlanFacade = workoutPlanFacade;
-        this.sessionLogFacade = sessionLogFacade;
+        this.authApi = authApi;
+        this.profileApi = profileApi;
+        this.exerciseLibraryApi = exerciseLibraryApi;
+        this.workoutPlanApi = workoutPlanApi;
+        this.sessionLogApi = sessionLogApi;
     }
 
     public AuthManager createAuthManager() {
         if (authManager == null) {
-            authManager = new AuthManager(authFacade);
+            authManager = new AuthManager(authApi);
         }
         return authManager;
     }
 
     public ProfileManager createProfileManager() {
         if (profileManager == null) {
-            profileManager = new ProfileManager(profileFacade);
+            profileManager = new ProfileManager(profileApi);
         }
         return profileManager;
     }
 
     public ExerciseLibraryManager createExerciseLibraryManager() {
         if (exerciseLibraryManager == null) {
-            exerciseLibraryManager = new ExerciseLibraryManager(exerciseLibraryFacade);
+            exerciseLibraryManager = new ExerciseLibraryManager(exerciseLibraryApi);
         }
         return exerciseLibraryManager;
     }
 
     public WorkoutPlanManager createWorkoutPlanManager() {
         if (workoutPlanManager == null) {
-            workoutPlanManager = new WorkoutPlanManager(workoutPlanFacade);
+            workoutPlanManager = new WorkoutPlanManager(workoutPlanApi);
         }
         return workoutPlanManager;
     }
 
-    public SessionLogFacade createSessionLogFacade() {
-        return sessionLogFacade;
+    public SessionLogApi createSessionLogApi() {
+        return sessionLogApi;
     }
 
     public void resetManagers() {
@@ -78,6 +78,6 @@ public class AppControllerFactory {
     }
 
     public com.example.fitplannerclient.controller.log.WorkoutHistoryManager createWorkoutHistoryManager() {
-        return new com.example.fitplannerclient.controller.log.WorkoutHistoryManager(sessionLogFacade);
+        return new com.example.fitplannerclient.controller.log.WorkoutHistoryManager(sessionLogApi);
     }
 }

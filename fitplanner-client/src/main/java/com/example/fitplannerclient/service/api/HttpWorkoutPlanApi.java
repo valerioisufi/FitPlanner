@@ -1,4 +1,4 @@
-package com.example.fitplannerclient.service.facade;
+package com.example.fitplannerclient.service.api;
 
 import com.example.fitplannerclient.service.HttpService;
 import com.example.fitplannercommon.WorkoutPlanDTO;
@@ -8,22 +8,24 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-public class WorkoutPlanFacade {
+public class HttpWorkoutPlanApi implements WorkoutPlanApi {
 
     private final HttpService httpService;
 
-    public WorkoutPlanFacade(HttpService httpService) {
+    public HttpWorkoutPlanApi(HttpService httpService) {
         this.httpService = httpService;
     }
 
     /**
      * Recupera tutti i piani di allenamento creati dal trainer.
      */
+    @Override
     public CompletableFuture<List<WorkoutPlanSummaryDTO>> getMyCreatedPlansSummaryAsync() {
         return httpService.getAsync("/plan", WorkoutPlanSummaryDTO[].class)
                 .thenApply(Arrays::asList);
     }
 
+    @Override
     public CompletableFuture<WorkoutPlanDTO> getPlanDetailsByIdAsync(String planId) {
         return httpService.getAsync("/plan/" + planId, WorkoutPlanDTO.class);
     }
@@ -31,6 +33,7 @@ public class WorkoutPlanFacade {
     /**
      * Recupera il piano di allenamento attualmente assegnato all'atleta.
      */
+    @Override
     public CompletableFuture<WorkoutPlanDTO> getAssignedPlanAsync() {
         return httpService.getAsync("/plan/assigned", WorkoutPlanDTO.class);
     }
@@ -38,6 +41,7 @@ public class WorkoutPlanFacade {
     /**
      * Recupera lo schedule del ciclo corrente dell'atleta.
      */
+    @Override
     public CompletableFuture<WorkoutScheduleDTO> getCurrentCycleScheduleAsync() {
         return httpService.getAsync("/plan/schedule", WorkoutScheduleDTO.class);
     }
@@ -45,6 +49,7 @@ public class WorkoutPlanFacade {
     /**
      * Crea un nuovo piano di allenamento vuoto. Ritorna l'ID generato.
      */
+    @Override
     public CompletableFuture<String> createPlanAsync(WorkoutPlanDTO planBean) {
         return httpService.postAsync("/plan", planBean, String.class);
     }
@@ -52,6 +57,7 @@ public class WorkoutPlanFacade {
     /**
      * Assegna un piano a un atleta.
      */
+    @Override
     public CompletableFuture<Void> assignPlanToAsync(String planId, String athleteId) {
         return httpService.postAsync("/plan/" + planId + "/assign/" + athleteId, null, Void.class);
     }
@@ -59,6 +65,7 @@ public class WorkoutPlanFacade {
     /**
      * Aggiorna un piano di allenamento.
      */
+    @Override
     public CompletableFuture<Void> updatePlanAsync(String planId, WorkoutPlanDTO planBean) {
         return httpService.putAsync("/plan/" + planId, planBean, Void.class);
     }
@@ -66,6 +73,7 @@ public class WorkoutPlanFacade {
     /**
      * Elimina un piano di allenamento.
      */
+    @Override
     public CompletableFuture<Void> deletePlanAsync(String planId) {
         return httpService.deleteAsync("/plan/" + planId, Void.class);
     }

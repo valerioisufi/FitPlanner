@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Test del motore di esecuzione WorkoutEngine
+ * @author Valerio Isufi
  */
 public class TestWorkoutEngine {
 

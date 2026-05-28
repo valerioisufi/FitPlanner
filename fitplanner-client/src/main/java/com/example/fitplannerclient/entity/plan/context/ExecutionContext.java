@@ -17,6 +17,7 @@ public class ExecutionContext {
     private ExerciseNode activeNode;
 
     public ExecutionContext() {
+        this.currentSignal = ControlSignal.NONE;
     }
 
     public void setActiveNode(ExerciseNode node) {

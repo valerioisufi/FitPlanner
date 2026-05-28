@@ -2,17 +2,17 @@ package com.example.fitplannerclient.controller.log;
 
 
 import com.example.fitplannerclient.bean.log.ExerciseLogBean;
-import com.example.fitplannerclient.service.facade.SessionLogFacade;
+import com.example.fitplannerclient.service.api.SessionLogApi;
 import com.example.fitplannercommon.SessionLogDTO;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public class SessionLogManager {
-    private final SessionLogFacade facade;
+    private final SessionLogApi api;
 
-    public SessionLogManager(SessionLogFacade facade){
-        this.facade= facade;
+    public SessionLogManager(SessionLogApi api){
+        this.api= api;
     }
 
 //    public CompletableFuture<Void> getFilteredSessionLogs(String userId, long start, long end){
@@ -23,7 +23,7 @@ public class SessionLogManager {
 
 /**
  * interfaccia progressi/statistiche
- * si seleziona l'intervallo di tempo, il manager recupera i session log tramite la facade
+ * si seleziona l'intervallo di tempo, il manager recupera i session log tramite la api
  *
  * creiamo le entity, calcoliamo attraverso le entity il volume totale delle singole sessioni
  * che visualizzeremo su un grafico (ascissa = giorno)

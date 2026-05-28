@@ -1,4 +1,4 @@
-package com.example.fitplannerclient.service.facade;
+package com.example.fitplannerclient.service.api;
 
 import com.example.fitplannerclient.service.HttpService;
 import com.example.fitplannercommon.ExerciseDescriptionDTO;
@@ -6,17 +6,18 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-public class ExerciseLibraryFacade {
+public class HttpExerciseLibraryApi implements ExerciseLibraryApi {
 
     private final HttpService httpService;
 
-    public ExerciseLibraryFacade(HttpService httpService) {
+    public HttpExerciseLibraryApi(HttpService httpService) {
         this.httpService = httpService;
     }
 
     /**
      * Recupera la libreria di esercizi.
      */
+    @Override
     public CompletableFuture<List<ExerciseDescriptionDTO>> getExercisesAsync(List<String> uuids) {
         String url = "/exercises";
         if (uuids != null && !uuids.isEmpty()) {
@@ -29,6 +30,7 @@ public class ExerciseLibraryFacade {
     /**
      * Aggiunge un nuovo esercizio alla libreria.
      */
+    @Override
     public CompletableFuture<String> addExerciseAsync(ExerciseDescriptionDTO dto) {
         return httpService.postAsync("/exercises", dto, String.class);
     }
@@ -36,6 +38,7 @@ public class ExerciseLibraryFacade {
     /**
      * Aggiorna un esercizio esistente.
      */
+    @Override
     public CompletableFuture<Void> updateExerciseAsync(String uuid, ExerciseDescriptionDTO dto) {
         return httpService.putAsync("/exercises/" + uuid, dto, Void.class);
     }
@@ -43,6 +46,7 @@ public class ExerciseLibraryFacade {
     /**
      * Rimuove un esercizio dalla libreria.
      */
+    @Override
     public CompletableFuture<Void> removeExerciseAsync(String uuid) {
         return httpService.deleteAsync("/exercises/" + uuid, Void.class);
     }

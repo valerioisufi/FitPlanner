@@ -1,4 +1,4 @@
-package com.example.fitplannerclient.service.facade;
+package com.example.fitplannerclient.service.api;
 
 import com.example.fitplannerclient.exception.NotAuthenticatedException;
 import com.example.fitplannerclient.service.HttpService;
@@ -10,16 +10,17 @@ import com.example.fitplannercommon.TokenDTO;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
-public class AuthFacade {
+public class HttpAuthApi implements AuthApi {
 
     private final HttpService httpService;
     private final SessionManager sessionManager;
 
-    public AuthFacade(HttpService httpService, SessionManager sessionManager) {
+    public HttpAuthApi(HttpService httpService, SessionManager sessionManager) {
         this.httpService = httpService;
         this.sessionManager = sessionManager;
     }
 
+    @Override
     public CompletableFuture<Void> loginAsync(LoginDTO loginDTO) {
 
         return httpService.postAsync("/auth/login", loginDTO, TokenDTO.class)
@@ -35,6 +36,7 @@ public class AuthFacade {
                 });
     }
 
+    @Override
     public CompletableFuture<Void> registerAsync(RegisterDTO registerDTO) {
 
         return httpService.postAsync("/auth/register", registerDTO, TokenDTO.class)

@@ -3,7 +3,7 @@ package com.example.fitplannerclient.controller;
 import com.example.fitplannerclient.bean.profile.ProfileBean;
 import com.example.fitplannerclient.bean.auth.LoginBean;
 import com.example.fitplannerclient.bean.auth.RegisterBean;
-import com.example.fitplannerclient.service.facade.AuthFacade;
+import com.example.fitplannerclient.service.api.AuthApi;
 import com.example.fitplannercommon.LoginDTO;
 import com.example.fitplannercommon.ProfileDTO;
 import com.example.fitplannercommon.RegisterDTO;
@@ -13,10 +13,10 @@ import java.util.concurrent.CompletableFuture;
 
 public class AuthManager {
 
-    private final AuthFacade authFacade;
+    private final AuthApi authApi;
 
-    public AuthManager(AuthFacade authFacade) {
-        this.authFacade = authFacade;
+    public AuthManager(AuthApi authApi) {
+        this.authApi = authApi;
     }
 
     public CompletableFuture<Void> loginAsync(LoginBean loginBean) {
@@ -33,7 +33,7 @@ public class AuthManager {
         loginDTO.setEmail(loginBean.getEmail());
         loginDTO.setPassword(loginBean.getPassword());
 
-        return authFacade.loginAsync(loginDTO);
+        return authApi.loginAsync(loginDTO);
     }
 
     public CompletableFuture<Void> registerAsync(RegisterBean registerBean) {
@@ -70,6 +70,6 @@ public class AuthManager {
 
         registerDTO.setProfile(profileDTO);
 
-        return authFacade.registerAsync(registerDTO);
+        return authApi.registerAsync(registerDTO);
     }
 }

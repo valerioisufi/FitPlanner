@@ -1,20 +1,20 @@
 package com.example.fitplannerclient.controller.log;
 
-import com.example.fitplannerclient.service.facade.SessionLogFacade;
+import com.example.fitplannerclient.service.api.SessionLogApi;
 import com.example.fitplannercommon.SessionLogDTO;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public class WorkoutHistoryManager {
-    private final SessionLogFacade logFacade;
+    private final SessionLogApi logApi;
 
-    public WorkoutHistoryManager(SessionLogFacade logFacade) {
-        this.logFacade = logFacade;
+    public WorkoutHistoryManager(SessionLogApi logApi) {
+        this.logApi = logApi;
     }
 
     public CompletableFuture<List<SessionLogDTO>> getFilteredSessionLogsAsync(
             String athleteUuid, long startTimestamp, long endTimestamp) {
-        return logFacade.getFilteredSessionLogsAsync(athleteUuid, startTimestamp, endTimestamp);
+        return logApi.getFilteredSessionLogsAsync(athleteUuid, startTimestamp, endTimestamp);
     }
 }

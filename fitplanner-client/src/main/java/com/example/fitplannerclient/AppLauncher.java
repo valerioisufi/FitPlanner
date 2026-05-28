@@ -2,7 +2,7 @@ package com.example.fitplannerclient;
 
 import com.example.fitplannerclient.config.ConfigurationManager;
 import com.example.fitplannerclient.service.*;
-import com.example.fitplannerclient.service.facade.*;
+import com.example.fitplannerclient.service.api.*;
 import com.example.fitplannerclient.ui.fx.GuiManager;
 import com.example.fitplannerclient.ui.fx.Navigator;
 import javafx.application.Application;
@@ -40,14 +40,14 @@ public class AppLauncher extends Application {
             return manualLoginFuture;
         });
 
-        AuthFacade authFacade = new AuthFacade(httpService, sessionManager);
-        ProfileFacade profileFacade = new ProfileFacade(httpService);
-        ExerciseLibraryFacade exerciseLibraryFacade = new ExerciseLibraryFacade(httpService);
-        WorkoutPlanFacade workoutPlanFacade = new WorkoutPlanFacade(httpService);
-        SessionLogFacade sessionLogFacade = new SessionLogFacade(httpService);
+        AuthApi authApi = new HttpAuthApi(httpService, sessionManager);
+        ProfileApi profileApi = new HttpProfileApi(httpService);
+        ExerciseLibraryApi exerciseLibraryApi = new HttpExerciseLibraryApi(httpService);
+        WorkoutPlanApi workoutPlanApi = new HttpWorkoutPlanApi(httpService);
+        SessionLogApi sessionLogApi = new HttpSessionLogApi(httpService);
 
         AppControllerFactory factory = new AppControllerFactory(
-                authFacade, profileFacade, exerciseLibraryFacade, workoutPlanFacade, sessionLogFacade
+                authApi, profileApi, exerciseLibraryApi, workoutPlanApi, sessionLogApi
         );
 
         GuiManager guiManager = new GuiManager(stage);

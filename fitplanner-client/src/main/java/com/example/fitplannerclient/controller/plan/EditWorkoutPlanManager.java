@@ -11,7 +11,7 @@ import com.example.fitplannerclient.entity.plan.PlanNode;
 import com.example.fitplannerclient.entity.plan.WorkoutPlan;
 import com.example.fitplannerclient.entity.plan.WorkoutSession;
 import com.example.fitplannerclient.entity.plan.block.Block;
-import com.example.fitplannerclient.service.facade.WorkoutPlanFacade;
+import com.example.fitplannerclient.service.api.WorkoutPlanApi;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -20,12 +20,12 @@ public class EditWorkoutPlanManager {
     private final EditorHistoryManager historyManager = new EditorHistoryManager();
 
     private final WorkoutPlanSubject workoutPlanSubject = new WorkoutPlanSubject();
-    private final WorkoutPlanFacade planFacade;
+    private final WorkoutPlanApi planApi;
 
     private WorkoutPlan plan;
 
-    public EditWorkoutPlanManager(WorkoutPlanFacade planFacade) {
-        this.planFacade = planFacade;
+    public EditWorkoutPlanManager(WorkoutPlanApi planApi) {
+        this.planApi = planApi;
     }
 
     public void addObserver(WorkoutPlanObserver observer) {
@@ -50,14 +50,14 @@ public class EditWorkoutPlanManager {
         PlanToDtoVisitor serializer = new PlanToDtoVisitor();
         plan.accept(serializer);
 
-        return planFacade.createPlanAsync(serializer.getPlanDto())
+        return planApi.createPlanAsync(serializer.getPlanDto())
                 .thenAccept(plan::setPlanId);
     }
 
     public CompletableFuture<Void> editExistingPlan(String planId) {
         PlanDeserializer deserializer = new PlanDeserializer();
 
-        return planFacade.getPlanDetailsByIdAsync(planId)
+        return planApi.getPlanDetailsByIdAsync(planId)
                 .thenAccept(planDto -> {
                     this.plan = deserializer.toEntity(planDto);
                     workoutPlanSubject.notifyObservers();
@@ -87,7 +87,7 @@ public class EditWorkoutPlanManager {
         }
         PlanToDtoVisitor serializer = new PlanToDtoVisitor();
         plan.accept(serializer);
-        return planFacade.updatePlanAsync(plan.getPlanId(), serializer.getPlanDto());
+        return planApi.updatePlanAsync(plan.getPlanId(), serializer.getPlanDto());
     }
 
     private void executeCommand(WorkoutPlanEditorCommand command) {

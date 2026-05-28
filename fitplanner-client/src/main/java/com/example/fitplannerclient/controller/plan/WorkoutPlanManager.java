@@ -1,7 +1,7 @@
 package com.example.fitplannerclient.controller.plan;
 
 import com.example.fitplannerclient.bean.plan.*;
-import com.example.fitplannerclient.service.facade.WorkoutPlanFacade;
+import com.example.fitplannerclient.service.api.WorkoutPlanApi;
 import com.example.fitplannercommon.*;
 import com.example.fitplannerclient.serializer.PlanDeserializer;
 import com.example.fitplannerclient.serializer.PlanToBeanVisitor;
@@ -19,16 +19,16 @@ import java.util.concurrent.CompletionException;
 
 public class WorkoutPlanManager {
 
-    private final WorkoutPlanFacade planFacade;
+    private final WorkoutPlanApi planApi;
     private final ObjectMapper objectMapper;
 
-    public WorkoutPlanManager(WorkoutPlanFacade planFacade) {
-        this.planFacade = planFacade;
+    public WorkoutPlanManager(WorkoutPlanApi planApi) {
+        this.planApi = planApi;
         this.objectMapper = new ObjectMapper();
     }
 
 //    public CompletableFuture<List<WorkoutPlanBean>> getMyCreatedPlansSummaryAsync() {
-//        return planFacade.getMyCreatedPlansSummaryAsync()
+//        return planApi.getMyCreatedPlansSummaryAsync()
 //                .thenApply(list -> {
 //                    List<WorkoutPlanBean> beans = new ArrayList<>();
 //                    for (WorkoutPlanSummaryDTO dto : list) {
@@ -39,11 +39,11 @@ public class WorkoutPlanManager {
 //    }
 
     public CompletableFuture<Void> assignPlanToAthleteAsync(String planId, String athleteEmail) {
-        return planFacade.assignPlanToAsync(planId, athleteEmail);
+        return planApi.assignPlanToAsync(planId, athleteEmail);
     }
 
     public CompletableFuture<WorkoutPlanBean> getAssignedPlanAsync() {
-        return planFacade.getAssignedPlanAsync()
+        return planApi.getAssignedPlanAsync()
                 .thenApply(this::dtoToBean);
     }
 
@@ -53,11 +53,11 @@ public class WorkoutPlanManager {
     }
 
     public CompletableFuture<WorkoutScheduleDTO> getCurrentCycleScheduleAsync() {
-        return planFacade.getCurrentCycleScheduleAsync();
+        return planApi.getCurrentCycleScheduleAsync();
     }
 
     public CompletableFuture<WorkoutSessionBean> getNextSuggestedSessionAsync() {
-        return planFacade.getCurrentCycleScheduleAsync()
+        return planApi.getCurrentCycleScheduleAsync()
                 .thenApply(schedule -> {
                     if (schedule == null || schedule.getNextSuggestedSession() == null) {
                         return null;
@@ -90,19 +90,19 @@ public class WorkoutPlanManager {
     }
 
     public CompletableFuture<String> createPlanAsync(WorkoutPlanBean planBean) {
-        return planFacade.createPlanAsync(beanToDto(planBean));
+        return planApi.createPlanAsync(beanToDto(planBean));
     }
 
     public CompletableFuture<Void> assignPlanToAsync(String planId, String athleteId) {
-        return planFacade.assignPlanToAsync(planId, athleteId);
+        return planApi.assignPlanToAsync(planId, athleteId);
     }
 
     public CompletableFuture<Void> updatePlanAsync(String planId, WorkoutPlanBean planBean) {
-        return planFacade.updatePlanAsync(planId, beanToDto(planBean));
+        return planApi.updatePlanAsync(planId, beanToDto(planBean));
     }
 
     public CompletableFuture<Void> deletePlanAsync(String planId) {
-        return planFacade.deletePlanAsync(planId);
+        return planApi.deletePlanAsync(planId);
     }
 
     // --- MAPPING HELPERS ---

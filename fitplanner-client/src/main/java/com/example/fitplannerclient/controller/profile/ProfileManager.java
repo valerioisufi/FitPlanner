@@ -1,7 +1,7 @@
 package com.example.fitplannerclient.controller.profile;
 
 import com.example.fitplannerclient.bean.profile.ProfileBean;
-import com.example.fitplannerclient.service.facade.ProfileFacade;
+import com.example.fitplannerclient.service.api.ProfileApi;
 import com.example.fitplannercommon.InvitationCodeDTO;
 import com.example.fitplannercommon.ProfileDTO;
 
@@ -9,16 +9,16 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public class ProfileManager {
-    private final ProfileFacade profileFacade;
+    private final ProfileApi profileApi;
     private ProfileBean cachedProfile;
     private String previousUserId;
 
-    public ProfileManager(ProfileFacade profileFacade){
-        this.profileFacade = profileFacade;
+    public ProfileManager(ProfileApi profileApi){
+        this.profileApi = profileApi;
     }
 
     public CompletableFuture<ProfileBean> getProfileInfoAsync() {
-        return profileFacade.getProfileInfoAsync()
+        return profileApi.getProfileInfoAsync()
                 .thenApply(this::dtoToBean)
                 .thenApply(profile -> {
                     this.previousUserId = (this.cachedProfile != null) ? this.cachedProfile.getUserId() : this.previousUserId;
@@ -42,26 +42,26 @@ public class ProfileManager {
     }
 
     public CompletableFuture<Void> updateProfileInfoAsync(ProfileBean bean) {
-        return profileFacade.updateProfileInfoAsync(beanToDto(bean));
+        return profileApi.updateProfileInfoAsync(beanToDto(bean));
     }
 
     public CompletableFuture<ProfileBean> getMyTrainerAsync() {
-        return profileFacade.getMyTrainerAsync()
+        return profileApi.getMyTrainerAsync()
                 .thenApply(this::dtoToBean);
 
     }
 
     public CompletableFuture<List<ProfileBean>> getMyAthletesAsync() {
-        return profileFacade.getMyAthletesAsync()
+        return profileApi.getMyAthletesAsync()
                 .thenApply(list -> list.stream().map(this::dtoToBean).toList());
     }
 
     public CompletableFuture<String> getInvitationCodeAsync(){
-        return profileFacade.getInvitationCodeAsync().thenApply(InvitationCodeDTO::getInvitationCode);
+        return profileApi.getInvitationCodeAsync().thenApply(InvitationCodeDTO::getInvitationCode);
     }
 
     public CompletableFuture<Void> linkTrainerAsync(String invitationCode){
-        return profileFacade.linkTrainerAsync(new InvitationCodeDTO(invitationCode));
+        return profileApi.linkTrainerAsync(new InvitationCodeDTO(invitationCode));
     }
 
 

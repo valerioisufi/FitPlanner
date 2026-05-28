@@ -4,7 +4,7 @@ import com.example.fitplannerclient.controller.plan.engine.*;
 import com.example.fitplannerclient.entity.plan.WorkoutPlan;
 import com.example.fitplannerclient.entity.plan.WorkoutSession;
 import com.example.fitplannerclient.entity.plan.context.WorkoutStatus;
-import com.example.fitplannerclient.service.facade.SessionLogFacade;
+import com.example.fitplannerclient.service.api.SessionLogApi;
 import com.example.fitplannercommon.ExerciseLogDTO;
 import com.example.fitplannercommon.SessionLogDTO;
 import com.example.fitplannerclient.bean.plan.WorkoutSessionBean;
@@ -17,7 +17,7 @@ import java.util.concurrent.CompletableFuture;
 public class WorkoutExecutionManager {
 
     private WorkoutEngine engine;
-    private final SessionLogFacade logFacade;
+    private final SessionLogApi logApi;
 
     private String currentPlanId;
     private WorkoutSession currentSession;
@@ -25,8 +25,8 @@ public class WorkoutExecutionManager {
     // TODO: Aggiungi qui il subject per la UI
     // private WorkoutExecutionSubject uiSubject = new WorkoutExecutionSubject();
 
-    public WorkoutExecutionManager(SessionLogFacade logFacade) {
-        this.logFacade = logFacade;
+    public WorkoutExecutionManager(SessionLogApi logApi) {
+        this.logApi = logApi;
     }
 
     public void startSession(String planId, WorkoutSessionBean sessionBean) {
@@ -81,7 +81,7 @@ public class WorkoutExecutionManager {
     }
 
     public CompletableFuture<ExerciseLogDTO> getLastWeightUsedAsync(String exerciseId) {
-        return logFacade.getLastWeightUsedAsync(exerciseId);
+        return logApi.getLastWeightUsedAsync(exerciseId);
     }
 
     public CompletableFuture<Void> finishAndSaveSession() {
@@ -105,6 +105,6 @@ public class WorkoutExecutionManager {
                 new ArrayList<>() // TODO: mappare i risultati dall'ExecutionContext
         );
 
-        return logFacade.saveSessionLogAsync(logDTO);
+        return logApi.saveSessionLogAsync(logDTO);
     }
 }

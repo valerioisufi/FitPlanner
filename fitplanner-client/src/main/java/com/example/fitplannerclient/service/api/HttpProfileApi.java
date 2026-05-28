@@ -1,4 +1,4 @@
-package com.example.fitplannerclient.service.facade;
+package com.example.fitplannerclient.service.api;
 
 import com.example.fitplannerclient.service.HttpService;
 import com.example.fitplannercommon.InvitationCodeDTO;
@@ -8,17 +8,18 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-public class ProfileFacade {
+public class HttpProfileApi implements ProfileApi {
 
     private final HttpService httpService;
 
-    public ProfileFacade(HttpService httpService) {
+    public HttpProfileApi(HttpService httpService) {
         this.httpService = httpService;
     }
 
     /**
      * Recupera le informazioni del profilo dell'utente correntemente autenticato.
      */
+    @Override
     public CompletableFuture<ProfileDTO> getProfileInfoAsync() {
         return httpService.getAsync("/profiles/me", ProfileDTO.class);
     }
@@ -26,6 +27,7 @@ public class ProfileFacade {
     /**
      * Aggiorna le informazioni del profilo dell'utente correntemente autenticato.
      */
+    @Override
     public CompletableFuture<Void> updateProfileInfoAsync(ProfileDTO profileDTO) {
         return httpService.putAsync("/profiles/me", profileDTO, Void.class);
     }
@@ -33,6 +35,7 @@ public class ProfileFacade {
     /**
      * Permette a un atleta di recuperare il profilo del suo trainer.
      */
+    @Override
     public CompletableFuture<ProfileDTO> getMyTrainerAsync() {
         return httpService.getAsync("/profiles/my-trainer", ProfileDTO.class);
     }
@@ -40,6 +43,7 @@ public class ProfileFacade {
     /**
      * Permette a un trainer di recuperare la lista dei suoi atleti.
      */
+    @Override
     public CompletableFuture<List<ProfileDTO>> getMyAthletesAsync() {
         return httpService.getAsync("/profiles/my-athletes", ProfileDTO[].class)
                 .thenApply(Arrays::asList);
@@ -48,6 +52,7 @@ public class ProfileFacade {
     /**
      * Permette a un atleta di collegarsi a un trainer utilizzando un codice di invito.
      */
+    @Override
     public CompletableFuture<Void> linkTrainerAsync(InvitationCodeDTO invitationCodeDTO) {
         return httpService.postAsync("/profiles/my-trainer/link", invitationCodeDTO, Void.class);
     }
@@ -55,6 +60,7 @@ public class ProfileFacade {
     /**
      * Permette a un trainer di generare o recuperare il proprio codice di invito.
      */
+    @Override
     public CompletableFuture<InvitationCodeDTO> getInvitationCodeAsync() {
         return httpService.getAsync("/profiles/my-code", InvitationCodeDTO.class);
     }
