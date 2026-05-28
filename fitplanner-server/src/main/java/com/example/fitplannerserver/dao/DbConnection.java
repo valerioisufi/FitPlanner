@@ -1,5 +1,6 @@
 package com.example.fitplannerserver.dao;
 
+import com.example.fitplannerserver.config.ServerConfigurationManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,34 +19,12 @@ public class DbConnection {
 
     private static final Logger logger = LoggerFactory.getLogger(DbConnection.class);
 
-    private static final Properties config = new Properties();
-
-    static {
-        // Blocco statico: viene eseguito una sola volta quando la classe viene caricata
-        try (InputStream input = DbConnection.class.getClassLoader().getResourceAsStream("db.properties")) {
-            if (input == null) {
-                throw new RuntimeException("Impossibile trovare db.properties");
-            }
-            // Carica le coppie chiave-valore dal file
-            config.load(input);
-        } catch (IOException ex) {
-            throw new RuntimeException("Errore durante la lettura di db.properties", ex);
-        }
-
-        // Carica il driver (opzionale nelle versioni recenti di Java, ma buona prassi)
-//        try {
-//            Class.forName("com.my");
-//        } catch (ClassNotFoundException e) {
-//            throw new RuntimeException("Driver PostgreSQL non trovato!", e);
-//        }
-    }
-
     private static class Wrapper {
         static final DbConnection INSTANCE = new DbConnection(
-                config.getProperty("db.url"),
-                config.getProperty("db.user"),
-                config.getProperty("db.password"),
-                Integer.parseInt(config.getProperty("db.pool.size", "10")) // default 10
+                ServerConfigurationManager.getInstance().getDbUrl(),
+                ServerConfigurationManager.getInstance().getDbUser(),
+                ServerConfigurationManager.getInstance().getDbPassword(),
+                ServerConfigurationManager.getInstance().getDbPoolSize()
         );
     }
 
