@@ -40,23 +40,28 @@ CREATE TABLE IF NOT EXISTS exercise_library(
 
 -- 5. Tabella session_log
 CREATE TABLE IF NOT EXISTS session_log(
-    session_id VARCHAR(36) PRIMARY KEY,
+    session_id BIGINT PRIMARY KEY AUTO_INCREMENT,
     user_id VARCHAR(36) NOT NULL,
     plan_referenced VARCHAR(36) NOT NULL,
+    workout_session_day INT NOT NULL,
     status VARCHAR(20) NOT NULL,
     notes TEXT,
     date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (user_id, date),
     FOREIGN KEY (user_id) REFERENCES accounts(user_id) ON DELETE CASCADE
 );
 
 -- 6. Tabella exercise_log
 CREATE TABLE IF NOT EXISTS exercise_log(
-    exercise_log_id VARCHAR(36) PRIMARY KEY,
-    session_id VARCHAR(36) NOT NULL,
-    exercise_id VARCHAR(36) NOT NULL,
+    exercise_log_id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    session_id BIGINT NOT NULL,
+    exercise_id VARCHAR(36),
+    order_index INT NOT NULL,
     exercise_set VARCHAR(255),
-    rpe INTEGER,
-    notes TEXT,
+    rpe INT,
+    name VARCHAR(255) NOT NULL,
+    note TEXT,
     FOREIGN KEY (session_id) REFERENCES session_log(session_id) ON DELETE CASCADE,
-    FOREIGN KEY (exercise_id) REFERENCES exercise_library(exercise_id) ON DELETE CASCADE
-);
+    FOREIGN KEY (exercise_id) REFERENCES exercise_library(exercise_id) ON DELETE SET NULL,
+    UNIQUE (session_id, order_index)
+    );
