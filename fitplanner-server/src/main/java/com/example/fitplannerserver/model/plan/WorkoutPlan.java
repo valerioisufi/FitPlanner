@@ -28,6 +28,7 @@ public class WorkoutPlan {
         this.sessions = new TreeMap<>();
     }
 
+
     public WorkoutPlan(WorkoutPlan old){
         this.planId = old.planId;
         this.title = old.title;
@@ -75,6 +76,10 @@ public class WorkoutPlan {
 
     public WorkoutSession getSession(int day) {
         return this.sessions.get(day);
+    }
+
+    public List<WorkoutSession> getAllSessions(){
+        return new ArrayList<>(this.sessions.values());
     }
 
     public void addSession(WorkoutSession newSession) {
