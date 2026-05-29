@@ -9,8 +9,10 @@ import com.example.fitplannerclient.entity.plan.context.ExecutionContext;
 import com.example.fitplannerclient.entity.plan.context.ExecutionResult;
 import com.example.fitplannerclient.entity.plan.context.PlanNodeState;
 
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 public class ProtocolBlock extends PlanNode implements GroupNode {
     private String semanticType;
@@ -22,6 +24,8 @@ public class ProtocolBlock extends PlanNode implements GroupNode {
     private final Block rawGroup; // gruppo di nodi non decorati
     private final Block decoratedGroup; // gruppo di nodi decorati attraverso le composition rules (applyCompositionRules)
     private PlanNode internalExecutionRoot; // nodo radice per l'esecuzione
+
+    private Map<String, String> parameters = new HashMap<>();
 
     public ProtocolBlock(String semanticType, List<ValidationRule> validationRules, List<CompositionRule> compositionRules, List<CompositionRule> blockCompositionRules) {
         this.semanticType = semanticType;
@@ -112,6 +116,12 @@ public class ProtocolBlock extends PlanNode implements GroupNode {
             internalExecutionRoot.reset();
         }
 
+        if (parameters != null) {
+            for (Map.Entry<String, String> entry : parameters.entrySet()) {
+                context.setParameter(entry.getKey(), entry.getValue());
+            }
+        }
+
         ExecutionResult result = internalExecutionRoot.execute(context);
 
         if (result.getState() == PlanNodeState.COMPLETED) {
@@ -138,6 +148,14 @@ public class ProtocolBlock extends PlanNode implements GroupNode {
 
     public void setSemanticType(String semanticType) {
         this.semanticType = semanticType;
+    }
+
+    public Map<String, String> getParameters() {
+        return parameters;
+    }
+
+    public void setParameter(String key, String value) {
+        this.parameters.put(key, value);
     }
 
     private PlanNode applyCompositionRules(PlanNode node) {

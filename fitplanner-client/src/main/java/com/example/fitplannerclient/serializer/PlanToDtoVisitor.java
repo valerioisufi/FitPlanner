@@ -102,6 +102,7 @@ public class PlanToDtoVisitor implements WorkoutPlanVisitor {
     public void visit(ProtocolBlock protocolBlock) {
         currentNodeDto.setType(PlanNodeDTO.NodeType.PROTOCOL_BLOCK);
         currentNodeDto.setName(protocolBlock.getSemanticType());
+        currentNodeDto.setParameters(protocolBlock.getParameters());
 
         PlanNodeDTO thisNodeDto = currentNodeDto;
 
@@ -122,7 +123,7 @@ public class PlanToDtoVisitor implements WorkoutPlanVisitor {
         visitFlowDecorator(
                 loopDecorator,
                 PlanNodeDTO.FlowDecoratorType.LOOP,
-                String.valueOf(loopDecorator.getRounds())
+                loopDecorator.getRoundsExpression()
         );
 
     }

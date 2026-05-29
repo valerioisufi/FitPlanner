@@ -21,7 +21,7 @@ public class TestLoopDecorator {
         DummyPlanNode child = new DummyPlanNode();
         child.setNextResult(PlanNodeState.RUNNING, 1000); // il wrappedNode è in esecuzione
 
-        LoopDecorator loop = new LoopDecorator(child, 3);
+        LoopDecorator loop = new LoopDecorator(child, "3");
         ExecutionContext context = new ExecutionContext();
 
         // Act
@@ -40,7 +40,7 @@ public class TestLoopDecorator {
         DummyPlanNode child = new DummyPlanNode();
         child.setNextResult(PlanNodeState.COMPLETED); // il wrappedNode ha terminato
 
-        LoopDecorator loop = new LoopDecorator(child, 2);
+        LoopDecorator loop = new LoopDecorator(child, "2");
         ExecutionContext context = new ExecutionContext();
 
         // Act
@@ -56,7 +56,7 @@ public class TestLoopDecorator {
     void TestExecuteTargetRoundsReached() {
         // Arrange
         DummyPlanNode child = new DummyPlanNode();
-        LoopDecorator loop = new LoopDecorator(child, 2);
+        LoopDecorator loop = new LoopDecorator(child, "2");
         ExecutionContext context = new ExecutionContext();
 
         // ROUND 1
@@ -82,7 +82,7 @@ public class TestLoopDecorator {
     void TestResetCurrentRoundAndChild() {
         // Arrange
         DummyPlanNode child = new DummyPlanNode();
-        LoopDecorator loop = new LoopDecorator(child, 5);
+        LoopDecorator loop = new LoopDecorator(child, "5");
         ExecutionContext context = new ExecutionContext();
 
         child.setNextResult(PlanNodeState.COMPLETED);
@@ -107,7 +107,7 @@ public class TestLoopDecorator {
     void TestExecuteChildSkipped() {
         // Arrange
         DummyPlanNode child = new DummyPlanNode();
-        LoopDecorator loop = new LoopDecorator(child, 2);
+        LoopDecorator loop = new LoopDecorator(child, "2");
         ExecutionContext context = new ExecutionContext();
 
         // Act
@@ -122,7 +122,7 @@ public class TestLoopDecorator {
     void TestExecuteChildRevertWhenFirstRound() {
         // Arrange
         DummyPlanNode child = new DummyPlanNode();
-        LoopDecorator loop = new LoopDecorator(child, 2);
+        LoopDecorator loop = new LoopDecorator(child, "2");
         ExecutionContext context = new ExecutionContext();
 
         // Act
@@ -137,7 +137,7 @@ public class TestLoopDecorator {
     void TestExecuteChildRevertWhenMidLoop() {
         // Arrange
         DummyPlanNode child = new DummyPlanNode();
-        LoopDecorator loop = new LoopDecorator(child, 2);
+        LoopDecorator loop = new LoopDecorator(child, "2");
         ExecutionContext context = new ExecutionContext();
 
         // Act

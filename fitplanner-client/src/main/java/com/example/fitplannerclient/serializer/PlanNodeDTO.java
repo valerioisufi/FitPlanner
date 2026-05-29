@@ -1,7 +1,9 @@
 package com.example.fitplannerclient.serializer;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class PlanNodeDTO {
     private NodeType type;
@@ -14,6 +16,8 @@ public class PlanNodeDTO {
     private List<Modifier> modifiers = new ArrayList<>();
 
     private FlowDecorator flowDecorator; // solo per type == FLOW_DECORATOR
+
+    private Map<String, String> parameters = new HashMap<>();
 
     public enum NodeType {
         EXERCISE,
@@ -89,5 +93,13 @@ public class PlanNodeDTO {
 
     public void setFlowDecorator(FlowDecorator flowDecorator) {
         this.flowDecorator = flowDecorator;
+    }
+
+    public Map<String, String> getParameters() {
+        return parameters;
+    }
+
+    public void setParameters(Map<String, String> parameters) {
+        this.parameters = parameters;
     }
 }

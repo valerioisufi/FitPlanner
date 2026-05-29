@@ -1,7 +1,9 @@
 package com.example.fitplannerclient.bean.plan;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class PlanNodeBean {
     private String id;
@@ -13,11 +15,13 @@ public class PlanNodeBean {
     private List<FlowDecoratorBean> flowDecorators;
 
     private List<PlanNodeBean> children;
+    private Map<String, String> parameters;
 
     public PlanNodeBean() {
         this.modifiers = new ArrayList<>();
         this.flowDecorators = new ArrayList<>();
         this.children = new ArrayList<>();
+        this.parameters = new HashMap<>();
     }
 
     public PlanNodeBean(String id, String name, NodeType type) {
@@ -102,5 +106,13 @@ public class PlanNodeBean {
 
     public void addFlowDecorators(List<FlowDecoratorBean> flowDecorators) {
         if (flowDecorators != null) this.flowDecorators.addAll(flowDecorators);
+    }
+
+    public Map<String, String> getParameters() {
+        return parameters;
+    }
+
+    public void setParameters(Map<String, String> parameters) {
+        this.parameters = parameters;
     }
 }

@@ -108,6 +108,7 @@ public class PlanToBeanVisitor implements WorkoutPlanVisitor {
     public void visit(ProtocolBlock protocolBlock) {
         PlanNodeBean nodeBean = new PlanNodeBean(protocolBlock.getId(), protocolBlock.getSemanticType(), NodeType.PROTOCOL_BLOCK);
         nodeBean.setFlowDecorators(new ArrayList<>(accumulatedDecorators));
+        nodeBean.setParameters(protocolBlock.getParameters());
         accumulatedDecorators.clear();
 
         for (int i = 0; i < protocolBlock.getChildrenCount(); i++) {
@@ -128,7 +129,7 @@ public class PlanToBeanVisitor implements WorkoutPlanVisitor {
         accumulatedDecorators.add(new FlowDecoratorBean(
                 loopDecorator.getId(),
                 FlowDecoratorType.LOOP,
-                String.valueOf(loopDecorator.getRounds())
+                loopDecorator.getRoundsExpression()
         ));
         loopDecorator.getWrappedNode().accept(this);
     }

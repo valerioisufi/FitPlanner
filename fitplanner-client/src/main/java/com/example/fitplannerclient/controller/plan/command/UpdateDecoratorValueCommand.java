@@ -27,8 +27,8 @@ public class UpdateDecoratorValueCommand implements WorkoutPlanEditorCommand {
 
             @Override
             public void visit(LoopDecorator loopDecorator) {
-                previousValue = String.valueOf(loopDecorator.getRounds());
-                loopDecorator.setRounds(Integer.parseInt(newValue));
+                previousValue = loopDecorator.getRoundsExpression();
+                loopDecorator.setRoundsExpression(newValue);
             }
 
             @Override
@@ -61,7 +61,7 @@ public class UpdateDecoratorValueCommand implements WorkoutPlanEditorCommand {
 
             @Override
             public void visit(LoopDecorator loopDecorator) {
-                loopDecorator.setRounds(Integer.parseInt(previousValue));
+                loopDecorator.setRoundsExpression(previousValue);
             }
 
             @Override

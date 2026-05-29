@@ -7,13 +7,14 @@ import com.example.fitplannerclient.entity.plan.context.ExecutionResult;
 import com.example.fitplannerclient.entity.plan.context.PlanNodeState;
 
 public class LoopDecorator extends FlowDecorator {
-    private int rounds;
+    private String roundsExpression;
 
     protected int currentRound = 0;
+    protected int resolvedRounds = 1;
 
-    public LoopDecorator(PlanNode wrappedNode, int rounds) {
+    public LoopDecorator(PlanNode wrappedNode, String roundsExpression) {
         super(wrappedNode);
-        this.rounds = rounds;
+        this.roundsExpression = roundsExpression;
     }
 
     @Override
@@ -27,14 +28,17 @@ public class LoopDecorator extends FlowDecorator {
             return new ExecutionResult(PlanNodeState.COMPLETED);
         }
 
-        this.state = PlanNodeState.RUNNING;
+        if (this.state == PlanNodeState.IDLE) {
+            this.state = PlanNodeState.RUNNING;
+            this.resolvedRounds = context.resolveAsInteger(this.roundsExpression, 1);
+        }
 
         ExecutionResult result = wrappedNode.execute(context);
 
         if (result.getState() == PlanNodeState.COMPLETED || result.getState() == PlanNodeState.SKIPPED) {
             currentRound++;
 
-            if (currentRound < rounds) {
+            if (currentRound < resolvedRounds) {
                 wrappedNode.reset();
                 return this.execute(context);
 
@@ -68,16 +72,16 @@ public class LoopDecorator extends FlowDecorator {
         wrappedNode.reset();
     }
 
-    public int getRounds() {
-        return rounds;
+    public String getRoundsExpression() {
+        return roundsExpression;
     }
 
-    public void setRounds(int rounds) {
-        this.rounds = rounds;
+    public void setRoundsExpression(String roundsExpression) {
+        this.roundsExpression = roundsExpression;
     }
 
     @Override
     public LoopDecorator cloneWithNode(PlanNode newWrappedNode) {
-        return new LoopDecorator(newWrappedNode, this.rounds);
+        return new LoopDecorator(newWrappedNode, this.roundsExpression);
     }
 }

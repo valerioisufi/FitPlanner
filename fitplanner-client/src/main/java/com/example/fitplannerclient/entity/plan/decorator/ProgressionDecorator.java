@@ -15,7 +15,7 @@ public class ProgressionDecorator extends LoopDecorator {
     private Map<String, List<String>> parsedProgressions;
 
     public ProgressionDecorator(PlanNode wrappedNode, String progressionString) {
-        super(wrappedNode, 0);
+        super(wrappedNode, "0");
         this.setProgressionString(progressionString);
     }
 
@@ -32,7 +32,7 @@ public class ProgressionDecorator extends LoopDecorator {
             }
         }
 
-        this.setRounds(maxRounds);
+        this.setRoundsExpression(String.valueOf(maxRounds));
     }
 
     public String getProgressionString() {

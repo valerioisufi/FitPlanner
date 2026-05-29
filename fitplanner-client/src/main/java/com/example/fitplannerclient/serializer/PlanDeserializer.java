@@ -14,6 +14,8 @@ import com.example.fitplannercommon.WorkoutPlanDTO;
 import com.example.fitplannercommon.WorkoutSessionDTO;
 import tools.jackson.databind.ObjectMapper;
 
+import java.util.Map;
+
 public class PlanDeserializer {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -82,6 +84,11 @@ public class PlanDeserializer {
             case PROTOCOL_BLOCK:
                 // Il semanticType viene memorizzato nel campo name del DTO
                 ProtocolBlock protocolBlock = new ProtocolBlock(dto.getName(), null, null, null);
+                if (dto.getParameters() != null) {
+                    for (Map.Entry<String, String> entry : dto.getParameters().entrySet()) {
+                        protocolBlock.setParameter(entry.getKey(), entry.getValue());
+                    }
+                }
                 if (dto.getChildren() != null) {
                     for (PlanNodeDTO childDto : dto.getChildren()) {
                         protocolBlock.addNode(deserializeNode(childDto));
@@ -101,7 +108,7 @@ public class PlanDeserializer {
                 PlanNodeDTO.FlowDecorator fd = dto.getFlowDecorator();
                 switch (fd.type()) {
                     case LOOP:
-                        return new LoopDecorator(wrappedNode, Integer.parseInt(fd.value()));
+                        return new LoopDecorator(wrappedNode, fd.value());
                     case REST:
                         return new RestDecorator(wrappedNode, fd.value());
                     case TIME_LIMIT:
@@ -152,6 +159,11 @@ public class PlanDeserializer {
 
             case PROTOCOL_BLOCK:
                 ProtocolBlock protocolBlock = new ProtocolBlock(bean.getName(), null, null, null);
+                if (bean.getParameters() != null) {
+                    for (Map.Entry<String, String> entry : bean.getParameters().entrySet()) {
+                        protocolBlock.setParameter(entry.getKey(), entry.getValue());
+                    }
+                }
                 if (bean.getChildren() != null) {
                     for (PlanNodeBean childBean : bean.getChildren()) {
                         protocolBlock.addNode(toEntity(childBean));
@@ -171,7 +183,7 @@ public class PlanDeserializer {
                 FlowDecoratorBean decBean = bean.getFlowDecorators().get(i);
                 switch (decBean.getType()) {
                     case LOOP:
-                        currentNode = new LoopDecorator(currentNode, Integer.parseInt(decBean.getValue()));
+                        currentNode = new LoopDecorator(currentNode, decBean.getValue());
                         break;
                     case REST:
                         currentNode = new RestDecorator(currentNode, decBean.getValue());

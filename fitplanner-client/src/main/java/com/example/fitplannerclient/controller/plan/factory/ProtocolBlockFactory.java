@@ -1,6 +1,11 @@
 package com.example.fitplannerclient.controller.plan.factory;
 
 import com.example.fitplannerclient.entity.plan.block.ProtocolBlock;
+import com.example.fitplannerclient.entity.plan.block.strategy.composition.WrapWithDecoratorRule;
+import com.example.fitplannerclient.entity.plan.block.strategy.validation.OnlyExercisesAllowedRule;
+import com.example.fitplannerclient.entity.plan.decorator.LoopDecorator;
+
+import java.util.List;
 
 public class ProtocolBlockFactory {
 
@@ -23,13 +28,17 @@ public class ProtocolBlockFactory {
         }
     }
 
-//    public ProtocolBlock createCircuit() {
-//        ProtocolBlock circuitBlock = new ProtocolBlock(
-//                ProtocolBlockTypes.CIRCUIT.getSemanticType(),
-//
-//        );
-//    }
-//
+    public ProtocolBlock createCircuit() {
+        ProtocolBlock circuitBlock = new ProtocolBlock(
+                ProtocolBlockTypes.CIRCUIT.getSemanticType(),
+                List.of(new OnlyExercisesAllowedRule()),
+                null,
+                List.of(new WrapWithDecoratorRule(new LoopDecorator(null, "${CIRCUIT_ROUNDS}")))
+        );
+        circuitBlock.setParameter("CIRCUIT_ROUNDS", "3");
+        return circuitBlock;
+    }
+
 //    public ProtocolBlock createAMRAP() {
 //
 //    }
