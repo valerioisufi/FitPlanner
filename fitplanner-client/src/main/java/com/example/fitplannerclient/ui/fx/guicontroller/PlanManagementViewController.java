@@ -40,16 +40,15 @@ public class PlanManagementViewController implements GuiController {
 
     private void bindActions() {
         view.setOnNewPlanAction(() -> {
-            WorkoutPlanBean emptyPlan = new WorkoutPlanBean(java.util.UUID.randomUUID().toString(), "Nuovo Piano", new ArrayList<>());
-            Navigator.getInstance().goToWorkoutPlanEditor(emptyPlan);
+            Navigator.getInstance().goToWorkoutPlanEditor(null, false);
         });
 
         view.setOnEditAction(plan -> {
-            Navigator.getInstance().goToWorkoutPlanEditor(plan);
+            Navigator.getInstance().goToWorkoutPlanEditor(plan.getPlanId(), false);
         });
 
         view.setOnDeleteAction(plan -> {
-            planManager.deletePlanAsync(plan.getId())
+            planManager.deletePlanAsync(plan.getPlanId())
                 .thenRun(() -> {
                     Platform.runLater(() -> {
                         guiManager.showNotification(GuiManager.NotificationType.SUCCESS, "Piano eliminato con successo");
@@ -63,38 +62,28 @@ public class PlanManagementViewController implements GuiController {
         });
 
         view.setOnCloneAction(plan -> {
-            WorkoutPlanBean clonedPlan = new WorkoutPlanBean(java.util.UUID.randomUUID().toString(), "Copia di " + plan.getName(), new ArrayList<>(plan.getSessions()));
-            planManager.createPlanAsync(clonedPlan)
-                .thenRun(() -> {
-                    Platform.runLater(() -> {
-                        guiManager.showNotification(GuiManager.NotificationType.SUCCESS, "Piano duplicato con successo");
-                        loadPlans();
-                    });
-                })
-                .exceptionally(ex -> {
-                    Platform.runLater(() -> guiManager.showNotification(GuiManager.NotificationType.ERROR, "Errore nella duplicazione"));
-                    return null;
-                });
+            Navigator.getInstance().goToWorkoutPlanEditor(plan.getPlanId(), true);
         });
 
         // Assign Button logic
         view.setOnAssignButtonClick(plan -> {
-            if (athletesCache.isEmpty()) {
-                // Fetch athletes if not already cached
-                profileManager.getMyAthletesAsync().thenAccept(athletes -> {
-                    athletesCache = athletes;
-                    Platform.runLater(() -> view.showModal(plan, athletes));
-                }).exceptionally(ex -> {
-                    Platform.runLater(() -> guiManager.showNotification(GuiManager.NotificationType.ERROR, "Impossibile recuperare gli atleti"));
-                    return null;
-                });
-            } else {
-                view.showModal(plan, athletesCache);
-            }
+            // TODO
+//            if (athletesCache.isEmpty()) {
+//                // Fetch athletes if not already cached
+//                profileManager.getMyAthletesAsync().thenAccept(athletes -> {
+//                    athletesCache = athletes;
+//                    Platform.runLater(() -> view.showModal(plan, athletes));
+//                }).exceptionally(ex -> {
+//                    Platform.runLater(() -> guiManager.showNotification(GuiManager.NotificationType.ERROR, "Impossibile recuperare gli atleti"));
+//                    return null;
+//                });
+//            } else {
+//                view.showModal(plan, athletesCache);
+//            }
         });
 
         // Modal close/assign logic
-        view.getAssignModal().setOnCloseAction(() -> view.hideModal());
+        view.getAssignModal().setOnCloseAction(view::hideModal);
         
         view.getAssignModal().setOnAssignAction(athlete -> {
             WorkoutPlanBean planToAssign = view.getAssignModal().getCurrentPlan();
@@ -130,12 +119,12 @@ public class PlanManagementViewController implements GuiController {
     }
 
     private void loadPlans() {
-//        planManager.getMyCreatedPlansAsync()
-//            .thenAccept(plans -> Platform.runLater(() -> view.setPlansList(plans)))
-//            .exceptionally(ex -> {
-//                Platform.runLater(() -> guiManager.showNotification(GuiManager.NotificationType.ERROR, "Errore nel caricamento dei piani"));
-//                return null;
-//            });
+        planManager.getMyCreatedPlansSummaryAsync()
+            .thenAccept(plans -> Platform.runLater(() -> view.setPlansList(plans)))
+            .exceptionally(ex -> {
+                Platform.runLater(() -> guiManager.showNotification(GuiManager.NotificationType.ERROR, "Errore nel caricamento dei piani"));
+                return null;
+            });
     }
 
     @Override

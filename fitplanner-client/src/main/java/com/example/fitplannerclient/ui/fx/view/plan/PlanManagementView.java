@@ -1,16 +1,16 @@
 package com.example.fitplannerclient.ui.fx.view.plan;
 
 import com.example.fitplannerclient.bean.plan.WorkoutPlanBean;
+import com.example.fitplannerclient.bean.plan.WorkoutPlanSummaryBean;
 import com.example.fitplannerclient.bean.profile.ProfileBean;
 import com.example.fitplannerclient.ui.fx.components.CardListView;
 import com.example.fitplannerclient.ui.fx.components.Icon;
 import com.example.fitplannerclient.ui.fx.components.ModalOverlay;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.geometry.Side;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
+import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import java.util.List;
 import java.util.function.Consumer;
@@ -18,15 +18,16 @@ import java.util.function.Consumer;
 public class PlanManagementView extends StackPane {
 
     private final BorderPane mainPane;
-    private final CardListView<WorkoutPlanBean> cardListView;
+    private final CardListView<WorkoutPlanSummaryBean> cardListView;
     
     private final ModalOverlay modalOverlay;
     private final AssignPlanModal assignModal;
 
     private Runnable onNewPlanAction;
-    private Consumer<WorkoutPlanBean> onEditAction;
-    private Consumer<WorkoutPlanBean> onCloneAction;
-    private Consumer<WorkoutPlanBean> onDeleteAction;
+    private Consumer<WorkoutPlanSummaryBean> onAssignButtonClick;
+    private Consumer<WorkoutPlanSummaryBean> onEditAction;
+    private Consumer<WorkoutPlanSummaryBean> onCloneAction;
+    private Consumer<WorkoutPlanSummaryBean> onDeleteAction;
 
     public PlanManagementView() {
         mainPane = new BorderPane();
@@ -50,6 +51,7 @@ public class PlanManagementView extends StackPane {
         Button addBtn = new Button("Nuovo Piano");
         addBtn.getStyleClass().add("button-primary");
         addBtn.setGraphic(new Icon("plus-icon", List.of("button-primary-icon")));
+        addBtn.setMinWidth(Region.USE_PREF_SIZE);
         addBtn.setOnAction(e -> {
             if (onNewPlanAction != null) onNewPlanAction.run();
         });
@@ -70,7 +72,6 @@ public class PlanManagementView extends StackPane {
 
         ScrollPane mainScroll = new ScrollPane(contentBox);
         mainScroll.setFitToWidth(true);
-        mainScroll.setStyle("-fx-background-color: transparent; -fx-background: transparent;");
         mainPane.setCenter(mainScroll);
 
         // --- MODAL OVERLAY ---
@@ -97,25 +98,19 @@ public class PlanManagementView extends StackPane {
         modalOverlay.hide();
     }
 
-    public void setPlansList(List<WorkoutPlanBean> plans) {
+    public void setPlansList(List<WorkoutPlanSummaryBean> plans) {
         cardListView.setItems(plans, "Nessun piano di allenamento presente.");
     }
 
-    private HBox createPlanRow(WorkoutPlanBean plan, boolean isLast) {
+    private HBox createPlanRow(WorkoutPlanSummaryBean plan, boolean isLast) {
         HBox row = new HBox();
         row.setAlignment(Pos.CENTER_LEFT);
         row.getStyleClass().add(isLast ? "list-row-last" : "list-row");
 
         // Plan Name
-        Label nameLbl = new Label(plan.getName() != null ? plan.getName() : "Senza Nome");
+        Label nameLbl = new Label(plan.getPlanTitle() != null ? plan.getPlanTitle() : "Senza Nome");
         nameLbl.getStyleClass().add("body-base");
         nameLbl.setPrefWidth(300);
-
-        // Sessions Count
-        int sessionCount = plan.getSessions() != null ? plan.getSessions().size() : 0;
-        Label sessionsLbl = new Label(sessionCount + " giorni");
-        sessionsLbl.getStyleClass().addAll("body-small", "text-color-light");
-        sessionsLbl.setPrefWidth(150);
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
@@ -124,49 +119,68 @@ public class PlanManagementView extends StackPane {
         HBox actionsBox = new HBox(12);
         actionsBox.setAlignment(Pos.CENTER_RIGHT);
 
-        Button editBtn = new Button("Modifica");
-        editBtn.getStyleClass().add("button-header");
-        editBtn.setGraphic(new Icon("edit-icon", List.of("button-header-icon")));
-        editBtn.setOnAction(e -> {
-            if (onEditAction != null) onEditAction.accept(plan);
-        });
+        Button optionsBtn = new Button();
+        optionsBtn.getStyleClass().add("button-header");
+        optionsBtn.setGraphic(new Icon("menu-icon", List.of("button-header-icon")));
         
-        Button assignBtn = new Button("Assegna");
-        assignBtn.getStyleClass().add("button-header");
-        assignBtn.setOnAction(e -> {
-            if (onAssignButtonClick != null) {
-                onAssignButtonClick.accept(plan);
-            }
+        optionsBtn.setOnAction(e -> {
+            ContextMenu menu = new ContextMenu();
+            menu.setAutoHide(true);
+            
+            menu.getItems().addAll(
+                createCustomMenuItem("Modifica", "edit-icon", "button-header-icon", null, () -> {
+                    if (onEditAction != null) onEditAction.accept(plan);
+                }),
+                createCustomMenuItem("Assegna", null, null, null, () -> {
+                    if (onAssignButtonClick != null) onAssignButtonClick.accept(plan);
+                }),
+                createCustomMenuItem("Duplica", null, null, null, () -> {
+                    if (onCloneAction != null) onCloneAction.accept(plan);
+                }),
+                createCustomMenuItem("Elimina", "delete-icon", "button-header-danger-icon", "-fx-text-fill: #ef4444;", () -> {
+                    if (onDeleteAction != null) onDeleteAction.accept(plan);
+                })
+            );
+            
+            menu.show(optionsBtn, Side.BOTTOM, 0, 5);
         });
 
-        Button cloneBtn = new Button("Duplica");
-        cloneBtn.getStyleClass().add("button-header");
-        cloneBtn.setOnAction(e -> {
-            if (onCloneAction != null) onCloneAction.accept(plan);
-        });
-
-        Button deleteBtn = new Button("Elimina");
-        deleteBtn.getStyleClass().addAll("button-header", "button-header-danger");
-        deleteBtn.setGraphic(new Icon("delete-icon", List.of("button-header-danger-icon")));
-        deleteBtn.setOnAction(e -> {
-            if (onDeleteAction != null) onDeleteAction.accept(plan);
-        });
-
-        actionsBox.getChildren().addAll(editBtn, assignBtn, cloneBtn, deleteBtn);
+        actionsBox.getChildren().add(optionsBtn);
 
 
 
-        row.getChildren().addAll(nameLbl, sessionsLbl, spacer, actionsBox);
+        row.getChildren().addAll(nameLbl, spacer, actionsBox);
         return row;
     }
 
-    private Consumer<WorkoutPlanBean> onAssignButtonClick;
+    private CustomMenuItem createCustomMenuItem(String text, String iconName, String iconClass, String textStyle, Runnable action) {
+        HBox box = new HBox(8);
+        box.setAlignment(Pos.CENTER_LEFT);
 
-    public void setOnAssignButtonClick(Consumer<WorkoutPlanBean> onAssignButtonClick) {
-        this.onAssignButtonClick = onAssignButtonClick;
+        if (iconName != null) {
+            Icon icon = new Icon(iconName, List.of(iconClass != null ? iconClass : "button-header-icon"));
+            box.getChildren().add(icon);
+        }
+
+        Label label = new Label(text);
+        label.getStyleClass().add("body-base");
+        if (textStyle != null) {
+            label.setStyle(textStyle);
+        }
+
+        box.getChildren().add(label);
+
+        CustomMenuItem item = new CustomMenuItem(box);
+        item.setHideOnClick(true);
+        item.setOnAction(e -> action.run());
+
+        return item;
     }
+
+    public void setOnAssignButtonClick(Consumer<WorkoutPlanSummaryBean> onAssignButtonClick) { this.onAssignButtonClick = onAssignButtonClick; }
     public void setOnNewPlanAction(Runnable onNewPlanAction) { this.onNewPlanAction = onNewPlanAction; }
-    public void setOnEditAction(Consumer<WorkoutPlanBean> onEditAction) { this.onEditAction = onEditAction; }
-    public void setOnCloneAction(Consumer<WorkoutPlanBean> onCloneAction) { this.onCloneAction = onCloneAction; }
-    public void setOnDeleteAction(Consumer<WorkoutPlanBean> onDeleteAction) { this.onDeleteAction = onDeleteAction; }
+    public void setOnEditAction(Consumer<WorkoutPlanSummaryBean> onEditAction) { this.onEditAction = onEditAction; }
+    public void setOnCloneAction(Consumer<WorkoutPlanSummaryBean> onCloneAction) { this.onCloneAction = onCloneAction; }
+    public void setOnDeleteAction(Consumer<WorkoutPlanSummaryBean> onDeleteAction) { this.onDeleteAction = onDeleteAction; }
+
 }

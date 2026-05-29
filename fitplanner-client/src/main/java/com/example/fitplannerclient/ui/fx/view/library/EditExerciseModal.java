@@ -14,16 +14,16 @@ import java.util.function.Consumer;
 
 public class EditExerciseModal extends VBox {
 
-    private FormField nameField;
-    private FormField descField;
-    private FlowPane activeTagsPane;
-    private TextField customTagInput;
+    private final FormField nameField;
+    private final FormField descField;
+    private final FlowPane activeTagsPane;
+    private final TextField customTagInput;
 
-    private Button cancelBtn;
-    private Button updateBtn;
-    private Button closeBtn;
-    private Label titleLabel;
-    private Label subtitleLabel;
+    private final Button cancelBtn;
+    private final Button updateBtn;
+    private final Button closeBtn;
+    private final Label titleLabel;
+    private final Label subtitleLabel;
 
     private String currentExerciseId;
     private List<String> currentTags;

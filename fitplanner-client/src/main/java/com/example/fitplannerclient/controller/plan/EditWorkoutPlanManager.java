@@ -1,5 +1,6 @@
 package com.example.fitplannerclient.controller.plan;
 
+import com.example.fitplannerclient.bean.plan.PlanNodeBean;
 import com.example.fitplannerclient.bean.plan.WorkoutPlanBean;
 import com.example.fitplannerclient.controller.plan.command.EditorHistoryManager;
 import com.example.fitplannerclient.controller.plan.command.WorkoutPlanEditorCommand;
@@ -13,6 +14,8 @@ import com.example.fitplannerclient.entity.plan.WorkoutSession;
 import com.example.fitplannerclient.entity.plan.block.Block;
 import com.example.fitplannerclient.service.api.WorkoutPlanApi;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public class EditWorkoutPlanManager {
@@ -23,6 +26,7 @@ public class EditWorkoutPlanManager {
     private final WorkoutPlanApi planApi;
 
     private WorkoutPlan plan;
+    private final List<PlanNodeBean> protocolBlockLibrary = new ArrayList<>();
 
     public EditWorkoutPlanManager(WorkoutPlanApi planApi) {
         this.planApi = planApi;
@@ -39,8 +43,8 @@ public class EditWorkoutPlanManager {
         return null;
     }
 
-    public CompletableFuture<Void> createNewPlan(String planName) {
-        plan = new WorkoutPlan(planName);
+    public CompletableFuture<Void> createNewPlan() {
+        plan = new WorkoutPlan("Nuovo piano");
 
         PlanNode rootNode = new Block("Blocco 1");
         WorkoutSession firstSession = new WorkoutSession("Sessione 1", 0, rootNode);
@@ -54,15 +58,20 @@ public class EditWorkoutPlanManager {
                 .thenAccept(plan::setPlanId);
     }
 
-    public CompletableFuture<Void> editExistingPlan(String planId) {
+    public CompletableFuture<Void> editExistingPlan(String planId, boolean isCopy) {
         PlanDeserializer deserializer = new PlanDeserializer();
 
         return planApi.getPlanDetailsByIdAsync(planId)
                 .thenAccept(planDto -> {
                     this.plan = deserializer.toEntity(planDto);
+                    if (isCopy) {
+                        plan.setPlanId(null);
+                    }
+
                     workoutPlanSubject.notifyObservers();
                 });
     }
+
 
     public void addExercise(String parentBlockId, String exerciseId) {
         // TODO: Create and execute AddExerciseCommand
@@ -103,6 +112,14 @@ public class EditWorkoutPlanManager {
     public void redo() {
         historyManager.redo();
         workoutPlanSubject.notifyObservers();
+    }
+
+    public void getProtocolBlockLibrary() {
+
+    }
+
+    public void buildProtocolBlockLibrary() {
+
     }
 
 

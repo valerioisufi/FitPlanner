@@ -2,6 +2,8 @@ package com.example.fitplannerclient;
 
 import com.example.fitplannerclient.controller.AuthManager;
 import com.example.fitplannerclient.controller.exercise.ExerciseLibraryManager;
+import com.example.fitplannerclient.controller.log.WorkoutHistoryManager;
+import com.example.fitplannerclient.controller.plan.EditWorkoutPlanManager;
 import com.example.fitplannerclient.controller.plan.WorkoutPlanManager;
 import com.example.fitplannerclient.controller.profile.ProfileManager;
 import com.example.fitplannerclient.service.api.*;
@@ -18,6 +20,7 @@ public class AppControllerFactory {
     private ProfileManager profileManager;
     private ExerciseLibraryManager exerciseLibraryManager;
     private WorkoutPlanManager workoutPlanManager;
+    private EditWorkoutPlanManager editWorkoutPlanManager;
 
     public AppControllerFactory(
             AuthApi authApi,
@@ -61,6 +64,13 @@ public class AppControllerFactory {
         return workoutPlanManager;
     }
 
+    public EditWorkoutPlanManager createEditWorkoutPlanManager() {
+        if (editWorkoutPlanManager == null) {
+            editWorkoutPlanManager = new EditWorkoutPlanManager(workoutPlanApi);
+        }
+        return editWorkoutPlanManager;
+    }
+
     public SessionLogApi createSessionLogApi() {
         return sessionLogApi;
     }
@@ -77,7 +87,7 @@ public class AppControllerFactory {
         this.workoutPlanManager = null;
     }
 
-    public com.example.fitplannerclient.controller.log.WorkoutHistoryManager createWorkoutHistoryManager() {
-        return new com.example.fitplannerclient.controller.log.WorkoutHistoryManager(sessionLogApi);
+    public WorkoutHistoryManager createWorkoutHistoryManager() {
+        return new WorkoutHistoryManager(sessionLogApi);
     }
 }

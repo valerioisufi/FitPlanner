@@ -41,7 +41,6 @@ public class ExerciseLibraryView extends StackPane {
         VBox titleBox = new VBox(4);
         Label subtitle = new Label("Gestisci il database degli esercizi con descrizioni dettagliate, gruppi muscolari e suggerimenti tecnici");
 
-        subtitle.setMaxWidth(500);
         subtitle.setWrapText(true);
 
         subtitle.getStyleClass().add("body-base");
@@ -72,14 +71,13 @@ public class ExerciseLibraryView extends StackPane {
 
         Label muscleHeader = new Label("Gruppi Muscolari");
 
-        cardListView = new com.example.fitplannerclient.ui.fx.components.CardListView<>(List.of(nameHeader, muscleHeader));
+        cardListView = new CardListView<>(List.of(nameHeader, muscleHeader));
         cardListView.setRowRenderer(this::createExerciseRow);
 
         contentBox.getChildren().addAll(header, cardListView);
 
         ScrollPane mainScroll = new ScrollPane(contentBox);
         mainScroll.setFitToWidth(true);
-        mainScroll.setStyle("-fx-background-color: transparent; -fx-background: transparent;");
         mainPane.setCenter(mainScroll);
 
         // --- MODAL OVERLAY ---
@@ -108,18 +106,6 @@ public class ExerciseLibraryView extends StackPane {
 
     public void setExerciseList(List<ExerciseDescriptionBean> exercises) {
         cardListView.setItems(exercises, "Nessun esercizio presente nella libreria.");
-    }
-
-    public void setOnAddAction(Runnable onAddAction) {
-        this.onAddAction = onAddAction;
-    }
-
-    public void setOnEditAction(Consumer<ExerciseDescriptionBean> onEditAction) {
-        this.onEditAction = onEditAction;
-    }
-
-    public void setOnDeleteAction(Consumer<ExerciseDescriptionBean> onDeleteAction) {
-        this.onDeleteAction = onDeleteAction;
     }
 
     private HBox createExerciseRow(ExerciseDescriptionBean exercise, boolean isLast) {
@@ -194,6 +180,16 @@ public class ExerciseLibraryView extends StackPane {
 
         badge.getChildren().add(label);
         return badge;
+    }
+
+    public void setOnAddAction(Runnable onAddAction) {
+        this.onAddAction = onAddAction;
+    }
+    public void setOnEditAction(Consumer<ExerciseDescriptionBean> onEditAction) {
+        this.onEditAction = onEditAction;
+    }
+    public void setOnDeleteAction(Consumer<ExerciseDescriptionBean> onDeleteAction) {
+        this.onDeleteAction = onDeleteAction;
     }
 
 }

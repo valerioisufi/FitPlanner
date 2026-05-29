@@ -113,7 +113,6 @@ public class AuthenticationView extends BorderPane {
         ScrollPane scrollPane = new ScrollPane(wrapper);
         scrollPane.setFitToWidth(true);
         scrollPane.setFitToHeight(true);
-        scrollPane.setStyle("-fx-background-color: transparent; -fx-control-inner-background: transparent;");
 
         this.setCenter(scrollPane);
     }

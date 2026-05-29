@@ -152,8 +152,8 @@ public class Navigator {
         Platform.runLater(() -> navigateTo(controller));
     }
 
-    public void goToWorkoutPlanEditor(com.example.fitplannerclient.bean.plan.WorkoutPlanBean planToEdit) {
-        WorkoutPlanEditorViewController controller = new WorkoutPlanEditorViewController(planToEdit, appControllerFactory.createWorkoutPlanManager(), appControllerFactory.createExerciseLibraryManager(), appControllerFactory.createProfileManager());
+    public void goToWorkoutPlanEditor(String planIdToEdit, boolean copyOfExisting) {
+        WorkoutPlanEditorViewController controller = new WorkoutPlanEditorViewController(planIdToEdit, copyOfExisting, appControllerFactory.createEditWorkoutPlanManager(), appControllerFactory.createExerciseLibraryManager());
         Platform.runLater(() -> navigateTo(controller));
     }
 

@@ -6,7 +6,7 @@ import com.example.fitplannerclient.ui.fx.GuiManager;
 import com.example.fitplannerclient.ui.fx.Navigator;
 import com.example.fitplannerclient.controller.profile.ProfileManager;
 import com.example.fitplannerclient.ui.fx.view.WorkoutExecutionView;
-import com.example.fitplannerclient.service.facade.SessionLogFacade;
+import com.example.fitplannerclient.service.api.SessionLogApi;
 import com.example.fitplannercommon.ExerciseLogDTO;
 import com.example.fitplannercommon.ExerciseSetDTO;
 import com.example.fitplannercommon.SessionLogDTO;
@@ -28,12 +28,12 @@ public class WorkoutExecutionViewController implements GuiController {
     private final List<PlanNodeBean> exerciseNodes = new ArrayList<>();
     private final List<ExerciseLogDTO> exerciseLogs = new ArrayList<>();
     private int currentExerciseIndex = 0;
-    private final SessionLogFacade sessionLogFacade;
+    private final SessionLogApi sessionLogApi;
     private final ProfileManager profileManager;
 
-    public WorkoutExecutionViewController(WorkoutSessionBean session, SessionLogFacade sessionLogFacade, ProfileManager profileManager) {
+    public WorkoutExecutionViewController(WorkoutSessionBean session, SessionLogApi sessionLogApi, ProfileManager profileManager) {
         this.sessionBean = session;
-        this.sessionLogFacade = sessionLogFacade;
+        this.sessionLogApi = sessionLogApi;
         this.profileManager = profileManager;
         this.headerViewController = new HeaderViewController(1, profileManager); // "Piano" highlight
         this.view = new WorkoutExecutionView(headerViewController.getView());
@@ -154,7 +154,7 @@ public class WorkoutExecutionViewController implements GuiController {
         logDto.setNotes("Allenamento completato con successo!");
         logDto.setExerciseLogs(exerciseLogs);
 
-        sessionLogFacade.saveSessionLogAsync(logDto)
+        sessionLogApi.saveSessionLogAsync(logDto)
                 .thenRun(() -> Platform.runLater(() -> {
                     Alert alert = new Alert(Alert.AlertType.INFORMATION);
                     alert.setTitle("Allenamento Salvato");

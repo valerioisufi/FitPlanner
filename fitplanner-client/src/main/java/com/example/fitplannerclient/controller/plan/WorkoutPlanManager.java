@@ -20,23 +20,24 @@ import java.util.concurrent.CompletionException;
 public class WorkoutPlanManager {
 
     private final WorkoutPlanApi planApi;
-    private final ObjectMapper objectMapper;
 
     public WorkoutPlanManager(WorkoutPlanApi planApi) {
         this.planApi = planApi;
-        this.objectMapper = new ObjectMapper();
     }
 
-//    public CompletableFuture<List<WorkoutPlanBean>> getMyCreatedPlansSummaryAsync() {
-//        return planApi.getMyCreatedPlansSummaryAsync()
-//                .thenApply(list -> {
-//                    List<WorkoutPlanBean> beans = new ArrayList<>();
-//                    for (WorkoutPlanSummaryDTO dto : list) {
-//                        beans.add(dtoToBean(dto));
-//                    }
-//                    return beans;
-//                });
-//    }
+    public CompletableFuture<List<WorkoutPlanSummaryBean>> getMyCreatedPlansSummaryAsync() {
+        return planApi.getMyCreatedPlansSummaryAsync()
+                .thenApply(list -> list
+                        .stream()
+                        .map(dto -> {
+                            WorkoutPlanSummaryBean bean = new WorkoutPlanSummaryBean();
+                            bean.setPlanId(dto.getPlanId());
+                            bean.setPlanTitle(dto.getPlanTitle());
+                            bean.setAssignedTo(dto.getAssignedTo());
+                            return bean;
+                        })
+                        .toList());
+    }
 
     public CompletableFuture<Void> assignPlanToAthleteAsync(String planId, String athleteEmail) {
         return planApi.assignPlanToAsync(planId, athleteEmail);

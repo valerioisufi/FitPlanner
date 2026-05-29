@@ -7,6 +7,7 @@ import com.example.fitplannerclient.ui.fx.view.plan.EditBadgeModal;
 import com.example.fitplannerclient.ui.fx.view.plan.EditNodeNameModal;
 import com.example.fitplannerclient.ui.fx.view.plan.PlanNodeComponent;
 import com.example.fitplannerclient.ui.fx.view.plan.PlanViewer;
+import com.example.fitplannerclient.ui.fx.view.plan.ManageSessionsModal;
 import com.example.fitplannerclient.bean.exercise.ExerciseDescriptionBean;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
@@ -25,8 +26,8 @@ public class WorkoutPlanEditorView extends StackPane {
     private final BorderPane mainPane = new BorderPane();
 
     private final ComboBox<WorkoutSessionBean> sessionComboBox = new ComboBox<>();
-    private final Button btnAddSession = new Button("+ Giorno");
-    private final Button btnSavePlan = new Button("Salva Piano");
+    private final Button btnManageSessions = new Button("Gestisci sessioni");
+    private final Button btnSavePlan = new Button("Salva");
     private final Button btnCancel = new Button("Annulla");
 
     private final Button btnUndo = new Button();
@@ -44,10 +45,11 @@ public class WorkoutPlanEditorView extends StackPane {
     private final ModalOverlay modalOverlay;
     private final EditNodeNameModal editNodeModal;
     private final EditBadgeModal editBadgeModal;
+    private final ManageSessionsModal manageSessionsModal;
 
     // Callbacks
     private Consumer<WorkoutSessionBean> onSessionSelected;
-    private Runnable onAddSessionClicked;
+    private Runnable onManageSessionsRequested;
     private Runnable onSavePlanClicked;
     private Runnable onCancelClicked;
 
@@ -75,10 +77,12 @@ public class WorkoutPlanEditorView extends StackPane {
 
         editNodeModal = new EditNodeNameModal();
         editBadgeModal = new EditBadgeModal();
+        manageSessionsModal = new ManageSessionsModal();
         modalOverlay = new ModalOverlay(new VBox()); // Placeholder, will set content dynamically
 
         editNodeModal.setOnCloseAction(modalOverlay::hide);
         editBadgeModal.setOnCloseAction(modalOverlay::hide);
+        manageSessionsModal.setOnCloseAction(modalOverlay::hide);
 
         this.getChildren().addAll(mainPane, modalOverlay);
 
@@ -142,8 +146,8 @@ public class WorkoutPlanEditorView extends StackPane {
         });
         sessionComboBox.setPrefWidth(150);
 
-        btnAddSession.getStyleClass().add("button-secondary");
-        btnAddSession.setOnAction(e -> { if(onAddSessionClicked != null) onAddSessionClicked.run(); });
+        btnManageSessions.getStyleClass().add("button-secondary");
+        btnManageSessions.setOnAction(e -> { if(onManageSessionsRequested != null) onManageSessionsRequested.run(); });
 
         btnUndo.setGraphic(new Icon("undo-icon", List.of("button-header-icon")));
         btnUndo.getStyleClass().add("button-secondary");
@@ -151,18 +155,16 @@ public class WorkoutPlanEditorView extends StackPane {
         btnRedo.setGraphic(new Icon("redo-icon", List.of("button-header-icon")));
         btnRedo.getStyleClass().add("button-secondary");
 
-        leftBox.getChildren().addAll(sessionComboBox, btnAddSession, new Separator(Orientation.VERTICAL), btnUndo, btnRedo);
+        leftBox.getChildren().addAll(sessionComboBox, btnManageSessions, new Separator(Orientation.VERTICAL), btnUndo, btnRedo);
 
         // --- CENTER: Draggable Decorators/Modifiers Palette ---
         HBox paletteBox = new HBox(10);
         paletteBox.setAlignment(Pos.CENTER_LEFT);
-        populateBadgePalette(paletteBox);
 
         ScrollPane scrollPalette = new ScrollPane(paletteBox);
         scrollPalette.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         scrollPalette.setHbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
         scrollPalette.setFitToHeight(true);
-        scrollPalette.setStyle("-fx-background-color: transparent; -fx-background: transparent;");
         scrollPalette.setMinHeight(50);
         
         HBox.setHgrow(scrollPalette, Priority.ALWAYS);
@@ -179,7 +181,7 @@ public class WorkoutPlanEditorView extends StackPane {
 
         rightBox.getChildren().addAll(btnCancel, btnSavePlan);
 
-        toolbar.getChildren().addAll(leftBox, new Separator(javafx.geometry.Orientation.VERTICAL), scrollPalette, new Separator(javafx.geometry.Orientation.VERTICAL), rightBox);
+        toolbar.getChildren().addAll(leftBox, new Separator(Orientation.VERTICAL), scrollPalette, new Separator(Orientation.VERTICAL), rightBox);
 
         return toolbar;
     }
@@ -204,27 +206,9 @@ public class WorkoutPlanEditorView extends StackPane {
         ScrollPane scrollEx = new ScrollPane(exerciseListContainer);
         scrollEx.setFitToWidth(true);
         scrollEx.setPrefHeight(250);
-        scrollEx.setStyle("-fx-background-color: transparent; -fx-background: transparent;");
         VBox.setVgrow(scrollEx, Priority.ALWAYS);
 
         rightSidebar.getChildren().addAll(lblLibrary, searchField, scrollEx);
-    }
-
-    private void populateBadgePalette(HBox badgePaletteContainer) {
-        badgePaletteContainer.getChildren().clear();
-
-        // Sets
-        HBox rowSets = createDraggableBadge("Sets (Es: 4)", new ExerciseModifierBean("mod-set-palette", "Sets", "4"), BadgeComponent.BadgeType.MODIFIER);
-        // Reps
-        HBox rowReps = createDraggableBadge("Reps (Es: 10)", new ExerciseModifierBean("mod-rep-palette", "Reps", "10"), BadgeComponent.BadgeType.MODIFIER);
-        // RPE
-        HBox rowRpe = createDraggableBadge("RPE (Es: 8)", new ExerciseModifierBean("mod-rpe-palette", "RPE", "8"), BadgeComponent.BadgeType.MODIFIER);
-        // Rest
-        HBox rowRest = createDraggableBadge("Rest (Es: 90s)", new FlowDecoratorBean("fd-rest-palette", com.example.fitplannerclient.bean.plan.FlowDecoratorType.REST, "90s"), BadgeComponent.BadgeType.DECORATOR);
-        // Loop
-        HBox rowLoop = createDraggableBadge("Loop (Es: 3 Rounds)", new FlowDecoratorBean("fd-loop-palette", com.example.fitplannerclient.bean.plan.FlowDecoratorType.LOOP, "3 Rounds"), BadgeComponent.BadgeType.DECORATOR);
-
-        badgePaletteContainer.getChildren().addAll(rowSets, rowReps, rowRpe, rowRest, rowLoop);
     }
 
     private HBox createDraggableBadge(String label, Object bean, BadgeComponent.BadgeType type) {
@@ -297,7 +281,7 @@ public class WorkoutPlanEditorView extends StackPane {
     }
 
     public void disableEditing(boolean disable) {
-        btnAddSession.setVisible(!disable);
+        btnManageSessions.setVisible(!disable);
         btnSavePlan.setVisible(!disable);
         rightSidebar.setVisible(!disable);
         rightSidebar.setManaged(!disable);
@@ -305,7 +289,18 @@ public class WorkoutPlanEditorView extends StackPane {
 
     // Callback setters
     public void setOnSessionSelected(Consumer<WorkoutSessionBean> callback) { this.onSessionSelected = callback; }
-    public void setOnAddSessionClicked(Runnable callback) { this.onAddSessionClicked = callback; }
+    public void setOnManageSessionsRequested(Runnable callback) { this.onManageSessionsRequested = callback; }
+    
+    public void showManageSessionsModal(int cycleLength, List<WorkoutSessionBean> sessions, java.util.function.BiConsumer<Integer, List<WorkoutSessionBean>> onSave) {
+        manageSessionsModal.setInitialData(cycleLength, sessions);
+        manageSessionsModal.setOnSaveAction((newCycleLength, updatedSessions) -> {
+            modalOverlay.hide();
+            onSave.accept(newCycleLength, updatedSessions);
+        });
+        modalOverlay.setContent(manageSessionsModal);
+        modalOverlay.show();
+    }
+
     public void setOnSavePlanClicked(Runnable callback) { this.onSavePlanClicked = callback; }
     public void setOnCancelClicked(Runnable callback) { this.onCancelClicked = callback; }
 }

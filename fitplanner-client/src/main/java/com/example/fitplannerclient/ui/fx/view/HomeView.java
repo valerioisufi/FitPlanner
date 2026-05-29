@@ -45,7 +45,6 @@ public class HomeView extends BorderPane {
         ScrollPane scrollPane = new ScrollPane(contentBox);
         scrollPane.setFitToWidth(true);
         scrollPane.setFitToHeight(true);
-        scrollPane.setStyle("-fx-background-color: transparent; -fx-background: transparent;");
 
         this.setCenter(scrollPane);
     }

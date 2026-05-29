@@ -1,6 +1,7 @@
 package com.example.fitplannerclient.ui.fx.view.plan;
 
 import com.example.fitplannerclient.bean.plan.*;
+import javafx.geometry.Insets;
 import javafx.scene.control.ScrollPane;
 
 import java.util.function.Consumer;
@@ -12,7 +13,8 @@ public class PlanViewer extends ScrollPane {
 
     public PlanViewer() {
         this.setFitToWidth(true);
-        this.setStyle("-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;");
+        this.setStyle("-fx-border-color: transparent;");
+        this.setPadding(new Insets(10));
     }
 
     public void setRootNode(PlanNodeBean rootBean) {

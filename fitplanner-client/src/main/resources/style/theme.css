@@ -495,3 +495,14 @@
     -fx-shape: " ";
 }
 
+/* ==========================================
+ * SCROLL PANE DEFAULT
+ * ========================================== */
+.scroll-pane {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+}
+
+.scroll-pane > .viewport {
+    -fx-background-color: transparent;
+}

@@ -60,7 +60,6 @@ public class WorkoutExecutionView extends BorderPane {
 
         ScrollPane textScroll = new ScrollPane(lblInstructionSteps);
         textScroll.setFitToWidth(true);
-        textScroll.setStyle("-fx-background-color: transparent; -fx-background: transparent;");
         textScroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         textScroll.setBorder(null);
 
