@@ -1,37 +1,128 @@
 package com.example.fitplannerserver.dao.filesystem;
 
 import com.example.fitplannerserver.dao.*;
+import com.example.fitplannerserver.exception.DaoException;
+import com.example.fitplannerserver.model.Account;
+import com.example.fitplannerserver.model.User;
+import com.github.f4b6a3.uuid.UuidCreator;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
+import java.nio.file.Path;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class FileSystemDaoFactory extends DaoFactory {
 
+    private static final Logger LOGGER = Logger.getLogger(FileSystemDaoFactory.class.getName());
+    private static final String BASE_DIR = "filesystem_db";
+
+    private final FileSystemAccountDao accountDao;
+    private final FileSystemProfileDao profileDao;
+    private final FileSystemSessionLogDao sessionLogDao;
+    private final FileSystemExerciseLibraryDao exerciseLibraryDao;
+    private final FileSystemWorkoutPlanDao workoutPlanDao;
+    private final FileSystemCoachingDao coachingDao;
+
+    public FileSystemDaoFactory() throws DaoException {
+        Path accountsPath = Path.of(BASE_DIR, "accounts.csv");
+        Path profilesPath = Path.of(BASE_DIR, "profiles.csv");
+        Path sessionLogsPath = Path.of(BASE_DIR, "session_logs.csv");
+        Path exerciseLibraryPath = Path.of(BASE_DIR, "exercise_library.csv");
+        Path workoutPlansPath = Path.of(BASE_DIR, "workout_plans.csv");
+        Path coachingPath = Path.of(BASE_DIR, "coaching.csv");
+
+        accountDao = new FileSystemAccountDao(accountsPath);
+        profileDao = new FileSystemProfileDao(profilesPath);
+        sessionLogDao = new FileSystemSessionLogDao(sessionLogsPath);
+        exerciseLibraryDao = new FileSystemExerciseLibraryDao(exerciseLibraryPath);
+        workoutPlanDao = new FileSystemWorkoutPlanDao(workoutPlansPath);
+        coachingDao = new FileSystemCoachingDao(coachingPath);
+
+        defaultData();
+    }
+
+    private void defaultData(){
+        try {
+            if(this.accountDao.findByEmail("trainer@fitplanner.com").isPresent()){
+                return;
+            }
+            BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+            String defaultPasswordHash = encoder.encode("password");
+
+            //trainer default
+            String trainerId= UuidCreator.getTimeOrderedEpoch().toString();
+            Account trainerAccount = new Account(
+                    trainerId,
+                    "trainer@fitplanner.com",
+                    defaultPasswordHash,
+                    null,
+                    Account.Role.TRAINER);
+            this.accountDao.create(trainerAccount);
+
+            User trainerProfile = new User(
+                    trainerId,
+                    "super",
+                    "Trainer",
+                    "trainer@fitplanner.com",
+                    "1234567890",
+                    null
+            );
+            this.profileDao.save(trainerProfile);
+
+            //athlete default
+            String athleteId = UuidCreator.getTimeOrderedEpoch().toString();
+            Account athleteAccount = new Account(
+                    athleteId,
+                    "athlete@fitplanner.com",
+                    defaultPasswordHash,
+                    null,
+                    Account.Role.ATHLETE
+            );
+            this.accountDao.create(athleteAccount);
+            User athleteProfile = new User(
+                    athleteId,
+                    "Kanye",
+                    "West",
+                    "athlete@fitplanner.com",
+                    "0987654321",
+                    null
+            );
+            this.profileDao.save(athleteProfile);
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Impossibile generare gli utenti di default sul File System", e);
+
+        }
+    }
+
+
     @Override
-    public AccountDao getAccountDao() {
-        return null;
+    public FileSystemAccountDao getAccountDao() {
+        return this.accountDao;
     }
 
     @Override
-    public ProfileDao getProfileDao() {
-        return null;
+    public FileSystemProfileDao getProfileDao() {
+        return this.profileDao;
     }
 
     @Override
-    public SessionLogDao getSessionLogDao() {
-        return null;
+    public FileSystemSessionLogDao getSessionLogDao() {
+        return this.sessionLogDao;
     }
 
     @Override
-    public ExerciseLibraryDao getExerciseLibraryDao() {
-        return null;
+    public FileSystemExerciseLibraryDao getExerciseLibraryDao() {
+        return this.exerciseLibraryDao;
     }
 
     @Override
-    public WorkoutPlanDao getWorkoutPlanDao() {
-        return null;
+    public FileSystemWorkoutPlanDao getWorkoutPlanDao() {
+        return this.workoutPlanDao;
     }
 
     @Override
-    public CoachingDao getCoachingDao() {
-        return null;
+    public FileSystemCoachingDao getCoachingDao() {
+        return this.coachingDao;
     }
 
 

@@ -39,8 +39,10 @@ public class InMemoryDaoFactory extends DaoFactory {
 
         User trainerProfile = new User(
                 trainerId,
-                "Super", "Trainer",
-                "trainer@fitplanner.com", "1234567890",
+                "Super",
+                "Trainer",
+                "trainer@fitplanner.com",
+                "1234567890",
                 null
         );
         trainerProfile.setInvitationCode(InvitationCodeGenerator.generateCode());
@@ -50,15 +52,19 @@ public class InMemoryDaoFactory extends DaoFactory {
         String athleteId = UuidCreator.getTimeOrderedEpoch().toString();
         Account athleteAccount = new Account(
                 athleteId,
-                "athlete@fitplanner.com", defaultPasswordHash, null,
+                "athlete@fitplanner.com",
+                defaultPasswordHash,
+                null,
                 Account.Role.ATHLETE
         );
         this.accountDao.create(athleteAccount);
 
         User athleteProfile = new User(
                 athleteId,
-                "John", "Doe",
-                "athlete@fitplanner.com", "0987654321",
+                "John",
+                "Doe",
+                "athlete@fitplanner.com",
+                "0987654321",
                 null
         );
         this.profileDao.save(athleteProfile);

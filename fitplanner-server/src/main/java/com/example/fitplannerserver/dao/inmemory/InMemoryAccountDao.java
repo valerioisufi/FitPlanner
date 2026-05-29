@@ -26,11 +26,11 @@ public class InMemoryAccountDao implements AccountDao {
     @Override
     public void save(Account account) {
         Objects.requireNonNull(account, "Account cannot be null");
-        Objects.requireNonNull(account.getUserId(), "Account userId cannot be null");
+        Objects.requireNonNull(account.getEmail(), "Account email cannot be null");
 
         Account copyOfAccount = new Account(account);
 
-        accounts.put(copyOfAccount.getUserId(), copyOfAccount);
+        accounts.put(copyOfAccount.getEmail(), copyOfAccount);
     }
 
     @Override
@@ -61,8 +61,8 @@ public class InMemoryAccountDao implements AccountDao {
     @Override
     public void delete(Account account) {
         Objects.requireNonNull(account, "Account cannot be null");
-        Objects.requireNonNull(account.getUserId(), "Account userId cannot be null");
+        Objects.requireNonNull(account.getEmail(), "Account email cannot be null");
 
-        accounts.remove(account.getUserId());
+        accounts.remove(account.getEmail());
     }
 }
