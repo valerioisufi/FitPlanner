@@ -3,6 +3,7 @@ package com.example.fitplannerserver.dao.inmemory;
 import com.example.fitplannerserver.dao.DaoFactory;
 import com.example.fitplannerserver.model.Account;
 import com.example.fitplannerserver.model.User;
+import com.example.fitplannerserver.util.InvitationCodeGenerator;
 import com.github.f4b6a3.uuid.UuidCreator;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
@@ -42,6 +43,7 @@ public class InMemoryDaoFactory extends DaoFactory {
                 "trainer@fitplanner.com", "1234567890",
                 null
         );
+        trainerProfile.setInvitationCode(InvitationCodeGenerator.generateCode());
         this.profileDao.save(trainerProfile);
 
         // Default Athlete
