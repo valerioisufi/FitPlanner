@@ -25,7 +25,7 @@ public class InMemoryProfileDao implements ProfileDao {
     @Override
     public void save(User user) {
         Objects.requireNonNull(user, "user cannot be null");
-        Objects.requireNonNull(user.getId(), "Account userId cannot be null");
+        Objects.requireNonNull(user.getId(), "userId cannot be null");
 
         User copyOfUser = new User(user);
 

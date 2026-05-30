@@ -7,7 +7,7 @@ import com.example.fitplannerserver.model.User;
 import com.github.f4b6a3.uuid.UuidCreator;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
-import java.nio.file.Path;
+import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -23,20 +23,20 @@ public class FileSystemDaoFactory extends DaoFactory {
     private final FileSystemWorkoutPlanDao workoutPlanDao;
     private final FileSystemCoachingDao coachingDao;
 
-    public FileSystemDaoFactory() throws DaoException {
-        Path accountsPath = Path.of(BASE_DIR, "accounts.csv");
-        Path profilesPath = Path.of(BASE_DIR, "profiles.csv");
-        Path sessionLogsPath = Path.of(BASE_DIR, "session_logs.csv");
-        Path exerciseLibraryPath = Path.of(BASE_DIR, "exercise_library.csv");
-        Path workoutPlansPath = Path.of(BASE_DIR, "workout_plans.csv");
-        Path coachingPath = Path.of(BASE_DIR, "coaching.csv");
+    public FileSystemDaoFactory() {
+        File accountsPath = new File(BASE_DIR, "accounts.csv");
+        File profilesPath = new File(BASE_DIR, "profiles.csv");
+        File sessionLogsPath = new File(BASE_DIR, "session_logs.csv");
+        File exerciseLibraryPath = new File(BASE_DIR, "exercise_library.csv");
+        File workoutPlansPath = new File(BASE_DIR, "workout_plans.csv");
+        File coachingPath = new File(BASE_DIR, "coaching.csv");
 
         accountDao = new FileSystemAccountDao(accountsPath);
         profileDao = new FileSystemProfileDao(profilesPath);
-        sessionLogDao = new FileSystemSessionLogDao(sessionLogsPath);
-        exerciseLibraryDao = new FileSystemExerciseLibraryDao(exerciseLibraryPath);
-        workoutPlanDao = new FileSystemWorkoutPlanDao(workoutPlansPath);
-        coachingDao = new FileSystemCoachingDao(coachingPath);
+        sessionLogDao = new FileSystemSessionLogDao();
+        exerciseLibraryDao = new FileSystemExerciseLibraryDao();
+        workoutPlanDao = new FileSystemWorkoutPlanDao();
+        coachingDao = new FileSystemCoachingDao();
 
         defaultData();
     }
