@@ -5,8 +5,9 @@ import com.example.fitplannerserver.exception.DaoException;
 import com.example.fitplannerserver.exception.SystemException;
 import com.example.fitplannerserver.model.Account;
 
-import java.io.*;
+import java.io.IOException;
 
+import java.nio.file.Path;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -18,10 +19,10 @@ public class FileSystemAccountDao implements AccountDao {
     private static final String CSV_HEADER = "userId;email;passwordHash;refreshToken;profileType";
     private static final int EXPECTED_COLUMNS = 5;
 
-    private final File file;
+    private final Path file;
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
-    public FileSystemAccountDao(File file) {
+    public FileSystemAccountDao(Path file) {
         this.file = Objects.requireNonNull(file, "file cannot be null");
         CsvUtils.initializeFile(file, CSV_HEADER);
     }
@@ -36,10 +37,7 @@ public class FileSystemAccountDao implements AccountDao {
 
         lock.writeLock().lock();
         try {
-            boolean emailIsUsed = CsvUtils.search(file, EXPECTED_COLUMNS, parts -> parts[1].equalsIgnoreCase(targetEmail), 1)
-                    .stream()
-                    .findFirst()
-                    .isPresent();
+            boolean emailIsUsed = !CsvUtils.search(file, EXPECTED_COLUMNS, parts -> parts[1].equalsIgnoreCase(targetEmail), 1).isEmpty();
 
             if (emailIsUsed) {
                 return false;

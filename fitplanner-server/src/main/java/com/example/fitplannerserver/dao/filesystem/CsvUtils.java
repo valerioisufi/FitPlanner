@@ -1,10 +1,15 @@
 package com.example.fitplannerserver.dao.filesystem;
 
 import com.example.fitplannerserver.exception.SystemException;
-import com.example.fitplannerserver.model.Account;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -16,49 +21,50 @@ public class CsvUtils {
 
     private CsvUtils() {}
 
-    public static void initializeFile(File targetFile, String header) {
-        if (!targetFile.exists()) {
-            File parent = targetFile.getParentFile();
-            if (parent != null && !parent.exists()) {
-                parent.mkdirs();
+    public static void initializeFile(Path targetPath, String header) {
+        if (Files.notExists(targetPath)) {
+            Path parent = targetPath.getParent();
+            if (parent != null && Files.notExists(parent)) {
+                try {
+                    Files.createDirectories(parent);
+                } catch (IOException e) {
+                    LoggerFactory.getLogger(CsvUtils.class).error("Errore creazione directory per file CSV", e);
+                    throw new SystemException("Creazione cartelle fallita per " + targetPath.getFileName());
+                }
             }
 
-            try (BufferedWriter writer = new BufferedWriter(new FileWriter(targetFile))) {
+            // StandardOpenOption.CREATE assicura che il file venga creato, con codifica UTF-8 di default
+            try (BufferedWriter writer = Files.newBufferedWriter(targetPath, StandardOpenOption.CREATE)) {
                 writer.write(header);
                 writer.newLine();
-
             } catch (IOException e) {
-                LoggerFactory.getLogger(FileSystemAccountDao.class).error("Errore durante l'inizializzazione del file CSV", e);
-                throw new SystemException("Inizializzazione DAO fallita per " + targetFile.getName());
+                LoggerFactory.getLogger(CsvUtils.class).error("Errore durante l'inizializzazione del file CSV", e);
+                throw new SystemException("Inizializzazione DAO fallita per " + targetPath.getFileName());
             }
         }
-
     }
 
     public static String convertNullToEmptyString(String value) {
-        // convert null to empty String
         return value == null ? "" : value;
     }
 
     public static String convertEmptyStringToNull(String value) {
-        // convert empty String to null
         return Objects.equals(value, "") ? null : value;
     }
 
     public static String[] csvSplit(String line, int expectedColumns) {
         String[] parts = line.split(CSV_DELIMITER, -1);
         if (parts.length != expectedColumns) {
-            throw new IllegalArgumentException("Expected " + expectedColumns + " columns but got " + parts.length);
+            throw new IllegalArgumentException("Attese " + expectedColumns + " colonne, ma trovate " + parts.length);
         }
         return parts;
     }
 
-    public static List<String[]> search(File file, int expectedColumns, Predicate<String[]> filter, int limit) throws IOException {
-
-        try (var in = new BufferedReader(new FileReader(file))) {
+    public static List<String[]> search(Path file, int expectedColumns, Predicate<String[]> filter, int limit) throws IOException {
+        try (BufferedReader in = Files.newBufferedReader(file)) {
             List<String[]> results = new ArrayList<>();
 
-            in.readLine(); // leggo e scarto l'intestazione
+            in.readLine(); // scarto l'intestazione
 
             String line;
             while ((line = in.readLine()) != null) {
@@ -76,18 +82,16 @@ public class CsvUtils {
             }
 
             return results;
-
         }
-
     }
 
-    public static boolean update(File file, int expectedColumns, Predicate<String[]> filter, String newRow) throws IOException {
-        File tempFile = new File(file.getAbsolutePath() + ".tmp");
-
+    public static boolean update(Path file, int expectedColumns, Predicate<String[]> filter, String newRow) throws IOException {
+        // resolveSibling crea un file temporaneo nella stessa esatta cartella del file originale
+        Path tempFile = file.resolveSibling(file.getFileName() + ".tmp");
         boolean updated = false;
 
-        try (BufferedReader reader = new BufferedReader(new FileReader(file));
-             BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile))) {
+        try (BufferedReader reader = Files.newBufferedReader(file);
+             BufferedWriter writer = Files.newBufferedWriter(tempFile, StandardOpenOption.CREATE)) {
 
             String line;
             boolean isFirstLine = true;
@@ -95,7 +99,6 @@ public class CsvUtils {
             while ((line = reader.readLine()) != null) {
                 if (isFirstLine) {
                     isFirstLine = false;
-
                     writer.write(line);
                     writer.newLine();
                     continue;
@@ -118,32 +121,25 @@ public class CsvUtils {
             }
         }
 
-        if (file.delete()) {
-            if (!tempFile.renameTo(file)) {
-                throw new IOException("Impossibile rinominare il file temporaneo in quello originale.");
-            }
-        } else {
-            throw new IOException("Impossibile eliminare il file originale per l'aggiornamento.");
-        }
+        // Operazione atomica: sposta il temp sul file originale sovrascrivendolo infallibilmente
+        Files.move(tempFile, file, StandardCopyOption.REPLACE_EXISTING);
 
         return updated;
     }
 
-
-    public static void append(File file, String newRow) throws IOException {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(file, true))) {
+    public static void append(Path file, String newRow) throws IOException {
+        try (BufferedWriter writer = Files.newBufferedWriter(file, StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
             writer.write(newRow);
             writer.newLine();
         }
     }
 
-    public static boolean delete(File file, int expectedColumns, Predicate<String[]> filter) throws IOException {
-        File tempFile = new File(file.getAbsolutePath() + ".tmp");
-
+    public static boolean delete(Path file, int expectedColumns, Predicate<String[]> filter) throws IOException {
+        Path tempFile = file.resolveSibling(file.getFileName() + ".tmp");
         boolean isDeleted = false;
 
-        try (BufferedReader reader = new BufferedReader(new FileReader(file));
-             BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile))) {
+        try (BufferedReader reader = Files.newBufferedReader(file);
+             BufferedWriter writer = Files.newBufferedWriter(tempFile, StandardOpenOption.CREATE)) {
 
             String line;
             boolean isFirstLine = true;
@@ -151,7 +147,6 @@ public class CsvUtils {
             while ((line = reader.readLine()) != null) {
                 if (isFirstLine) {
                     isFirstLine = false;
-
                     writer.write(line);
                     writer.newLine();
                     continue;
@@ -168,20 +163,13 @@ public class CsvUtils {
         }
 
         if (isDeleted) {
-            if (file.delete()) {
-                if (!tempFile.renameTo(file)) {
-                    throw new IOException("Impossibile rinominare il file temporaneo in quello originale.");
-                }
-            } else {
-                throw new IOException("Impossibile eliminare il file originale per l'aggiornamento.");
-            }
+            // Se abbiamo eliminato qualcosa, sostituiamo il file originale
+            Files.move(tempFile, file, StandardCopyOption.REPLACE_EXISTING);
         } else {
-            tempFile.delete();
+            // Se non c'era nulla da eliminare, distruggiamo semplicemente il file temporaneo
+            Files.deleteIfExists(tempFile);
         }
 
         return isDeleted;
-
     }
-
-
 }

@@ -4,9 +4,9 @@ import com.example.fitplannerserver.dao.ProfileDao;
 import com.example.fitplannerserver.exception.DaoException;
 import com.example.fitplannerserver.model.User;
 
-import java.io.*;
+import java.io.IOException;
 
-import java.util.List;
+import java.nio.file.Path;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -19,11 +19,12 @@ public class FileSystemProfileDao implements ProfileDao {
     private static final String CSV_HEADER = "userId;firstName;lastName;contactEmail;phoneNumber;invitationCode";
     private static final int EXPECTED_COLUMNS = 6;
 
-    private final File file;
+    private final Path path;
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
-    public FileSystemProfileDao(File file) {
-        this.file = file;
+    public FileSystemProfileDao(Path path) {
+        this.path = Objects.requireNonNull(path, "Il file non può essere nullo");
+        initializeFile(this.path, CSV_HEADER);
     }
 
     @Override
@@ -33,7 +34,7 @@ public class FileSystemProfileDao implements ProfileDao {
         lock.readLock().lock();
 
         try {
-            return search(file, EXPECTED_COLUMNS, parts -> parts[0].equals(userId), 1)
+            return search(path, EXPECTED_COLUMNS, parts -> parts[0].equals(userId), 1)
                     .stream()
                     .findFirst()
                     .map(this::fromCsvRow);
@@ -54,7 +55,7 @@ public class FileSystemProfileDao implements ProfileDao {
         lock.writeLock().lock();
 
         try {
-            update(file, EXPECTED_COLUMNS, parts -> parts[0].equals(user.getId()), newRow);
+            update(path, EXPECTED_COLUMNS, parts -> parts[0].equals(user.getId()), newRow);
 
         } catch (IOException e) {
             throw new DaoException("Errore durante il salvataggio del profilo dell'utente", e);
@@ -66,12 +67,25 @@ public class FileSystemProfileDao implements ProfileDao {
 
     @Override
     public Optional<User> findByInvitationCode(String invitationCode) throws DaoException {
-        return Optional.empty();
+        if(invitationCode == null || invitationCode.isBlank()){
+            return Optional.empty();
+        }
+        lock.readLock().lock();
+
+        try {
+            return search(path, EXPECTED_COLUMNS, parts -> parts[5].equals(invitationCode),1).stream().findFirst().map(this::fromCsvRow);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }finally {
+            lock.readLock().unlock();
+        }
     }
 
     @Override
     public Optional<String> getInvitationCode(String userId) throws DaoException {
-        return Optional.empty();
+        Objects.requireNonNull(userId, "userId cannot be null");
+
+        return findById(userId).map(User::getInvitationCode).filter(code -> code != null && !code.isBlank());
     }
 
     private String toCsvRow(User profile) {
