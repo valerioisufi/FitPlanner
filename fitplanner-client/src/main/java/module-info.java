@@ -10,5 +10,6 @@ module fitplannerclient {
     requires jdk.httpserver;
 
     opens com.example.fitplannerclient to javafx.fxml;
+    opens com.example.fitplannerclient.serializer to tools.jackson.databind;
     exports com.example.fitplannerclient;
 }
