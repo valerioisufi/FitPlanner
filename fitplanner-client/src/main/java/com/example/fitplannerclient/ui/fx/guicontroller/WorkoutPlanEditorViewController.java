@@ -3,6 +3,7 @@ package com.example.fitplannerclient.ui.fx.guicontroller;
 import com.example.fitplannerclient.bean.plan.*;
 import com.example.fitplannerclient.controller.plan.EditWorkoutPlanManager;
 import com.example.fitplannerclient.controller.exercise.ExerciseLibraryManager;
+import com.example.fitplannerclient.controller.plan.observer.WorkoutPlanObserver;
 import com.example.fitplannerclient.ui.fx.GuiController;
 import com.example.fitplannerclient.ui.fx.GuiManager;
 import com.example.fitplannerclient.ui.fx.Navigator;
@@ -21,6 +22,8 @@ public class WorkoutPlanEditorViewController implements GuiController {
     private final EditWorkoutPlanManager editWorkoutPlanManager;
     private final ExerciseLibraryManager exerciseManager;
 
+    private final WorkoutPlanObserver observer;
+
     public WorkoutPlanEditorViewController(String planIdToEdit, boolean copyOfExisting, EditWorkoutPlanManager editWorkoutPlanManager, ExerciseLibraryManager exerciseManager) {
         this.editWorkoutPlanManager = editWorkoutPlanManager;
         this.exerciseManager = exerciseManager;
@@ -29,12 +32,11 @@ public class WorkoutPlanEditorViewController implements GuiController {
         this.mainPane = new BorderPane();
         this.mainPane.setCenter(this.view);
 
-        editWorkoutPlanManager.addObserver(() ->
-                Platform.runLater(() -> {
-                    activePlan = editWorkoutPlanManager.getPlan();
-                    view.setPlan(activePlan);
-                })
-        );
+        observer = () -> Platform.runLater(() -> {
+            activePlan = editWorkoutPlanManager.getPlan();
+            view.setPlan(activePlan);
+        });
+        editWorkoutPlanManager.addObserver(observer);
 
         if (planIdToEdit == null) {
             this.editWorkoutPlanManager.createNewPlan()
@@ -117,6 +119,7 @@ public class WorkoutPlanEditorViewController implements GuiController {
 
     @Override
     public void stop() {
+        editWorkoutPlanManager.removeObserver(observer);
         Navigator.getInstance().getGuiManager().hideModal();
     }
 

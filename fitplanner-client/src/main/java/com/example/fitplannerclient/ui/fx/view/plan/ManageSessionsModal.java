@@ -57,17 +57,27 @@ public class ManageSessionsModal extends VBox {
         cycleLengthField.getStyleClass().add("text-field");
         cycleLengthBox.getChildren().addAll(cycleLabel, cycleLengthField);
 
-        // Sessions list
+        // Sessions header
+        HBox sessionsHeaderBox = new HBox();
+        sessionsHeaderBox.setAlignment(Pos.CENTER_LEFT);
+        
         Label sessionsLabel = new Label("Sessioni");
         sessionsLabel.getStyleClass().add("heading-h3");
+        
+        Region sessionSpacer = new Region();
+        HBox.setHgrow(sessionSpacer, Priority.ALWAYS);
+        
+        Button addSessionBtn = new Button("Aggiungi Sessione");
+        addSessionBtn.getStyleClass().add("button-secondary");
+        addSessionBtn.setGraphic(new com.example.fitplannerclient.ui.fx.components.Icon("plus-icon", List.of("button-header-icon")));
+        addSessionBtn.setOnAction(e -> addNewSessionRow());
+        
+        sessionsHeaderBox.getChildren().addAll(sessionsLabel, sessionSpacer, addSessionBtn);
+
         sessionsContainer = new VBox(8);
         ScrollPane scrollPane = new ScrollPane(sessionsContainer);
         scrollPane.setFitToWidth(true);
         scrollPane.setPrefHeight(250);
-
-        Button addSessionBtn = new Button("+ Aggiungi Sessione");
-        addSessionBtn.getStyleClass().add("button-secondary");
-        addSessionBtn.setOnAction(e -> addNewSessionRow());
 
         // Footer
         HBox footer = new HBox(12);
@@ -82,7 +92,7 @@ public class ManageSessionsModal extends VBox {
         saveBtn.setOnAction(e -> save());
         footer.getChildren().addAll(cancelBtn, saveBtn);
 
-        this.getChildren().addAll(header, cycleLengthBox, sessionsLabel, scrollPane, addSessionBtn, footer);
+        this.getChildren().addAll(header, cycleLengthBox, sessionsHeaderBox, scrollPane, footer);
     }
 
     public void setInitialData(int cycleLength, List<WorkoutSessionBean> sessions) {

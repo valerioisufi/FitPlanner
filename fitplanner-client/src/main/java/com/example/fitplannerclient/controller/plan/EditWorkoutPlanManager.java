@@ -46,7 +46,12 @@ public class EditWorkoutPlanManager {
     }
 
     public WorkoutPlanBean getPlan() {
-        return null;
+        if (plan == null) return null;
+
+        PlanToBeanVisitor visitor = new PlanToBeanVisitor();
+        plan.accept(visitor);
+
+        return visitor.getPlanBean();
     }
 
     public CompletableFuture<Void> createNewPlan() {
@@ -62,7 +67,10 @@ public class EditWorkoutPlanManager {
         plan.accept(serializer);
 
         return planApi.createPlanAsync(serializer.getPlanDto())
-                .thenAccept(plan::setPlanId);
+                .thenAccept(id -> {
+                    plan.setPlanId(id);
+                    workoutPlanSubject.notifyObservers();
+                });
     }
 
     public CompletableFuture<Void> editExistingPlan(String planId, boolean isCopy) {

@@ -22,6 +22,11 @@ public class FormField extends VBox {
         this.titleLabel = new Label(labelText);
         this.titleLabel.getStyleClass().add("label-field");
 
+        if (labelText == null || labelText.trim().isEmpty()) {
+            this.titleLabel.setVisible(false);
+            this.titleLabel.setManaged(false);
+        }
+
         this.errorLabel = new Label();
         this.errorLabel.getStyleClass().add("label-error");
 

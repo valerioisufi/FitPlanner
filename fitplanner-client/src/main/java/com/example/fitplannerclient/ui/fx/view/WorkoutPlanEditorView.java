@@ -1,6 +1,7 @@
 package com.example.fitplannerclient.ui.fx.view;
 
 import com.example.fitplannerclient.bean.plan.*;
+import com.example.fitplannerclient.ui.fx.components.FormField;
 import com.example.fitplannerclient.ui.fx.components.Icon;
 import com.example.fitplannerclient.ui.fx.view.plan.BadgeComponent;
 import com.example.fitplannerclient.ui.fx.view.plan.EditBadgeModal;
@@ -24,8 +25,10 @@ import java.util.function.Consumer;
 
 public class WorkoutPlanEditorView extends BorderPane {
 
+    private final TextField planNameInput = new TextField();
+    private final FormField planNameField = new FormField("", "Nome del piano", planNameInput);
     private final ComboBox<WorkoutSessionBean> sessionComboBox = new ComboBox<>();
-    private final Button btnManageSessions = new Button("Gestisci sessioni");
+    private final Button btnManageSessions = new Button();
     private final Button btnSavePlan = new Button("Salva");
     private final Button btnCancel = new Button("Annulla");
 
@@ -113,9 +116,16 @@ public class WorkoutPlanEditorView extends BorderPane {
         toolbar.setPadding(new Insets(10, 20, 10, 20));
         toolbar.setStyle("-fx-background-color: white; -fx-border-color: #E2E8F0; -fx-border-width: 0 0 1 0;");
 
-        // --- LEFT: Session Selector & Undo/Redo ---
+        // --- LEFT: Plan Name, Session Selector & Undo/Redo ---
         HBox leftBox = new HBox(10);
         leftBox.setAlignment(Pos.CENTER_LEFT);
+
+        planNameField.setAlignment(Pos.CENTER_LEFT);
+        planNameInput.textProperty().addListener((obs, oldVal, newVal) -> {
+            if (currentPlan != null) {
+                currentPlan.setName(newVal);
+            }
+        });
 
         // Cell factory for combo box to display session name
         sessionComboBox.setCellFactory(lv -> new ListCell<>() {
@@ -141,30 +151,23 @@ public class WorkoutPlanEditorView extends BorderPane {
                 }
             }
         });
-        sessionComboBox.setPrefWidth(150);
+        sessionComboBox.setPrefWidth(200);
 
-        btnManageSessions.getStyleClass().add("button-secondary");
+        btnManageSessions.setGraphic(new Icon("calendar-icon", List.of("button-header-icon")));
+        btnManageSessions.getStyleClass().add("button-header");
         btnManageSessions.setOnAction(e -> { if(onManageSessionsRequested != null) onManageSessionsRequested.run(); });
 
         btnUndo.setGraphic(new Icon("undo-icon", List.of("button-header-icon")));
-        btnUndo.getStyleClass().add("button-secondary");
+        btnUndo.getStyleClass().add("button-header");
 
         btnRedo.setGraphic(new Icon("redo-icon", List.of("button-header-icon")));
-        btnRedo.getStyleClass().add("button-secondary");
+        btnRedo.getStyleClass().add("button-header");
 
-        leftBox.getChildren().addAll(sessionComboBox, btnManageSessions, new Separator(Orientation.VERTICAL), btnUndo, btnRedo);
+        leftBox.getChildren().addAll(planNameField, new Separator(Orientation.VERTICAL), sessionComboBox, btnManageSessions, new Separator(Orientation.VERTICAL), btnUndo, btnRedo);
 
-        // --- CENTER: Draggable Decorators/Modifiers Palette ---
-        HBox paletteBox = new HBox(10);
-        paletteBox.setAlignment(Pos.CENTER_LEFT);
-
-        ScrollPane scrollPalette = new ScrollPane(paletteBox);
-        scrollPalette.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-        scrollPalette.setHbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
-        scrollPalette.setFitToHeight(true);
-        scrollPalette.setMinHeight(50);
-        
-        HBox.setHgrow(scrollPalette, Priority.ALWAYS);
+        // --- CENTER: Spacer ---
+        Region centerSpacer = new Region();
+        HBox.setHgrow(centerSpacer, Priority.ALWAYS);
 
         // --- RIGHT: Cancel and Save Actions ---
         HBox rightBox = new HBox(10);
@@ -178,7 +181,7 @@ public class WorkoutPlanEditorView extends BorderPane {
 
         rightBox.getChildren().addAll(btnCancel, btnSavePlan);
 
-        toolbar.getChildren().addAll(leftBox, new Separator(Orientation.VERTICAL), scrollPalette, new Separator(Orientation.VERTICAL), rightBox);
+        toolbar.getChildren().addAll(leftBox, centerSpacer, rightBox);
 
         return toolbar;
     }
@@ -267,14 +270,23 @@ public class WorkoutPlanEditorView extends BorderPane {
 
 
 
+    private WorkoutPlanBean currentPlan;
+
     public void setPlan(WorkoutPlanBean plan) {
+        this.currentPlan = plan;
         sessionComboBox.getItems().clear();
-        if (plan != null && plan.getSessions() != null) {
+
+        if (plan != null) {
+            planNameInput.setText(plan.getName() != null ? plan.getName() : "");
+            if (plan.getSessions() != null) {
             sessionComboBox.getItems().addAll(plan.getSessions());
+
             if (!plan.getSessions().isEmpty()) {
                 sessionComboBox.getSelectionModel().selectFirst();
             }
+            }
         }
+
     }
 
     public void disableEditing(boolean disable) {
