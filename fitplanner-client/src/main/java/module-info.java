@@ -8,6 +8,7 @@ module fitplannerclient {
     requires java.prefs;
     requires javafx.web;
     requires jdk.httpserver;
+    requires org.slf4j;
 
     opens com.example.fitplannerclient to javafx.fxml;
     opens com.example.fitplannerclient.serializer to tools.jackson.databind;

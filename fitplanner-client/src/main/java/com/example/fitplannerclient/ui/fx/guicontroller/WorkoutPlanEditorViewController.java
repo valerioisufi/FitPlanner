@@ -22,8 +22,12 @@ import com.example.fitplannerclient.entity.plan.block.ProtocolBlock;
 import com.example.fitplannerclient.controller.plan.factory.ProtocolBlockFactory;
 import java.util.Map;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class WorkoutPlanEditorViewController implements GuiController {
+
+    private static final Logger logger = LoggerFactory.getLogger(WorkoutPlanEditorViewController.class);
 
     private final BorderPane mainPane;
     private final WorkoutPlanEditorView view;
@@ -115,6 +119,10 @@ public class WorkoutPlanEditorViewController implements GuiController {
 
     private void setupPlanNodeEventHandlers() {
         this.view.getPlanViewer().addEventHandler(PlanNodeEvent.ANY, event -> {
+            logger.info("Ricevuto PlanNodeEvent - Type: {}, NodeId: {}, SourceId: {}, SourceIndex: {}, TargetParentId: {}, TargetIndex: {}, isCopy: {}, BadgeType: {}, Payload: {}",
+                    event.getEventType().getName(), event.getNodeId(), event.getSourceNodeId(), event.getSourceIndex(),
+                    event.getTargetParentId(), event.getTargetIndex(), event.isCopy(), event.getBadgeType(), event.getPayload());
+
             if (event.getEventType() == PlanNodeEvent.TOOLBOX_ITEM_DROPPED) {
                 handleToolboxDrop(event);
             } else if (event.getEventType() == PlanNodeEvent.DELETE_NODE_REQUESTED) {

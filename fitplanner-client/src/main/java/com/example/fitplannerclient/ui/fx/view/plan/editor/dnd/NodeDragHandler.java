@@ -45,62 +45,52 @@ public class NodeDragHandler {
             }
 
             if (isToolbox || isNode) {
-                boolean dropAbove = event.getY() < (component.getHeight() / 2);
-                component.getStyleClass().removeAll("drop-above", "drop-below");
-                component.getStyleClass().add(dropAbove ? "drop-above" : "drop-below");
+                component.getStyleClass().removeAll("drop-above", "drop-below", "drop-inside");
+                DropPosition pos = getDropPosition(component, event.getY());
+                if (pos == DropPosition.ABOVE) component.getStyleClass().add("drop-above");
+                else if (pos == DropPosition.BELOW) component.getStyleClass().add("drop-below");
+                else component.getStyleClass().add("drop-inside");
             }
             event.consume();
         });
 
         component.setOnDragExited(event -> {
-            component.getStyleClass().removeAll("drop-above", "drop-below");
+            component.getStyleClass().removeAll("drop-above", "drop-below", "drop-inside");
             event.consume();
         });
 
         component.setOnDragDropped(event -> {
             boolean success = false;
             Dragboard db = event.getDragboard();
-            boolean dropAbove = event.getY() < (component.getHeight() / 2);
+            DropPosition pos = getDropPosition(component, event.getY());
             
             boolean hasFitData = db.hasContent(DragConstants.FITPLANNER_FORMAT);
             String payload = hasFitData ? (String) db.getContent(DragConstants.FITPLANNER_FORMAT) : "";
 
-            if (payload.startsWith("NODE_") && currentDraggedNodeId != null) {
-                boolean isCopy = event.getTransferMode() != TransferMode.COPY;
+            String targetParentId = null;
+            int targetIndex = -1;
 
-                PlanNodeComponent newParent = component.getParentWrapper();
-                if (newParent != null) {
-                    int targetIndex = newParent.getChildrenContainer().getChildren().indexOf(component);
-                    if (!dropAbove) targetIndex++;
+            if (pos == DropPosition.INSIDE) {
+                targetParentId = component.getPlanNodeId();
+                targetIndex = component.getChildrenContainer().getChildren().size();
+            } else if (component.getParentWrapper() != null) {
+                targetParentId = component.getParentWrapper().getPlanNodeId();
+                targetIndex = component.getParentWrapper().getChildrenContainer().getChildren().indexOf(component);
+                if (pos == DropPosition.BELOW) targetIndex++;
+            }
 
+            if (targetParentId != null) {
+                if (payload.startsWith("NODE_") && currentDraggedNodeId != null) {
+                    boolean isCopy = event.getTransferMode() != TransferMode.COPY;
                     component.fireEvent(
                         new PlanNodeEvent(PlanNodeEvent.NODE_REORDERED, currentDraggedNodeId)
-                            .setTargetParentId(newParent.getPlanNodeId())
+                            .setTargetParentId(targetParentId)
                             .setTargetIndex(targetIndex)
                             .setIsCopy(isCopy)
                     );
                     success = true;
-                }
-
-            } else if (payload.startsWith("TOOLBOX:")) {
-                String toolboxPayload = payload.substring("TOOLBOX:".length());
-
-                String targetParentId;
-                int targetIndex;
-
-                if (component.getOriginalBean().getType() == NodeType.BLOCK) {
-                    targetParentId = component.getPlanNodeId();
-                    targetIndex = component.getChildrenContainer().getChildren().size();
-                } else if (component.getParentWrapper() != null) {
-                    targetParentId = component.getParentWrapper().getPlanNodeId();
-                    targetIndex = component.getParentWrapper().getChildrenContainer().getChildren().indexOf(component);
-                    if (!dropAbove) targetIndex++;
-                } else {
-                    targetParentId = null;
-                    targetIndex = -1;
-                }
-
-                if (targetParentId != null) {
+                } else if (payload.startsWith("TOOLBOX:")) {
+                    String toolboxPayload = payload.substring("TOOLBOX:".length());
                     component.fireEvent(
                         new PlanNodeEvent(PlanNodeEvent.TOOLBOX_ITEM_DROPPED, component.getPlanNodeId())
                             .setPayload(toolboxPayload)
@@ -118,8 +108,27 @@ public class NodeDragHandler {
         dragHandle.setOnDragDone(event -> {
             component.setOpacity(1.0);
             currentDraggedNodeId = null;
-            component.getStyleClass().removeAll("drop-above", "drop-below");
+            component.getStyleClass().removeAll("drop-above", "drop-below", "drop-inside");
             event.consume();
         });
+    }
+
+    private enum DropPosition {
+        ABOVE, BELOW, INSIDE
+    }
+
+    private static DropPosition getDropPosition(PlanNodeComponent component, double eventY) {
+        if (component.getOriginalBean().getType() == NodeType.BLOCK) {
+            double threshold = 20.0;
+            if (eventY < threshold && component.getParentWrapper() != null) {
+                return DropPosition.ABOVE;
+            } else if (eventY > component.getHeight() - threshold && component.getParentWrapper() != null) {
+                return DropPosition.BELOW;
+            } else {
+                return DropPosition.INSIDE;
+            }
+        } else {
+            return eventY < (component.getHeight() / 2) ? DropPosition.ABOVE : DropPosition.BELOW;
+        }
     }
 }

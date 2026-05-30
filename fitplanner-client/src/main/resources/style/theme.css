@@ -210,6 +210,10 @@
     -fx-border-color: transparent transparent -color-primary transparent;
 }
 
+.plan-node-drop-area.drop-inside {
+    -fx-border-color: -color-primary;
+}
+
 .badge-drop-left {
     -fx-effect: dropshadow(gaussian, -color-primary, 15, 0.15, -8, 0);
 }

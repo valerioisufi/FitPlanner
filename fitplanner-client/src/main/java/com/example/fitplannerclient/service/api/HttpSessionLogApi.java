@@ -28,11 +28,11 @@ public class HttpSessionLogApi implements SessionLogApi {
      */
     @Override
     public CompletableFuture<List<SessionLogDTO>> getFilteredSessionLogsAsync(
-            String athleteUuid, long startTimestamp, long endTimestamp) {
+            String athleteId, long startTimestamp, long endTimestamp) {
         
         String url = "/logs/session?startTimestamp=" + startTimestamp + "&endTimestamp=" + endTimestamp;
-        if (athleteUuid != null && !athleteUuid.isBlank()) {
-            url += "&athleteUuid=" + athleteUuid;
+        if (athleteId != null && !athleteId.isBlank()) {
+            url += "&athleteId=" + athleteId;
         }
         return httpService.getAsync(url, SessionLogDTO[].class)
                 .thenApply(Arrays::asList);
