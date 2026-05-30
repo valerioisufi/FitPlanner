@@ -1,11 +1,14 @@
 package com.example.fitplannerclient.controller.plan;
 
+import com.example.fitplannerclient.bean.plan.NodeType;
 import com.example.fitplannerclient.bean.plan.PlanNodeBean;
 import com.example.fitplannerclient.bean.plan.WorkoutPlanBean;
 import com.example.fitplannerclient.controller.plan.command.EditorHistoryManager;
 import com.example.fitplannerclient.controller.plan.command.WorkoutPlanEditorCommand;
+import com.example.fitplannerclient.controller.plan.factory.ProtocolBlockFactory;
 import com.example.fitplannerclient.controller.plan.observer.WorkoutPlanObserver;
 import com.example.fitplannerclient.controller.plan.observer.WorkoutPlanSubject;
+import com.example.fitplannerclient.entity.plan.block.ProtocolBlock;
 import com.example.fitplannerclient.serializer.PlanDeserializer;
 import com.example.fitplannerclient.serializer.PlanToDtoVisitor;
 import com.example.fitplannerclient.entity.plan.PlanNode;
@@ -26,7 +29,8 @@ public class EditWorkoutPlanManager {
     private final WorkoutPlanApi planApi;
 
     private WorkoutPlan plan;
-    private final List<PlanNodeBean> protocolBlockLibrary = new ArrayList<>();
+    private final List<ProtocolBlock> protocolBlockLibrary = new ArrayList<>();
+    private final List<PlanNodeBean> protocolBlockLibraryCache = new ArrayList<>();
 
     public EditWorkoutPlanManager(WorkoutPlanApi planApi) {
         this.planApi = planApi;
@@ -119,6 +123,21 @@ public class EditWorkoutPlanManager {
     }
 
     public void buildProtocolBlockLibrary() {
+        protocolBlockLibrary.clear();
+        protocolBlockLibraryCache.clear();
+
+        ProtocolBlockFactory factory = new ProtocolBlockFactory();
+
+        protocolBlockLibrary.add(factory.createCircuit());
+        protocolBlockLibrary.add(factory.createSuperSet());
+        protocolBlockLibrary.add(factory.createDropSet());
+        protocolBlockLibrary.add(factory.createGiantSet());
+        protocolBlockLibrary.add(factory.createAMRAP());
+        protocolBlockLibrary.add(factory.createEMOM());
+
+        for (ProtocolBlock block : protocolBlockLibrary) {
+            protocolBlockLibraryCache.add(new PlanNodeBean(block.getId(), block.getSemanticType(), NodeType.PROTOCOL_BLOCK));
+        }
 
     }
 
