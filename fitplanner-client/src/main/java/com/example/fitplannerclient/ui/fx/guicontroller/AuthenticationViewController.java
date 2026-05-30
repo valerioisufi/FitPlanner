@@ -6,7 +6,7 @@ import com.example.fitplannerclient.bean.auth.LoginBean;
 import com.example.fitplannerclient.bean.auth.RegisterBean;
 import com.example.fitplannerclient.ui.fx.GuiController;
 import com.example.fitplannerclient.ui.fx.GuiManager;
-import com.example.fitplannerclient.ui.fx.view.AuthenticationView;
+import com.example.fitplannerclient.ui.fx.view.auth.AuthenticationView;
 import com.example.fitplannerclient.util.ValidationUtils;
 import javafx.application.Platform;
 import javafx.scene.layout.Pane;
@@ -62,7 +62,7 @@ public class AuthenticationViewController implements GuiController {
         authManager.loginAsync(loginBean)
                 .thenRun(onLoginSuccess)
                 .exceptionally(ex -> {
-                    Platform.runLater(() -> this.guiManager.showNotification(GuiManager.NotificationType.ERROR, ex.getCause().getMessage()));
+                    this.guiManager.showExceptionError("Errore nel login:", ex);
                     return null;
                 });
     }
@@ -109,7 +109,7 @@ public class AuthenticationViewController implements GuiController {
         authManager.registerAsync(registerBean)
                 .thenRun(onLoginSuccess)
                 .exceptionally(ex -> {
-                    Platform.runLater(() -> this.guiManager.showNotification(GuiManager.NotificationType.ERROR, ex.getCause().getMessage()));
+                    this.guiManager.showExceptionError("Errore durante la registrazione:", ex);
                     return null;
                 });
     }

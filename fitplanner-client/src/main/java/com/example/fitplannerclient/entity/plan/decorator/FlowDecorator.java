@@ -18,4 +18,9 @@ public abstract class FlowDecorator extends PlanNode{
     }
 
     public abstract FlowDecorator cloneWithNode(PlanNode newWrappedNode);
+
+    @Override
+    public PlanNode deepCopy() {
+        return cloneWithNode(this.wrappedNode != null ? this.wrappedNode.deepCopy() : null);
+    }
 }

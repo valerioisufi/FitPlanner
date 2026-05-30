@@ -6,6 +6,7 @@ import com.example.fitplannerclient.controller.log.WorkoutHistoryManager;
 import com.example.fitplannerclient.controller.plan.EditWorkoutPlanManager;
 import com.example.fitplannerclient.controller.plan.WorkoutPlanManager;
 import com.example.fitplannerclient.controller.profile.ProfileManager;
+import com.example.fitplannerclient.repository.ExerciseRepository;
 import com.example.fitplannerclient.service.api.*;
 
 public class AppControllerFactory {
@@ -18,6 +19,7 @@ public class AppControllerFactory {
 
     private AuthManager authManager;
     private ProfileManager profileManager;
+    private ExerciseRepository exerciseRepository;
     private ExerciseLibraryManager exerciseLibraryManager;
     private WorkoutPlanManager workoutPlanManager;
     private EditWorkoutPlanManager editWorkoutPlanManager;
@@ -50,9 +52,16 @@ public class AppControllerFactory {
         return profileManager;
     }
 
+    public ExerciseRepository createExerciseRepository() {
+        if (exerciseRepository == null) {
+            exerciseRepository = new ExerciseRepository(exerciseLibraryApi);
+        }
+        return exerciseRepository;
+    }
+
     public ExerciseLibraryManager createExerciseLibraryManager() {
         if (exerciseLibraryManager == null) {
-            exerciseLibraryManager = new ExerciseLibraryManager(exerciseLibraryApi);
+            exerciseLibraryManager = new ExerciseLibraryManager(createExerciseRepository());
         }
         return exerciseLibraryManager;
     }
@@ -66,7 +75,7 @@ public class AppControllerFactory {
 
     public EditWorkoutPlanManager createEditWorkoutPlanManager() {
         if (editWorkoutPlanManager == null) {
-            editWorkoutPlanManager = new EditWorkoutPlanManager(workoutPlanApi);
+            editWorkoutPlanManager = new EditWorkoutPlanManager(workoutPlanApi, createExerciseRepository());
         }
         return editWorkoutPlanManager;
     }

@@ -1,4 +1,4 @@
-package com.example.fitplannerclient.ui.fx.view;
+package com.example.fitplannerclient.ui.fx.view.profile;
 
 import com.example.fitplannerclient.ui.fx.components.FormField;
 import javafx.geometry.Insets;

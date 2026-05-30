@@ -7,7 +7,7 @@ import com.example.fitplannerclient.controller.profile.ProfileManager;
 import com.example.fitplannerclient.ui.fx.GuiController;
 import com.example.fitplannerclient.ui.fx.GuiManager;
 import com.example.fitplannerclient.ui.fx.Navigator;
-import com.example.fitplannerclient.ui.fx.view.plan.PlanManagementView;
+import com.example.fitplannerclient.ui.fx.view.plan.management.PlanManagementView;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import javafx.scene.layout.Pane;
@@ -56,7 +56,7 @@ public class PlanManagementViewController implements GuiController {
                     });
                 })
                 .exceptionally(ex -> {
-                    Platform.runLater(() -> guiManager.showNotification(GuiManager.NotificationType.ERROR, "Errore nell'eliminazione: " + ex.getMessage()));
+                    guiManager.showExceptionError("Errore nell'eliminazione:", ex);
                     return null;
                 });
         });
@@ -102,7 +102,7 @@ public class PlanManagementViewController implements GuiController {
                     .exceptionally(ex -> {
                         Platform.runLater(() -> {
                             guiManager.hideModal();
-                            guiManager.showNotification(GuiManager.NotificationType.ERROR, "Errore nell'assegnazione: " + ex.getMessage());
+                            guiManager.showExceptionError("Errore nell'assegnazione:", ex);
                         });
                         return null;
                     });
@@ -122,7 +122,7 @@ public class PlanManagementViewController implements GuiController {
         planManager.getMyCreatedPlansSummaryAsync()
             .thenAccept(plans -> Platform.runLater(() -> view.setPlansList(plans)))
             .exceptionally(ex -> {
-                Platform.runLater(() -> guiManager.showNotification(GuiManager.NotificationType.ERROR, "Errore nel caricamento dei piani"));
+                guiManager.showExceptionError("Errore nel caricamento dei piani:", ex);
                 return null;
             });
     }

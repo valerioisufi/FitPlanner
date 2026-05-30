@@ -1,8 +1,7 @@
-package com.example.fitplannerclient.ui.fx.view.plan;
+package com.example.fitplannerclient.ui.fx.view.plan.management;
 
 import com.example.fitplannerclient.bean.plan.WorkoutPlanBean;
 import com.example.fitplannerclient.bean.profile.ProfileBean;
-import com.example.fitplannerclient.ui.fx.components.FormField;
 import com.example.fitplannerclient.ui.fx.components.Icon;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;

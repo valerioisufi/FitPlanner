@@ -5,7 +5,7 @@ import com.example.fitplannerclient.ui.fx.GuiController;
 import com.example.fitplannerclient.ui.fx.GuiManager;
 import com.example.fitplannerclient.ui.fx.Navigator;
 import com.example.fitplannerclient.controller.profile.ProfileManager;
-import com.example.fitplannerclient.ui.fx.view.WorkoutExecutionView;
+import com.example.fitplannerclient.ui.fx.view.execution.WorkoutExecutionView;
 import com.example.fitplannerclient.service.api.SessionLogApi;
 import com.example.fitplannercommon.ExerciseLogDTO;
 import com.example.fitplannercommon.ExerciseSetDTO;
@@ -165,9 +165,8 @@ public class WorkoutExecutionViewController implements GuiController {
                     Navigator.getInstance().goHome();
                 }))
                 .exceptionally(ex -> {
-                    Platform.runLater(() -> Navigator.getInstance().getGuiManager().showNotification(
-                            GuiManager.NotificationType.ERROR, 
-                            "Errore durante l'azione del timer: " + ex.getMessage()));
+                    Navigator.getInstance().getGuiManager().showExceptionError(
+                            "Errore nel salvataggio del log:", ex);
                     return null;
                 });
     }

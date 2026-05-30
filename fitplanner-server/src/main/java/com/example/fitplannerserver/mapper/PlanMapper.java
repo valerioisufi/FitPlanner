@@ -18,6 +18,7 @@ public class PlanMapper {
 
         dto.setPlanId(entity.getPlanId());
         dto.setName(entity.getTitle());
+        dto.setCycleLength(entity.getCycleLength());
 
         List<WorkoutSessionDTO> sessionBeans = new ArrayList<>();
         for(int day: entity.getSessionsDay()){

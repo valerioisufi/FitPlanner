@@ -14,6 +14,7 @@ import com.example.fitplannerclient.util.IDGenerator;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.function.Function;
 
 public class PlanToBeanVisitor implements WorkoutPlanVisitor {
 
@@ -22,6 +23,16 @@ public class PlanToBeanVisitor implements WorkoutPlanVisitor {
 
     private PlanNodeBean currentPlanNodeBean;
     private final List<FlowDecoratorBean> accumulatedDecorators = new ArrayList<>();
+
+    private final Function<String, String> nameResolver;
+
+    public PlanToBeanVisitor() {
+        this.nameResolver = id -> "Esercizio Sconosciuto";
+    }
+
+    public PlanToBeanVisitor(Function<String, String> nameResolver) {
+        this.nameResolver = nameResolver;
+    }
 
     public WorkoutPlanBean getPlanBean() {
         return this.planBean;
@@ -67,7 +78,8 @@ public class PlanToBeanVisitor implements WorkoutPlanVisitor {
 
     @Override
     public void visit(ExerciseNode exerciseNode) {
-        PlanNodeBean nodeBean = new PlanNodeBean(exerciseNode.getId(), "", NodeType.EXERCISE);
+        String name = nameResolver.apply(exerciseNode.getResourceId());
+        PlanNodeBean nodeBean = new PlanNodeBean(exerciseNode.getId(), name, NodeType.EXERCISE);
         nodeBean.setResourceId(exerciseNode.getResourceId());
 
         List<ExerciseModifierBean> modifierBeans = exerciseNode.getModifiers()

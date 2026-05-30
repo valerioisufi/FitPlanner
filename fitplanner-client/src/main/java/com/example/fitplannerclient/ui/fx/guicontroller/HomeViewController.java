@@ -6,7 +6,7 @@ import com.example.fitplannerclient.controller.profile.ProfileManager;
 import com.example.fitplannerclient.ui.fx.GuiController;
 import com.example.fitplannerclient.ui.fx.GuiManager;
 import com.example.fitplannerclient.ui.fx.Navigator;
-import com.example.fitplannerclient.ui.fx.view.HomeView;
+import com.example.fitplannerclient.ui.fx.view.dashboard.HomeView;
 import javafx.application.Platform;
 import javafx.scene.layout.Pane;
 
@@ -56,9 +56,8 @@ public class HomeViewController implements GuiController {
                             view.showAthleteList(athletes, athlete -> Navigator.getInstance().goToAthleteDashboard(athlete))
                     ))
                     .exceptionally(ex -> {
-                        javafx.application.Platform.runLater(() -> Navigator.getInstance().getGuiManager().showNotification(
-                            GuiManager.NotificationType.ERROR, "Errore nel caricamento degli atleti"
-                        ));
+                        Navigator.getInstance().getGuiManager().showExceptionError(
+                            "Errore nel caricamento degli atleti:", ex);
                         return null;
                     });
         } else {
@@ -93,7 +92,7 @@ public class HomeViewController implements GuiController {
                             start(); // Refresh home view
                         });
                     }).exceptionally(e -> {
-                        Platform.runLater(() -> Navigator.getInstance().getGuiManager().showNotification(GuiManager.NotificationType.ERROR, "Codice invito non valido o errore di rete."));
+                        Navigator.getInstance().getGuiManager().showExceptionError("Codice invito non valido o errore di rete:", e);
                         return null;
                     });
                 }));

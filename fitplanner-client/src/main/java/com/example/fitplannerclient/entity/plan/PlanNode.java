@@ -20,4 +20,5 @@ public abstract class PlanNode implements AcceptWorkoutPlanVisitor {
 
     public abstract ExecutionResult execute(ExecutionContext context);
     public abstract void reset();
+    public abstract PlanNode deepCopy();
 }

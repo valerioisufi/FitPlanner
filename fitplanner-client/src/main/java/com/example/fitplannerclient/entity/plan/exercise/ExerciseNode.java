@@ -13,6 +13,21 @@ public class ExerciseNode extends PlanNode {
     private String resourceId;
     private Map<ModifierType, ExerciseModifier> modifiers = new EnumMap<>(ModifierType.class);
 
+    public ExerciseNode(String resourceId) {
+        this.resourceId = resourceId;
+    }
+
+    public ExerciseNode() {}
+
+    @Override
+    public PlanNode deepCopy() {
+        ExerciseNode copy = new ExerciseNode(this.resourceId);
+        for (Map.Entry<ModifierType, ExerciseModifier> entry : this.modifiers.entrySet()) {
+            copy.modifiers.put(entry.getKey(), new ExerciseModifier(entry.getValue()));
+        }
+        return copy;
+    }
+
     @Override
     public void accept(WorkoutPlanVisitor visitor) {
         visitor.visit(this);

@@ -51,6 +51,27 @@ public class WorkoutPlanBean {
     }
 
     public void addSession(WorkoutSessionBean session) {
-        if (session != null) this.sessions.add(session);
+        sessions.add(session);
+    }
+
+    public PlanNodeBean findNodeById(String nodeId) {
+        if (sessions == null) return null;
+        for (WorkoutSessionBean session : sessions) {
+            PlanNodeBean found = findInNode(session.getPlanRoot(), nodeId);
+            if (found != null) return found;
+        }
+        return null;
+    }
+
+    private PlanNodeBean findInNode(PlanNodeBean current, String nodeId) {
+        if (current == null) return null;
+        if (current.getId().equals(nodeId)) return current;
+        if (current.getChildren() != null) {
+            for (PlanNodeBean child : current.getChildren()) {
+                PlanNodeBean found = findInNode(child, nodeId);
+                if (found != null) return found;
+            }
+        }
+        return null;
     }
 }

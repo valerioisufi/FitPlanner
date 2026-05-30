@@ -2,67 +2,24 @@ package com.example.fitplannerclient.controller.exercise;
 
 import com.example.fitplannerclient.bean.exercise.ExerciseDescriptionBean;
 import com.example.fitplannerclient.entity.ExerciseDescription;
-import com.example.fitplannerclient.service.api.ExerciseLibraryApi;
+import com.example.fitplannerclient.repository.ExerciseRepository;
 import com.example.fitplannerclient.util.ValidationUtils;
-import com.example.fitplannercommon.ExerciseDescriptionDTO;
 
-import java.util.*;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public class ExerciseLibraryManager {
-    private final ExerciseLibraryApi api;
+    private final ExerciseRepository repository;
 
-    private final Map<String, ExerciseDescription> exerciseCache;
-
-    public ExerciseLibraryManager(ExerciseLibraryApi api) {
-        this.api = api;
-        this.exerciseCache = new HashMap<>();
+    public ExerciseLibraryManager(ExerciseRepository repository) {
+        this.repository = repository;
     }
 
     public CompletableFuture<List<ExerciseDescriptionBean>> getExercisesAsync(List<String> uuids) {
-        if (uuids == null || uuids.isEmpty()) {
-            return api.getExercisesAsync(null)
-                    .thenApply(fetchedDtos -> {
-                        List<ExerciseDescriptionBean> beans = new ArrayList<>();
-                        for (ExerciseDescriptionDTO dto : fetchedDtos) {
-                            ExerciseDescription entity = dtoToEntity(dto);
-                            exerciseCache.put(entity.getExerciseId(), entity);
-                            beans.add(entityToBean(entity));
-                        }
-                        return beans;
-                    });
-        }
-
-        List<String> missingUuids = new ArrayList<>();
-        // identifico quali UUID mancano dalla cache
-        for (String uuid : uuids) {
-            if (!exerciseCache.containsKey(uuid)) {
-                missingUuids.add(uuid);
-            }
-        }
-        // se non manca nulla, restituisco subito i Bean creati dalla cache
-        if (missingUuids.isEmpty()) {
-            List<ExerciseDescriptionBean> beans = uuids.stream()
-                    .map(exerciseCache::get)
-                    .map(this::entityToBean)
-                    .toList();
-            return CompletableFuture.completedFuture(beans);
-        }
-        // richiedo alla Api solo gli UUID mancanti
-        return api.getExercisesAsync(missingUuids)
-                .thenApply(fetchedDtos -> {
-                    // aggiorno la cache locale con le nuove entità arrivate dal server
-                    fetchedDtos.forEach(dto -> {
-                        ExerciseDescription entity = dtoToEntity(dto);
-                        exerciseCache.put(entity.getExerciseId(), entity);
-                    });
-                    // costruisco la lista finale convertita in Bean
-                    return uuids.stream()
-                            .map(exerciseCache::get)
-                            .filter(Objects::nonNull)
-                            .map(this::entityToBean)
-                            .toList();
-                });
+        return repository.getExercisesAsync(uuids)
+                .thenApply(entities -> entities.stream()
+                        .map(this::entityToBean)
+                        .toList());
     }
 
     public CompletableFuture<String> addExerciseAsync(ExerciseDescriptionBean bean) {
@@ -73,19 +30,7 @@ public class ExerciseLibraryManager {
         }
 
         ExerciseDescription entity = beanToEntity(bean);
-        ExerciseDescriptionDTO dto = entityToDto(entity);
-
-        return api.addExerciseAsync(dto)
-                .thenApply(newId -> {
-                    ExerciseDescription newEntity = new ExerciseDescription(
-                            newId,
-                            entity.getName(),
-                            entity.getExecution(),
-                            entity.getMuscleGroups()
-                    );
-                    exerciseCache.put(newId, newEntity);
-                    return newId;
-                });
+        return repository.addExerciseAsync(entity);
     }
 
     public CompletableFuture<Void> updateExerciseAsync(ExerciseDescriptionBean bean) {
@@ -95,23 +40,12 @@ public class ExerciseLibraryManager {
             return CompletableFuture.failedFuture(e);
         }
 
-        String exerciseId = bean.getExerciseId();
-
         ExerciseDescription updatedEntity = beanToEntity(bean);
-
-        return api.updateExerciseAsync(exerciseId, entityToDto(updatedEntity))
-                .thenAccept(v -> {
-                    // aggiorno la cache locale se l'aggiornamento della descrizione dell'esercizio ha avuto successo
-                    exerciseCache.put(exerciseId, updatedEntity);
-                });
+        return repository.updateExerciseAsync(updatedEntity);
     }
 
     public CompletableFuture<Void> removeExerciseAsync(String exerciseId) {
-        return api.removeExerciseAsync(exerciseId)
-                .thenAccept(v -> {
-                    // rimuovo l'elemento dalla cache solo se la rimozione remota è completata con successo
-                    exerciseCache.remove(exerciseId);
-                });
+        return repository.removeExerciseAsync(exerciseId);
     }
 
     // validation
@@ -134,15 +68,6 @@ public class ExerciseLibraryManager {
     }
 
     // mapper
-    private ExerciseDescription dtoToEntity(ExerciseDescriptionDTO dto) {
-        return new ExerciseDescription(
-                dto.getExerciseId(),
-                dto.getName(),
-                dto.getExecution(),
-                dto.getMuscleGroups().stream().toList()
-        );
-    }
-
     private ExerciseDescriptionBean entityToBean(ExerciseDescription entity) {
         ExerciseDescriptionBean bean = new ExerciseDescriptionBean();
         bean.setExerciseId(entity.getExerciseId());
@@ -159,14 +84,5 @@ public class ExerciseLibraryManager {
                 bean.getExecution(),
                 bean.getMuscleGroups().stream().toList()
         );
-    }
-
-    private ExerciseDescriptionDTO entityToDto(ExerciseDescription entity) {
-        ExerciseDescriptionDTO dto = new ExerciseDescriptionDTO();
-        dto.setExerciseId(entity.getExerciseId());
-        dto.setName(entity.getName());
-        dto.setExecution(entity.getExecution());
-        dto.setMuscleGroups(entity.getMuscleGroups().stream().toList());
-        return dto;
     }
 }

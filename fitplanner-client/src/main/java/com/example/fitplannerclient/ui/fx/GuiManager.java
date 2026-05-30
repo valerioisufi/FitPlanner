@@ -1,5 +1,7 @@
 package com.example.fitplannerclient.ui.fx;
 
+import com.example.fitplannerclient.exception.NotAuthenticatedException;
+import com.example.fitplannerclient.exception.RequestException;
 import com.example.fitplannerclient.ui.fx.components.ModalOverlay;
 import javafx.animation.FadeTransition;
 import javafx.animation.PauseTransition;
@@ -132,6 +134,32 @@ public class GuiManager {
             notificationArea.getChildren().add(notification);
             animateNotification(notification);
         });
+    }
+
+    /**
+     * Mostra una notifica di errore estraendo in modo sicuro il messaggio dall'eccezione
+     */
+    public void showExceptionError(String prefixMessage, Throwable ex) {
+        Throwable realException = ex;
+        if (realException != null) {
+            while (realException.getCause() != null) {
+                if (realException instanceof RequestException ||
+                    realException instanceof NotAuthenticatedException) {
+                    break;
+                }
+                realException = realException.getCause();
+            }
+        }
+        
+        String errorMsg = (realException != null && realException.getMessage() != null && !realException.getMessage().isBlank()) 
+                            ? realException.getMessage() 
+                            : "Errore sconosciuto";
+                            
+        String finalMessage = (prefixMessage != null && !prefixMessage.isBlank()) 
+                              ? prefixMessage + " " + errorMsg 
+                              : errorMsg;
+                              
+        showNotification(NotificationType.ERROR, finalMessage);
     }
 
     private void animateNotification(Label notification) {

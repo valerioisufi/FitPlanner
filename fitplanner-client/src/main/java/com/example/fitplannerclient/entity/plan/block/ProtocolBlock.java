@@ -39,6 +39,16 @@ public class ProtocolBlock extends PlanNode implements GroupNode {
         buildExecutionRoot();
     }
 
+    @Override
+    public PlanNode deepCopy() {
+        ProtocolBlock copy = new ProtocolBlock(this.semanticType, this.validationRules, this.compositionRules, this.blockCompositionRules);
+        copy.parameters = new HashMap<>(this.parameters);
+        for (int i = 0; i < this.getChildrenCount(); i++) {
+            copy.addNode(this.getNodeAt(i).deepCopy());
+        }
+        return copy;
+    }
+
     private void buildExecutionRoot() {
         PlanNode root = decoratedGroup;
 

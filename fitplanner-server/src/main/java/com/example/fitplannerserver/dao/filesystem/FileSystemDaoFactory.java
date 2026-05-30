@@ -34,7 +34,7 @@ public class FileSystemDaoFactory extends DaoFactory {
         profileDao = new FileSystemProfileDao(profilesPath);
         sessionLogDao = new FileSystemSessionLogDao(sessionLogsPath);
         exerciseLibraryDao = new FileSystemExerciseLibraryDao(exerciseLibraryPath);
-        workoutPlanDao = new FileSystemWorkoutPlanDao(workoutPlansPath);
+        workoutPlanDao = new FileSystemWorkoutPlanDao();
         coachingDao = new FileSystemCoachingDao(coachingPath);
         defaultData();
     }

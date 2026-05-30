@@ -1,14 +1,23 @@
 package com.example.fitplannerclient.controller.plan;
 
-import com.example.fitplannerclient.bean.plan.NodeType;
 import com.example.fitplannerclient.bean.plan.PlanNodeBean;
 import com.example.fitplannerclient.bean.plan.WorkoutPlanBean;
 import com.example.fitplannerclient.controller.plan.command.EditorHistoryManager;
 import com.example.fitplannerclient.controller.plan.command.WorkoutPlanEditorCommand;
+import com.example.fitplannerclient.controller.plan.command.CompositeCommand;
+import com.example.fitplannerclient.controller.plan.command.InsertNodeCommand;
+import com.example.fitplannerclient.controller.plan.command.RemoveNodeCommand;
+import com.example.fitplannerclient.controller.plan.command.RenameBlockCommand;
+import com.example.fitplannerclient.controller.plan.command.SetModifierCommand;
+import com.example.fitplannerclient.controller.plan.command.AddSessionCommand;
+import com.example.fitplannerclient.controller.plan.command.RemoveSessionCommand;
+import com.example.fitplannerclient.controller.plan.command.UpdateSessionCommand;
 import com.example.fitplannerclient.controller.plan.factory.ProtocolBlockFactory;
 import com.example.fitplannerclient.controller.plan.observer.WorkoutPlanObserver;
 import com.example.fitplannerclient.controller.plan.observer.WorkoutPlanSubject;
+import com.example.fitplannerclient.entity.ExerciseDescription;
 import com.example.fitplannerclient.entity.plan.block.ProtocolBlock;
+import com.example.fitplannerclient.repository.ExerciseRepository;
 import com.example.fitplannerclient.serializer.PlanDeserializer;
 import com.example.fitplannerclient.serializer.PlanToBeanVisitor;
 import com.example.fitplannerclient.serializer.PlanToDtoVisitor;
@@ -16,10 +25,11 @@ import com.example.fitplannerclient.entity.plan.PlanNode;
 import com.example.fitplannerclient.entity.plan.WorkoutPlan;
 import com.example.fitplannerclient.entity.plan.WorkoutSession;
 import com.example.fitplannerclient.entity.plan.block.Block;
+import com.example.fitplannerclient.entity.plan.exercise.ExerciseNode;
+import com.example.fitplannerclient.controller.plan.visitor.NodeFinderVisitor;
 import com.example.fitplannerclient.service.api.WorkoutPlanApi;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -29,13 +39,17 @@ public class EditWorkoutPlanManager {
 
     private final WorkoutPlanSubject workoutPlanSubject = new WorkoutPlanSubject();
     private final WorkoutPlanApi planApi;
+    private final ExerciseRepository exerciseRepository;
 
     private WorkoutPlan plan;
     private final List<ProtocolBlock> protocolBlockLibrary = new ArrayList<>();
     private final List<PlanNodeBean> protocolBlockLibraryCache = new ArrayList<>();
 
-    public EditWorkoutPlanManager(WorkoutPlanApi planApi) {
+    public EditWorkoutPlanManager(WorkoutPlanApi planApi, ExerciseRepository exerciseRepository) {
         this.planApi = planApi;
+        this.exerciseRepository = exerciseRepository;
+
+        exerciseRepository.getExercisesAsync(null).thenAccept(entities -> {});
     }
 
     public void addObserver(WorkoutPlanObserver observer) {
@@ -45,20 +59,32 @@ public class EditWorkoutPlanManager {
         workoutPlanSubject.detach(observer);
     }
 
-    public WorkoutPlanBean getPlan() {
-        if (plan == null) return null;
+    public CompletableFuture<WorkoutPlanBean> getPlanAsync() {
+        if (plan == null) return CompletableFuture.completedFuture(null);
 
-        PlanToBeanVisitor visitor = new PlanToBeanVisitor();
-        plan.accept(visitor);
+        if (exerciseRepository == null) {
+            PlanToBeanVisitor visitor = new PlanToBeanVisitor();
+            plan.accept(visitor);
+            return CompletableFuture.completedFuture(visitor.getPlanBean());
+        }
 
-        return visitor.getPlanBean();
+        return exerciseRepository.getExercisesAsync(null).thenApply(entities -> {
+            PlanToBeanVisitor visitor = new PlanToBeanVisitor(
+                    uuid -> {
+                        ExerciseDescription entity = exerciseRepository.getCachedExercise(uuid);
+                        return entity != null ? entity.getName() : "Esercizio Sconosciuto";
+                    }
+            );
+            plan.accept(visitor);
+            return visitor.getPlanBean();
+        });
     }
 
     public CompletableFuture<Void> createNewPlan() {
         plan = new WorkoutPlan("Nuovo piano");
         plan.setCycleLength(7);
 
-        PlanNode rootNode = new Block("Blocco 1");
+        PlanNode rootNode = new Block("Session Giorno 1");
         WorkoutSession firstSession = new WorkoutSession("Sessione 1", 0, rootNode);
 
         plan.addSession(firstSession);
@@ -71,6 +97,61 @@ public class EditWorkoutPlanManager {
                     plan.setPlanId(id);
                     workoutPlanSubject.notifyObservers();
                 });
+    }
+
+    public void changePlanName(String newName) {
+        if (plan != null) {
+            plan.changeName(newName);
+            workoutPlanSubject.notifyObservers();
+        }
+    }
+
+    public void changeCycleLength(int length) {
+        if (plan != null) {
+            plan.setCycleLength(length);
+            workoutPlanSubject.notifyObservers();
+        }
+    }
+
+    public void addSession(int day) {
+        if (plan != null) {
+            // Creo una nuova sessione con un Block vuoto come root
+            Block root = new Block("Sessione Giorno " + day);
+            WorkoutSession session = new WorkoutSession(String.valueOf(day), day, root);
+            AddSessionCommand cmd = new AddSessionCommand(plan, session);
+            executeCommand(cmd);
+        }
+    }
+
+    public void removeSession(int day) {
+        if (plan != null) {
+            RemoveSessionCommand cmd = new RemoveSessionCommand(plan, day);
+            executeCommand(cmd);
+        }
+    }
+
+    public void updateSessionName(int day, String name) {
+        if (plan != null) {
+            WorkoutSession session = getSessionByDay(day);
+            if (session != null) {
+                UpdateSessionCommand cmd = new UpdateSessionCommand(plan, session, name, session.getDay());
+                executeCommand(cmd);
+            }
+        }
+    }
+
+    public void updateSessionDay(int oldDay, int newDay) {
+        if (plan != null) {
+            WorkoutSession session = getSessionByDay(oldDay);
+            if (session != null && getSessionByDay(newDay) == null) {
+                UpdateSessionCommand cmd = new UpdateSessionCommand(plan, session, session.getName(), newDay);
+                executeCommand(cmd);
+            }
+        }
+    }
+
+    private WorkoutSession getSessionByDay(int day) {
+        return plan.getSessions().stream().filter(s -> s.getDay() == day).findFirst().orElse(null);
     }
 
     public CompletableFuture<Void> editExistingPlan(String planId, boolean isCopy) {
@@ -89,21 +170,86 @@ public class EditWorkoutPlanManager {
 
 
     public void addExercise(String parentBlockId, String exerciseId) {
-        // TODO: Create and execute AddExerciseCommand
-        // WorkoutPlanEditorCommand cmd = new AddExerciseCommand(plan, parentBlockId, exerciseId);
-        // executeCommand(cmd);
-        
-        System.out.println("Esercizio aggiunto al blocco: " + parentBlockId);
+        NodeFinderVisitor finder = new NodeFinderVisitor(parentBlockId);
+        plan.accept(finder);
+        if (finder.isFound() && finder.getFoundNode() instanceof Block parent) {
+            ExerciseNode newNode = new ExerciseNode(exerciseId);
+            InsertNodeCommand cmd = new InsertNodeCommand(newNode, parent, parent.getChildrenCount());
+            executeCommand(cmd);
+        }
     }
 
     public void removeNode(String nodeId) {
-        // TODO: Create and execute RemoveNodeCommand
-        // executeCommand(new RemoveNodeCommand(plan, nodeId));
+        NodeFinderVisitor finder = new NodeFinderVisitor(nodeId);
+        plan.accept(finder);
+        if (finder.isFound() && finder.getFoundParent() instanceof Block parent) {
+            int index = finder.getFoundPosition();
+            RemoveNodeCommand cmd = new RemoveNodeCommand(parent, index);
+            executeCommand(cmd);
+        }
     }
 
-    public void setRestTime(String nodeId, int timeMillis) {
-        // TODO: Create and execute SetRestTimeCommand
+    public void renameNode(String nodeId, String newName) {
+        NodeFinderVisitor finder = new NodeFinderVisitor(nodeId);
+        plan.accept(finder);
+        if (finder.isFound() && finder.getFoundNode() instanceof Block block) {
+            RenameBlockCommand cmd = new RenameBlockCommand(block, newName);
+            executeCommand(cmd);
+        }
     }
+
+    public void copyNode(String nodeId, String targetParentId, int targetIndex) {
+        NodeFinderVisitor sourceFinder = new NodeFinderVisitor(nodeId);
+        NodeFinderVisitor targetFinder = new NodeFinderVisitor(targetParentId);
+        plan.accept(sourceFinder);
+        plan.accept(targetFinder);
+
+        if (sourceFinder.isFound() && targetFinder.isFound() && targetFinder.getFoundNode() instanceof Block targetParent) {
+            PlanNode copy = sourceFinder.getFoundNode().deepCopy();
+            InsertNodeCommand cmd = new InsertNodeCommand(copy, targetParent, targetIndex);
+            executeCommand(cmd);
+        }
+    }
+
+    public void moveNode(String nodeId, String targetParentId, int targetIndex) {
+        NodeFinderVisitor sourceFinder = new NodeFinderVisitor(nodeId);
+        NodeFinderVisitor targetFinder = new NodeFinderVisitor(targetParentId);
+        plan.accept(sourceFinder);
+        plan.accept(targetFinder);
+
+        if (sourceFinder.isFound() && sourceFinder.getFoundParent() instanceof Block sourceParent 
+            && targetFinder.isFound() && targetFinder.getFoundNode() instanceof Block targetParent) {
+            
+            RemoveNodeCommand removeCmd = new RemoveNodeCommand(sourceParent, sourceFinder.getFoundPosition());
+            InsertNodeCommand insertCmd = new InsertNodeCommand(sourceFinder.getFoundNode(), targetParent, targetIndex);
+            
+            CompositeCommand cmd = new CompositeCommand();
+            cmd.addCommand(removeCmd);
+            cmd.addCommand(insertCmd);
+            executeCommand(cmd);
+        }
+    }
+
+    public void updateModifier(String nodeId, String badgeId, String newName, String newValue) {
+        NodeFinderVisitor finder = new NodeFinderVisitor(nodeId);
+        plan.accept(finder);
+        if (finder.isFound() && finder.getFoundNode() instanceof com.example.fitplannerclient.entity.plan.exercise.ExerciseNode node) {
+            com.example.fitplannerclient.entity.plan.exercise.ModifierType type = com.example.fitplannerclient.entity.plan.exercise.ModifierType.valueOf(newName);
+            com.example.fitplannerclient.entity.plan.exercise.ExerciseModifier modifier = new com.example.fitplannerclient.entity.plan.exercise.ExerciseModifier(type, newValue);
+            SetModifierCommand cmd = new SetModifierCommand(node, modifier);
+            executeCommand(cmd);
+        }
+    }
+
+    public void updateDecorator(String nodeId, String badgeId, String newName, String newValue) {
+        // I decorator che avvolgono un nodo non sono facilmente cercabili per badgeId a meno di cast.
+        // Poichè non possiamo aggiungere nuovi command per la logica dei decorator specifici, lasciamo stare.
+    }
+
+    public void copyModifier(String sourceNodeId, String targetNodeId, int sourceIndex, int targetIndex) {}
+    public void moveModifier(String sourceNodeId, String targetNodeId, int sourceIndex, int targetIndex) {}
+    public void copyDecorator(String sourceNodeId, String targetNodeId, int sourceIndex, int targetIndex) {}
+    public void moveDecorator(String sourceNodeId, String targetNodeId, int sourceIndex, int targetIndex) {}
 
     public CompletableFuture<Void> saveChanges() {
         if (plan == null || plan.getPlanId() == null) {
@@ -129,8 +275,65 @@ public class EditWorkoutPlanManager {
         workoutPlanSubject.notifyObservers();
     }
 
-    public void getProtocolBlockLibrary() {
+    public CompletableFuture<Void> savePlan() {
+        if (plan == null) CompletableFuture.completedFuture(null);
+        PlanToDtoVisitor serializer = new PlanToDtoVisitor();
+        plan.accept(serializer);
 
+        return planApi.updatePlanAsync(plan.getPlanId(), serializer.getPlanDto())
+                .thenRun(workoutPlanSubject::notifyObservers);
+    }
+
+    public void addNodeFromToolbox(PlanNode newNode, String targetParentId, int targetIndex) {
+        if (plan == null) return;
+
+        NodeFinderVisitor finder = new NodeFinderVisitor(targetParentId);
+        plan.accept(finder);
+
+        if (finder.isFound() && finder.getFoundNode() instanceof Block block) {
+            if (targetIndex >= 0 && targetIndex <= block.getChildrenCount()) {
+                block.addNodeAt(targetIndex, newNode);
+            } else {
+                block.addNode(newNode);
+            }
+            workoutPlanSubject.notifyObservers();
+        }
+    }
+
+    public void addDecoratorFromToolbox(com.example.fitplannerclient.entity.plan.decorator.FlowDecorator newDecorator, String targetNodeId) {
+        if (plan == null) return;
+        
+        NodeFinderVisitor finder = new NodeFinderVisitor(targetNodeId);
+        plan.accept(finder);
+
+        if (finder.isFound() && finder.getFoundParent() instanceof Block block) {
+            int index = finder.getFoundPosition();
+            if (index != -1) {
+                newDecorator.setWrappedNode(finder.getFoundNode());
+                block.replaceNode(index, newDecorator);
+                workoutPlanSubject.notifyObservers();
+            }
+        } else if (finder.isFound() && finder.getFoundParent() instanceof com.example.fitplannerclient.entity.plan.decorator.FlowDecorator parentDecorator) {
+             newDecorator.setWrappedNode(finder.getFoundNode());
+             parentDecorator.setWrappedNode(newDecorator);
+             workoutPlanSubject.notifyObservers();
+        }
+    }
+
+    public void addModifierFromToolbox(com.example.fitplannerclient.entity.plan.exercise.ExerciseModifier modifier, String targetNodeId) {
+        if (plan == null) return;
+
+        NodeFinderVisitor finder = new NodeFinderVisitor(targetNodeId);
+        plan.accept(finder);
+
+        if (finder.isFound() && finder.getFoundNode() instanceof ExerciseNode ex) {
+            ex.addModifier(modifier);
+            workoutPlanSubject.notifyObservers();
+        }
+    }
+
+    public List<PlanNodeBean> getProtocolBlockLibraryCache() {
+        return protocolBlockLibraryCache;
     }
 
     public void buildProtocolBlockLibrary() {

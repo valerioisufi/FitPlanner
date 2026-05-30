@@ -1,4 +1,4 @@
-package com.example.fitplannerclient.ui.fx.view;
+package com.example.fitplannerclient.ui.fx.view.dashboard;
 
 import com.example.fitplannerclient.bean.plan.WorkoutPlanBean;
 import com.example.fitplannerclient.bean.plan.WorkoutSessionBean;

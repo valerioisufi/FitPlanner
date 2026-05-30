@@ -6,8 +6,7 @@ import com.example.fitplannerclient.controller.plan.WorkoutPlanManager;
 import com.example.fitplannerclient.controller.profile.ProfileManager;
 import com.example.fitplannerclient.ui.fx.GuiController;
 import com.example.fitplannerclient.ui.fx.GuiManager;
-import com.example.fitplannerclient.ui.fx.Navigator;
-import com.example.fitplannerclient.ui.fx.view.AthleteDashboardView;
+import com.example.fitplannerclient.ui.fx.view.dashboard.AthleteDashboardView;
 import javafx.application.Platform;
 import javafx.scene.layout.Pane;
 import java.time.Instant;
@@ -42,9 +41,7 @@ public class AthleteDashboardViewController implements GuiController {
         planManager.getAssignedPlanOfAthleteAsync(athlete.getUserId())
                 .thenAccept(plan -> Platform.runLater(() -> view.setWorkoutPlan(plan)))
                 .exceptionally(ex -> {
-                    Platform.runLater(() -> guiManager.showNotification(
-                            GuiManager.NotificationType.ERROR, "Errore nel caricamento del piano dell'atleta"
-                    ));
+                    guiManager.showExceptionError("Errore nel caricamento del piano dell'atleta:", ex);
                     return null;
                 });
 
@@ -55,9 +52,7 @@ public class AthleteDashboardViewController implements GuiController {
         historyManager.getFilteredSessionLogsAsync(athlete.getUserId(), startTimestamp, endTimestamp)
                 .thenAccept(logs -> Platform.runLater(() -> view.setSessionLogs(logs)))
                 .exceptionally(ex -> {
-                    Platform.runLater(() -> guiManager.showNotification(
-                            GuiManager.NotificationType.ERROR, "Errore nel caricamento dei log"
-                    ));
+                    guiManager.showExceptionError("Errore nel caricamento dei log:", ex);
                     return null;
                 });
     }

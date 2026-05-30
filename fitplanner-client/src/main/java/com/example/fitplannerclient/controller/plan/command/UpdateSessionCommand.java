@@ -1,9 +1,11 @@
 package com.example.fitplannerclient.controller.plan.command;
 
+import com.example.fitplannerclient.entity.plan.WorkoutPlan;
 import com.example.fitplannerclient.entity.plan.WorkoutSession;
 
 public class UpdateSessionCommand implements WorkoutPlanEditorCommand {
 
+    private WorkoutPlan plan;
     private WorkoutSession session;
 
     private String oldName;
@@ -11,7 +13,8 @@ public class UpdateSessionCommand implements WorkoutPlanEditorCommand {
     private int oldDay;
     private int newDay;
 
-    public UpdateSessionCommand(WorkoutSession session, String newName, int newDay) {
+    public UpdateSessionCommand(WorkoutPlan plan, WorkoutSession session, String newName, int newDay) {
+        this.plan = plan;
         this.session = session;
 
         this.newName = newName;
@@ -23,13 +26,21 @@ public class UpdateSessionCommand implements WorkoutPlanEditorCommand {
         oldName = session.getName();
         oldDay = session.getDay();
 
+        if (oldDay != newDay) {
+            plan.removeSession(oldDay);
+            session.setDay(newDay);
+            plan.addSession(session);
+        }
         session.setName(newName);
-        session.setDay(newDay);
     }
 
     @Override
     public void undo() {
+        if (oldDay != newDay) {
+            plan.removeSession(newDay);
+            session.setDay(oldDay);
+            plan.addSession(session);
+        }
         session.setName(oldName);
-        session.setDay(oldDay);
     }
 }

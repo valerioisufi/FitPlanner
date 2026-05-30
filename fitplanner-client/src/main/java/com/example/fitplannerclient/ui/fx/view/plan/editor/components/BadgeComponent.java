@@ -1,4 +1,4 @@
-package com.example.fitplannerclient.ui.fx.view.plan;
+package com.example.fitplannerclient.ui.fx.view.plan.editor.components;
 
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
@@ -55,6 +55,10 @@ public class BadgeComponent extends HBox {
     }
 
     public String getPlanNodeId() {
+        return planNodeId;
+    }
+
+    public String getBadgeId() {
         return planNodeId;
     }
 

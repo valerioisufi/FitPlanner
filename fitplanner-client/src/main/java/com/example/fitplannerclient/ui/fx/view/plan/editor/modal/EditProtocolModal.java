@@ -1,0 +1,81 @@
+package com.example.fitplannerclient.ui.fx.view.plan.editor.modal;
+
+import com.example.fitplannerclient.ui.fx.components.FormField;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Consumer;
+
+public class EditProtocolModal extends VBox {
+
+    private final VBox formContainer = new VBox(15);
+    private final Label titleLabel = new Label("Imposta Parametri Protocollo");
+
+    private Runnable onCloseAction;
+    private Consumer<Map<String, String>> onSaveAction;
+
+    private Map<String, String> currentParameters;
+    private final Map<String, TextField> inputFields = new HashMap<>();
+
+    public EditProtocolModal() {
+        this.setSpacing(20);
+        this.setPadding(new Insets(24));
+        this.setStyle("-fx-background-color: white; -fx-background-radius: 12;");
+        this.setMaxWidth(400);
+
+        titleLabel.getStyleClass().add("heading-h2");
+
+        HBox footer = new HBox(12);
+        footer.setAlignment(Pos.CENTER_RIGHT);
+        Button cancelBtn = new Button("Annulla");
+        cancelBtn.getStyleClass().add("button-secondary");
+        cancelBtn.setOnAction(e -> { if (onCloseAction != null) onCloseAction.run(); });
+
+        Button saveBtn = new Button("Salva");
+        saveBtn.getStyleClass().add("button-primary");
+        saveBtn.setOnAction(e -> {
+            if (onSaveAction != null && currentParameters != null) {
+                Map<String, String> result = new HashMap<>();
+                for (Map.Entry<String, TextField> entry : inputFields.entrySet()) {
+                    result.put(entry.getKey(), entry.getValue().getText());
+                }
+                onSaveAction.accept(result);
+            }
+        });
+
+        footer.getChildren().addAll(cancelBtn, saveBtn);
+
+        this.getChildren().addAll(titleLabel, formContainer, footer);
+    }
+
+    public void setInitialData(String protocolName, Map<String, String> parameters) {
+        titleLabel.setText("Parametri: " + protocolName);
+        this.currentParameters = parameters;
+        formContainer.getChildren().clear();
+        inputFields.clear();
+
+        if (parameters != null) {
+            for (Map.Entry<String, String> entry : parameters.entrySet()) {
+                TextField input = new TextField(entry.getValue());
+                FormField field = new FormField(entry.getKey(), "Inserisci " + entry.getKey(), input);
+                inputFields.put(entry.getKey(), input);
+                formContainer.getChildren().add(field);
+            }
+        }
+    }
+
+    public void setOnCloseAction(Runnable onCloseAction) {
+        this.onCloseAction = onCloseAction;
+    }
+
+    public void setOnSaveAction(Consumer<Map<String, String>> onSaveAction) {
+        this.onSaveAction = onSaveAction;
+    }
+}

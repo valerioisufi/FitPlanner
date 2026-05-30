@@ -5,7 +5,7 @@ import com.example.fitplannerclient.controller.profile.ProfileManager;
 import com.example.fitplannerclient.ui.fx.GuiController;
 import com.example.fitplannerclient.ui.fx.GuiManager;
 import com.example.fitplannerclient.ui.fx.Navigator;
-import com.example.fitplannerclient.ui.fx.view.ProfileView;
+import com.example.fitplannerclient.ui.fx.view.profile.ProfileView;
 import javafx.application.Platform;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
@@ -44,7 +44,7 @@ public class ProfileViewController implements GuiController {
                 profileManager.linkTrainerAsync(code).thenRun(() -> {
                     Platform.runLater(() -> Navigator.getInstance().getGuiManager().showNotification(GuiManager.NotificationType.SUCCESS, "Trainer collegato con successo!"));
                 }).exceptionally(ex -> {
-                    Platform.runLater(() -> Navigator.getInstance().getGuiManager().showNotification(GuiManager.NotificationType.ERROR, "Codice invito non valido"));
+                    Navigator.getInstance().getGuiManager().showExceptionError("Codice invito non valido:", ex);
                     return null;
                 });
             });
@@ -67,9 +67,8 @@ public class ProfileViewController implements GuiController {
                     Navigator.getInstance().getGuiManager().showNotification(GuiManager.NotificationType.SUCCESS, "Profilo aggiornato con successo.");
                 }))
                 .exceptionally(ex -> {
-                    Platform.runLater(() -> Navigator.getInstance().getGuiManager().showNotification(
-                            GuiManager.NotificationType.ERROR, 
-                            "Errore nell'aggiornamento del profilo: " + ex.getMessage()));
+                    Navigator.getInstance().getGuiManager().showExceptionError(
+                            "Errore nell'aggiornamento del profilo:", ex);
                     return null;
                 });
     }

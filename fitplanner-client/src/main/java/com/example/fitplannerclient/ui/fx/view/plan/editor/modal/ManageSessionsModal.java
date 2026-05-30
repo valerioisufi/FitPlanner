@@ -1,4 +1,4 @@
-package com.example.fitplannerclient.ui.fx.view.plan;
+package com.example.fitplannerclient.ui.fx.view.plan.editor.modal;
 
 import com.example.fitplannerclient.bean.plan.WorkoutSessionBean;
 import com.example.fitplannerclient.bean.plan.PlanNodeBean;
@@ -22,7 +22,11 @@ public class ManageSessionsModal extends VBox {
     
     private List<WorkoutSessionBean> currentSessions;
     
-    private BiConsumer<Integer, List<WorkoutSessionBean>> onSaveAction;
+    private java.util.function.Consumer<Integer> onCycleLengthChanged;
+    private java.util.function.BiConsumer<Integer, String> onSessionNameChanged;
+    private java.util.function.BiConsumer<Integer, Integer> onSessionDayChanged;
+    private java.util.function.Consumer<Integer> onSessionAdded;
+    private java.util.function.Consumer<Integer> onSessionRemoved;
     private Runnable onCloseAction;
 
     public ManageSessionsModal() {
@@ -55,6 +59,13 @@ public class ManageSessionsModal extends VBox {
         cycleLengthField = new TextField();
         cycleLengthField.setPrefWidth(80);
         cycleLengthField.getStyleClass().add("text-field");
+        cycleLengthField.textProperty().addListener((obs, oldV, newV) -> {
+            try {
+                if (!newV.isEmpty() && onCycleLengthChanged != null) {
+                    onCycleLengthChanged.accept(Integer.parseInt(newV.trim()));
+                }
+            } catch (NumberFormatException ignored) {}
+        });
         cycleLengthBox.getChildren().addAll(cycleLabel, cycleLengthField);
 
         // Sessions header
@@ -68,8 +79,9 @@ public class ManageSessionsModal extends VBox {
         HBox.setHgrow(sessionSpacer, Priority.ALWAYS);
         
         Button addSessionBtn = new Button("Aggiungi Sessione");
-        addSessionBtn.getStyleClass().add("button-secondary");
-        addSessionBtn.setGraphic(new com.example.fitplannerclient.ui.fx.components.Icon("plus-icon", List.of("button-header-icon")));
+        addSessionBtn.getStyleClass().add("button-primary");
+        addSessionBtn.setGraphic(new com.example.fitplannerclient.ui.fx.components.Icon("plus-icon", List.of("button-primary-icon")));
+        addSessionBtn.setMinWidth(Region.USE_PREF_SIZE);
         addSessionBtn.setOnAction(e -> addNewSessionRow());
         
         sessionsHeaderBox.getChildren().addAll(sessionsLabel, sessionSpacer, addSessionBtn);
@@ -79,35 +91,12 @@ public class ManageSessionsModal extends VBox {
         scrollPane.setFitToWidth(true);
         scrollPane.setPrefHeight(250);
 
-        // Footer
-        HBox footer = new HBox(12);
-        footer.setAlignment(Pos.CENTER_RIGHT);
-        footer.setPadding(new Insets(16, 0, 0, 0));
-        footer.setStyle("-fx-border-color: #E0E0E0; -fx-border-width: 1 0 0 0;");
-        Button cancelBtn = new Button("Annulla");
-        cancelBtn.getStyleClass().add("button-secondary");
-        cancelBtn.setOnAction(e -> { if (onCloseAction != null) onCloseAction.run(); });
-        Button saveBtn = new Button("Salva");
-        saveBtn.getStyleClass().add("button-primary");
-        saveBtn.setOnAction(e -> save());
-        footer.getChildren().addAll(cancelBtn, saveBtn);
-
-        this.getChildren().addAll(header, cycleLengthBox, sessionsHeaderBox, scrollPane, footer);
+        this.getChildren().addAll(header, cycleLengthBox, sessionsHeaderBox, scrollPane);
     }
 
     public void setInitialData(int cycleLength, List<WorkoutSessionBean> sessions) {
         this.cycleLengthField.setText(String.valueOf(cycleLength));
-        // Deep copy sessions so we can discard changes on cancel
-        this.currentSessions = new ArrayList<>();
-        for (WorkoutSessionBean s : sessions) {
-            // we don't strictly need a deep clone if we only apply changes on save,
-            // but setting properties immediately mutates original beans.
-            // Let's create shallow copies for the beans we edit, or just mutate and live with it.
-            // Mutating directly is simpler for this scope. If user cancels, we'd need to undo.
-            // For true undo, we'd copy them.
-            WorkoutSessionBean copy = new WorkoutSessionBean(s.getName(), s.getDay(), s.getPlanRoot());
-            this.currentSessions.add(copy);
-        }
+        this.currentSessions = new ArrayList<>(sessions);
         refreshSessionsList();
     }
 
@@ -129,19 +118,35 @@ public class ManageSessionsModal extends VBox {
         TextField nameField = new TextField(session.getName());
         nameField.getStyleClass().add("text-field");
         HBox.setHgrow(nameField, Priority.ALWAYS);
-        nameField.textProperty().addListener((obs, oldV, newV) -> session.setName(newV));
+        nameField.textProperty().addListener((obs, oldV, newV) -> {
+            session.setName(newV);
+            if (onSessionNameChanged != null) {
+                onSessionNameChanged.accept(session.getDay(), newV);
+            }
+        });
 
         Label dayLabel = new Label("Giorno:");
         dayLabel.getStyleClass().add("label-field");
         TextField dayField = new TextField(String.valueOf(session.getDay()));
         dayField.setPrefWidth(60);
         dayField.getStyleClass().add("text-field");
-        dayField.textProperty().addListener((obs, oldV, newV) -> {
-            try {
-                if (!newV.isEmpty()) {
-                    session.setDay(Integer.parseInt(newV));
-                }
-            } catch (NumberFormatException ignored) {}
+        // Quando il focus viene perso, aggiorna il giorno se cambiato
+        dayField.focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
+            if (!isNowFocused) {
+                try {
+                    String newV = dayField.getText().trim();
+                    if (!newV.isEmpty()) {
+                        int newDay = Integer.parseInt(newV);
+                        if (newDay != session.getDay()) {
+                            int oldDay = session.getDay();
+                            session.setDay(newDay);
+                            if (onSessionDayChanged != null) {
+                                onSessionDayChanged.accept(oldDay, newDay);
+                            }
+                        }
+                    }
+                } catch (NumberFormatException ignored) {}
+            }
         });
 
         Button removeBtn = new Button();
@@ -149,8 +154,12 @@ public class ManageSessionsModal extends VBox {
         // Using "trash-icon" or similar. Since "x-icon" is present, let's use it with danger class.
         removeBtn.setGraphic(new Icon("x-icon", List.of("button-header-danger-icon")));
         removeBtn.setOnAction(e -> {
+            int removedDay = session.getDay();
             currentSessions.remove(session);
             refreshSessionsList();
+            if (onSessionRemoved != null) {
+                onSessionRemoved.accept(removedDay);
+            }
         });
 
         row.getChildren().addAll(nameLabel, nameField, dayLabel, dayField, removeBtn);
@@ -168,21 +177,29 @@ public class ManageSessionsModal extends VBox {
         WorkoutSessionBean newSession = new WorkoutSessionBean(name, newDay, rootNode);
         currentSessions.add(newSession);
         refreshSessionsList();
-    }
-
-    private void save() {
-        if (onSaveAction != null) {
-            try {
-                int cl = Integer.parseInt(cycleLengthField.getText().trim());
-                onSaveAction.accept(cl, currentSessions);
-            } catch (NumberFormatException e) {
-                cycleLengthField.setStyle("-fx-border-color: red;");
-            }
+        if (onSessionAdded != null) {
+            onSessionAdded.accept(newDay);
         }
     }
 
-    public void setOnSaveAction(BiConsumer<Integer, List<WorkoutSessionBean>> onSaveAction) {
-        this.onSaveAction = onSaveAction;
+    public void setOnCycleLengthChanged(java.util.function.Consumer<Integer> onCycleLengthChanged) {
+        this.onCycleLengthChanged = onCycleLengthChanged;
+    }
+
+    public void setOnSessionNameChanged(java.util.function.BiConsumer<Integer, String> onSessionNameChanged) {
+        this.onSessionNameChanged = onSessionNameChanged;
+    }
+
+    public void setOnSessionDayChanged(java.util.function.BiConsumer<Integer, Integer> onSessionDayChanged) {
+        this.onSessionDayChanged = onSessionDayChanged;
+    }
+
+    public void setOnSessionAdded(java.util.function.Consumer<Integer> onSessionAdded) {
+        this.onSessionAdded = onSessionAdded;
+    }
+
+    public void setOnSessionRemoved(java.util.function.Consumer<Integer> onSessionRemoved) {
+        this.onSessionRemoved = onSessionRemoved;
     }
 
     public void setOnCloseAction(Runnable onCloseAction) {

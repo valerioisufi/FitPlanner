@@ -71,7 +71,7 @@ public class ExerciseLibraryViewController implements GuiController {
         manager.getExercisesAsync(null)
                 .thenAccept(exercises -> Platform.runLater(() -> view.setExerciseList(exercises)))
                 .exceptionally(ex -> {
-                    Platform.runLater(() -> guiManager.showNotification(GuiManager.NotificationType.ERROR, "Errore nel caricamento esercizi: " + extractErrorMessage(ex)));
+                    guiManager.showExceptionError("Errore nel caricamento esercizi:", ex);
                     return null;
                 });
     }
@@ -93,7 +93,7 @@ public class ExerciseLibraryViewController implements GuiController {
                         loadExercises();
                     })
                     .exceptionally(ex -> {
-                        Platform.runLater(() -> guiManager.showNotification(GuiManager.NotificationType.ERROR, extractErrorMessage(ex)));
+                        guiManager.showExceptionError("Errore durante il salvataggio:", ex);
                         return null;
                     });
         } else {
@@ -106,16 +106,12 @@ public class ExerciseLibraryViewController implements GuiController {
                         loadExercises();
                     })
                     .exceptionally(ex -> {
-                        Platform.runLater(() -> guiManager.showNotification(GuiManager.NotificationType.ERROR, extractErrorMessage(ex)));
+                        guiManager.showExceptionError("Errore durante il salvataggio:", ex);
                         return null;
                     });
         }
     }
 
-    private String extractErrorMessage(Throwable ex) {
-        Throwable cause = ex.getCause() != null ? ex.getCause() : ex;
-        return cause.getMessage() != null ? cause.getMessage() : "Errore durante il salvataggio.";
-    }
 
     private void deleteExercise(ExerciseDescriptionBean exercise) {
         manager.removeExerciseAsync(exercise.getExerciseId())
@@ -124,7 +120,7 @@ public class ExerciseLibraryViewController implements GuiController {
                     Platform.runLater(() -> guiManager.showNotification(GuiManager.NotificationType.SUCCESS, "Esercizio eliminato con successo."));
                 })
                 .exceptionally(ex -> {
-                    Platform.runLater(() -> guiManager.showNotification(GuiManager.NotificationType.ERROR, "Errore nell'eliminazione dell'esercizio: " + extractErrorMessage(ex)));
+                    guiManager.showExceptionError("Errore nell'eliminazione dell'esercizio:", ex);
                     return null;
                 });
     }

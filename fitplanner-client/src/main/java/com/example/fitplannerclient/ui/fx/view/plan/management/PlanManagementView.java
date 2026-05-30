@@ -1,11 +1,11 @@
-package com.example.fitplannerclient.ui.fx.view.plan;
+package com.example.fitplannerclient.ui.fx.view.plan.management;
 
 import com.example.fitplannerclient.bean.plan.WorkoutPlanBean;
 import com.example.fitplannerclient.bean.plan.WorkoutPlanSummaryBean;
 import com.example.fitplannerclient.bean.profile.ProfileBean;
 import com.example.fitplannerclient.ui.fx.components.CardListView;
 import com.example.fitplannerclient.ui.fx.components.Icon;
-import com.example.fitplannerclient.ui.fx.components.ModalOverlay;
+import com.example.fitplannerclient.ui.fx.components.utils.MenuUtils;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.Side;
@@ -116,16 +116,16 @@ public class PlanManagementView extends BorderPane {
             menu.setAutoHide(true);
             
             menu.getItems().addAll(
-                createCustomMenuItem("Modifica", "edit-icon", "button-header-icon", null, () -> {
+                MenuUtils.createCustomMenuItem("Modifica", "edit-icon", "button-header-icon", null, () -> {
                     if (onEditAction != null) onEditAction.accept(plan);
                 }),
-                createCustomMenuItem("Assegna", "plus-icon", "button-header-icon", null, () -> {
+                MenuUtils.createCustomMenuItem("Assegna", "plus-icon", "button-header-icon", null, () -> {
                     if (onAssignButtonClick != null) onAssignButtonClick.accept(plan);
                 }),
-                createCustomMenuItem("Duplica", "copy-icon", "button-header-icon", null, () -> {
+                MenuUtils.createCustomMenuItem("Duplica", "copy-icon", "button-header-icon", null, () -> {
                     if (onCloneAction != null) onCloneAction.accept(plan);
                 }),
-                createCustomMenuItem("Elimina", "delete-icon", "button-header-danger-icon", "-fx-text-fill: #ef4444;", () -> {
+                MenuUtils.createCustomMenuItem("Elimina", "delete-icon", "button-header-danger-icon", "-fx-text-fill: #ef4444;", () -> {
                     if (onDeleteAction != null) onDeleteAction.accept(plan);
                 })
             );
@@ -139,30 +139,6 @@ public class PlanManagementView extends BorderPane {
 
         row.getChildren().addAll(nameLbl, spacer, actionsBox);
         return row;
-    }
-
-    private CustomMenuItem createCustomMenuItem(String text, String iconName, String iconClass, String textStyle, Runnable action) {
-        HBox box = new HBox(8);
-        box.setAlignment(Pos.CENTER_LEFT);
-
-        if (iconName != null) {
-            Icon icon = new Icon(iconName, List.of(iconClass != null ? iconClass : "button-header-icon"));
-            box.getChildren().add(icon);
-        }
-
-        Label label = new Label(text);
-        label.getStyleClass().add("body-base");
-        if (textStyle != null) {
-            label.setStyle(textStyle);
-        }
-
-        box.getChildren().add(label);
-
-        CustomMenuItem item = new CustomMenuItem(box);
-        item.setHideOnClick(true);
-        item.setOnAction(e -> action.run());
-
-        return item;
     }
 
     public void setOnAssignButtonClick(Consumer<WorkoutPlanSummaryBean> onAssignButtonClick) { this.onAssignButtonClick = onAssignButtonClick; }

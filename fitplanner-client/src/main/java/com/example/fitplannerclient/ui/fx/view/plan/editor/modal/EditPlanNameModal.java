@@ -1,5 +1,6 @@
-package com.example.fitplannerclient.ui.fx.view.plan;
+package com.example.fitplannerclient.ui.fx.view.plan.editor.modal;
 
+import com.example.fitplannerclient.ui.fx.components.FormField;
 import com.example.fitplannerclient.ui.fx.components.Icon;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -14,15 +15,15 @@ import javafx.scene.layout.VBox;
 import java.util.List;
 import java.util.function.Consumer;
 
-public class EditNodeNameModal extends VBox {
+public class EditPlanNameModal extends VBox {
 
-    private final TextField nameField;
-    private final Label titleLabel;
+    private final TextField nameFieldInput;
+    private final FormField nameField;
 
     private Consumer<String> onSaveAction;
     private Runnable onCloseAction;
 
-    public EditNodeNameModal() {
+    public EditPlanNameModal() {
         this.getStyleClass().add("card");
         this.setPadding(new Insets(32));
         this.setSpacing(24);
@@ -34,7 +35,7 @@ public class EditNodeNameModal extends VBox {
         header.setAlignment(Pos.TOP_LEFT);
 
         VBox titleBox = new VBox(4);
-        titleLabel = new Label("Modifica Nome Nodo");
+        Label titleLabel = new Label("Modifica Nome Piano");
         titleLabel.getStyleClass().add("heading-h2");
         titleBox.getChildren().addAll(titleLabel);
 
@@ -51,15 +52,11 @@ public class EditNodeNameModal extends VBox {
         header.getChildren().addAll(titleBox, spacer, closeBtn);
 
         // --- FORM FIELD ---
-        nameField = new TextField();
-        nameField.setMaxWidth(Double.MAX_VALUE);
-        nameField.setPromptText("Inserisci un nuovo nome...");
-        nameField.getStyleClass().add("text-field");
+        nameFieldInput = new TextField();
+        nameFieldInput.setMaxWidth(Double.MAX_VALUE);
+        nameFieldInput.getStyleClass().add("text-field");
 
-        VBox nameFieldBox = new VBox(8);
-        Label nameLabelDesc = new Label("Nome *");
-        nameLabelDesc.getStyleClass().add("label-field");
-        nameFieldBox.getChildren().addAll(nameLabelDesc, nameField);
+        nameField = new FormField("Nome del piano", "Es: Scheda Forza", nameFieldInput);
 
         // --- FOOTER ACTIONS ---
         HBox footer = new HBox(12);
@@ -76,18 +73,18 @@ public class EditNodeNameModal extends VBox {
         Button saveBtn = new Button("Salva");
         saveBtn.getStyleClass().add("button-primary");
         saveBtn.setOnAction(e -> {
-            if (onSaveAction != null && !nameField.getText().trim().isEmpty()) {
-                onSaveAction.accept(nameField.getText().trim());
+            if (onSaveAction != null && !nameFieldInput.getText().trim().isEmpty()) {
+                onSaveAction.accept(nameFieldInput.getText().trim());
             }
         });
 
         footer.getChildren().addAll(cancelBtn, saveBtn);
 
-        this.getChildren().addAll(header, nameFieldBox, footer);
+        this.getChildren().addAll(header, nameField, footer);
     }
 
     public void setInitialName(String name) {
-        nameField.setText(name);
+        nameFieldInput.setText(name);
     }
 
     public void setOnSaveAction(Consumer<String> onSaveAction) {

@@ -3,7 +3,7 @@ package com.example.fitplannerclient.ui.fx.guicontroller;
 import com.example.fitplannerclient.bean.profile.ProfileBean;
 import com.example.fitplannerclient.ui.fx.Navigator;
 import com.example.fitplannerclient.controller.profile.ProfileManager;
-import com.example.fitplannerclient.ui.fx.view.HeaderView;
+import com.example.fitplannerclient.ui.fx.view.common.HeaderView;
 import javafx.geometry.Side;
 import javafx.scene.Node;
 import javafx.scene.Parent;
@@ -13,7 +13,6 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 
 import javafx.scene.control.MenuItem;
-import javafx.scene.layout.VBox;
 
 import java.util.ArrayList;
 import java.util.List;

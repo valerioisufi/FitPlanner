@@ -19,6 +19,15 @@ public class Block extends PlanNode implements GroupNode {
     }
 
     @Override
+    public PlanNode deepCopy() {
+        Block copy = new Block(this.title);
+        for (PlanNode child : this.children) {
+            copy.addNode(child.deepCopy());
+        }
+        return copy;
+    }
+
+    @Override
     public void addNode(PlanNode node) {
         children.add(node);
     }

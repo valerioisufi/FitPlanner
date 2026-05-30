@@ -1,7 +1,6 @@
-package com.example.fitplannerclient.ui.fx.view;
+package com.example.fitplannerclient.ui.fx.view.common;
 
 import com.example.fitplannerclient.ui.fx.components.Icon;
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
