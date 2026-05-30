@@ -14,7 +14,7 @@ public class WorkoutHistoryManager {
     }
 
     public CompletableFuture<List<SessionLogDTO>> getFilteredSessionLogsAsync(
-            String athleteUuid, long startTimestamp, long endTimestamp) {
-        return logApi.getFilteredSessionLogsAsync(athleteUuid, startTimestamp, endTimestamp);
+            String athleteId, long startTimestamp, long endTimestamp) {
+        return logApi.getFilteredSessionLogsAsync(athleteId, startTimestamp, endTimestamp);
     }
 }

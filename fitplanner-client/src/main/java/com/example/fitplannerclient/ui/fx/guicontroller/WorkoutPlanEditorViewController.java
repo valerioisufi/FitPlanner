@@ -13,13 +13,6 @@ import com.example.fitplannerclient.ui.fx.view.plan.editor.components.BadgeCompo
 import javafx.application.Platform;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
-import com.example.fitplannerclient.entity.plan.block.Block;
-import com.example.fitplannerclient.entity.plan.exercise.ExerciseNode;
-import com.example.fitplannerclient.entity.plan.exercise.ExerciseModifier;
-import com.example.fitplannerclient.entity.plan.exercise.ModifierType;
-import com.example.fitplannerclient.entity.plan.decorator.*;
-import com.example.fitplannerclient.entity.plan.block.ProtocolBlock;
-import com.example.fitplannerclient.controller.plan.factory.ProtocolBlockFactory;
 import java.util.Map;
 import java.util.List;
 import org.slf4j.Logger;
@@ -82,29 +75,12 @@ public class WorkoutPlanEditorViewController implements GuiController {
             }
         });
 
-        this.view.setOnPlanNameChanged(newName -> {
-            this.editWorkoutPlanManager.changePlanName(newName);
-        });
-
-        this.view.setOnCycleLengthChanged(length -> {
-            this.editWorkoutPlanManager.changeCycleLength(length);
-        });
-
-        this.view.setOnSessionNameChanged((day, newName) -> {
-            this.editWorkoutPlanManager.updateSessionName(day, newName);
-        });
-
-        this.view.setOnSessionDayChanged((oldDay, newDay) -> {
-            this.editWorkoutPlanManager.updateSessionDay(oldDay, newDay);
-        });
-
-        this.view.setOnSessionAdded(day -> {
-            this.editWorkoutPlanManager.addSession(day);
-        });
-
-        this.view.setOnSessionRemoved(day -> {
-            this.editWorkoutPlanManager.removeSession(day);
-        });
+        this.view.setOnPlanNameChanged(this.editWorkoutPlanManager::changePlanName);
+        this.view.setOnCycleLengthChanged(this.editWorkoutPlanManager::changeCycleLength);
+        this.view.setOnSessionNameChanged(this.editWorkoutPlanManager::updateSessionName);
+        this.view.setOnSessionDayChanged(this.editWorkoutPlanManager::updateSessionDay);
+        this.view.setOnSessionAdded(this.editWorkoutPlanManager::addSession);
+        this.view.setOnSessionRemoved(this.editWorkoutPlanManager::removeSession);
 
         this.view.setOnSavePlanClicked(this::savePlan);
         this.view.setOnCancelClicked(() -> Navigator.getInstance().goToPlanManagement());
@@ -159,6 +135,7 @@ public class WorkoutPlanEditorViewController implements GuiController {
                     Navigator.getInstance().getGuiManager().showModal(this.view.getEditNodeModal());
                 }
             } else if (event.getEventType() == PlanNodeEvent.EDIT_BADGE_CLICKED) {
+                System.out.println("WorkoutPlanEditorViewController received EDIT_BADGE_CLICKED!");
                 BadgeComponent badge = (BadgeComponent) event.getBadgeData();
                 this.view.getEditBadgeModal().setInitialData(badge.getBadgeType(), badge.getName(), badge.getValue());
                 this.view.getEditBadgeModal().setOnSaveAction((newName, newValue) -> {
@@ -182,47 +159,36 @@ public class WorkoutPlanEditorViewController implements GuiController {
 
         if (payload.equals("EXERCISE")) {
             this.view.getSelectExerciseModal().setOnSaveAction(ex -> {
-                ExerciseNode node = new ExerciseNode();
-                node.setResourceId(ex.getExerciseId());
-                node.addModifier(new ExerciseModifier(ModifierType.REPS, "10"));
-                editWorkoutPlanManager.addNodeFromToolbox(node, targetParentId, targetIndex);
+                editWorkoutPlanManager.addExerciseFromToolbox(ex.getExerciseId(), targetParentId, targetIndex);
                 Navigator.getInstance().getGuiManager().hideModal();
             });
             Navigator.getInstance().getGuiManager().showModal(this.view.getSelectExerciseModal());
 
         } else if (payload.equals("BLOCK")) {
-            editWorkoutPlanManager.addNodeFromToolbox(new Block("Nuovo Blocco"), targetParentId, targetIndex);
+            editWorkoutPlanManager.addBlockFromToolbox("Nuovo Blocco", targetParentId, targetIndex);
 
         } else if (payload.startsWith("PROTOCOL:")) {
             String protocolName = payload.substring("PROTOCOL:".length());
             
-            ProtocolBlockFactory factory = new ProtocolBlockFactory();
-            ProtocolBlock block = switch (protocolName) {
-                case "DROP_SET" -> factory.createDropSet();
-                case "SUPER_SET" -> factory.createSuperSet();
-                case "GIANT_SET" -> factory.createGiantSet();
-                case "CIRCUIT" -> factory.createCircuit();
-                case "AMRAP" -> factory.createAMRAP();
-                case "EMOM" -> factory.createEMOM();
-                default -> factory.createCircuit();
-            };
-
-            this.view.getEditProtocolModal().setInitialData(protocolName, block.getParameters());
+            Map<String, String> initialParams = editWorkoutPlanManager.getDefaultProtocolParameters(protocolName);
+            this.view.getEditProtocolModal().setInitialData(protocolName, initialParams);
             this.view.getEditProtocolModal().setOnSaveAction(params -> {
-                for (Map.Entry<String, String> entry : params.entrySet()) {
-                    block.setParameter(entry.getKey(), entry.getValue());
-                }
-                editWorkoutPlanManager.addNodeFromToolbox(block, targetParentId, targetIndex);
+                editWorkoutPlanManager.addProtocolBlockFromToolbox(protocolName, params, targetParentId, targetIndex);
                 Navigator.getInstance().getGuiManager().hideModal();
             });
             Navigator.getInstance().getGuiManager().showModal(this.view.getEditProtocolModal());
 
         } else if (payload.startsWith("MODIFIER:")) {
+            PlanNodeBean targetNode = activePlan.findNodeById(targetParentId);
+            if (targetNode == null || targetNode.getType() != NodeType.EXERCISE) {
+                Navigator.getInstance().getGuiManager().showNotification(GuiManager.NotificationType.ERROR, "I Modifier possono essere aggiunti solo agli Esercizi.");
+                return;
+            }
+
             String type = payload.substring("MODIFIER:".length());
             this.view.getEditBadgeModal().setInitialData(BadgeComponent.BadgeType.MODIFIER, type, "");
             this.view.getEditBadgeModal().setOnSaveAction((name, val) -> {
-                ExerciseModifier mod = new ExerciseModifier(ModifierType.valueOf(name.toUpperCase()), val);
-                editWorkoutPlanManager.addModifierFromToolbox(mod, targetParentId);
+                editWorkoutPlanManager.addModifierFromToolbox(name.toUpperCase(), val, targetParentId);
                 Navigator.getInstance().getGuiManager().hideModal();
             });
             Navigator.getInstance().getGuiManager().showModal(this.view.getEditBadgeModal());
@@ -231,17 +197,7 @@ public class WorkoutPlanEditorViewController implements GuiController {
             String type = payload.substring("DECORATOR:".length());
             this.view.getEditBadgeModal().setInitialData(BadgeComponent.BadgeType.DECORATOR, type, "");
             this.view.getEditBadgeModal().setOnSaveAction((name, val) -> {
-                FlowDecorator dec = null;
-                switch (name.toUpperCase().replace(" ", "_")) {
-                    case "REST" -> dec = new RestDecorator(null, val);
-                    case "LOOP" -> dec = new LoopDecorator(null, val);
-                    case "TIME_LIMIT" -> dec = new TimeLimitDecorator(null, val);
-                    case "INTERVAL" -> dec = new IntervalDecorator(null, val);
-                    case "PROGRESSION" -> dec = new ProgressionDecorator(null, val);
-                }
-                if (dec != null) {
-                    editWorkoutPlanManager.addDecoratorFromToolbox(dec, targetParentId);
-                }
+                editWorkoutPlanManager.addDecoratorFromToolbox(name, val, targetParentId);
                 Navigator.getInstance().getGuiManager().hideModal();
             });
             Navigator.getInstance().getGuiManager().showModal(this.view.getEditBadgeModal());

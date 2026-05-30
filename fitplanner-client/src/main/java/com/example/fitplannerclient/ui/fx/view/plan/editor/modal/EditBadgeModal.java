@@ -16,8 +16,7 @@ import java.util.List;
 import java.util.function.BiConsumer;
 
 public class EditBadgeModal extends VBox {
-
-    private final TextField nameField;
+    private final Label nameLabel;
     private final TextField valueField;
     private final Label titleLabel;
 
@@ -54,15 +53,14 @@ public class EditBadgeModal extends VBox {
         header.getChildren().addAll(titleBox, spacer, closeBtn);
 
         // --- FORM FIELDS ---
-        nameField = new TextField();
-        nameField.setMaxWidth(Double.MAX_VALUE);
-        nameField.setPromptText("Nome della proprietà...");
-        nameField.getStyleClass().add("text-field");
+        nameLabel = new Label();
+        nameLabel.setMaxWidth(Double.MAX_VALUE);
+        nameLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #424242; -fx-padding: 8 12; -fx-background-color: #F5F5F5; -fx-background-radius: 6;");
 
         VBox nameFieldBox = new VBox(8);
-        Label nameLabelDesc = new Label("Nome *");
+        Label nameLabelDesc = new Label("Tipo *");
         nameLabelDesc.getStyleClass().add("label-field");
-        nameFieldBox.getChildren().addAll(nameLabelDesc, nameField);
+        nameFieldBox.getChildren().addAll(nameLabelDesc, nameLabel);
 
         valueField = new TextField();
         valueField.setMaxWidth(Double.MAX_VALUE);
@@ -89,8 +87,8 @@ public class EditBadgeModal extends VBox {
         Button saveBtn = new Button("Salva");
         saveBtn.getStyleClass().add("button-primary");
         saveBtn.setOnAction(e -> {
-            if (onSaveAction != null && !nameField.getText().trim().isEmpty() && !valueField.getText().trim().isEmpty()) {
-                onSaveAction.accept(nameField.getText().trim(), valueField.getText().trim());
+            if (onSaveAction != null && !valueField.getText().trim().isEmpty()) {
+                onSaveAction.accept(nameLabel.getText(), valueField.getText().trim());
             }
         });
 
@@ -100,15 +98,8 @@ public class EditBadgeModal extends VBox {
     }
 
     public void setInitialData(BadgeComponent.BadgeType type, String name, String value) {
-        nameField.setText(name);
+        nameLabel.setText(name);
         valueField.setText(value);
-
-        // Flow Decorators cannot change their names, only Modifiers can
-        if (type == BadgeComponent.BadgeType.DECORATOR) {
-            nameField.setDisable(true);
-        } else {
-            nameField.setDisable(false);
-        }
     }
 
     public void setOnSaveAction(BiConsumer<String, String> onSaveAction) {

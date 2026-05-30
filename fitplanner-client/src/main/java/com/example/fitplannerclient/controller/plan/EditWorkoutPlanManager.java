@@ -99,6 +99,32 @@ public class EditWorkoutPlanManager {
                 });
     }
 
+    public CompletableFuture<Void> editExistingPlan(String planId, boolean isCopy) {
+        PlanDeserializer deserializer = new PlanDeserializer();
+
+        return planApi.getPlanDetailsByIdAsync(planId)
+                .thenCompose(planDto -> {
+                    this.plan = deserializer.toEntity(planDto);
+
+                    if (isCopy) {
+                        plan.setPlanId(null);
+                        plan.changeName(plan.getName() + " (Copia)");
+
+                        PlanToDtoVisitor serializer = new PlanToDtoVisitor();
+                        plan.accept(serializer);
+
+                        return planApi.createPlanAsync(serializer.getPlanDto())
+                                .thenAccept(id -> {
+                                    plan.setPlanId(id);
+                                    workoutPlanSubject.notifyObservers();
+                                });
+                    }
+
+                    workoutPlanSubject.notifyObservers();
+                    return CompletableFuture.completedFuture(null);
+                });
+    }
+
     public void changePlanName(String newName) {
         if (plan != null) {
             plan.changeName(newName);
@@ -152,20 +178,6 @@ public class EditWorkoutPlanManager {
 
     private WorkoutSession getSessionByDay(int day) {
         return plan.getSessions().stream().filter(s -> s.getDay() == day).findFirst().orElse(null);
-    }
-
-    public CompletableFuture<Void> editExistingPlan(String planId, boolean isCopy) {
-        PlanDeserializer deserializer = new PlanDeserializer();
-
-        return planApi.getPlanDetailsByIdAsync(planId)
-                .thenAccept(planDto -> {
-                    this.plan = deserializer.toEntity(planDto);
-                    if (isCopy) {
-                        plan.setPlanId(null);
-                    }
-
-                    workoutPlanSubject.notifyObservers();
-                });
     }
 
 
@@ -242,8 +254,13 @@ public class EditWorkoutPlanManager {
     }
 
     public void updateDecorator(String nodeId, String badgeId, String newName, String newValue) {
-        // I decorator che avvolgono un nodo non sono facilmente cercabili per badgeId a meno di cast.
-        // Poichè non possiamo aggiungere nuovi command per la logica dei decorator specifici, lasciamo stare.
+        NodeFinderVisitor finder = new NodeFinderVisitor(badgeId);
+        plan.accept(finder);
+        if (finder.isFound() && finder.getFoundNode() instanceof com.example.fitplannerclient.entity.plan.decorator.FlowDecorator decorator) {
+            com.example.fitplannerclient.controller.plan.command.UpdateDecoratorValueCommand cmd = 
+                new com.example.fitplannerclient.controller.plan.command.UpdateDecoratorValueCommand(decorator, null, newValue);
+            executeCommand(cmd);
+        }
     }
 
     public void copyModifier(String sourceNodeId, String targetNodeId, int sourceIndex, int targetIndex) {}
@@ -284,7 +301,51 @@ public class EditWorkoutPlanManager {
                 .thenRun(workoutPlanSubject::notifyObservers);
     }
 
-    public void addNodeFromToolbox(PlanNode newNode, String targetParentId, int targetIndex) {
+    public void addExerciseFromToolbox(String exerciseId, String targetParentId, int targetIndex) {
+        com.example.fitplannerclient.entity.plan.exercise.ExerciseNode node = new com.example.fitplannerclient.entity.plan.exercise.ExerciseNode();
+        node.setResourceId(exerciseId);
+        node.addModifier(new com.example.fitplannerclient.entity.plan.exercise.ExerciseModifier(com.example.fitplannerclient.entity.plan.exercise.ModifierType.REPS, "10"));
+        addNodeFromToolbox(node, targetParentId, targetIndex);
+    }
+
+    public void addBlockFromToolbox(String blockName, String targetParentId, int targetIndex) {
+        addNodeFromToolbox(new com.example.fitplannerclient.entity.plan.block.Block(blockName), targetParentId, targetIndex);
+    }
+
+    public java.util.Map<String, String> getDefaultProtocolParameters(String protocolName) {
+        com.example.fitplannerclient.controller.plan.factory.ProtocolBlockFactory factory = new com.example.fitplannerclient.controller.plan.factory.ProtocolBlockFactory();
+        com.example.fitplannerclient.entity.plan.block.ProtocolBlock block = switch (protocolName) {
+            case "DROP_SET" -> factory.createDropSet();
+            case "SUPER_SET" -> factory.createSuperSet();
+            case "GIANT_SET" -> factory.createGiantSet();
+            case "CIRCUIT" -> factory.createCircuit();
+            case "AMRAP" -> factory.createAMRAP();
+            case "EMOM" -> factory.createEMOM();
+            default -> factory.createCircuit();
+        };
+        return block.getParameters();
+    }
+
+    public void addProtocolBlockFromToolbox(String protocolName, java.util.Map<String, String> parameters, String targetParentId, int targetIndex) {
+        com.example.fitplannerclient.controller.plan.factory.ProtocolBlockFactory factory = new com.example.fitplannerclient.controller.plan.factory.ProtocolBlockFactory();
+        com.example.fitplannerclient.entity.plan.block.ProtocolBlock block = switch (protocolName) {
+            case "DROP_SET" -> factory.createDropSet();
+            case "SUPER_SET" -> factory.createSuperSet();
+            case "GIANT_SET" -> factory.createGiantSet();
+            case "CIRCUIT" -> factory.createCircuit();
+            case "AMRAP" -> factory.createAMRAP();
+            case "EMOM" -> factory.createEMOM();
+            default -> factory.createCircuit();
+        };
+
+        for (java.util.Map.Entry<String, String> entry : parameters.entrySet()) {
+            block.setParameter(entry.getKey(), entry.getValue());
+        }
+
+        addNodeFromToolbox(block, targetParentId, targetIndex);
+    }
+
+    private void addNodeFromToolbox(PlanNode newNode, String targetParentId, int targetIndex) {
         if (plan == null) return;
 
         NodeFinderVisitor finder = new NodeFinderVisitor(targetParentId);
@@ -300,9 +361,19 @@ public class EditWorkoutPlanManager {
         }
     }
 
-    public void addDecoratorFromToolbox(com.example.fitplannerclient.entity.plan.decorator.FlowDecorator newDecorator, String targetNodeId) {
+    public void addDecoratorFromToolbox(String decoratorType, String value, String targetNodeId) {
         if (plan == null) return;
         
+        com.example.fitplannerclient.entity.plan.decorator.FlowDecorator newDecorator = null;
+        switch (decoratorType.toUpperCase().replace(" ", "_")) {
+            case "REST" -> newDecorator = new com.example.fitplannerclient.entity.plan.decorator.RestDecorator(null, value);
+            case "LOOP" -> newDecorator = new com.example.fitplannerclient.entity.plan.decorator.LoopDecorator(null, value);
+            case "TIME_LIMIT" -> newDecorator = new com.example.fitplannerclient.entity.plan.decorator.TimeLimitDecorator(null, value);
+            case "INTERVAL" -> newDecorator = new com.example.fitplannerclient.entity.plan.decorator.IntervalDecorator(null, value);
+            case "PROGRESSION" -> newDecorator = new com.example.fitplannerclient.entity.plan.decorator.ProgressionDecorator(null, value);
+        }
+        if (newDecorator == null) return;
+
         NodeFinderVisitor finder = new NodeFinderVisitor(targetNodeId);
         plan.accept(finder);
 
@@ -311,7 +382,7 @@ public class EditWorkoutPlanManager {
             if (index != -1) {
                 newDecorator.setWrappedNode(finder.getFoundNode());
                 block.replaceNode(index, newDecorator);
-                workoutPlanSubject.notifyObservers();
+                 workoutPlanSubject.notifyObservers();
             }
         } else if (finder.isFound() && finder.getFoundParent() instanceof com.example.fitplannerclient.entity.plan.decorator.FlowDecorator parentDecorator) {
              newDecorator.setWrappedNode(finder.getFoundNode());
@@ -320,8 +391,11 @@ public class EditWorkoutPlanManager {
         }
     }
 
-    public void addModifierFromToolbox(com.example.fitplannerclient.entity.plan.exercise.ExerciseModifier modifier, String targetNodeId) {
+    public void addModifierFromToolbox(String modifierType, String value, String targetNodeId) {
         if (plan == null) return;
+
+        com.example.fitplannerclient.entity.plan.exercise.ModifierType type = com.example.fitplannerclient.entity.plan.exercise.ModifierType.valueOf(modifierType);
+        com.example.fitplannerclient.entity.plan.exercise.ExerciseModifier modifier = new com.example.fitplannerclient.entity.plan.exercise.ExerciseModifier(type, value);
 
         NodeFinderVisitor finder = new NodeFinderVisitor(targetNodeId);
         plan.accept(finder);

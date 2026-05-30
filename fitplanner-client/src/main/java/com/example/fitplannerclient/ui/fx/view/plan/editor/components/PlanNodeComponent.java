@@ -216,10 +216,12 @@ public class PlanNodeComponent extends VBox {
     public PlanNodeBean getOriginalBean() { return originalBean; }
 
     private void fireEditBadgeClicked(BadgeComponent badge) {
+        System.out.println("PlanNodeComponent.fireEditBadgeClicked called for badge: " + badge.getName());
         this.fireEvent(new PlanNodeEvent(PlanNodeEvent.EDIT_BADGE_CLICKED, this.planNodeId)
             .setBadgeType(badge.getBadgeType().name())
             .setBadgeData(badge)
         );
+        System.out.println("PlanNodeEvent.EDIT_BADGE_CLICKED fired!");
     }
 
     // --- RENDERING METHODS ---

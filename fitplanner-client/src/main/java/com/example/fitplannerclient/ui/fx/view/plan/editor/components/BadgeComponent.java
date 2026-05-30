@@ -36,8 +36,13 @@ public class BadgeComponent extends HBox {
         this.getChildren().addAll(nameLabel, valueLabel);
 
         this.setOnMouseClicked(e -> {
-            if (!e.isDragDetect() && onEditClicked != null) {
+            System.out.println("BadgeComponent clicked! type=" + badgeType + ", name=" + name + ", value=" + value);
+            if (onEditClicked != null) {
+                System.out.println("onEditClicked is NOT null, calling accept...");
                 onEditClicked.accept(this);
+                e.consume();
+            } else {
+                System.out.println("onEditClicked IS NULL!");
             }
         });
     }
