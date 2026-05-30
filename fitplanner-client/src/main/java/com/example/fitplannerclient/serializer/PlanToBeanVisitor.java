@@ -12,6 +12,7 @@ import com.example.fitplannerclient.entity.plan.exercise.ExerciseNode;
 import com.example.fitplannerclient.util.IDGenerator;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class PlanToBeanVisitor implements WorkoutPlanVisitor {
@@ -108,7 +109,7 @@ public class PlanToBeanVisitor implements WorkoutPlanVisitor {
     public void visit(ProtocolBlock protocolBlock) {
         PlanNodeBean nodeBean = new PlanNodeBean(protocolBlock.getId(), protocolBlock.getSemanticType(), NodeType.PROTOCOL_BLOCK);
         nodeBean.setFlowDecorators(new ArrayList<>(accumulatedDecorators));
-        nodeBean.setParameters(protocolBlock.getParameters());
+        nodeBean.setParameters(protocolBlock.getParameters() != null ? new HashMap<>(protocolBlock.getParameters()) : new HashMap<>());
         accumulatedDecorators.clear();
 
         for (int i = 0; i < protocolBlock.getChildrenCount(); i++) {

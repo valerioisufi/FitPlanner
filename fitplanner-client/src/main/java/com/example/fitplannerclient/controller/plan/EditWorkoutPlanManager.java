@@ -10,6 +10,7 @@ import com.example.fitplannerclient.controller.plan.observer.WorkoutPlanObserver
 import com.example.fitplannerclient.controller.plan.observer.WorkoutPlanSubject;
 import com.example.fitplannerclient.entity.plan.block.ProtocolBlock;
 import com.example.fitplannerclient.serializer.PlanDeserializer;
+import com.example.fitplannerclient.serializer.PlanToBeanVisitor;
 import com.example.fitplannerclient.serializer.PlanToDtoVisitor;
 import com.example.fitplannerclient.entity.plan.PlanNode;
 import com.example.fitplannerclient.entity.plan.WorkoutPlan;
@@ -18,6 +19,7 @@ import com.example.fitplannerclient.entity.plan.block.Block;
 import com.example.fitplannerclient.service.api.WorkoutPlanApi;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -49,6 +51,7 @@ public class EditWorkoutPlanManager {
 
     public CompletableFuture<Void> createNewPlan() {
         plan = new WorkoutPlan("Nuovo piano");
+        plan.setCycleLength(7);
 
         PlanNode rootNode = new Block("Blocco 1");
         WorkoutSession firstSession = new WorkoutSession("Sessione 1", 0, rootNode);
@@ -136,7 +139,10 @@ public class EditWorkoutPlanManager {
         protocolBlockLibrary.add(factory.createEMOM());
 
         for (ProtocolBlock block : protocolBlockLibrary) {
-            protocolBlockLibraryCache.add(new PlanNodeBean(block.getId(), block.getSemanticType(), NodeType.PROTOCOL_BLOCK));
+            PlanToBeanVisitor visitor = new PlanToBeanVisitor();
+            block.accept(visitor);
+
+            protocolBlockLibraryCache.add(visitor.getCurrentPlanNodeBean());
         }
 
     }
