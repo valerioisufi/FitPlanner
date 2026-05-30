@@ -41,6 +41,8 @@ public class Navigator {
         if (currentGuiController != null) {
             currentGuiController.stop();
         }
+        guiManager.clearModals();
+
         currentGuiController = nextController;
         guiManager.setView(nextController.getView());
         nextController.start();

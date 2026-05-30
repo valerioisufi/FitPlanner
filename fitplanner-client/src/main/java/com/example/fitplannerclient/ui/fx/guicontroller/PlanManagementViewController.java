@@ -83,7 +83,7 @@ public class PlanManagementViewController implements GuiController {
         });
 
         // Modal close/assign logic
-        view.getAssignModal().setOnCloseAction(view::hideModal);
+        view.getAssignModal().setOnCloseAction(guiManager::hideModal);
         
         view.getAssignModal().setOnAssignAction(athlete -> {
             WorkoutPlanBean planToAssign = view.getAssignModal().getCurrentPlan();
@@ -91,7 +91,7 @@ public class PlanManagementViewController implements GuiController {
                 planManager.assignPlanToAthleteAsync(planToAssign.getId(), athlete.getUserId())
                     .thenRun(() -> {
                         Platform.runLater(() -> {
-                            view.hideModal();
+                            guiManager.hideModal();
                             Alert alert = new Alert(Alert.AlertType.INFORMATION);
                             alert.setTitle("Piano Assegnato");
                             alert.setHeaderText(null);
@@ -101,7 +101,7 @@ public class PlanManagementViewController implements GuiController {
                     })
                     .exceptionally(ex -> {
                         Platform.runLater(() -> {
-                            view.hideModal();
+                            guiManager.hideModal();
                             guiManager.showNotification(GuiManager.NotificationType.ERROR, "Errore nell'assegnazione: " + ex.getMessage());
                         });
                         return null;
@@ -129,6 +129,7 @@ public class PlanManagementViewController implements GuiController {
 
     @Override
     public void stop() {
+        guiManager.hideModal();
     }
 
     @Override

@@ -15,13 +15,11 @@ import javafx.scene.layout.*;
 import java.util.List;
 import java.util.function.Consumer;
 
-public class ExerciseLibraryView extends StackPane {
+public class ExerciseLibraryView extends BorderPane {
 
-    private final BorderPane mainPane;
     private final CardListView<ExerciseDescriptionBean> cardListView;
     private final Label nameHeader;
 
-    private final ModalOverlay modalOverlay;
     private final EditExerciseModal editModal;
 
     private Runnable onAddAction;
@@ -29,7 +27,6 @@ public class ExerciseLibraryView extends StackPane {
     private Consumer<ExerciseDescriptionBean> onDeleteAction;
 
     public ExerciseLibraryView() {
-        mainPane = new BorderPane();
 
         VBox contentBox = new VBox();
         contentBox.setPadding(new Insets(32));
@@ -78,17 +75,13 @@ public class ExerciseLibraryView extends StackPane {
 
         ScrollPane mainScroll = new ScrollPane(contentBox);
         mainScroll.setFitToWidth(true);
-        mainPane.setCenter(mainScroll);
+        this.setCenter(mainScroll);
 
-        // --- MODAL OVERLAY ---
         editModal = new EditExerciseModal();
-        modalOverlay = new ModalOverlay(editModal);
-
-        this.getChildren().addAll(mainPane, modalOverlay);
     }
 
     public void setHeaderView(Node headerView) {
-        mainPane.setTop(headerView);
+        this.setTop(headerView);
     }
 
     public EditExerciseModal getEditModal() {
@@ -97,11 +90,6 @@ public class ExerciseLibraryView extends StackPane {
 
     public void showModal(ExerciseDescriptionBean exerciseToEdit) {
         editModal.setExercise(exerciseToEdit);
-        modalOverlay.show();
-    }
-
-    public void hideModal() {
-        modalOverlay.hide();
     }
 
     public void setExerciseList(List<ExerciseDescriptionBean> exercises) {

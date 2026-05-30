@@ -30,13 +30,18 @@ public class ExerciseLibraryViewController implements GuiController {
 
         bindValidators();
 
-        this.view.setOnAddAction(() -> this.view.showModal(null));
-        this.view.setOnEditAction(this.view::showModal);
+        this.view.setOnAddAction(() -> showEditModal(null));
+        this.view.setOnEditAction(this::showEditModal);
         this.view.setOnDeleteAction(this::deleteExercise);
         
-        this.view.getEditModal().setOnCloseAction(this.view::hideModal);
-        this.view.getEditModal().setOnCancelAction(this.view::hideModal);
+        this.view.getEditModal().setOnCloseAction(guiManager::hideModal);
+        this.view.getEditModal().setOnCancelAction(guiManager::hideModal);
         this.view.getEditModal().setOnSaveAction(this::saveExercise);
+    }
+
+    private void showEditModal(ExerciseDescriptionBean exercise) {
+        this.view.getEditModal().setExercise(exercise);
+        this.guiManager.showModal(this.view.getEditModal());
     }
 
     private void bindValidators() {
@@ -59,7 +64,7 @@ public class ExerciseLibraryViewController implements GuiController {
 
     @Override
     public void stop() {
-        this.view.hideModal();
+        this.guiManager.hideModal();
     }
 
     private void loadExercises() {
@@ -82,7 +87,7 @@ public class ExerciseLibraryViewController implements GuiController {
             manager.addExerciseAsync(bean)
                     .thenRun(() -> {
                         Platform.runLater(() -> {
-                            this.view.hideModal();
+                            guiManager.hideModal();
                             guiManager.showNotification(GuiManager.NotificationType.SUCCESS, "Esercizio salvato con successo.");
                         });
                         loadExercises();
@@ -95,7 +100,7 @@ public class ExerciseLibraryViewController implements GuiController {
             manager.updateExerciseAsync(bean)
                     .thenRun(() -> {
                         Platform.runLater(() -> {
-                            this.view.hideModal();
+                            guiManager.hideModal();
                             guiManager.showNotification(GuiManager.NotificationType.SUCCESS, "Esercizio aggiornato con successo.");
                         });
                         loadExercises();

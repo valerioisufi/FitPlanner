@@ -1,5 +1,6 @@
 package com.example.fitplannerclient.ui.fx;
 
+import com.example.fitplannerclient.ui.fx.components.ModalOverlay;
 import javafx.animation.FadeTransition;
 import javafx.animation.PauseTransition;
 import javafx.application.Platform;
@@ -21,6 +22,7 @@ public class GuiManager {
 
     private final StackPane rootPane;
     private final StackPane contentArea;
+    private final StackPane modalArea;
     private final StackPane overlayArea;
     private final VBox notificationArea;
 
@@ -42,11 +44,14 @@ public class GuiManager {
         this.notificationArea.setPadding(new Insets(20));
         this.notificationArea.setPickOnBounds(false);
 
+        this.modalArea = new StackPane();
+        this.modalArea.setVisible(false);
+
         this.overlayArea = new StackPane();
         this.overlayArea.setVisible(false);
         this.overlayArea.setStyle("-fx-background-color: rgba(0, 0, 0, 0.5);");
 
-        this.rootPane.getChildren().addAll(contentArea, overlayArea, notificationArea);
+        this.rootPane.getChildren().addAll(contentArea, modalArea, overlayArea, notificationArea);
     }
 
     /**
@@ -67,6 +72,35 @@ public class GuiManager {
         Platform.runLater(() -> {
             overlayArea.getChildren().clear();
             overlayArea.setVisible(false);
+        });
+    }
+
+    public void showModal(javafx.scene.Node content) {
+        Platform.runLater(() -> {
+            ModalOverlay modal = new ModalOverlay(content);
+            modal.show();
+
+            modalArea.getChildren().add(modal);
+            modalArea.setVisible(true);
+        });
+    }
+
+    public void hideModal() {
+        Platform.runLater(() -> {
+            if (!modalArea.getChildren().isEmpty()) {
+                modalArea.getChildren().removeLast();
+            }
+            
+            if (modalArea.getChildren().isEmpty()) {
+                modalArea.setVisible(false);
+            }
+        });
+    }
+
+    public void clearModals() {
+        Platform.runLater(() -> {
+            modalArea.getChildren().clear();
+            modalArea.setVisible(false);
         });
     }
 

@@ -76,6 +76,9 @@ public class WorkoutPlanEditorViewController implements GuiController {
         this.view.setOnSavePlanClicked(this::savePlan);
         this.view.setOnCancelClicked(() -> Navigator.getInstance().goToPlanManagement());
 
+        this.view.setOnShowModalRequested(modalContent -> Navigator.getInstance().getGuiManager().showModal(modalContent));
+        this.view.setOnHideModalRequested(() -> Navigator.getInstance().getGuiManager().hideModal());
+
         this.view.disableEditing(false);
     }
 
@@ -113,6 +116,8 @@ public class WorkoutPlanEditorViewController implements GuiController {
     }
 
     @Override
-    public void stop() {}
+    public void stop() {
+        Navigator.getInstance().getGuiManager().hideModal();
+    }
 
 }

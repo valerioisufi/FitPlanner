@@ -15,12 +15,10 @@ import javafx.scene.layout.*;
 import java.util.List;
 import java.util.function.Consumer;
 
-public class PlanManagementView extends StackPane {
+public class PlanManagementView extends BorderPane {
 
-    private final BorderPane mainPane;
     private final CardListView<WorkoutPlanSummaryBean> cardListView;
     
-    private final ModalOverlay modalOverlay;
     private final AssignPlanModal assignModal;
 
     private Runnable onNewPlanAction;
@@ -30,7 +28,6 @@ public class PlanManagementView extends StackPane {
     private Consumer<WorkoutPlanSummaryBean> onDeleteAction;
 
     public PlanManagementView() {
-        mainPane = new BorderPane();
 
         VBox contentBox = new VBox();
         contentBox.setPadding(new Insets(32));
@@ -72,17 +69,13 @@ public class PlanManagementView extends StackPane {
 
         ScrollPane mainScroll = new ScrollPane(contentBox);
         mainScroll.setFitToWidth(true);
-        mainPane.setCenter(mainScroll);
+        this.setCenter(mainScroll);
 
-        // --- MODAL OVERLAY ---
         assignModal = new AssignPlanModal();
-        modalOverlay = new ModalOverlay(assignModal);
-
-        this.getChildren().addAll(mainPane, modalOverlay);
     }
 
     public void setHeaderView(Node headerView) {
-        mainPane.setTop(headerView);
+        this.setTop(headerView);
     }
 
     public AssignPlanModal getAssignModal() {
@@ -91,11 +84,6 @@ public class PlanManagementView extends StackPane {
 
     public void showModal(WorkoutPlanBean plan, List<ProfileBean> athletes) {
         assignModal.setPlan(plan, athletes);
-        modalOverlay.show();
-    }
-
-    public void hideModal() {
-        modalOverlay.hide();
     }
 
     public void setPlansList(List<WorkoutPlanSummaryBean> plans) {

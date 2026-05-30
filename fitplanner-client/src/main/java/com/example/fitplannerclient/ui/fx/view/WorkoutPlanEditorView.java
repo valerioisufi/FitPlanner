@@ -12,6 +12,7 @@ import com.example.fitplannerclient.bean.exercise.ExerciseDescriptionBean;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
@@ -21,9 +22,7 @@ import com.example.fitplannerclient.ui.fx.components.ModalOverlay;
 import java.util.List;
 import java.util.function.Consumer;
 
-public class WorkoutPlanEditorView extends StackPane {
-
-    private final BorderPane mainPane = new BorderPane();
+public class WorkoutPlanEditorView extends BorderPane {
 
     private final ComboBox<WorkoutSessionBean> sessionComboBox = new ComboBox<>();
     private final Button btnManageSessions = new Button("Gestisci sessioni");
@@ -42,7 +41,6 @@ public class WorkoutPlanEditorView extends StackPane {
     private final VBox exerciseListContainer = new VBox(10);
     
     // Modals
-    private final ModalOverlay modalOverlay;
     private final EditNodeNameModal editNodeModal;
     private final EditBadgeModal editBadgeModal;
     private final ManageSessionsModal manageSessionsModal;
@@ -53,9 +51,13 @@ public class WorkoutPlanEditorView extends StackPane {
     private Runnable onSavePlanClicked;
     private Runnable onCancelClicked;
 
+    // Callback for generic modal actions
+    private Consumer<Node> onShowModalRequested;
+    private Runnable onHideModalRequested;
+
     public WorkoutPlanEditorView() {
         // Set custom top toolbar
-        mainPane.setTop(createTopToolbar());
+        this.setTop(createTopToolbar());
 
         // Main Layout: Center Panel, Right Sidebar
         HBox mainLayout = new HBox(20);
@@ -73,18 +75,15 @@ public class WorkoutPlanEditorView extends StackPane {
         HBox.setHgrow(rightSidebar, Priority.NEVER);
 
         mainLayout.getChildren().addAll(centerPanel, rightSidebar);
-        mainPane.setCenter(mainLayout);
+        this.setCenter(mainLayout);
 
         editNodeModal = new EditNodeNameModal();
         editBadgeModal = new EditBadgeModal();
         manageSessionsModal = new ManageSessionsModal();
-        modalOverlay = new ModalOverlay(new VBox()); // Placeholder, will set content dynamically
 
-        editNodeModal.setOnCloseAction(modalOverlay::hide);
-        editBadgeModal.setOnCloseAction(modalOverlay::hide);
-        manageSessionsModal.setOnCloseAction(modalOverlay::hide);
-
-        this.getChildren().addAll(mainPane, modalOverlay);
+        editNodeModal.setOnCloseAction(() -> { if (onHideModalRequested != null) onHideModalRequested.run(); });
+        editBadgeModal.setOnCloseAction(() -> { if (onHideModalRequested != null) onHideModalRequested.run(); });
+        manageSessionsModal.setOnCloseAction(() -> { if (onHideModalRequested != null) onHideModalRequested.run(); });
 
         setupModalsLogic();
     }
@@ -94,19 +93,17 @@ public class WorkoutPlanEditorView extends StackPane {
             editNodeModal.setInitialName(node.getNodeName()); 
             editNodeModal.setOnSaveAction(newName -> {
                 node.updateName(newName);
-                modalOverlay.hide();
+                if (onHideModalRequested != null) onHideModalRequested.run();
             });
-            modalOverlay.setContent(editNodeModal);
-            modalOverlay.show();
+            if (onShowModalRequested != null) onShowModalRequested.accept(editNodeModal);
         });
         planViewer.setOnBadgeEditRequest(badge -> {
             editBadgeModal.setInitialData(badge.getBadgeType(), badge.getName(), badge.getValue());
             editBadgeModal.setOnSaveAction((newName, newValue) -> {
                 badge.updateBadge(newName, newValue);
-                modalOverlay.hide();
+                if (onHideModalRequested != null) onHideModalRequested.run();
             });
-            modalOverlay.setContent(editBadgeModal);
-            modalOverlay.show();
+            if (onShowModalRequested != null) onShowModalRequested.accept(editBadgeModal);
         });
     }
 
@@ -294,13 +291,15 @@ public class WorkoutPlanEditorView extends StackPane {
     public void showManageSessionsModal(int cycleLength, List<WorkoutSessionBean> sessions, java.util.function.BiConsumer<Integer, List<WorkoutSessionBean>> onSave) {
         manageSessionsModal.setInitialData(cycleLength, sessions);
         manageSessionsModal.setOnSaveAction((newCycleLength, updatedSessions) -> {
-            modalOverlay.hide();
+            if (onHideModalRequested != null) onHideModalRequested.run();
             onSave.accept(newCycleLength, updatedSessions);
         });
-        modalOverlay.setContent(manageSessionsModal);
-        modalOverlay.show();
+        if (onShowModalRequested != null) onShowModalRequested.accept(manageSessionsModal);
     }
 
     public void setOnSavePlanClicked(Runnable callback) { this.onSavePlanClicked = callback; }
     public void setOnCancelClicked(Runnable callback) { this.onCancelClicked = callback; }
+
+    public void setOnShowModalRequested(Consumer<javafx.scene.Node> onShowModalRequested) { this.onShowModalRequested = onShowModalRequested; }
+    public void setOnHideModalRequested(Runnable onHideModalRequested) { this.onHideModalRequested = onHideModalRequested; }
 }
