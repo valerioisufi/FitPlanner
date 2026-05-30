@@ -109,7 +109,7 @@ public class PlanManagementView extends BorderPane {
 
         Button optionsBtn = new Button();
         optionsBtn.getStyleClass().add("button-header");
-        optionsBtn.setGraphic(new Icon("menu-icon", List.of("button-header-icon")));
+        optionsBtn.setGraphic(new Icon("dots-vertical-icon", List.of("button-header-icon")));
         
         optionsBtn.setOnAction(e -> {
             ContextMenu menu = new ContextMenu();
@@ -119,10 +119,10 @@ public class PlanManagementView extends BorderPane {
                 createCustomMenuItem("Modifica", "edit-icon", "button-header-icon", null, () -> {
                     if (onEditAction != null) onEditAction.accept(plan);
                 }),
-                createCustomMenuItem("Assegna", null, null, null, () -> {
+                createCustomMenuItem("Assegna", "plus-icon", "button-header-icon", null, () -> {
                     if (onAssignButtonClick != null) onAssignButtonClick.accept(plan);
                 }),
-                createCustomMenuItem("Duplica", null, null, null, () -> {
+                createCustomMenuItem("Duplica", "copy-icon", "button-header-icon", null, () -> {
                     if (onCloneAction != null) onCloneAction.accept(plan);
                 }),
                 createCustomMenuItem("Elimina", "delete-icon", "button-header-danger-icon", "-fx-text-fill: #ef4444;", () -> {
