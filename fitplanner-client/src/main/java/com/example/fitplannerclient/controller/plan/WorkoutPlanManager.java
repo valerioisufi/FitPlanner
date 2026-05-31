@@ -5,13 +5,11 @@ import com.example.fitplannerclient.service.api.WorkoutPlanApi;
 import com.example.fitplannercommon.*;
 import com.example.fitplannerclient.serializer.PlanDeserializer;
 import com.example.fitplannerclient.serializer.PlanToBeanVisitor;
-import com.example.fitplannerclient.serializer.PlanToDtoVisitor;
 import com.example.fitplannerclient.entity.plan.PlanNode;
 import com.example.fitplannerclient.entity.plan.WorkoutPlan;
-import com.example.fitplannerclient.entity.plan.WorkoutSession;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
@@ -47,8 +45,22 @@ public class WorkoutPlanManager {
     }
 
     public CompletableFuture<WorkoutPlanBean> getAssignedPlanOfAthleteAsync(String athleteId) {
-        WorkoutPlanBean mockPlan = new WorkoutPlanBean("mock-id", "Piano di Base (Mock)", new ArrayList<>());
-        return CompletableFuture.completedFuture(mockPlan);
+        return planApi.getMyCreatedPlansSummaryAsync()
+                .thenCompose(list -> {
+                    Optional<String> planId = list.stream()
+                            .filter(dto -> dto.getAssignedTo() != null && dto.getAssignedTo().equals(athleteId))
+                            .findFirst()
+                            .map(WorkoutPlanSummaryDTO::getPlanId);
+
+                    return planId.map(s -> planApi.getPlanDetailsByIdAsync(s)
+                                    .thenApply(this::dtoToBean)
+                            ).orElseGet(() -> CompletableFuture.completedFuture(null));
+
+                });
+    }
+
+    public CompletableFuture<Void> deletePlanAsync(String planId) {
+        return planApi.deletePlanAsync(planId);
     }
 
     public CompletableFuture<WorkoutScheduleDTO> getCurrentCycleScheduleAsync() {
@@ -64,6 +76,8 @@ public class WorkoutPlanManager {
                     return mapSessionDtoToBean(schedule.getNextSuggestedSession());
                 });
     }
+
+    // --- MAPPING HELPERS ---
 
     public WorkoutSessionBean mapSessionDtoToBean(WorkoutSessionDTO sDto) {
         if (sDto == null) return null;
@@ -88,24 +102,6 @@ public class WorkoutPlanManager {
         return new WorkoutSessionBean(String.valueOf(sDto.getDay()), sDto.getDay(), rootNode);
     }
 
-    public CompletableFuture<String> createPlanAsync(WorkoutPlanBean planBean) {
-        return planApi.createPlanAsync(beanToDto(planBean));
-    }
-
-    public CompletableFuture<Void> assignPlanToAsync(String planId, String athleteId) {
-        return planApi.assignPlanToAsync(planId, athleteId);
-    }
-
-    public CompletableFuture<Void> updatePlanAsync(String planId, WorkoutPlanBean planBean) {
-        return planApi.updatePlanAsync(planId, beanToDto(planBean));
-    }
-
-    public CompletableFuture<Void> deletePlanAsync(String planId) {
-        return planApi.deletePlanAsync(planId);
-    }
-
-    // --- MAPPING HELPERS ---
-
     public WorkoutPlanBean dtoToBean(WorkoutPlanDTO dto) {
         if (dto == null) return null;
         try {
@@ -121,28 +117,4 @@ public class WorkoutPlanManager {
         }
     }
 
-    public WorkoutPlanDTO beanToDto(WorkoutPlanBean bean) {
-        if (bean == null) return null;
-        try {
-            // Reconstruct WorkoutPlan entity tree from bean
-            WorkoutPlan plan = new WorkoutPlan(bean.getName(), bean.getId());
-            plan.setCycleLength(bean.getCycleLength());
-
-            PlanDeserializer deserializer = new PlanDeserializer();
-            if (bean.getSessions() != null) {
-                for (WorkoutSessionBean sBean : bean.getSessions()) {
-                    PlanNode rootNode = deserializer.toEntity(sBean.getPlanRoot());
-                    WorkoutSession session = new WorkoutSession(sBean.getName(), sBean.getDay(), rootNode);
-                    plan.addSession(session);
-                }
-            }
-
-            // Map entity tree to DTO
-            PlanToDtoVisitor visitor = new PlanToDtoVisitor();
-            plan.accept(visitor);
-            return visitor.getPlanDto();
-        } catch (Exception e) {
-            throw new CompletionException("Failed to map WorkoutPlanBean to WorkoutPlanDTO", e);
-        }
-    }
 }

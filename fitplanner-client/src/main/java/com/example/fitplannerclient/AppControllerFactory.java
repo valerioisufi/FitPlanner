@@ -7,6 +7,7 @@ import com.example.fitplannerclient.controller.plan.EditWorkoutPlanManager;
 import com.example.fitplannerclient.controller.plan.WorkoutPlanManager;
 import com.example.fitplannerclient.controller.profile.ProfileManager;
 import com.example.fitplannerclient.repository.ExerciseRepository;
+import com.example.fitplannerclient.repository.ProfileRepository;
 import com.example.fitplannerclient.service.api.*;
 
 public class AppControllerFactory {
@@ -18,6 +19,7 @@ public class AppControllerFactory {
     private final SessionLogApi sessionLogApi;
 
     private AuthManager authManager;
+    private ProfileRepository profileRepository;
     private ProfileManager profileManager;
     private ExerciseRepository exerciseRepository;
     private ExerciseLibraryManager exerciseLibraryManager;
@@ -45,11 +47,15 @@ public class AppControllerFactory {
         return authManager;
     }
 
-    public ProfileManager createProfileManager() {
-        if (profileManager == null) {
-            profileManager = new ProfileManager(profileApi);
+    public ProfileRepository createProfileRepository() {
+        if (profileRepository == null) {
+            profileRepository = new ProfileRepository(profileApi);
         }
-        return profileManager;
+        return profileRepository;
+    }
+
+    public ProfileManager createProfileManager() {
+        return new ProfileManager(profileApi, createProfileRepository());
     }
 
     public ExerciseRepository createExerciseRepository() {
@@ -60,24 +66,15 @@ public class AppControllerFactory {
     }
 
     public ExerciseLibraryManager createExerciseLibraryManager() {
-        if (exerciseLibraryManager == null) {
-            exerciseLibraryManager = new ExerciseLibraryManager(createExerciseRepository());
-        }
-        return exerciseLibraryManager;
+        return new ExerciseLibraryManager(createExerciseRepository());
     }
 
     public WorkoutPlanManager createWorkoutPlanManager() {
-        if (workoutPlanManager == null) {
-            workoutPlanManager = new WorkoutPlanManager(workoutPlanApi);
-        }
-        return workoutPlanManager;
+        return new WorkoutPlanManager(workoutPlanApi);
     }
 
     public EditWorkoutPlanManager createEditWorkoutPlanManager() {
-        if (editWorkoutPlanManager == null) {
-            editWorkoutPlanManager = new EditWorkoutPlanManager(workoutPlanApi, createExerciseRepository());
-        }
-        return editWorkoutPlanManager;
+        return editWorkoutPlanManager = new EditWorkoutPlanManager(workoutPlanApi, createExerciseRepository());
     }
 
     public SessionLogApi createSessionLogApi() {

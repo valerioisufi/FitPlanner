@@ -9,6 +9,8 @@ public class Profile {
     private final ProfileType profileType;
 
     public Profile(String userId, String firstName, String lastName, String email, String phoneNumber, ProfileType profileType) {
+        this.userId = userId;
+
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;

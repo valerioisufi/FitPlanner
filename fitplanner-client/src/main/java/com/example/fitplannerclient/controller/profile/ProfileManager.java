@@ -1,6 +1,8 @@
 package com.example.fitplannerclient.controller.profile;
 
 import com.example.fitplannerclient.bean.profile.ProfileBean;
+import com.example.fitplannerclient.entity.profile.Profile;
+import com.example.fitplannerclient.repository.ProfileRepository;
 import com.example.fitplannerclient.service.api.ProfileApi;
 import com.example.fitplannercommon.InvitationCodeDTO;
 import com.example.fitplannercommon.ProfileDTO;
@@ -10,50 +12,37 @@ import java.util.concurrent.CompletableFuture;
 
 public class ProfileManager {
     private final ProfileApi profileApi;
-    private ProfileBean cachedProfile;
-    private String previousUserId;
+    private final ProfileRepository profileRepository;
 
-    public ProfileManager(ProfileApi profileApi){
+    public ProfileManager(ProfileApi profileApi, ProfileRepository profileRepository) {
         this.profileApi = profileApi;
+        this.profileRepository = profileRepository;
     }
 
     public CompletableFuture<ProfileBean> getProfileInfoAsync() {
-        return profileApi.getProfileInfoAsync()
-                .thenApply(this::dtoToBean)
-                .thenApply(profile -> {
-                    this.previousUserId = (this.cachedProfile != null) ? this.cachedProfile.getUserId() : this.previousUserId;
-                    this.cachedProfile = profile;
-                    return profile;
-                });
+        return profileRepository.getProfileInfoAsync()
+                .thenApply(this::entityToBean);
     }
 
-    public boolean didUserChange() {
-        if (cachedProfile == null) return false;
-        return previousUserId != null && !previousUserId.equals(cachedProfile.getUserId());
-    }
+    public ProfileBean getCacheProfileInfo(){
+        Profile cachedProfile = profileRepository.getCachedProfile();
+        if(cachedProfile == null) return null;
 
-    public ProfileBean getCachedProfile() {
-        return cachedProfile;
-    }
-
-    public void clearCachedProfile() {
-        this.previousUserId = (this.cachedProfile != null) ? this.cachedProfile.getUserId() : this.previousUserId;
-        this.cachedProfile = null;
+        return entityToBean(cachedProfile);
     }
 
     public CompletableFuture<Void> updateProfileInfoAsync(ProfileBean bean) {
-        return profileApi.updateProfileInfoAsync(beanToDto(bean));
+        return profileRepository.updateProfileInfoAsync(beanToEntity(bean));
     }
 
     public CompletableFuture<ProfileBean> getMyTrainerAsync() {
-        return profileApi.getMyTrainerAsync()
-                .thenApply(this::dtoToBean);
-
+        return profileRepository.getMyTrainerAsync()
+                .thenApply(this::entityToBean);
     }
 
     public CompletableFuture<List<ProfileBean>> getMyAthletesAsync() {
-        return profileApi.getMyAthletesAsync()
-                .thenApply(list -> list.stream().map(this::dtoToBean).toList());
+        return profileRepository.getMyAthletesAsync()
+                .thenApply(list -> list.stream().map(this::entityToBean).toList());
     }
 
     public CompletableFuture<String> getInvitationCodeAsync(){
@@ -65,16 +54,15 @@ public class ProfileManager {
     }
 
 
-
-    private ProfileDTO beanToDto(ProfileBean bean){
-        ProfileDTO.ProfileType profileType =  switch(bean.getProfileType()){
-            case TRAINER -> ProfileDTO.ProfileType.TRAINER;
-            case ATHLETE -> ProfileDTO.ProfileType.ATHLETE;
+    private Profile beanToEntity(ProfileBean bean){
+        Profile.ProfileType profileType =  switch(bean.getProfileType()){
+            case TRAINER -> Profile.ProfileType.TRAINER;
+            case ATHLETE -> Profile.ProfileType.ATHLETE;
             default ->
                     throw new IllegalArgumentException("Invalid profile type: " + bean.getProfileType());
         };
 
-        return new ProfileDTO(
+        return new Profile(
                 bean.getUserId(),
                 bean.getFirstName(),
                 bean.getLastName(),
@@ -85,21 +73,21 @@ public class ProfileManager {
 
     }
 
-    private ProfileBean dtoToBean(ProfileDTO dto){
-        ProfileBean.ProfileType profileType = switch(dto.getProfileType()){
+    private ProfileBean entityToBean(Profile entity){
+        ProfileBean.ProfileType profileType = switch(entity.getProfileType()){
             case TRAINER -> ProfileBean.ProfileType.TRAINER;
             case ATHLETE -> ProfileBean.ProfileType.ATHLETE;
             default ->
-                    throw new IllegalArgumentException("Invalid profile type: " + dto.getProfileType());
+                    throw new IllegalArgumentException("Invalid profile type: " + entity.getProfileType());
         };
 
 
         return new ProfileBean(
-                dto.getUserId(),
-                dto.getFirstName(),
-                dto.getLastName(),
-                dto.getPhoneNumber(),
-                dto.getContactEmail(),
+                entity.getUserId(),
+                entity.getFirstName(),
+                entity.getLastName(),
+                entity.getPhoneNumber(),
+                entity.getContactEmail(),
                 profileType
         );
     }

@@ -29,7 +29,7 @@ public class ProfileViewController implements GuiController {
 
     @Override
     public void start() {
-        ProfileBean profile = profileManager.getCachedProfile();
+        ProfileBean profile = profileManager.getCacheProfileInfo();
         profileView.setProfileData(
                 profile.getFirstName(),
                 profile.getLastName(),
@@ -54,7 +54,7 @@ public class ProfileViewController implements GuiController {
     }
 
     private void handleSave() {
-        ProfileBean profile = profileManager.getCachedProfile();
+        ProfileBean profile = profileManager.getCacheProfileInfo();
         if (profile == null) return;
         profile.setFirstName(profileView.getFirstName());
         profile.setLastName(profileView.getLastName());

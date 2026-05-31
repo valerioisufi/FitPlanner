@@ -49,7 +49,7 @@ public class Navigator {
     }
 
     private void handleLoginSuccess(Runnable onSuccess) {
-        if (appControllerFactory.createProfileManager().didUserChange()) {
+        if (appControllerFactory.createProfileRepository().didUserChange()) {
             appControllerFactory.resetDataManagers();
             HomeViewController homeController = new HomeViewController(appControllerFactory.createProfileManager(), appControllerFactory.createWorkoutPlanManager());
             navigateTo(homeController);
@@ -136,7 +136,7 @@ public class Navigator {
     }
 
     public void goToProfile() {
-        if (appControllerFactory.createProfileManager().getCachedProfile() == null) {
+        if (appControllerFactory.createProfileRepository().getCachedProfile() == null) {
             goHome();
             return;
         }

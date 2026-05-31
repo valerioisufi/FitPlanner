@@ -30,7 +30,7 @@ public class HomeViewController implements GuiController {
 
     @Override
     public void start() {
-        ProfileBean profile = profileManager.getCachedProfile();
+        ProfileBean profile = profileManager.getCacheProfileInfo();
         boolean isTrainer = profile.getProfileType() == ProfileBean.ProfileType.TRAINER;
         
         String welcomeTitle = "Benvenuto, " + profile.getFirstName() + "!";

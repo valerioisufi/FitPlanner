@@ -24,7 +24,7 @@ public class HeaderViewController {
     private ContextMenu accountMenu;
 
     public HeaderViewController(int activeIndex, ProfileManager profileManager) {
-        ProfileBean profile = profileManager.getCachedProfile();
+        ProfileBean profile = profileManager.getCacheProfileInfo();
         boolean isTrainer = profile != null && profile.getProfileType() == ProfileBean.ProfileType.TRAINER;
 
         List<HeaderView.MenuConfig> navItems = isTrainer ? getTrainerHeaderItems() : getAthleteHeaderItems();
