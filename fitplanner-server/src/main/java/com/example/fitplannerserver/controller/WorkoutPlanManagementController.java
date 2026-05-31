@@ -131,6 +131,7 @@ public class WorkoutPlanManagementController {
             WorkoutPlan athleteSpecificPlan = new WorkoutPlan(templatePlan, newInstanceId);
 
             athleteSpecificPlan.assignTo(athleteId);
+            athleteSpecificPlan.setStartDate(java.time.LocalDate.now());
             workoutPlanDao.savePlan(athleteSpecificPlan);
 
         } catch (DaoException e) {

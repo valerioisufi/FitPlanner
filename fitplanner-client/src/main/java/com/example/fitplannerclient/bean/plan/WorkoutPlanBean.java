@@ -50,6 +50,16 @@ public class WorkoutPlanBean {
         this.sessions = sessions;
     }
 
+    public WorkoutSessionBean getSession(int day) {
+        if (sessions == null) return null;
+        for (WorkoutSessionBean session : sessions) {
+            if (session.getDay() == day) {
+                return session;
+            }
+        }
+        return null;
+    }
+
     public void addSession(WorkoutSessionBean session) {
         sessions.add(session);
     }

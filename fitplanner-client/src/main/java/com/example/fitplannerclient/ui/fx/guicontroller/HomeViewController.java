@@ -63,10 +63,12 @@ public class HomeViewController implements GuiController {
         } else {
             // Load athlete plan and suggested session
             planManager.getAssignedPlanAsync()
-                    .thenCombine(planManager.getNextSuggestedSessionAsync(), (plan, session) -> {
+                    .thenCombine(planManager.getCurrentCycleScheduleAsync(), (plan, schedule) -> {
                         Platform.runLater(() -> {
-                            view.showAthleteDashboard(plan, session, () -> {
-                                Navigator.getInstance().goToWorkoutExecution(session);
+                            view.showAthleteDashboard(plan, schedule, () -> {
+                                if (schedule != null && schedule.getNextSuggestedSession() != null) {
+                                    Navigator.getInstance().goToWorkoutExecution(schedule.getNextSuggestedSession());
+                                }
                             });
                             checkAndShowTrainerInvite();
                         });

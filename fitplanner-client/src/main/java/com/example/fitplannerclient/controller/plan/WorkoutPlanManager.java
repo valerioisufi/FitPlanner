@@ -63,8 +63,19 @@ public class WorkoutPlanManager {
         return planApi.deletePlanAsync(planId);
     }
 
-    public CompletableFuture<WorkoutScheduleDTO> getCurrentCycleScheduleAsync() {
-        return planApi.getCurrentCycleScheduleAsync();
+    public CompletableFuture<WorkoutScheduleBean> getCurrentCycleScheduleAsync() {
+        return planApi.getCurrentCycleScheduleAsync().thenApply(dto -> {
+            if (dto == null) return null;
+            WorkoutScheduleBean bean = new WorkoutScheduleBean();
+            bean.setPlanId(dto.getPlanId());
+            bean.setPlanTitle(dto.getPlanTitle());
+            bean.setCycleStartDate(dto.getCycleStartDate());
+            bean.setCycleEndDate(dto.getCycleEndDate());
+            bean.setCurrentCycleDay(dto.getCurrentCycleDay());
+            bean.setWorkoutStates(dto.getWorkoutStates());
+            bean.setNextSuggestedSession(mapSessionDtoToBean(dto.getNextSuggestedSession()));
+            return bean;
+        });
     }
 
     public CompletableFuture<WorkoutSessionBean> getNextSuggestedSessionAsync() {
