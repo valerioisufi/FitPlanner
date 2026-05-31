@@ -6,12 +6,14 @@ import com.example.fitplannerclient.controller.profile.ProfileManager;
 import com.example.fitplannerclient.ui.fx.GuiController;
 import com.example.fitplannerclient.ui.fx.GuiManager;
 import com.example.fitplannerclient.ui.fx.Navigator;
-import com.example.fitplannerclient.ui.fx.view.dashboard.HomeView;
+import com.example.fitplannerclient.ui.fx.view.dashboard.AthleteHomeView;
+import com.example.fitplannerclient.ui.fx.view.dashboard.TrainerHomeView;
 import javafx.application.Platform;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.BorderPane;
 
 public class HomeViewController implements GuiController {
-    private final HomeView view;
+    private Pane view;
     private final HeaderViewController headerViewController;
     private final ProfileManager profileManager;
     private final WorkoutPlanManager planManager;
@@ -20,7 +22,15 @@ public class HomeViewController implements GuiController {
         this.profileManager = profileManager;
         this.planManager = planManager;
         this.headerViewController = new HeaderViewController(0, profileManager); // Active Index 0 is Home
-        this.view = new HomeView(headerViewController.getView());
+        
+        ProfileBean profile = profileManager.getCacheProfileInfo();
+        boolean isTrainer = profile != null && profile.getProfileType() == ProfileBean.ProfileType.TRAINER;
+        
+        if (isTrainer) {
+            this.view = new TrainerHomeView(headerViewController.getView());
+        } else {
+            this.view = new AthleteHomeView(headerViewController.getView());
+        }
     }
 
     @Override
@@ -37,23 +47,24 @@ public class HomeViewController implements GuiController {
         String welcomeSubtitle = isTrainer 
                 ? "Gestisci la tua libreria e i piani dei tuoi atleti." 
                 : "Supera i tuoi limiti oggi!";
-        view.setWelcomeMessage(welcomeTitle, welcomeSubtitle);
 
         if (isTrainer) {
-            view.showTrainerDashboard(
+            TrainerHomeView trainerView = (TrainerHomeView) this.view;
+            trainerView.setWelcomeMessage(welcomeTitle, welcomeSubtitle);
+            trainerView.showTrainerDashboard(
                     () -> Navigator.getInstance().goToExerciseLibrary(),
                     () -> Navigator.getInstance().goToPlanManagement()
             );
 
             // Fetch and set invite code
             profileManager.getInvitationCodeAsync()
-                    .thenAccept(code -> javafx.application.Platform.runLater(() -> view.setInviteCode(code)))
+                    .thenAccept(code -> javafx.application.Platform.runLater(() -> trainerView.setInviteCode(code)))
                     .exceptionally(ex -> null);
 
             // Fetch and set athletes
             profileManager.getMyAthletesAsync()
                     .thenAccept(athletes -> javafx.application.Platform.runLater(() -> 
-                            view.showAthleteList(athletes, athlete -> Navigator.getInstance().goToAthleteDashboard(athlete))
+                            trainerView.showAthleteList(athletes, athlete -> Navigator.getInstance().goToAthleteDashboard(athlete))
                     ))
                     .exceptionally(ex -> {
                         Navigator.getInstance().getGuiManager().showExceptionError(
@@ -61,33 +72,36 @@ public class HomeViewController implements GuiController {
                         return null;
                     });
         } else {
+            AthleteHomeView athleteView = (AthleteHomeView) this.view;
+            athleteView.setWelcomeMessage(welcomeTitle, welcomeSubtitle);
+            
             // Load athlete plan and suggested session
             planManager.getAssignedPlanAsync()
                     .thenCombine(planManager.getCurrentCycleScheduleAsync(), (plan, schedule) -> {
                         Platform.runLater(() -> {
-                            view.showAthleteDashboard(plan, schedule, () -> {
+                            athleteView.showAthleteDashboard(plan, schedule, () -> {
                                 if (schedule != null && schedule.getNextSuggestedSession() != null) {
                                     Navigator.getInstance().goToWorkoutExecution(schedule.getNextSuggestedSession());
                                 }
                             });
-                            checkAndShowTrainerInvite();
+                            checkAndShowTrainerInvite(athleteView);
                         });
                         return null;
                     })
                     .exceptionally(ex -> {
                         Platform.runLater(() -> {
-                            view.showNoPlanAssigned();
-                            checkAndShowTrainerInvite();
+                            athleteView.showNoPlanAssigned();
+                            checkAndShowTrainerInvite(athleteView);
                         });
                         return null;
                     });
         }
     }
 
-    private void checkAndShowTrainerInvite() {
+    private void checkAndShowTrainerInvite(AthleteHomeView athleteView) {
         profileManager.getMyTrainerAsync().thenAccept(trainer -> {
             if (trainer == null) {
-                Platform.runLater(() -> view.showTrainerInviteCard(code -> {
+                Platform.runLater(() -> athleteView.showTrainerInviteCard(code -> {
                     profileManager.linkTrainerAsync(code).thenRun(() -> {
                         Platform.runLater(() -> {
                             Navigator.getInstance().getGuiManager().showNotification(GuiManager.NotificationType.SUCCESS, "Trainer collegato con successo!");

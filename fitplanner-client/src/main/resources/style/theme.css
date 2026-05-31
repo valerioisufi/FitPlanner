@@ -597,3 +597,67 @@
     -fx-padding: 2px 6px;
     -fx-background-radius: 4px;
 }
+/* ==========================================
+ * WORKOUT SCHEDULE ROWS
+ * ========================================== */
+
+.workout-row {
+    -fx-background-radius: 12px;
+}
+
+.workout-row-done {
+    -fx-background-color: -fx-radix-green-3;
+    -fx-border-color: -fx-radix-green-5;
+    -fx-border-width: 1px;
+    -fx-border-radius: 12px;
+}
+.workout-row-done .dow-label, .workout-row-done .dom-label, .workout-row-done .session-label {
+    -fx-text-fill: -fx-radix-green-12;
+}
+.workout-row-done .status-label {
+    -fx-text-fill: -fx-radix-green-11;
+}
+.workout-row-done .icon-label {
+    -fx-text-fill: white;
+    -fx-background-color: -fx-radix-green-9;
+    -fx-background-radius: 50%;
+    -fx-padding: 2px 6px;
+}
+
+.workout-row-today {
+    -fx-background-color: -fx-radix-blue-3;
+    -fx-border-color: -fx-radix-blue-5;
+    -fx-border-width: 1px;
+    -fx-border-radius: 12px;
+}
+.workout-row-today .dow-label, .workout-row-today .dom-label, .workout-row-today .session-label {
+    -fx-text-fill: -fx-radix-blue-12;
+}
+.workout-row-today .status-label {
+    -fx-text-fill: -fx-radix-blue-11;
+}
+.workout-row-today .icon-label {
+    -fx-text-fill: -fx-radix-blue-9;
+    -fx-font-size: 24px;
+}
+
+.workout-row-rest {
+    -fx-background-color: -fx-radix-slate-2;
+}
+.workout-row-rest .dow-label, .workout-row-rest .dom-label {
+    -fx-text-fill: -fx-radix-slate-9;
+}
+.workout-row-rest .session-label {
+    -fx-text-fill: -fx-radix-slate-11;
+    -fx-font-weight: normal;
+}
+
+.workout-row-upcoming {
+    -fx-background-color: -fx-radix-slate-2;
+}
+.workout-row-upcoming .dow-label {
+    -fx-text-fill: -fx-radix-slate-11;
+}
+.workout-row-upcoming .dom-label, .workout-row-upcoming .session-label {
+    -fx-text-fill: -fx-radix-slate-12;
+}
