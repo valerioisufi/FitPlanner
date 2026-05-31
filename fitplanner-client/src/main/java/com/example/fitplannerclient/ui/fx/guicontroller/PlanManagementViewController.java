@@ -96,6 +96,7 @@ public class PlanManagementViewController implements GuiController {
                         Platform.runLater(() -> {
                             guiManager.hideModal();
                             guiManager.showNotification(GuiManager.NotificationType.SUCCESS, "Il piano \"" + planToAssign.getPlanTitle() + "\" è stato assegnato a " + athlete.getFirstName() + " " + athlete.getLastName());
+                            loadPlans();
                         });
                     })
                     .exceptionally(ex -> {
