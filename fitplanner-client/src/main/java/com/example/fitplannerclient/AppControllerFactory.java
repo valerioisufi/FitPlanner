@@ -5,6 +5,7 @@ import com.example.fitplannerclient.controller.exercise.ExerciseLibraryManager;
 import com.example.fitplannerclient.controller.log.WorkoutHistoryManager;
 import com.example.fitplannerclient.controller.plan.EditWorkoutPlanManager;
 import com.example.fitplannerclient.controller.plan.WorkoutPlanManager;
+import com.example.fitplannerclient.controller.plan.WorkoutPlanRepository;
 import com.example.fitplannerclient.controller.profile.ProfileManager;
 import com.example.fitplannerclient.repository.ExerciseRepository;
 import com.example.fitplannerclient.repository.ProfileRepository;
@@ -24,6 +25,7 @@ public class AppControllerFactory {
     private ExerciseRepository exerciseRepository;
     private ExerciseLibraryManager exerciseLibraryManager;
     private WorkoutPlanManager workoutPlanManager;
+    private WorkoutPlanRepository workoutPlanRepository;
     private EditWorkoutPlanManager editWorkoutPlanManager;
 
     public AppControllerFactory(
@@ -73,8 +75,15 @@ public class AppControllerFactory {
         return new WorkoutPlanManager(workoutPlanApi);
     }
 
+    public WorkoutPlanRepository createWorkoutPlanRepository() {
+        if (workoutPlanRepository == null) {
+            workoutPlanRepository = new WorkoutPlanRepository(workoutPlanApi, createExerciseRepository());
+        }
+        return workoutPlanRepository;
+    }
+
     public EditWorkoutPlanManager createEditWorkoutPlanManager() {
-        return editWorkoutPlanManager = new EditWorkoutPlanManager(workoutPlanApi, createExerciseRepository());
+        return editWorkoutPlanManager = new EditWorkoutPlanManager(createWorkoutPlanRepository());
     }
 
     public SessionLogApi createSessionLogApi() {
@@ -91,6 +100,7 @@ public class AppControllerFactory {
     public void resetDataManagers() {
         this.exerciseLibraryManager = null;
         this.workoutPlanManager = null;
+        this.workoutPlanRepository = null;
     }
 
     public WorkoutHistoryManager createWorkoutHistoryManager() {
