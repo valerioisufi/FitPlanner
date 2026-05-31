@@ -37,6 +37,7 @@ public class PlanNodeComponent extends VBox {
 
     private PlanNodeComponent parentWrapper;
     private boolean isExpanded;
+    private boolean isEditable;
 
     private record BadgeDragContext(
             PlanNodeComponent sourceNode,
@@ -44,10 +45,11 @@ public class PlanNodeComponent extends VBox {
             BadgeComponent.BadgeType badgeType
     ) {}
 
-    public PlanNodeComponent(PlanNodeBean bean, Boolean startExpanded, PlanNodeComponent parentWrapper) {
+    public PlanNodeComponent(PlanNodeBean bean, Boolean startExpanded, PlanNodeComponent parentWrapper, boolean isEditable) {
         this.originalBean = bean;
         this.planNodeId = bean.getId();
         this.parentWrapper = parentWrapper;
+        this.isEditable = isEditable;
 
         this.exerciseModifierBeans = new ArrayList<>(bean.getModifiers() != null ? bean.getModifiers() : List.of());
         this.flowDecoratorBeans = new ArrayList<>(bean.getFlowDecorators() != null ? bean.getFlowDecorators() : List.of());
@@ -58,20 +60,22 @@ public class PlanNodeComponent extends VBox {
         nameLabel.getStyleClass().add("heading-h3");
         nameLabel.setStyle("-fx-cursor: text;");
 
-        if(bean.getType() == NodeType.BLOCK) {
-            nameLabel.setOnMouseClicked(e -> {
-                if (e.getClickCount() == 1) {
-                    this.fireEvent(new PlanNodeEvent(PlanNodeEvent.EDIT_NAME_CLICKED, this.planNodeId));
-                    e.consume();
-                }
-            });
-        } else if(bean.getType() == NodeType.EXERCISE) {
-            nameLabel.setOnMouseClicked(e -> {
-                if (e.getClickCount() == 1) {
-                    this.fireEvent(new PlanNodeEvent(PlanNodeEvent.CHANGE_EXERCISE_REQUESTED, this.planNodeId));
-                    e.consume();
-                }
-            });
+        if (isEditable) {
+            if(bean.getType() == NodeType.BLOCK) {
+                nameLabel.setOnMouseClicked(e -> {
+                    if (e.getClickCount() == 1) {
+                        this.fireEvent(new PlanNodeEvent(PlanNodeEvent.EDIT_NAME_CLICKED, this.planNodeId));
+                        e.consume();
+                    }
+                });
+            } else if(bean.getType() == NodeType.EXERCISE) {
+                nameLabel.setOnMouseClicked(e -> {
+                    if (e.getClickCount() == 1) {
+                        this.fireEvent(new PlanNodeEvent(PlanNodeEvent.CHANGE_EXERCISE_REQUESTED, this.planNodeId));
+                        e.consume();
+                    }
+                });
+            }
         }
 
         inlineDecoratorsBox = new HBox(8);
@@ -84,71 +88,77 @@ public class PlanNodeComponent extends VBox {
         optionsBtn.getStyleClass().add("button-header");
         optionsBtn.setGraphic(new Icon("dots-vertical-icon", List.of("button-header-icon")));
         
-        optionsBtn.setOnMousePressed(e -> {
-            ContextMenu existingMenu = (ContextMenu) optionsBtn.getProperties().get("activeMenu");
-            if (existingMenu != null && existingMenu.isShowing()) {
-                existingMenu.hide();
-                return;
-            }
-            
-            ContextMenu menu = new ContextMenu();
-            menu.setAutoHide(true);
-            optionsBtn.getProperties().put("activeMenu", menu);
-            
-            switch (bean.getType()) {
-                case EXERCISE -> {
-                    menu.getItems().addAll(
-                        MenuUtils.createCustomMenuItem("Cambia Esercizio...", "swap-icon", "button-header-icon", null, () -> {
-                            this.fireEvent(new PlanNodeEvent(PlanNodeEvent.CHANGE_EXERCISE_REQUESTED, this.planNodeId));
-                        }),
-                        MenuUtils.createCustomMenuItem("Duplica", "copy-icon", "button-header-icon", null, () -> {
-                            this.fireEvent(new PlanNodeEvent(PlanNodeEvent.DUPLICATE_NODE_REQUESTED, this.planNodeId));
-                        }),
-                        MenuUtils.createCustomMenuItem("Elimina", "delete-icon", "button-header-danger-icon", "-fx-text-fill: #ef4444;", () -> {
-                            this.fireEvent(new PlanNodeEvent(PlanNodeEvent.DELETE_NODE_REQUESTED, this.planNodeId));
-                        })
-                    );
+        if (isEditable) {
+            optionsBtn.setOnMousePressed(e -> {
+                ContextMenu existingMenu = (ContextMenu) optionsBtn.getProperties().get("activeMenu");
+                if (existingMenu != null && existingMenu.isShowing()) {
+                    existingMenu.hide();
+                    return;
                 }
-                case BLOCK -> {
-                    menu.getItems().addAll(
-                        MenuUtils.createCustomMenuItem("Modifica Nome", "edit-icon", "button-header-icon", null, () -> {
-                            this.fireEvent(new PlanNodeEvent(PlanNodeEvent.EDIT_NAME_CLICKED, this.planNodeId));
-                        }),
-                        MenuUtils.createCustomMenuItem("Duplica Blocco", "copy-icon", "button-header-icon", null, () -> {
-                            this.fireEvent(new PlanNodeEvent(PlanNodeEvent.DUPLICATE_NODE_REQUESTED, this.planNodeId));
-                        }),
-                        MenuUtils.createCustomMenuItem("Svuota Blocco", "eraser-icon", "button-header-icon", null, () -> {
-                            this.fireEvent(new PlanNodeEvent(PlanNodeEvent.EMPTY_NODE_REQUESTED, this.planNodeId));
-                        }),
-                        MenuUtils.createCustomMenuItem("Elimina Blocco", "delete-icon", "button-header-danger-icon", "-fx-text-fill: #ef4444;", () -> {
-                            this.fireEvent(new PlanNodeEvent(PlanNodeEvent.DELETE_NODE_REQUESTED, this.planNodeId));
-                        })
-                    );
+                
+                ContextMenu menu = new ContextMenu();
+                menu.setAutoHide(true);
+                optionsBtn.getProperties().put("activeMenu", menu);
+                
+                switch (bean.getType()) {
+                    case EXERCISE -> {
+                        menu.getItems().addAll(
+                            MenuUtils.createCustomMenuItem("Cambia Esercizio...", "swap-icon", "button-header-icon", null, () -> {
+                                this.fireEvent(new PlanNodeEvent(PlanNodeEvent.CHANGE_EXERCISE_REQUESTED, this.planNodeId));
+                            }),
+                            MenuUtils.createCustomMenuItem("Duplica", "copy-icon", "button-header-icon", null, () -> {
+                                this.fireEvent(new PlanNodeEvent(PlanNodeEvent.DUPLICATE_NODE_REQUESTED, this.planNodeId));
+                            }),
+                            MenuUtils.createCustomMenuItem("Elimina", "delete-icon", "button-header-danger-icon", "-fx-text-fill: #ef4444;", () -> {
+                                this.fireEvent(new PlanNodeEvent(PlanNodeEvent.DELETE_NODE_REQUESTED, this.planNodeId));
+                            })
+                        );
+                    }
+                    case BLOCK -> {
+                        menu.getItems().addAll(
+                            MenuUtils.createCustomMenuItem("Modifica Nome", "edit-icon", "button-header-icon", null, () -> {
+                                this.fireEvent(new PlanNodeEvent(PlanNodeEvent.EDIT_NAME_CLICKED, this.planNodeId));
+                            }),
+                            MenuUtils.createCustomMenuItem("Duplica Blocco", "copy-icon", "button-header-icon", null, () -> {
+                                this.fireEvent(new PlanNodeEvent(PlanNodeEvent.DUPLICATE_NODE_REQUESTED, this.planNodeId));
+                            }),
+                            MenuUtils.createCustomMenuItem("Svuota Blocco", "eraser-icon", "button-header-icon", null, () -> {
+                                this.fireEvent(new PlanNodeEvent(PlanNodeEvent.EMPTY_NODE_REQUESTED, this.planNodeId));
+                            }),
+                            MenuUtils.createCustomMenuItem("Elimina Blocco", "delete-icon", "button-header-danger-icon", "-fx-text-fill: #ef4444;", () -> {
+                                this.fireEvent(new PlanNodeEvent(PlanNodeEvent.DELETE_NODE_REQUESTED, this.planNodeId));
+                            })
+                        );
+                    }
+                    case PROTOCOL_BLOCK -> {
+                        menu.getItems().addAll(
+                            MenuUtils.createCustomMenuItem("Modifica Parametri Protocollo", "sliders-icon", "button-header-icon", null, () -> {
+                                this.fireEvent(new PlanNodeEvent(PlanNodeEvent.EDIT_PROTOCOL_PARAMETERS_REQUESTED, this.planNodeId));
+                            }),
+                            MenuUtils.createCustomMenuItem("Svuota Protocollo", "eraser-icon", "button-header-icon", null, () -> {
+                                this.fireEvent(new PlanNodeEvent(PlanNodeEvent.EMPTY_NODE_REQUESTED, this.planNodeId));
+                            }),
+                            MenuUtils.createCustomMenuItem("Elimina Protocollo", "delete-icon", "button-header-danger-icon", "-fx-text-fill: #ef4444;", () -> {
+                                this.fireEvent(new PlanNodeEvent(PlanNodeEvent.DELETE_NODE_REQUESTED, this.planNodeId));
+                            })
+                        );
+                    }
                 }
-                case PROTOCOL_BLOCK -> {
-                    menu.getItems().addAll(
-                        MenuUtils.createCustomMenuItem("Modifica Parametri Protocollo", "sliders-icon", "button-header-icon", null, () -> {
-                            this.fireEvent(new PlanNodeEvent(PlanNodeEvent.EDIT_PROTOCOL_PARAMETERS_REQUESTED, this.planNodeId));
-                        }),
-                        MenuUtils.createCustomMenuItem("Svuota Protocollo", "eraser-icon", "button-header-icon", null, () -> {
-                            this.fireEvent(new PlanNodeEvent(PlanNodeEvent.EMPTY_NODE_REQUESTED, this.planNodeId));
-                        }),
-                        MenuUtils.createCustomMenuItem("Elimina Protocollo", "delete-icon", "button-header-danger-icon", "-fx-text-fill: #ef4444;", () -> {
-                            this.fireEvent(new PlanNodeEvent(PlanNodeEvent.DELETE_NODE_REQUESTED, this.planNodeId));
-                        })
-                    );
-                }
-            }
-            
-            menu.show(optionsBtn, Side.BOTTOM, 0, 5);
-            e.consume();
-        });
+                
+                menu.show(optionsBtn, Side.BOTTOM, 0, 5);
+                e.consume();
+            });
+        }
 
         childrenContainer = new VBox();
 
         HBox titleBox = new HBox(12);
         titleBox.setAlignment(Pos.CENTER_LEFT);
-        titleBox.getChildren().addAll(nameLabel, inlineDecoratorsBox, spacer, optionsBtn);
+        if (isEditable) {
+            titleBox.getChildren().addAll(nameLabel, inlineDecoratorsBox, spacer, optionsBtn);
+        } else {
+            titleBox.getChildren().addAll(nameLabel, inlineDecoratorsBox, spacer);
+        }
 
         badgesBox = new FlowPane(8, 8);
         badgesBox.setAlignment(Pos.CENTER_LEFT);
@@ -180,7 +190,9 @@ public class PlanNodeComponent extends VBox {
         renderDecorators();
 
         // Initialize Drag and Drop logic via external handlers
-        NodeDragHandler.setup(this, headerBox);
+        if (isEditable) {
+            NodeDragHandler.setup(this, headerBox);
+        }
         if (parentWrapper != null) {
             BadgeDragHandler.setupFallbackDropZone(this, headerBox);
         }
@@ -245,8 +257,10 @@ public class PlanNodeComponent extends VBox {
                             formatValueWithUnit(modifier.getName(), modifier.getValue()),
                             color
                     );
-                    badge.setOnEditClicked(this::fireEditBadgeClicked);
-                    BadgeDragHandler.setup(this, badge, modifier, BadgeComponent.BadgeType.MODIFIER, i);
+                    if (isEditable) {
+                        badge.setOnEditClicked(this::fireEditBadgeClicked);
+                        BadgeDragHandler.setup(this, badge, modifier, BadgeComponent.BadgeType.MODIFIER, i);
+                    }
                     badgesBox.getChildren().add(badge);
                 }
             }
@@ -273,9 +287,11 @@ public class PlanNodeComponent extends VBox {
             BadgeComponent.BadgeColor color = resolveColorFromName(typeName, BadgeComponent.BadgeType.DECORATOR);
 
             BadgeComponent badge = new BadgeComponent(decorator.getId(), BadgeComponent.BadgeType.DECORATOR, typeName, formatValueWithUnit(typeName, decorator.getValue()), color);
-            badge.setOnEditClicked(this::fireEditBadgeClicked);
+            if (isEditable) {
+                badge.setOnEditClicked(this::fireEditBadgeClicked);
 
-            BadgeDragHandler.setup(this, badge, decorator, BadgeComponent.BadgeType.DECORATOR, i);
+                BadgeDragHandler.setup(this, badge, decorator, BadgeComponent.BadgeType.DECORATOR, i);
+            }
             inlineDecoratorsBox.getChildren().add(badge);
 
             if (i < flowDecoratorBeans.size() - 1) {

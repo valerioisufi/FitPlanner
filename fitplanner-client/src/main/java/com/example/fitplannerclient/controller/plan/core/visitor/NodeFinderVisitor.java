@@ -107,7 +107,16 @@ public class NodeFinderVisitor implements WorkoutPlanVisitor {
                 foundGroupNodeParent = groupNode;
                 foundGroupNodePosition = groupNode.indexOf(child);
                 foundGroupNodeIndex = currentPath.size() - 1;
+                
                 child.accept(this);
+                
+                if (foundNode == null) {
+                    foundParent = null;
+                    foundPosition = -1;
+                    foundGroupNodeParent = null;
+                    foundGroupNodePosition = -1;
+                    foundGroupNodeIndex = -1;
+                }
             }
         }
         currentPath.pop();
@@ -128,12 +137,18 @@ public class NodeFinderVisitor implements WorkoutPlanVisitor {
 
         if(decorator.getId().equals(id)) {
             foundNode = decorator;
+            foundPath = new ArrayList<>(currentPath);
         } else {
             foundParent = decorator;
             foundPosition = -1;
 
             if (decorator.getWrappedNode() != null)
                 decorator.getWrappedNode().accept(this);
+                
+            if (foundNode == null) {
+                foundParent = null;
+                foundPosition = -1;
+            }
         }
         currentPath.pop();
     }

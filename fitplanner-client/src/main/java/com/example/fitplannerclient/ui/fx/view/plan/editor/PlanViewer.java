@@ -7,11 +7,16 @@ import javafx.scene.control.ScrollPane;
 
 public class PlanViewer extends ScrollPane {
 
+    private boolean isEditable = true;
 
     public PlanViewer() {
         this.setFitToWidth(true);
         this.setStyle("-fx-border-color: transparent;");
         this.setPadding(new Insets(10));
+    }
+
+    public void setEditable(boolean editable) {
+        this.isEditable = editable;
     }
 
     public void setRootNode(PlanNodeBean rootBean) {
@@ -24,7 +29,7 @@ public class PlanViewer extends ScrollPane {
     }
 
     private PlanNodeComponent buildTree(PlanNodeBean bean, boolean startExpanded, PlanNodeComponent parentWrapper) {
-        PlanNodeComponent wrapper = new PlanNodeComponent(bean, startExpanded, parentWrapper);
+        PlanNodeComponent wrapper = new PlanNodeComponent(bean, startExpanded, parentWrapper, isEditable);
 
         for (PlanNodeBean childBean : bean.getChildren()) {
             wrapper.addChildNode(buildTree(childBean, true, wrapper));

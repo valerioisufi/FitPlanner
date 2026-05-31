@@ -95,11 +95,7 @@ public class PlanManagementViewController implements GuiController {
                     .thenRun(() -> {
                         Platform.runLater(() -> {
                             guiManager.hideModal();
-                            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                            alert.setTitle("Piano Assegnato");
-                            alert.setHeaderText(null);
-                            alert.setContentText("Il piano \"" + planToAssign.getPlanTitle() + "\" è stato assegnato a " + athlete.getFirstName() + " " + athlete.getLastName());
-                            alert.showAndWait();
+                            guiManager.showNotification(GuiManager.NotificationType.SUCCESS, "Il piano \"" + planToAssign.getPlanTitle() + "\" è stato assegnato a " + athlete.getFirstName() + " " + athlete.getLastName());
                         });
                     })
                     .exceptionally(ex -> {
@@ -117,7 +113,7 @@ public class PlanManagementViewController implements GuiController {
     public void start() {
         loadPlans();
         
-        // Pre-fetch athletes for faster modal open
+        // Pre-fetch athletes
         profileManager.getMyAthletesAsync().thenAccept(athletes -> athletesCache = athletes).exceptionally(ex -> null);
     }
 

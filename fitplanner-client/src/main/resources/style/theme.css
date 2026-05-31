@@ -87,7 +87,7 @@
     -fx-border-color: -fx-radix-slate-4;
 }
 .list-row-last {
-    -fx-padding: 16px 0 0 0;
+    -fx-padding: 16px 0;
     -fx-border-width: 0;
 }
 .list-header-row {

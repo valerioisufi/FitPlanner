@@ -162,6 +162,9 @@ public class WorkoutPlanBadgeEditor {
             int maxTargetIndex = (tgtPath.size() - 1) - (tgtGroupIndex + 1);
             int safeTargetIndex = Math.clamp(targetIndex, 0, maxTargetIndex);
 
+            PlanNode nodeToWrap = tgtPath.get(tgtGroupIndex + 1 + safeTargetIndex);
+            PlanNode wrapperNode = tgtPath.get(tgtGroupIndex + safeTargetIndex);
+
             GroupNode srcGroup = srcFinder.getFoundGroupNodeParent();
             GroupNode tgtGroup = tgtFinder.getFoundGroupNodeParent();
             // Se condividono lo stesso Blocco genitore e lo stesso indice nel blocco, sono nella stessa catena di decoratori
@@ -176,9 +179,6 @@ public class WorkoutPlanBadgeEditor {
                     return;
                 }
             }
-
-            PlanNode nodeToWrap = tgtPath.get(tgtGroupIndex + 1 + safeTargetIndex);
-            PlanNode wrapperNode = tgtPath.get(tgtGroupIndex + safeTargetIndex);
 
             CompositeCommand cmd = new CompositeCommand();
             // Estraiamo il decoratore dal suo vecchio padre
