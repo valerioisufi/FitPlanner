@@ -1,6 +1,6 @@
 package com.example.fitplannerclient.entity.plan.block;
 
-import com.example.fitplannerclient.controller.plan.visitor.WorkoutPlanVisitor;
+import com.example.fitplannerclient.controller.plan.core.visitor.WorkoutPlanVisitor;
 import com.example.fitplannerclient.entity.plan.PlanNode;
 import com.example.fitplannerclient.entity.plan.block.strategy.composition.CompositionRule;
 import com.example.fitplannerclient.entity.plan.block.strategy.validation.ValidationResult;

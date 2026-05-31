@@ -1,7 +1,7 @@
 package com.example.fitplannerclient.entity.plan;
 
-import com.example.fitplannerclient.controller.plan.visitor.AcceptWorkoutPlanVisitor;
-import com.example.fitplannerclient.controller.plan.visitor.WorkoutPlanVisitor;
+import com.example.fitplannerclient.controller.plan.core.visitor.AcceptWorkoutPlanVisitor;
+import com.example.fitplannerclient.controller.plan.core.visitor.WorkoutPlanVisitor;
 
 import java.util.ArrayList;
 import java.util.List;

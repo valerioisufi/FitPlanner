@@ -2,8 +2,8 @@ package com.example.fitplannerclient.ui.fx.guicontroller;
 
 import com.example.fitplannerclient.bean.plan.*;
 import com.example.fitplannerclient.controller.exercise.ExerciseLibraryManager;
-import com.example.fitplannerclient.controller.plan.EditWorkoutPlanManager;
-import com.example.fitplannerclient.controller.plan.observer.WorkoutPlanObserver;
+import com.example.fitplannerclient.controller.plan.editor.EditWorkoutPlanManager;
+import com.example.fitplannerclient.controller.plan.editor.observer.WorkoutPlanObserver;
 import com.example.fitplannerclient.ui.fx.GuiController;
 import com.example.fitplannerclient.ui.fx.GuiManager;
 import com.example.fitplannerclient.ui.fx.Navigator;

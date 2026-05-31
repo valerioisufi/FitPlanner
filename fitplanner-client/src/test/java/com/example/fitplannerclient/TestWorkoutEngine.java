@@ -1,6 +1,6 @@
 package com.example.fitplannerclient;
 
-import com.example.fitplannerclient.controller.plan.engine.WorkoutEngineImpl;
+import com.example.fitplannerclient.controller.plan.execution.engine.WorkoutEngineImpl;
 import com.example.fitplannerclient.entity.plan.context.WorkoutStatus;
 import com.example.fitplannerclient.mock.DummyPlanNode;
 import org.junit.jupiter.api.Test;

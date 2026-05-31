@@ -1,7 +1,7 @@
 package com.example.fitplannerclient.serializer;
 
 import com.example.fitplannerclient.bean.plan.*;
-import com.example.fitplannerclient.controller.plan.visitor.WorkoutPlanVisitor;
+import com.example.fitplannerclient.controller.plan.core.visitor.WorkoutPlanVisitor;
 import com.example.fitplannerclient.entity.plan.PlanNode;
 import com.example.fitplannerclient.entity.plan.WorkoutPlan;
 import com.example.fitplannerclient.entity.plan.WorkoutSession;
