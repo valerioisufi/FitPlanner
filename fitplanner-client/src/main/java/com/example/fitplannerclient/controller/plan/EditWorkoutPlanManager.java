@@ -6,9 +6,7 @@ import com.example.fitplannerclient.controller.plan.command.*;
 import com.example.fitplannerclient.controller.plan.factory.ProtocolBlockFactory;
 import com.example.fitplannerclient.controller.plan.observer.WorkoutPlanObserver;
 import com.example.fitplannerclient.controller.plan.observer.WorkoutPlanSubject;
-import com.example.fitplannerclient.controller.plan.visitor.AvailableVariablesVisitor;
-import com.example.fitplannerclient.controller.plan.visitor.NodeFinderVisitor;
-import com.example.fitplannerclient.controller.plan.visitor.NodePathVisitor;
+import com.example.fitplannerclient.controller.plan.visitor.*;
 import com.example.fitplannerclient.entity.ExerciseDescription;
 import com.example.fitplannerclient.entity.plan.PlanNode;
 import com.example.fitplannerclient.entity.plan.WorkoutPlan;
@@ -179,22 +177,12 @@ public class EditWorkoutPlanManager {
         }
     }
 
-    public void addExercise(String parentBlockId, String exerciseId) {
-        NodeFinderVisitor finder = new NodeFinderVisitor(parentBlockId);
-        plan.accept(finder);
-
-        if (finder.isFound() && finder.getFoundNode() instanceof GroupNode parent) {
-            ExerciseNode newNode = new ExerciseNode(exerciseId);
-            InsertNodeCommand cmd = new InsertNodeCommand(newNode, parent, parent.getChildrenCount());
-            executeCommand(cmd);
-        }
-    }
-
     public void removeNode(String nodeId) {
-        NodeContext ctx = getOutmostNodeContext(nodeId);
+        NodeFinderVisitor finder = new NodeFinderVisitor(nodeId);
+        finder.visit(plan);
 
-        if (ctx != null && ctx.groupParent != null) {
-            RemoveNodeCommand cmd = new RemoveNodeCommand(ctx.groupParent, ctx.indexInParent);
+        if (finder.isFound()) {
+            RemoveNodeCommand cmd = new RemoveNodeCommand(finder.getFoundGroupNodeParent(), finder.getFoundGroupNodePosition());
             executeCommand(cmd);
         }
     }
@@ -202,48 +190,19 @@ public class EditWorkoutPlanManager {
     public void renameNode(String nodeId, String newName) {
         NodeFinderVisitor finder = new NodeFinderVisitor(nodeId);
         plan.accept(finder);
+
         if (finder.isFound() && finder.getFoundNode() instanceof Block block) {
             RenameBlockCommand cmd = new RenameBlockCommand(block, newName);
             executeCommand(cmd);
         }
     }
 
-    private static class NodeContext {
-        public PlanNode outmostNode;
-        public GroupNode groupParent;
-        public int indexInParent;
-    }
-
-    private NodeContext getOutmostNodeContext(String targetInnermostId) {
-        NodePathVisitor pathVisitor = new NodePathVisitor(targetInnermostId);
-        plan.accept(pathVisitor);
-        List<PlanNode> path = pathVisitor.getPath();
-        if (path == null || path.isEmpty()) return null;
-
-        NodeContext ctx = new NodeContext();
-        for (int i = path.size() - 2; i >= 0; i--) {
-            PlanNode node = path.get(i);
-            if (node instanceof GroupNode gn) {
-                ctx.groupParent = gn;
-                ctx.outmostNode = path.get(i + 1);
-                for (int j = 0; j < gn.getChildrenCount(); j++) {
-                    if (gn.getNodeAt(j) == ctx.outmostNode) {
-                        ctx.indexInParent = j;
-                        break;
-                    }
-                }
-                return ctx;
-            }
-        }
-        return null;
-    }
-
     public void changeExerciseResource(String nodeId, String newResourceId) {
         NodeFinderVisitor finder = new NodeFinderVisitor(nodeId);
         plan.accept(finder);
+
         if (finder.isFound() && finder.getFoundNode() instanceof ExerciseNode node) {
-            ChangeExerciseResourceCommand cmd = 
-                new ChangeExerciseResourceCommand(node, newResourceId);
+            ChangeExerciseResourceCommand cmd = new ChangeExerciseResourceCommand(node, newResourceId);
             executeCommand(cmd);
         }
     }
@@ -251,9 +210,11 @@ public class EditWorkoutPlanManager {
     public void emptyNode(String nodeId) {
         NodeFinderVisitor finder = new NodeFinderVisitor(nodeId);
         plan.accept(finder);
+
         if (finder.isFound() && finder.getFoundNode() instanceof GroupNode groupNode) {
             CompositeCommand cmd = new CompositeCommand();
-            // Remove nodes from last to first to avoid index shifting issues
+
+            // Remove nodes from last to first
             for (int i = groupNode.getChildrenCount() - 1; i >= 0; i--) {
                 cmd.addCommand(new RemoveNodeCommand(groupNode, i));
             }
@@ -264,51 +225,60 @@ public class EditWorkoutPlanManager {
     public void updateProtocolParameters(String nodeId, Map<String, String> params) {
         NodeFinderVisitor finder = new NodeFinderVisitor(nodeId);
         plan.accept(finder);
+
         if (finder.isFound() && finder.getFoundNode() instanceof ProtocolBlock block) {
-            UpdateProtocolParametersCommand cmd = 
-                new UpdateProtocolParametersCommand(block, params);
+            UpdateProtocolParametersCommand cmd = new UpdateProtocolParametersCommand(block, params);
             executeCommand(cmd);
         }
     }
 
     public void copyNode(String nodeId, String targetParentId, int targetIndex) {
-        NodeContext ctx = getOutmostNodeContext(nodeId);
+        NodeFinderVisitor finder = new NodeFinderVisitor(nodeId);
+        plan.accept(finder);
+
         NodeFinderVisitor targetFinder = new NodeFinderVisitor(targetParentId);
         plan.accept(targetFinder);
 
-        if (ctx != null && targetFinder.isFound() && targetFinder.getFoundNode() instanceof GroupNode targetParent) {
-            PlanNode copy = ctx.outmostNode.deepCopy();
+        if (finder.isFound() && targetFinder.isFound() && targetFinder.getFoundNode() instanceof GroupNode targetParent) {
+            PlanNode copy = finder.getFoundOutmostNode().deepCopy();
+
             InsertNodeCommand cmd = new InsertNodeCommand(copy, targetParent, targetIndex);
             executeCommand(cmd);
         }
     }
 
     public void duplicateNode(String nodeId) {
-        NodeContext ctx = getOutmostNodeContext(nodeId);
-        if (ctx != null && ctx.groupParent != null) {
-            PlanNode copy = ctx.outmostNode.deepCopy();
-            InsertNodeCommand cmd = new InsertNodeCommand(copy, ctx.groupParent, ctx.indexInParent + 1);
+        NodeFinderVisitor finder = new NodeFinderVisitor(nodeId);
+        plan.accept(finder);
+
+        if (finder.isFound()) {
+            PlanNode copy = finder.getFoundOutmostNode().deepCopy();
+
+            InsertNodeCommand cmd = new InsertNodeCommand(copy, finder.getFoundGroupNodeParent(), finder.getFoundGroupNodePosition() + 1);
             executeCommand(cmd);
         }
     }
 
     public void moveNode(String nodeId, String targetParentId, int targetIndex) {
-        NodeContext ctx = getOutmostNodeContext(nodeId);
+        NodeFinderVisitor finder = new NodeFinderVisitor(nodeId);
+        plan.accept(finder);
+
         NodeFinderVisitor targetFinder = new NodeFinderVisitor(targetParentId);
         plan.accept(targetFinder);
 
-        if (ctx != null && ctx.groupParent != null 
-            && targetFinder.isFound() && targetFinder.getFoundNode() instanceof GroupNode targetParent) {
+        if (finder.isFound() && targetFinder.isFound() && targetFinder.getFoundNode() instanceof GroupNode targetParent) {
             
-            int sourceIndex = ctx.indexInParent;
-            GroupNode sourceParent = ctx.groupParent;
+            int sourceIndex = finder.getFoundGroupNodePosition();
+            GroupNode sourceParent = finder.getFoundGroupNodeParent();
+
+            if (sourceIndex == targetIndex && sourceParent == targetParent) return;
 
             if (sourceParent == targetParent && sourceIndex < targetIndex) {
                 targetIndex--;
             }
 
             RemoveNodeCommand removeCmd = new RemoveNodeCommand(sourceParent, sourceIndex);
-            InsertNodeCommand insertCmd = new InsertNodeCommand(ctx.outmostNode, targetParent, targetIndex);
+            InsertNodeCommand insertCmd = new InsertNodeCommand(finder.getFoundOutmostNode(), targetParent, targetIndex);
             
             CompositeCommand cmd = new CompositeCommand();
             cmd.addCommand(removeCmd);
@@ -317,41 +287,48 @@ public class EditWorkoutPlanManager {
         }
     }
 
-    public void updateModifier(String nodeId, String badgeId, String newName, String newValue) {
-        NodeFinderVisitor finder = new NodeFinderVisitor(nodeId);
+    public void updateModifier(String targetNodeId, String modifierType, String newValue) {
+        NodeFinderVisitor finder = new NodeFinderVisitor(targetNodeId);
         plan.accept(finder);
+
         if (finder.isFound() && finder.getFoundNode() instanceof ExerciseNode node) {
-            ModifierType type = ModifierType.valueOf(newName);
+            ModifierType type = ModifierType.valueOf(modifierType);
             ExerciseModifier modifier = new ExerciseModifier(type, newValue);
+
             SetModifierCommand cmd = new SetModifierCommand(node, modifier);
             executeCommand(cmd);
         }
     }
 
-    public void updateDecorator(String nodeId, String badgeId, String newName, String newValue) {
-        NodeFinderVisitor finder = new NodeFinderVisitor(badgeId);
+    public void updateDecorator(String decoratorId, String newValue) {
+        NodeFinderVisitor finder = new NodeFinderVisitor(decoratorId);
         plan.accept(finder);
+
         if (finder.isFound() && finder.getFoundNode() instanceof FlowDecorator decorator) {
-            UpdateDecoratorValueCommand cmd = 
-                new UpdateDecoratorValueCommand(decorator, null, newValue);
+            UpdateDecoratorValueCommand cmd =
+                    new UpdateDecoratorValueCommand(decorator, newValue);
             executeCommand(cmd);
         }
     }
 
     public void copyModifier(String sourceNodeId, String targetNodeId, int sourceIndex, int targetIndex) {
         if (sourceNodeId.equals(targetNodeId)) return;
+
         NodeFinderVisitor srcFinder = new NodeFinderVisitor(sourceNodeId);
         NodeFinderVisitor tgtFinder = new NodeFinderVisitor(targetNodeId);
         plan.accept(srcFinder);
         plan.accept(tgtFinder);
+
         if (srcFinder.isFound() && tgtFinder.isFound() && 
             srcFinder.getFoundNode() instanceof ExerciseNode srcNode &&
-            tgtFinder.getFoundNode() instanceof ExerciseNode tgtNode) {
-            
+            tgtFinder.getFoundNode() instanceof ExerciseNode tgtNode
+        ) {
             var mods = new ArrayList<>(srcNode.getModifiers());
+
             if (sourceIndex >= 0 && sourceIndex < mods.size()) {
                 ExerciseModifier mod = mods.get(sourceIndex);
                 ExerciseModifier copy = new ExerciseModifier(mod.getType(), mod.getValue());
+
                 executeCommand(new SetModifierCommand(tgtNode, copy));
             }
         }
@@ -359,10 +336,12 @@ public class EditWorkoutPlanManager {
 
     public void moveModifier(String sourceNodeId, String targetNodeId, int sourceIndex, int targetIndex) {
         if (sourceNodeId.equals(targetNodeId)) return;
+
         NodeFinderVisitor srcFinder = new NodeFinderVisitor(sourceNodeId);
         NodeFinderVisitor tgtFinder = new NodeFinderVisitor(targetNodeId);
         plan.accept(srcFinder);
         plan.accept(tgtFinder);
+
         if (srcFinder.isFound() && tgtFinder.isFound() && 
             srcFinder.getFoundNode() instanceof ExerciseNode srcNode &&
             tgtFinder.getFoundNode() instanceof ExerciseNode tgtNode) {
@@ -383,120 +362,83 @@ public class EditWorkoutPlanManager {
     private void removeDecoratorFromChain(String decoratorId) {
         NodeFinderVisitor finder = new NodeFinderVisitor(decoratorId);
         plan.accept(finder);
-        if (finder.isFound() && finder.getFoundNode() instanceof FlowDecorator decorator) {
-            PlanNode parent = finder.getFoundParent();
-            if (parent instanceof GroupNode group) {
-                group.replaceNode(finder.getFoundPosition(), decorator.getWrappedNode());
-            } else if (parent instanceof FlowDecorator parentDecorator) {
-                parentDecorator.setWrappedNode(decorator.getWrappedNode());
-            }
-        }
-    }
 
-    private void insertDecoratorToChain(FlowDecorator decorator, String targetInnermostNodeId, int targetIndex) {
-        NodePathVisitor pathVisitor = new NodePathVisitor(targetInnermostNodeId);
-        plan.accept(pathVisitor);
-        List<PlanNode> path = pathVisitor.getPath();
-        if (path == null || path.size() < 2) return;
-
-        GroupNode groupNode = null;
-        int groupIndex = -1;
-        int firstDecoratorIndex = -1;
-
-        for (int i = path.size() - 2; i >= 0; i--) {
-            PlanNode node = path.get(i);
-            if (node instanceof FlowDecorator) {
-                firstDecoratorIndex = i;
-            } else if (node instanceof GroupNode gn) {
-                groupNode = gn;
-                PlanNode nextNode = path.get(i + 1);
-                for (int j = 0; j < gn.getChildrenCount(); j++) {
-                    if (gn.getNodeAt(j) == nextNode) {
-                        groupIndex = j;
-                        break;
-                    }
-                }
-                break;
-            }
-        }
-
-        if (groupNode != null && groupIndex != -1) {
-            List<FlowDecorator> currentChain = new ArrayList<>();
-            if (firstDecoratorIndex != -1) {
-                for (int i = firstDecoratorIndex; i < path.size() - 1; i++) {
-                    currentChain.add((FlowDecorator) path.get(i));
-                }
-            }
-
-            if (targetIndex >= 0 && targetIndex <= currentChain.size()) {
-                currentChain.add(targetIndex, decorator);
-            } else {
-                currentChain.add(decorator);
-            }
-
-            PlanNode chainRoot = path.get(path.size() - 1);
-            for (int i = currentChain.size() - 1; i >= 0; i--) {
-                FlowDecorator d = currentChain.get(i);
-                d.setWrappedNode(chainRoot);
-                chainRoot = d;
-            }
-
-            groupNode.replaceNode(groupIndex, chainRoot);
+        if (finder.isFound() && finder.getFoundNode() instanceof FlowDecorator flowDecorator) {
+            ReplaceNodeCommand cmd = new ReplaceNodeCommand(flowDecorator.getWrappedNode(), finder.getFoundParent(), finder.getFoundPosition());
+            executeCommand(cmd);
         }
     }
 
     public void copyDecorator(String sourceDecoratorId, String targetNodeId, int targetIndex) {
-        NodeFinderVisitor finder = new NodeFinderVisitor(sourceDecoratorId);
-        plan.accept(finder);
-        if (finder.isFound() && finder.getFoundNode() instanceof FlowDecorator srcDecorator) {
-            FlowDecorator copy = (FlowDecorator) srcDecorator.deepCopy();
-            insertDecoratorToChain(copy, targetNodeId, targetIndex);
-            workoutPlanSubject.notifyObservers();
+        NodeFinderVisitor srcFinder = new NodeFinderVisitor(sourceDecoratorId);
+        NodeFinderVisitor tgtFinder = new NodeFinderVisitor(targetNodeId);
+        plan.accept(srcFinder);
+        plan.accept(tgtFinder);
+
+        if (srcFinder.isFound() && tgtFinder.isFound() && srcFinder.getFoundNode() instanceof FlowDecorator srcDecorator) {
+
+            List<PlanNode> path = tgtFinder.getFoundPath();
+            int groupIndex = tgtFinder.getFoundGroupNodeIndex();
+
+            // Calcoliamo quanti decoratori ci sono già nella catena (il max index consentito)
+            // path.size() - 1 è l'ultimo nodo (es. l'esercizio)
+            // groupIndex + 1 è il primo nodo avvolto
+            int maxTargetIndex = (path.size() - 1) - (groupIndex + 1);
+
+            // Limitiamo il targetIndex per sicurezza
+            int safeTargetIndex = Math.clamp(targetIndex, 0, maxTargetIndex);
+
+            PlanNode nodeToWrap = path.get(groupIndex + 1 + safeTargetIndex);
+            FlowDecorator copy = srcDecorator.cloneWithNode(nodeToWrap);
+
+            PlanNode wrapperNode = path.get(groupIndex + safeTargetIndex);
+
+            ReplaceNodeCommand cmd = new ReplaceNodeCommand(copy, wrapperNode, tgtFinder.getFoundGroupNodePosition());
+            executeCommand(cmd);
         }
     }
 
     public void moveDecorator(String sourceDecoratorId, String targetNodeId, int targetIndex) {
-        NodeFinderVisitor finder = new NodeFinderVisitor(sourceDecoratorId);
-        plan.accept(finder);
-        if (finder.isFound() && finder.getFoundNode() instanceof FlowDecorator srcDecorator) {
-            
-            PlanNode innermost = srcDecorator.getWrappedNode();
-            while(innermost instanceof FlowDecorator) {
-                innermost = ((FlowDecorator) innermost).getWrappedNode();
-            }
-            String sourceInnermostNodeId = innermost.getId();
+        NodeFinderVisitor srcFinder = new NodeFinderVisitor(sourceDecoratorId);
+        NodeFinderVisitor tgtFinder = new NodeFinderVisitor(targetNodeId);
+        plan.accept(srcFinder);
+        plan.accept(tgtFinder);
 
-            if (sourceInnermostNodeId.equals(targetNodeId)) {
-                NodePathVisitor pathVisitor = new NodePathVisitor(targetNodeId);
-                plan.accept(pathVisitor);
-                List<PlanNode> path = pathVisitor.getPath();
-                if (path != null) {
-                    int sourceIndex = -1;
-                    int firstDecoratorIndex = -1;
-                    for (int i = path.size() - 2; i >= 0; i--) {
-                        if (path.get(i) instanceof FlowDecorator) {
-                            firstDecoratorIndex = i;
-                        } else {
-                            break;
-                        }
-                    }
-                    if (firstDecoratorIndex != -1) {
-                        for (int i = firstDecoratorIndex; i < path.size() - 1; i++) {
-                            if (path.get(i).getId().equals(sourceDecoratorId)) {
-                                sourceIndex = i - firstDecoratorIndex;
-                                break;
-                            }
-                        }
-                    }
-                    if (sourceIndex != -1 && sourceIndex < targetIndex) {
-                        targetIndex--;
-                    }
+        if (srcFinder.isFound() && tgtFinder.isFound() && srcFinder.getFoundNode() instanceof FlowDecorator srcDecorator) {
+
+            List<PlanNode> tgtPath = tgtFinder.getFoundPath();
+            int tgtGroupIndex = tgtFinder.getFoundGroupNodeIndex();
+
+            int maxTargetIndex = (tgtPath.size() - 1) - (tgtGroupIndex + 1);
+            int safeTargetIndex = Math.clamp(targetIndex, 0, maxTargetIndex);
+
+            GroupNode srcGroup = srcFinder.getFoundGroupNodeParent();
+            GroupNode tgtGroup = tgtFinder.getFoundGroupNodeParent();
+            // Se condividono lo stesso Blocco genitore e lo stesso indice nel blocco, sono nella stessa catena di decoratori
+            if (srcGroup != null && srcGroup == tgtGroup &&
+                    srcFinder.getFoundGroupNodePosition() == tgtFinder.getFoundGroupNodePosition()) {
+                List<PlanNode> srcPath = srcFinder.getFoundPath();
+                int srcGroupIndex = srcFinder.getFoundGroupNodeIndex();
+                int sourceIndex = (srcPath.size() - 1) - (srcGroupIndex + 1);
+
+                // Usiamo il safeTargetIndex per garantire la sicurezza matematica
+                if (safeTargetIndex == sourceIndex || safeTargetIndex == sourceIndex + 1) {
+                    return;
                 }
             }
 
-            removeDecoratorFromChain(sourceDecoratorId);
-            insertDecoratorToChain(srcDecorator, targetNodeId, targetIndex);
-            workoutPlanSubject.notifyObservers();
+            PlanNode nodeToWrap = tgtPath.get(tgtGroupIndex + 1 + safeTargetIndex);
+            PlanNode wrapperNode = tgtPath.get(tgtGroupIndex + safeTargetIndex);
+
+            CompositeCommand cmd = new CompositeCommand();
+            // Estraiamo il decoratore dal suo vecchio padre
+            cmd.addCommand(new ReplaceNodeCommand(srcDecorator.getWrappedNode(), srcFinder.getFoundParent(), srcFinder.getFoundPosition()));
+            // Diciamo al decoratore appena estratto di avvolgere il nuovo nodo di destinazione
+            cmd.addCommand(new ReplaceNodeCommand(nodeToWrap, srcDecorator, -1));
+            // Diciamo al nuovo padre di avvolgere il decoratore
+            cmd.addCommand(new ReplaceNodeCommand(srcDecorator, wrapperNode, tgtFinder.getFoundGroupNodePosition()));
+
+            executeCommand(cmd);
         }
     }
 
@@ -582,6 +524,7 @@ public class EditWorkoutPlanManager {
             if (idx < 0 || idx > block.getChildrenCount()) {
                 idx = block.getChildrenCount();
             }
+
             InsertNodeCommand cmd = new InsertNodeCommand(newNode, block, idx);
             executeCommand(cmd);
         }
@@ -596,19 +539,13 @@ public class EditWorkoutPlanManager {
         NodeFinderVisitor finder = new NodeFinderVisitor(targetNodeId);
         plan.accept(finder);
 
-        if (finder.isFound() && finder.getFoundParent() instanceof GroupNode block) {
-            int index = finder.getFoundPosition();
-            if (index != -1) {
-                newDecorator.setWrappedNode(finder.getFoundNode());
-                ReplaceNodeCommand cmd =
-                    new ReplaceNodeCommand(finder.getFoundNode(), newDecorator, (PlanNode) block, index);
-                executeCommand(cmd);
-            }
-        } else if (finder.isFound() && finder.getFoundParent() instanceof FlowDecorator parentDecorator) {
-             newDecorator.setWrappedNode(finder.getFoundNode());
-             ReplaceNodeCommand cmd =
-                 new ReplaceNodeCommand(finder.getFoundNode(), newDecorator, parentDecorator, -1);
-             executeCommand(cmd);
+        if (finder.isFound()) {
+
+            newDecorator.setWrappedNode(finder.getFoundNode());
+
+            ReplaceNodeCommand cmd = new ReplaceNodeCommand(newDecorator, finder.getFoundParent(), finder.getFoundPosition());
+            executeCommand(cmd);
+
         }
     }
 

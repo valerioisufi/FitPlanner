@@ -8,7 +8,7 @@ import javafx.scene.control.*;
 import javafx.scene.layout.*;
 
 import java.util.List;
-import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 public class EditBadgeModal extends VBox {
 
@@ -26,7 +26,7 @@ public class EditBadgeModal extends VBox {
     
     private final VBox inputContainer;
 
-    private BiConsumer<String, String> onSaveAction;
+    private Consumer<String> onSaveAction;
     private Runnable onCloseAction;
 
     public EditBadgeModal() {
@@ -156,7 +156,7 @@ public class EditBadgeModal extends VBox {
                 }
                 
                 if (!resultValue.isEmpty()) {
-                    onSaveAction.accept(nameLabel.getText(), resultValue);
+                    onSaveAction.accept(resultValue);
                 }
             }
         });
@@ -231,7 +231,7 @@ public class EditBadgeModal extends VBox {
         };
     }
 
-    public void setOnSaveAction(BiConsumer<String, String> onSaveAction) {
+    public void setOnSaveAction(Consumer<String> onSaveAction) {
         this.onSaveAction = onSaveAction;
     }
 

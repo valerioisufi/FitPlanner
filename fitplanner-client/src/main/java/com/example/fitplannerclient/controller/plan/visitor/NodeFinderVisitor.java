@@ -4,17 +4,30 @@ import com.example.fitplannerclient.entity.plan.PlanNode;
 import com.example.fitplannerclient.entity.plan.WorkoutPlan;
 import com.example.fitplannerclient.entity.plan.WorkoutSession;
 import com.example.fitplannerclient.entity.plan.block.Block;
+import com.example.fitplannerclient.entity.plan.block.GroupNode;
 import com.example.fitplannerclient.entity.plan.block.ProtocolBlock;
 import com.example.fitplannerclient.entity.plan.decorator.*;
 import com.example.fitplannerclient.entity.plan.exercise.ExerciseNode;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Stack;
+
 public class NodeFinderVisitor implements WorkoutPlanVisitor {
-    private final String id;
+    protected final String id;
 
     private PlanNode foundNode;
 
-    private int foundPosition;
     private PlanNode foundParent;
+    private int foundPosition;
+
+    private GroupNode foundGroupNodeParent;
+    private int foundGroupNodePosition;
+    private int foundGroupNodeIndex; // indice nel foundPath
+
+    private List<PlanNode> foundPath = new ArrayList<>();
+
+    private final Stack<PlanNode> currentPath = new Stack<>();
 
     public NodeFinderVisitor(String id) {
         this.id = id;
@@ -23,11 +36,29 @@ public class NodeFinderVisitor implements WorkoutPlanVisitor {
     public PlanNode getFoundNode() {
         return foundNode;
     }
+    public PlanNode getFoundParent() {
+        return foundParent;
+    }
     public int getFoundPosition() {
         return foundPosition;
     }
-    public PlanNode getFoundParent() {
-        return foundParent;
+
+    public GroupNode getFoundGroupNodeParent() {
+        return foundGroupNodeParent;
+    }
+    public int getFoundGroupNodePosition() {
+        return foundGroupNodePosition;
+    }
+    public int getFoundGroupNodeIndex() {
+        return foundGroupNodeIndex;
+    }
+
+    public PlanNode getFoundOutmostNode() {
+        return foundGroupNodeParent.getNodeAt(foundGroupNodePosition);
+    }
+
+    public List<PlanNode> getFoundPath() {
+        return foundPath;
     }
     public boolean isFound() {
         return foundNode != null;
@@ -36,6 +67,7 @@ public class NodeFinderVisitor implements WorkoutPlanVisitor {
     @Override
     public void visit(WorkoutPlan workoutPlan) {
         for (WorkoutSession session : workoutPlan.getSessions()) {
+            if (foundNode != null) break;
             session.accept(this);
         }
     }
@@ -49,51 +81,61 @@ public class NodeFinderVisitor implements WorkoutPlanVisitor {
 
     @Override
     public void visit(ExerciseNode exerciseNode) {
+        currentPath.push(exerciseNode);
+
         if(exerciseNode.getId().equals(id)) {
             foundNode = exerciseNode;
+            foundPath = new ArrayList<>(currentPath);
         }
+
+        currentPath.pop();
+    }
+
+    private <T extends PlanNode & GroupNode> void visitGroupNode(T groupNode) {
+        currentPath.push(groupNode);
+
+        if(groupNode.getId().equals(id)) {
+            foundNode = groupNode;
+            foundPath = new ArrayList<>(currentPath);
+        } else {
+            for (PlanNode child : groupNode) {
+                if (foundNode != null) break;
+
+                foundParent = groupNode;
+                foundPosition = groupNode.indexOf(child);
+
+                foundGroupNodeParent = groupNode;
+                foundGroupNodePosition = groupNode.indexOf(child);
+                foundGroupNodeIndex = currentPath.size() - 1;
+                child.accept(this);
+            }
+        }
+        currentPath.pop();
     }
 
     @Override
     public void visit(Block block) {
-        if(block.getId().equals(id)) {
-            foundNode = block;
-        } else {
-            for (PlanNode child : block) {
-                if (foundNode != null) break;
-
-                foundParent = block;
-                foundPosition = block.indexOf(child);
-                child.accept(this);
-            }
-        }
-
+        visitGroupNode(block);
     }
 
     @Override
     public void visit(ProtocolBlock protocolBlock) {
-        if(protocolBlock.getId().equals(id)) {
-            foundNode = protocolBlock;
-        } else {
-            for (PlanNode child : protocolBlock) {
-                if (foundNode != null) break;
-
-                foundParent = protocolBlock;
-                foundPosition = protocolBlock.indexOf(child);
-                child.accept(this);
-            }
-        }
-
+        visitGroupNode(protocolBlock);
     }
 
     private void visitDecorator(FlowDecorator decorator) {
+        currentPath.push(decorator);
+
         if(decorator.getId().equals(id)) {
             foundNode = decorator;
         } else {
             foundParent = decorator;
             foundPosition = -1;
-            decorator.getWrappedNode().accept(this);
+
+            if (decorator.getWrappedNode() != null)
+                decorator.getWrappedNode().accept(this);
         }
+        currentPath.pop();
     }
 
     @Override

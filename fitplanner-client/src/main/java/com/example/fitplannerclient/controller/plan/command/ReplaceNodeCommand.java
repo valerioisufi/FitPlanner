@@ -9,13 +9,12 @@ import java.util.function.Consumer;
 
 public class ReplaceNodeCommand implements WorkoutPlanEditorCommand {
 
-    private final PlanNode oldNode; // il nodo precedente da sostituire
+    private PlanNode oldNode; // il nodo precedente da sostituire
     private final PlanNode newNode; // il nuovo nodo sostitutivo
     private PlanNode parent;
     private int index = -1; // indice all'interno del GroupNode (se applicabile)
 
-    public ReplaceNodeCommand(PlanNode oldNode, PlanNode newNode, PlanNode parent, int index) {
-        this.oldNode = oldNode;
+    public ReplaceNodeCommand(PlanNode newNode, PlanNode parent, int index) {
         this.newNode = newNode;
         this.parent = parent;
         this.index = index;
@@ -24,10 +23,11 @@ public class ReplaceNodeCommand implements WorkoutPlanEditorCommand {
     @Override
     public void execute() {
         executeIfGroupNode(parent, groupNode -> {
-            groupNode.replaceNode(index, newNode);
+            oldNode = groupNode.replaceNode(index, newNode);
         });
 
         executeIfFlowDecorator(parent, flowDecorator -> {
+            oldNode = flowDecorator.getWrappedNode();
             flowDecorator.setWrappedNode(newNode);
         });
     }

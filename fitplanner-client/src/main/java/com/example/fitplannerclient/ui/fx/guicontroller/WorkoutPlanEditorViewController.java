@@ -175,11 +175,11 @@ public class WorkoutPlanEditorViewController implements GuiController {
         List<String> vars = editWorkoutPlanManager.getAvailableVariablesForNode(targetScopeId);
 
         this.view.getEditBadgeModal().setInitialData(badge.getBadgeType(), badge.getName(), badge.getValue(), vars);
-        this.view.getEditBadgeModal().setOnSaveAction((newName, newValue) -> {
+        this.view.getEditBadgeModal().setOnSaveAction((newValue) -> {
             if ("MODIFIER".equals(event.getBadgeType())) {
-                editWorkoutPlanManager.updateModifier(event.getNodeId(), badge.getBadgeId(), newName, newValue);
+                editWorkoutPlanManager.updateModifier(event.getNodeId(), badge.getName(), newValue);
             } else {
-                editWorkoutPlanManager.updateDecorator(event.getNodeId(), badge.getBadgeId(), newName, newValue);
+                editWorkoutPlanManager.updateDecorator(badge.getBadgeId(), newValue);
             }
             Navigator.getInstance().getGuiManager().hideModal();
         });
@@ -243,8 +243,8 @@ public class WorkoutPlanEditorViewController implements GuiController {
             String type = payload.substring("MODIFIER:".length());
             List<String> vars = editWorkoutPlanManager.getAvailableVariablesForNode(targetParentId);
             this.view.getEditBadgeModal().setInitialData(BadgeComponent.BadgeType.MODIFIER, type, "", vars);
-            this.view.getEditBadgeModal().setOnSaveAction((name, val) -> {
-                editWorkoutPlanManager.addModifierFromToolbox(name.toUpperCase(), val, targetParentId);
+            this.view.getEditBadgeModal().setOnSaveAction(val -> {
+                editWorkoutPlanManager.addModifierFromToolbox(type.toUpperCase(), val, targetParentId);
                 Navigator.getInstance().getGuiManager().hideModal();
             });
             Navigator.getInstance().getGuiManager().showModal(this.view.getEditBadgeModal());
@@ -253,8 +253,8 @@ public class WorkoutPlanEditorViewController implements GuiController {
             String type = payload.substring("DECORATOR:".length());
             List<String> vars = editWorkoutPlanManager.getAvailableVariablesForNode(targetParentId);
             this.view.getEditBadgeModal().setInitialData(BadgeComponent.BadgeType.DECORATOR, type, "", vars);
-            this.view.getEditBadgeModal().setOnSaveAction((name, val) -> {
-                editWorkoutPlanManager.addDecoratorFromToolbox(name, val, targetParentId);
+            this.view.getEditBadgeModal().setOnSaveAction(val -> {
+                editWorkoutPlanManager.addDecoratorFromToolbox(type, val, targetParentId);
                 Navigator.getInstance().getGuiManager().hideModal();
             });
             Navigator.getInstance().getGuiManager().showModal(this.view.getEditBadgeModal());

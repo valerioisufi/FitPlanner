@@ -10,9 +10,8 @@ public class UpdateDecoratorValueCommand implements WorkoutPlanEditorCommand {
     private String previousValue;
     private String newValue;
 
-    public UpdateDecoratorValueCommand(FlowDecorator flowDecorator, String previousValue, String newValue) {
+    public UpdateDecoratorValueCommand(FlowDecorator flowDecorator, String newValue) {
         this.flowDecorator = flowDecorator;
-        this.previousValue = previousValue;
         this.newValue = newValue;
     }
 
