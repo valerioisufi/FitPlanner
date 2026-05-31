@@ -6,6 +6,7 @@ import com.example.fitplannerclient.controller.log.WorkoutHistoryManager;
 import com.example.fitplannerclient.controller.plan.editor.EditWorkoutPlanManager;
 import com.example.fitplannerclient.controller.plan.WorkoutPlanManager;
 import com.example.fitplannerclient.controller.plan.WorkoutPlanRepository;
+import com.example.fitplannerclient.controller.plan.execution.WorkoutExecutionManager;
 import com.example.fitplannerclient.controller.profile.ProfileManager;
 import com.example.fitplannerclient.repository.ExerciseRepository;
 import com.example.fitplannerclient.repository.ProfileRepository;
@@ -88,6 +89,10 @@ public class AppControllerFactory {
 
     public SessionLogApi createSessionLogApi() {
         return sessionLogApi;
+    }
+
+    public WorkoutExecutionManager createWorkoutExecutionManager() {
+        return new WorkoutExecutionManager(sessionLogApi);
     }
 
     public void resetManagers() {

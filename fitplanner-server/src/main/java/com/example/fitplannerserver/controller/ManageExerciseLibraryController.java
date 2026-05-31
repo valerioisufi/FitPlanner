@@ -58,7 +58,9 @@ public class ManageExerciseLibraryController {
     public void updateExercise(ExerciseDescriptionDTO exerciseBean) {
         identityProvider.checkUserRole(Account.Role.TRAINER);
         PlanValidator.validateExerciseDescriptionBean(exerciseBean);
-        ValidationUtils.isValidUuid(exerciseBean.getExerciseId());
+        if (!ValidationUtils.isValidUuid(exerciseBean.getExerciseId())) {
+            throw new WrongArgumentsException("L'ID dell'esercizio deve essere un UUID valido");
+        }
 
         ExerciseDescription exercise = new ExerciseDescription(identityProvider.getUserId(), exerciseBean.getExerciseId());
         exercise.setDescription(
@@ -82,7 +84,9 @@ public class ManageExerciseLibraryController {
 
     public void removeExercise(String exerciseId) {
         identityProvider.checkUserRole(Account.Role.TRAINER);
-        ValidationUtils.isValidUuid(exerciseId);
+        if (!ValidationUtils.isValidUuid(exerciseId)) {
+            throw new WrongArgumentsException("L'ID dell'esercizio deve essere un UUID valido");
+        }
 
         try {
             exerciseLibraryDao.findById(exerciseId)
@@ -102,7 +106,7 @@ public class ManageExerciseLibraryController {
             throw new WrongArgumentsException("exerciseIds non può essere null o vuoto");
         }
         for(String id: exerciseIds){
-            if(ValidationUtils.isValidUuid(id)){
+            if(!ValidationUtils.isValidUuid(id)){
                 throw new WrongArgumentsException("exerciseIds devono essere UUID validi");
             }
         }

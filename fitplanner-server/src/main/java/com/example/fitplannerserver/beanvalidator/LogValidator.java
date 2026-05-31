@@ -17,7 +17,7 @@ public class LogValidator {
             throw new WrongArgumentsException("I campi notes, sessionStatus e exerciseLogs non possono essere nulli");
         }
 
-        if (ValidationUtils.isLengthAtMost(bean.getNotes(), 1000)) {
+        if (!ValidationUtils.isLengthAtMost(bean.getNotes(), 1000)) {
             throw new WrongArgumentsException("Il campo notes non può superare i 1000 caratteri");
         }
 
@@ -38,15 +38,15 @@ public class LogValidator {
             throw new WrongArgumentsException("I campi name, exerciseId, sets e notes non possono essere nulli");
         }
 
-        if (ValidationUtils.isLengthBetween(bean.getName(), 1,100)) {
+        if (!ValidationUtils.isLengthBetween(bean.getName(), 1,100)) {
             throw new WrongArgumentsException("Il campo name non può essere vuoto o superare i 100 caratteri");
         }
 
-        if (ValidationUtils.isValidUuid(bean.getExerciseId())) {
+        if (!ValidationUtils.isValidUuid(bean.getExerciseId())) {
             throw new WrongArgumentsException("exerciseId deve essere un UUID valido");
         }
 
-        if(ValidationUtils.isLengthAtMost(bean.getNotes(), 250)){
+        if(!ValidationUtils.isLengthAtMost(bean.getNotes(), 250)){
             throw new WrongArgumentsException("Il campo notes non può superare i 250 caratteri");
         }
     }

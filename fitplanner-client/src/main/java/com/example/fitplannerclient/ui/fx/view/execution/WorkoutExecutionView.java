@@ -1,28 +1,37 @@
 package com.example.fitplannerclient.ui.fx.view.execution;
 
+import com.example.fitplannerclient.bean.plan.PlanNodeBean;
+import com.example.fitplannerclient.ui.fx.components.FormField;
+import com.example.fitplannerclient.ui.fx.components.Icon;
+import com.example.fitplannerclient.ui.fx.view.plan.editor.components.PlanNodeComponent;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
-import javafx.scene.web.WebView;
 import java.util.ArrayList;
 import java.util.List;
 
 public class WorkoutExecutionView extends BorderPane {
 
-    private final WebView youtubeWebView = new WebView();
+    private final VBox planNodeContainer = new VBox();
+    private final Label lblMuscleGroups = new Label();
     private final Label lblInstructionTitle = new Label();
     private final Label lblInstructionSteps = new Label();
 
-    private final Label lblExerciseName = new Label();
-    private final Label lblHistory = new Label();
-    private final VBox setsContainer = new VBox(8);
+    private final VBox loggedSetsContainer = new VBox(8);
+    private final VBox currentSetFormBox = new VBox(15);
+    
+    private Label lblCurrentSetHeader;
+    private TextField txtWeight;
+    private TextField txtReps;
+    private TextField txtRpe;
+    private Button btnLogSet;
 
-    private final Button btnRestTimer = new Button("Avvia Timer Recupero");
-    private final Button btnFinish = new Button("Esercizio Successivo");
-
-    private final List<GridPane> rowList = new ArrayList<>();
+    private final Button btnSkipPrevious = new Button();
+    private final Button btnPlayPause = new Button();
+    private final Button btnSkipNext = new Button();
+    private final Button btnEndWorkout = new Button();
 
     public static record SetData(int setNum, double weight, int reps, boolean done) {}
 
@@ -50,9 +59,16 @@ public class WorkoutExecutionView extends BorderPane {
         VBox pane = new VBox(20);
         pane.setAlignment(Pos.TOP_LEFT);
 
-        youtubeWebView.setPrefSize(500, 320);
-        youtubeWebView.setMaxSize(Double.MAX_VALUE, 400);
-        youtubeWebView.setStyle("-fx-border-color: #E2E8F0; -fx-border-radius: 8px; -fx-background-radius: 8px;");
+        planNodeContainer.setAlignment(Pos.CENTER_LEFT);
+        planNodeContainer.setStyle("-fx-border-color: #E2E8F0; -fx-border-radius: 8px; -fx-background-radius: 8px; -fx-padding: 20px;");
+
+        lblMuscleGroups.setStyle("-fx-font-family: 'Space Grotesk Bold'; -fx-font-size: 13px; -fx-text-fill: -fx-radix-green-11;");
+        lblMuscleGroups.setWrapText(true);
+
+        VBox focusBox = new VBox(4);
+        focusBox.setPadding(new Insets(10, 0, 0, 0));
+        focusBox.getChildren().add(lblMuscleGroups);
+        planNodeContainer.getChildren().add(focusBox);
 
         lblInstructionTitle.getStyleClass().add("heading-h2");
         lblInstructionTitle.setWrapText(true);
@@ -64,8 +80,9 @@ public class WorkoutExecutionView extends BorderPane {
         textScroll.setFitToWidth(true);
         textScroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         textScroll.setBorder(null);
+        textScroll.setStyle("-fx-background-color: transparent;");
 
-        pane.getChildren().addAll(youtubeWebView, lblInstructionTitle, textScroll);
+        pane.getChildren().addAll(planNodeContainer, lblInstructionTitle, textScroll);
         return pane;
     }
 
@@ -74,127 +91,190 @@ public class WorkoutExecutionView extends BorderPane {
         card.getStyleClass().add("card");
         card.setPadding(new Insets(30));
 
-        VBox header = new VBox(6);
-        lblExerciseName.getStyleClass().add("heading-h1");
-        lblHistory.getStyleClass().add("body-base");
-        lblHistory.setStyle("-fx-text-fill: -fx-color-text-light;");
-        header.getChildren().addAll(lblExerciseName, lblHistory);
+        Label lblSetLogTitle = new Label("Set Log");
+        lblSetLogTitle.getStyleClass().add("heading-h2");
+        card.getChildren().add(lblSetLogTitle);
 
-        GridPane gridHeader = new GridPane();
-        gridHeader.setHgap(10);
-        gridHeader.setPadding(new Insets(0, 0, 10, 0));
+        ScrollPane setsScroll = new ScrollPane(loggedSetsContainer);
+        setsScroll.setFitToWidth(true);
+        setsScroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        setsScroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+        setsScroll.setStyle("-fx-background-color: transparent; -fx-background: transparent;");
+        setsScroll.setBorder(null);
+        // Remove padding from scrollpane inner content to avoid weird offsets
+        setsScroll.setPadding(Insets.EMPTY);
+        
+        // We set Vgrow to always so the scroll pane takes all available height,
+        // pushing the player controls to the bottom if the card expands,
+        // or just filling the available space.
+        VBox.setVgrow(setsScroll, Priority.ALWAYS);
 
-        ColumnConstraints col1 = new ColumnConstraints(40);
-        ColumnConstraints col2 = new ColumnConstraints(); col2.setHgrow(Priority.ALWAYS);
-        ColumnConstraints col3 = new ColumnConstraints(); col3.setHgrow(Priority.ALWAYS);
-        ColumnConstraints col4 = new ColumnConstraints(60); col4.setHalignment(javafx.geometry.HPos.CENTER);
+        card.getChildren().add(setsScroll);
 
-        gridHeader.getColumnConstraints().addAll(col1, col2, col3, col4);
+        setupCurrentSetForm();
+        card.getChildren().add(currentSetFormBox);
 
-        gridHeader.add(createHeaderLabel("Set"), 0, 0);
-        gridHeader.add(createHeaderLabel("Peso (kg)"), 1, 0);
-        gridHeader.add(createHeaderLabel("Reps Target"), 2, 0);
-        gridHeader.add(createHeaderLabel("Fatto"), 3, 0);
+        // Media Player Controls
+        HBox playerControls = new HBox(15);
+        playerControls.setAlignment(Pos.CENTER);
+        playerControls.setPadding(new Insets(20, 0, 0, 0));
 
-        VBox buttons = new VBox(12);
-        btnRestTimer.getStyleClass().add("button-primary");
-        btnRestTimer.setMaxWidth(Double.MAX_VALUE);
+        btnSkipPrevious.setGraphic(new Icon("skip-previous-icon", 32, List.of("button-header-icon")));
+        btnSkipPrevious.getStyleClass().add("button-transparent");
+        btnSkipPrevious.setStyle("-fx-cursor: hand;");
 
-        btnFinish.getStyleClass().add("button-secondary");
-        btnFinish.setMaxWidth(Double.MAX_VALUE);
+        btnPlayPause.setGraphic(new Icon("pause-icon", 40, List.of("button-header-icon")));
+        btnPlayPause.getStyleClass().add("button-transparent");
+        btnPlayPause.setStyle("-fx-cursor: hand;");
 
-        buttons.getChildren().addAll(btnRestTimer, btnFinish);
+        btnSkipNext.setGraphic(new Icon("skip-next-icon", 32, List.of("button-header-icon")));
+        btnSkipNext.getStyleClass().add("button-transparent");
+        btnSkipNext.setStyle("-fx-cursor: hand;");
 
-        card.getChildren().addAll(header, gridHeader, setsContainer, new Separator(), buttons);
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        btnEndWorkout.setGraphic(new Icon("stop-icon", 24, List.of("button-header-icon")));
+        btnEndWorkout.getStyleClass().add("button-transparent");
+        btnEndWorkout.setStyle("-fx-cursor: hand; -fx-background-color: -fx-radix-red-3; -fx-padding: 8px; -fx-background-radius: 50%;");
+        
+        playerControls.getChildren().addAll(btnSkipPrevious, btnPlayPause, btnSkipNext, spacer, btnEndWorkout);
+
+        card.getChildren().add(playerControls);
         return card;
     }
 
-    private Label createHeaderLabel(String text) {
-        Label l = new Label(text);
-        l.setStyle("-fx-font-family: 'Space Grotesk Bold'; -fx-text-fill: -fx-color-text-body; -fx-font-size: 12px;");
-        return l;
+    private void setupCurrentSetForm() {
+        currentSetFormBox.setPadding(new Insets(15));
+        currentSetFormBox.setStyle("-fx-border-color: #E2E8F0; -fx-border-width: 1px; -fx-border-radius: 8px; -fx-background-color: #F8FAFC; -fx-background-radius: 8px;");
+
+        // Header
+        HBox headerBox = new HBox();
+        headerBox.setAlignment(Pos.CENTER_LEFT);
+        
+        Label lblCurrentSet = new Label("CURRENT SET");
+        lblCurrentSet.setStyle("-fx-font-family: 'Space Grotesk Bold'; -fx-font-size: 12px; -fx-text-fill: -fx-radix-green-11;");
+        
+        lblCurrentSetHeader = new Label("Set 1");
+        lblCurrentSetHeader.setStyle("-fx-font-family: 'Space Grotesk Bold'; -fx-font-size: 16px;");
+        
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        headerBox.getChildren().addAll(lblCurrentSet, spacer, lblCurrentSetHeader);
+
+        // Fields
+        HBox fieldsBox = new HBox(15);
+        
+        txtWeight = new TextField();
+        txtWeight.setTextFormatter(new TextFormatter<>(change -> change.getControlNewText().matches("\\d*(\\.\\d*)?") ? change : null));
+        FormField weightField = new FormField("WEIGHT (KG)", "0.0", txtWeight);
+        HBox.setHgrow(weightField, Priority.ALWAYS);
+
+        txtReps = new TextField();
+        txtReps.setTextFormatter(new TextFormatter<>(change -> change.getControlNewText().matches("\\d*") ? change : null));
+        FormField repsField = new FormField("REPS", "0", txtReps);
+        HBox.setHgrow(repsField, Priority.ALWAYS);
+
+        txtRpe = new TextField();
+        txtRpe.setTextFormatter(new TextFormatter<>(change -> change.getControlNewText().matches("\\d*") ? change : null));
+        txtRpe.setPromptText("8");
+        FormField rpeField = new FormField("RPE", "8", txtRpe);
+        HBox.setHgrow(rpeField, Priority.ALWAYS);
+
+        fieldsBox.getChildren().addAll(weightField, repsField, rpeField);
+
+        btnLogSet = new Button("LOG SET");
+        btnLogSet.getStyleClass().add("button-primary");
+        btnLogSet.setStyle("-fx-background-color: #D3F2A3; -fx-text-fill: -fx-radix-green-12;");
+        btnLogSet.setMaxWidth(Double.MAX_VALUE);
+
+        currentSetFormBox.getChildren().addAll(headerBox, fieldsBox, btnLogSet);
     }
 
     public void clearSets() {
-        setsContainer.getChildren().clear();
-        rowList.clear();
+        loggedSetsContainer.getChildren().clear();
     }
 
-    public void addSetRow(int setNum, String prevWeight, String targetReps) {
-        GridPane row = new GridPane();
-        row.setHgap(10);
+    public void addLoggedSetRow(int setNum, String weight, String reps, String rpe) {
+        HBox row = new HBox(20);
         row.setAlignment(Pos.CENTER_LEFT);
-        row.setPadding(new Insets(6, 0, 6, 0));
-        row.setStyle("-fx-border-color: #F1F5F9; -fx-border-width: 0 0 1 0;");
+        row.setPadding(new Insets(10, 0, 10, 0));
+        row.setStyle("-fx-border-color: #E2E8F0; -fx-border-width: 0 0 1 0;");
 
-        ColumnConstraints col1 = new ColumnConstraints(40);
-        ColumnConstraints col2 = new ColumnConstraints(); col2.setHgrow(Priority.ALWAYS);
-        ColumnConstraints col3 = new ColumnConstraints(); col3.setHgrow(Priority.ALWAYS);
-        ColumnConstraints col4 = new ColumnConstraints(60); col4.setHalignment(javafx.geometry.HPos.CENTER);
-        row.getColumnConstraints().addAll(col1, col2, col3, col4);
-
+        VBox setBox = new VBox(2);
+        Label lblSetTitle = new Label("SET");
+        lblSetTitle.setStyle("-fx-font-family: 'Space Grotesk Bold'; -fx-font-size: 10px; -fx-text-fill: -fx-color-text-light;");
         Label lblSet = new Label(String.valueOf(setNum));
-        lblSet.setStyle("-fx-font-family: 'Space Grotesk Bold'; -fx-font-size: 13px;");
+        lblSet.setStyle("-fx-font-family: 'Space Grotesk Bold'; -fx-font-size: 14px;");
+        setBox.getChildren().addAll(lblSetTitle, lblSet);
 
-        TextField txtWeight = new TextField();
-        txtWeight.setPromptText(prevWeight);
-        txtWeight.setPrefHeight(36);
-        txtWeight.setStyle("-fx-background-color: #F8FAFC; -fx-border-color: #E2E8F0; -fx-border-radius: 6; -fx-background-radius: 6;");
+        VBox weightBox = new VBox(2);
+        Label lblWeightTitle = new Label("WEIGHT");
+        lblWeightTitle.setStyle("-fx-font-family: 'Space Grotesk Bold'; -fx-font-size: 10px; -fx-text-fill: -fx-color-text-light;");
+        Label lblWeight = new Label(weight + " kg");
+        lblWeight.setStyle("-fx-font-family: 'Space Grotesk Bold'; -fx-font-size: 14px;");
+        weightBox.getChildren().addAll(lblWeightTitle, lblWeight);
 
-        TextField txtReps = new TextField();
-        txtReps.setPromptText(targetReps);
-        txtReps.setPrefHeight(36);
-        txtReps.setStyle("-fx-background-color: #F8FAFC; -fx-border-color: #E2E8F0; -fx-border-radius: 6; -fx-background-radius: 6;");
+        VBox repsBox = new VBox(2);
+        Label lblRepsTitle = new Label("REPS");
+        lblRepsTitle.setStyle("-fx-font-family: 'Space Grotesk Bold'; -fx-font-size: 10px; -fx-text-fill: -fx-color-text-light;");
+        Label lblReps = new Label(reps);
+        lblReps.setStyle("-fx-font-family: 'Space Grotesk Bold'; -fx-font-size: 14px;");
+        repsBox.getChildren().addAll(lblRepsTitle, lblReps);
 
-        CheckBox chkDone = new CheckBox();
-        chkDone.setStyle("-fx-cursor: hand;");
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        chkDone.selectedProperty().addListener((obs, old, isSelected) -> {
-            if (isSelected) {
-                txtWeight.setDisable(true);
-                txtReps.setDisable(true);
-                row.setOpacity(0.5);
-            } else {
-                txtWeight.setDisable(false);
-                txtReps.setDisable(false);
-                row.setOpacity(1.0);
-            }
-        });
+        Label lblRpe = new Label("RPE " + rpe);
+        lblRpe.setStyle("-fx-font-family: 'Space Grotesk Bold'; -fx-font-size: 12px; -fx-background-color: -fx-radix-red-9; -fx-text-fill: white; -fx-padding: 4px 8px; -fx-background-radius: 4px;");
 
-        row.add(lblSet, 0, 0);
-        row.add(txtWeight, 1, 0);
-        row.add(txtReps, 2, 0);
-        row.add(chkDone, 3, 0);
+        Icon checkIcon = new Icon("check-icon", 16);
+        checkIcon.setStyle("-fx-background-color: white;");
+        Label checkLabel = new Label();
+        checkLabel.setGraphic(checkIcon);
+        checkLabel.setStyle("-fx-background-color: -fx-radix-green-9; -fx-background-radius: 50%; -fx-padding: 4px;");
 
-        setsContainer.getChildren().add(row);
-        rowList.add(row);
+        row.getChildren().addAll(setBox, weightBox, repsBox, spacer, lblRpe, checkLabel);
+        loggedSetsContainer.getChildren().add(row);
     }
 
-    public List<SetData> getLoggedSets() {
-        List<SetData> data = new ArrayList<>();
-        for (GridPane row : rowList) {
-            try {
-                Label lblSet = (Label) row.getChildren().get(0);
-                TextField txtWeight = (TextField) row.getChildren().get(1);
-                TextField txtReps = (TextField) row.getChildren().get(2);
-                CheckBox chkDone = (CheckBox) row.getChildren().get(3);
+    public void setCurrentSetNumber(int setNum, String promptWeight, String promptReps) {
+        lblCurrentSetHeader.setText("Set " + setNum);
+        txtWeight.clear();
+        txtWeight.setPromptText(promptWeight != null && !promptWeight.isEmpty() ? promptWeight : "0.0");
+        txtReps.clear();
+        txtReps.setPromptText(promptReps != null && !promptReps.isEmpty() ? promptReps : "0");
+        txtRpe.clear();
+    }
 
-                int setNum = Integer.parseInt(lblSet.getText());
-                double weight = txtWeight.getText().isEmpty() ? Double.parseDouble(txtWeight.getPromptText()) : Double.parseDouble(txtWeight.getText());
-                int reps = txtReps.getText().isEmpty() ? Integer.parseInt(txtReps.getPromptText()) : Integer.parseInt(txtReps.getText());
-                boolean done = chkDone.isSelected();
+    public void setOnLogSetAction(Runnable action) {
+        btnLogSet.setOnAction(e -> action.run());
+    }
 
-                data.add(new SetData(setNum, weight, reps, done));
-            } catch (Exception e) {
-                // Ignore rows that don't match
-            }
+    public String getCurrentWeight() {
+        return txtWeight.getText().isEmpty() ? txtWeight.getPromptText() : txtWeight.getText();
+    }
+
+    public String getCurrentReps() {
+        return txtReps.getText().isEmpty() ? txtReps.getPromptText() : txtReps.getText();
+    }
+
+    public String getCurrentRpe() {
+        return txtRpe.getText().isEmpty() ? txtRpe.getPromptText() : txtRpe.getText();
+    }
+
+    public void setCurrentExerciseNode(PlanNodeBean exerciseNode) {
+        if (planNodeContainer.getChildren().size() > 1) {
+            planNodeContainer.getChildren().remove(0); // Remove old node
         }
-        return data;
+        if (exerciseNode != null) {
+            PlanNodeComponent nodeComponent = new PlanNodeComponent(exerciseNode, false, null, false);
+            planNodeContainer.getChildren().add(0, nodeComponent);
+        }
     }
 
-    public void setExerciseDetails(String name, String history) {
-        lblExerciseName.setText(name);
-        lblHistory.setText(history);
+    public void setExerciseDetails(String musclesFocus) {
+        lblMuscleGroups.setText("FOCUS: " + musclesFocus);
     }
 
     public void setInstructions(String title, String steps) {
@@ -202,17 +282,8 @@ public class WorkoutExecutionView extends BorderPane {
         lblInstructionSteps.setText(steps);
     }
 
-    public void setVideoUrl(String embedUrl) {
-        if (embedUrl != null && !embedUrl.isEmpty()) {
-            youtubeWebView.getEngine().load(embedUrl);
-        }
-    }
-
-    public void setOnFinishAction(Runnable action) {
-        btnFinish.setOnAction(e -> action.run());
-    }
-
-    public void setFinishButtonText(String text) {
-        btnFinish.setText(text);
-    }
+    public Button getBtnSkipPrevious() { return btnSkipPrevious; }
+    public Button getBtnPlayPause() { return btnPlayPause; }
+    public Button getBtnSkipNext() { return btnSkipNext; }
+    public Button getBtnEndWorkout() { return btnEndWorkout; }
 }

@@ -19,11 +19,11 @@ public class ProfileValidator {
             throw new WrongArgumentsException("Non sono ammessi valori nulli per i campi firstName, lastName, username, phoneNumber e contactEmail");
         }
 
-        if (!ValidationUtils.isLengthBetween(bean.getFirstName(), 1,50) && !ValidationUtils.isValidName(bean.getFirstName())) {
+        if (!ValidationUtils.isLengthBetween(bean.getFirstName(), 1,50) || !ValidationUtils.isValidName(bean.getFirstName())) {
             throw new WrongArgumentsException("Il nome non può essere vuoto o superare 50 caratteri. Deve contenere caratteri validi");
         }
 
-        if (!ValidationUtils.isLengthBetween(bean.getLastName(), 1,50) && !ValidationUtils.isValidName(bean.getLastName())) {
+        if (!ValidationUtils.isLengthBetween(bean.getLastName(), 1,50) || !ValidationUtils.isValidName(bean.getLastName())) {
             throw new WrongArgumentsException("Il cognome non può essere vuoto o superare 50 caratteri. Deve contenere caratteri validi");
         }
 
