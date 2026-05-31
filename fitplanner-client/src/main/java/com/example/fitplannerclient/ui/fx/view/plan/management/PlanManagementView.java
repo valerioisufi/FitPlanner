@@ -1,6 +1,6 @@
 package com.example.fitplannerclient.ui.fx.view.plan.management;
 
-import com.example.fitplannerclient.bean.plan.WorkoutPlanBean;
+
 import com.example.fitplannerclient.bean.plan.WorkoutPlanSummaryBean;
 import com.example.fitplannerclient.bean.profile.ProfileBean;
 import com.example.fitplannerclient.ui.fx.components.CardListView;
@@ -18,6 +18,7 @@ import java.util.function.Consumer;
 public class PlanManagementView extends BorderPane {
 
     private final CardListView<WorkoutPlanSummaryBean> cardListView;
+    private List<ProfileBean> athletesCache;
     
     private final AssignPlanModal assignModal;
 
@@ -59,10 +60,10 @@ public class PlanManagementView extends BorderPane {
         Label nameHeader = new Label("Nome Piano");
         nameHeader.setPrefWidth(300);
         
-        Label sessionsHeader = new Label("Sessioni");
-        sessionsHeader.setPrefWidth(150);
+        Label assignHeader = new Label("Assegnato a");
+        assignHeader.setPrefWidth(200);
         
-        cardListView = new CardListView<>(List.of(nameHeader, sessionsHeader));
+        cardListView = new CardListView<>(List.of(nameHeader, assignHeader));
         cardListView.setRowRenderer(this::createPlanRow);
 
         contentBox.getChildren().addAll(header, cardListView);
@@ -82,11 +83,12 @@ public class PlanManagementView extends BorderPane {
         return assignModal;
     }
 
-    public void showModal(WorkoutPlanBean plan, List<ProfileBean> athletes) {
+    public void showModal(WorkoutPlanSummaryBean plan, List<ProfileBean> athletes) {
         assignModal.setPlan(plan, athletes);
     }
 
-    public void setPlansList(List<WorkoutPlanSummaryBean> plans) {
+    public void setPlansList(List<WorkoutPlanSummaryBean> plans, List<ProfileBean> athletes) {
+        this.athletesCache = athletes;
         cardListView.setItems(plans, "Nessun piano di allenamento presente.");
     }
 
@@ -100,6 +102,30 @@ public class PlanManagementView extends BorderPane {
         nameLbl.getStyleClass().add("body-base");
         nameLbl.setPrefWidth(300);
 
+        // Assigned To
+        VBox assignBox = new VBox(2);
+        assignBox.setPrefWidth(200);
+        
+        String assignedId = plan.getAssignedTo();
+        ProfileBean assignedAthlete = null;
+        if (assignedId != null && !assignedId.isEmpty() && athletesCache != null) {
+            assignedAthlete = athletesCache.stream()
+                .filter(a -> assignedId.equals(a.getUserId()))
+                .findFirst().orElse(null);
+        }
+
+        if (assignedAthlete != null) {
+            Label athleteName = new Label(assignedAthlete.getFirstName() + " " + assignedAthlete.getLastName());
+            athleteName.getStyleClass().add("body-base");
+            Label athleteEmail = new Label(assignedAthlete.getContactEmail());
+            athleteEmail.getStyleClass().addAll("body-small", "text-color-light");
+            assignBox.getChildren().addAll(athleteName, athleteEmail);
+        } else {
+            Label nessunoLbl = new Label("Nessuno");
+            nessunoLbl.getStyleClass().addAll("body-small", "text-color-light");
+            assignBox.getChildren().add(nessunoLbl);
+        }
+
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
@@ -111,9 +137,16 @@ public class PlanManagementView extends BorderPane {
         optionsBtn.getStyleClass().add("button-header");
         optionsBtn.setGraphic(new Icon("dots-vertical-icon", List.of("button-header-icon")));
         
-        optionsBtn.setOnAction(e -> {
+        optionsBtn.setOnMousePressed(e -> {
+            ContextMenu existingMenu = (ContextMenu) optionsBtn.getProperties().get("activeMenu");
+            if (existingMenu != null && existingMenu.isShowing()) {
+                existingMenu.hide();
+                return;
+            }
+            
             ContextMenu menu = new ContextMenu();
             menu.setAutoHide(true);
+            optionsBtn.getProperties().put("activeMenu", menu);
             
             menu.getItems().addAll(
                 MenuUtils.createCustomMenuItem("Modifica", "edit-icon", "button-header-icon", null, () -> {
@@ -137,7 +170,7 @@ public class PlanManagementView extends BorderPane {
 
 
 
-        row.getChildren().addAll(nameLbl, spacer, actionsBox);
+        row.getChildren().addAll(nameLbl, assignBox, spacer, actionsBox);
         return row;
     }
 

@@ -56,6 +56,10 @@ public class WorkoutPlan implements AcceptWorkoutPlanVisitor {
         return this.sessions.remove(sessionDay);
     }
 
+    public WorkoutSession getSessionByDay(int sessionDay) {
+        return sessions.get(sessionDay);
+    }
+
     public List<WorkoutSession> getSessions() {
         return new ArrayList<>(sessions.values());
     }

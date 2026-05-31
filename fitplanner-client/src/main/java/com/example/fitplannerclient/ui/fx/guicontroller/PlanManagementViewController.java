@@ -67,35 +67,38 @@ public class PlanManagementViewController implements GuiController {
 
         // Assign Button logic
         view.setOnAssignButtonClick(plan -> {
-            // TODO
-//            if (athletesCache.isEmpty()) {
-//                // Fetch athletes if not already cached
-//                profileManager.getMyAthletesAsync().thenAccept(athletes -> {
-//                    athletesCache = athletes;
-//                    Platform.runLater(() -> view.showModal(plan, athletes));
-//                }).exceptionally(ex -> {
-//                    Platform.runLater(() -> guiManager.showNotification(GuiManager.NotificationType.ERROR, "Impossibile recuperare gli atleti"));
-//                    return null;
-//                });
-//            } else {
-//                view.showModal(plan, athletesCache);
-//            }
+            if (athletesCache.isEmpty()) {
+                // Fetch athletes if not already cached
+                profileManager.getMyAthletesAsync().thenAccept(athletes -> {
+                    athletesCache = athletes;
+                    Platform.runLater(() -> {
+                        view.showModal(plan, athletes);
+                        guiManager.showModal(view.getAssignModal());
+                    });
+                }).exceptionally(ex -> {
+                    Platform.runLater(() -> guiManager.showNotification(GuiManager.NotificationType.ERROR, "Impossibile recuperare gli atleti"));
+                    return null;
+                });
+            } else {
+                view.showModal(plan, athletesCache);
+                guiManager.showModal(view.getAssignModal());
+            }
         });
 
         // Modal close/assign logic
         view.getAssignModal().setOnCloseAction(guiManager::hideModal);
         
         view.getAssignModal().setOnAssignAction(athlete -> {
-            WorkoutPlanBean planToAssign = view.getAssignModal().getCurrentPlan();
+            com.example.fitplannerclient.bean.plan.WorkoutPlanSummaryBean planToAssign = view.getAssignModal().getCurrentPlan();
             if (planToAssign != null) {
-                planManager.assignPlanToAthleteAsync(planToAssign.getId(), athlete.getUserId())
+                planManager.assignPlanToAthleteAsync(planToAssign.getPlanId(), athlete.getUserId())
                     .thenRun(() -> {
                         Platform.runLater(() -> {
                             guiManager.hideModal();
                             Alert alert = new Alert(Alert.AlertType.INFORMATION);
                             alert.setTitle("Piano Assegnato");
                             alert.setHeaderText(null);
-                            alert.setContentText("Il piano \"" + planToAssign.getName() + "\" è stato assegnato a " + athlete.getFirstName() + " " + athlete.getLastName());
+                            alert.setContentText("Il piano \"" + planToAssign.getPlanTitle() + "\" è stato assegnato a " + athlete.getFirstName() + " " + athlete.getLastName());
                             alert.showAndWait();
                         });
                     })
@@ -119,12 +122,15 @@ public class PlanManagementViewController implements GuiController {
     }
 
     private void loadPlans() {
-        planManager.getMyCreatedPlansSummaryAsync()
-            .thenAccept(plans -> Platform.runLater(() -> view.setPlansList(plans)))
-            .exceptionally(ex -> {
-                guiManager.showExceptionError("Errore nel caricamento dei piani:", ex);
-                return null;
-            });
+        profileManager.getMyAthletesAsync().thenCompose(athletes -> {
+            athletesCache = athletes;
+            return planManager.getMyCreatedPlansSummaryAsync();
+        }).thenAccept(plans -> {
+            Platform.runLater(() -> view.setPlansList(plans, athletesCache));
+        }).exceptionally(ex -> {
+            Platform.runLater(() -> guiManager.showExceptionError("Errore nel caricamento dei dati:", ex));
+            return null;
+        });
     }
 
     @Override

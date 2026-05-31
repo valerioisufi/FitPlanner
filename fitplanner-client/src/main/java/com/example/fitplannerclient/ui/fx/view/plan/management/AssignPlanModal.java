@@ -1,6 +1,6 @@
 package com.example.fitplannerclient.ui.fx.view.plan.management;
 
-import com.example.fitplannerclient.bean.plan.WorkoutPlanBean;
+import com.example.fitplannerclient.bean.plan.WorkoutPlanSummaryBean;
 import com.example.fitplannerclient.bean.profile.ProfileBean;
 import com.example.fitplannerclient.ui.fx.components.Icon;
 import javafx.geometry.Insets;
@@ -16,7 +16,7 @@ public class AssignPlanModal extends VBox {
     private final Label titleLabel;
     private final Label subtitleLabel;
     
-    private WorkoutPlanBean currentPlan;
+    private WorkoutPlanSummaryBean currentPlan;
 
     private Consumer<ProfileBean> onAssignAction;
     private Runnable onCloseAction;
@@ -102,10 +102,10 @@ public class AssignPlanModal extends VBox {
         this.getChildren().addAll(header, athleteField, footer);
     }
 
-    public void setPlan(WorkoutPlanBean plan, List<ProfileBean> athletes) {
+    public void setPlan(WorkoutPlanSummaryBean plan, List<ProfileBean> athletes) {
         this.currentPlan = plan;
         if (plan != null) {
-            titleLabel.setText("Assegna " + plan.getName());
+            titleLabel.setText("Assegna " + (plan.getPlanTitle() != null ? plan.getPlanTitle() : "Senza Nome"));
         }
         
         athleteComboBox.getItems().clear();
@@ -115,7 +115,7 @@ public class AssignPlanModal extends VBox {
         athleteComboBox.setValue(null);
     }
 
-    public WorkoutPlanBean getCurrentPlan() {
+    public WorkoutPlanSummaryBean getCurrentPlan() {
         return currentPlan;
     }
 

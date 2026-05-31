@@ -84,9 +84,16 @@ public class PlanNodeComponent extends VBox {
         optionsBtn.getStyleClass().add("button-header");
         optionsBtn.setGraphic(new Icon("dots-vertical-icon", List.of("button-header-icon")));
         
-        optionsBtn.setOnAction(e -> {
+        optionsBtn.setOnMousePressed(e -> {
+            ContextMenu existingMenu = (ContextMenu) optionsBtn.getProperties().get("activeMenu");
+            if (existingMenu != null && existingMenu.isShowing()) {
+                existingMenu.hide();
+                return;
+            }
+            
             ContextMenu menu = new ContextMenu();
             menu.setAutoHide(true);
+            optionsBtn.getProperties().put("activeMenu", menu);
             
             switch (bean.getType()) {
                 case EXERCISE -> {
