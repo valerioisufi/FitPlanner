@@ -9,8 +9,6 @@ import com.example.fitplannerclient.serializer.PlanToDtoVisitor;
 import com.example.fitplannerclient.entity.plan.PlanNode;
 import com.example.fitplannerclient.entity.plan.WorkoutPlan;
 import com.example.fitplannerclient.entity.plan.WorkoutSession;
-import tools.jackson.databind.ObjectMapper;
-import tools.jackson.core.JacksonException;
 
 import java.util.ArrayList;
 import java.util.List;

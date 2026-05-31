@@ -71,6 +71,7 @@ public class EditPlanNameModal extends VBox {
         });
 
         Button saveBtn = new Button("Salva");
+        saveBtn.setDefaultButton(true);
         saveBtn.getStyleClass().add("button-primary");
         saveBtn.setOnAction(e -> {
             if (onSaveAction != null && !nameFieldInput.getText().trim().isEmpty()) {

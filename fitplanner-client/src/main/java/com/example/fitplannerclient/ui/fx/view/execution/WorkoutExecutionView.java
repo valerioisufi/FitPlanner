@@ -22,6 +22,8 @@ public class WorkoutExecutionView extends BorderPane {
     private final Button btnRestTimer = new Button("Avvia Timer Recupero");
     private final Button btnFinish = new Button("Esercizio Successivo");
 
+    private final List<GridPane> rowList = new ArrayList<>();
+
     public static record SetData(int setNum, double weight, int reps, boolean done) {}
 
     public WorkoutExecutionView(Node header) {
@@ -115,6 +117,7 @@ public class WorkoutExecutionView extends BorderPane {
 
     public void clearSets() {
         setsContainer.getChildren().clear();
+        rowList.clear();
     }
 
     public void addSetRow(int setNum, String prevWeight, String targetReps) {
@@ -164,27 +167,26 @@ public class WorkoutExecutionView extends BorderPane {
         row.add(chkDone, 3, 0);
 
         setsContainer.getChildren().add(row);
+        rowList.add(row);
     }
 
     public List<SetData> getLoggedSets() {
         List<SetData> data = new ArrayList<>();
-        for (javafx.scene.Node node : setsContainer.getChildren()) {
-            if (node instanceof GridPane row) {
-                try {
-                    Label lblSet = (Label) row.getChildren().get(0);
-                    TextField txtWeight = (TextField) row.getChildren().get(1);
-                    TextField txtReps = (TextField) row.getChildren().get(2);
-                    CheckBox chkDone = (CheckBox) row.getChildren().get(3);
+        for (GridPane row : rowList) {
+            try {
+                Label lblSet = (Label) row.getChildren().get(0);
+                TextField txtWeight = (TextField) row.getChildren().get(1);
+                TextField txtReps = (TextField) row.getChildren().get(2);
+                CheckBox chkDone = (CheckBox) row.getChildren().get(3);
 
-                    int setNum = Integer.parseInt(lblSet.getText());
-                    double weight = txtWeight.getText().isEmpty() ? Double.parseDouble(txtWeight.getPromptText()) : Double.parseDouble(txtWeight.getText());
-                    int reps = txtReps.getText().isEmpty() ? Integer.parseInt(txtReps.getPromptText()) : Integer.parseInt(txtReps.getText());
-                    boolean done = chkDone.isSelected();
+                int setNum = Integer.parseInt(lblSet.getText());
+                double weight = txtWeight.getText().isEmpty() ? Double.parseDouble(txtWeight.getPromptText()) : Double.parseDouble(txtWeight.getText());
+                int reps = txtReps.getText().isEmpty() ? Integer.parseInt(txtReps.getPromptText()) : Integer.parseInt(txtReps.getText());
+                boolean done = chkDone.isSelected();
 
-                    data.add(new SetData(setNum, weight, reps, done));
-                } catch (Exception e) {
-                    // Ignore rows that don't match
-                }
+                data.add(new SetData(setNum, weight, reps, done));
+            } catch (Exception e) {
+                // Ignore rows that don't match
             }
         }
         return data;

@@ -9,6 +9,8 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
 import java.util.List;
@@ -24,13 +26,32 @@ public class SelectExerciseModal extends VBox {
     private List<ExerciseDescriptionBean> allExercises;
 
     public SelectExerciseModal() {
-        this.setSpacing(20);
-        this.setPadding(new Insets(24));
-        this.setStyle("-fx-background-color: white; -fx-background-radius: 12;");
-        this.setMaxWidth(400);
+        this.getStyleClass().add("card");
+        this.setPadding(new Insets(32));
+        this.setSpacing(24);
+        this.setMaxWidth(450);
+        this.setMaxHeight(Region.USE_PREF_SIZE);
 
+        // --- HEADER ---
+        HBox header = new HBox();
+        header.setAlignment(Pos.TOP_LEFT);
+
+        VBox titleBox = new VBox(4);
         Label titleLabel = new Label("Seleziona Esercizio");
         titleLabel.getStyleClass().add("heading-h2");
+        titleBox.getChildren().add(titleLabel);
+
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        Button closeBtn = new Button();
+        closeBtn.getStyleClass().add("button-header");
+        closeBtn.setGraphic(new com.example.fitplannerclient.ui.fx.components.Icon("x-icon", java.util.List.of("button-header-icon")));
+        closeBtn.setOnAction(e -> {
+            if (onCloseAction != null) onCloseAction.run();
+        });
+
+        header.getChildren().addAll(titleBox, spacer, closeBtn);
 
         searchField.setPromptText("Cerca per nome o gruppo muscolare...");
         searchField.getStyleClass().add("text-field");
@@ -42,13 +63,16 @@ public class SelectExerciseModal extends VBox {
 
         HBox footer = new HBox(12);
         footer.setAlignment(Pos.CENTER_RIGHT);
+        footer.setPadding(new Insets(16, 0, 0, 0));
+        footer.setStyle("-fx-border-color: #E0E0E0; -fx-border-width: 1 0 0 0;");
+        
         Button cancelBtn = new Button("Annulla");
         cancelBtn.getStyleClass().add("button-secondary");
         cancelBtn.setOnAction(e -> { if (onCloseAction != null) onCloseAction.run(); });
 
         footer.getChildren().add(cancelBtn);
 
-        this.getChildren().addAll(titleLabel, searchField, scrollPane, footer);
+        this.getChildren().addAll(header, searchField, scrollPane, footer);
     }
 
     public void setExercises(List<ExerciseDescriptionBean> exercises) {

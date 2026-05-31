@@ -25,20 +25,43 @@ public class EditProtocolModal extends VBox {
     private final Map<String, TextField> inputFields = new HashMap<>();
 
     public EditProtocolModal() {
-        this.setSpacing(20);
-        this.setPadding(new Insets(24));
-        this.setStyle("-fx-background-color: white; -fx-background-radius: 12;");
-        this.setMaxWidth(400);
+        this.getStyleClass().add("card");
+        this.setPadding(new Insets(32));
+        this.setSpacing(24);
+        this.setMaxWidth(450);
+        this.setMaxHeight(javafx.scene.layout.Region.USE_PREF_SIZE);
 
+        // --- HEADER ---
+        HBox header = new HBox();
+        header.setAlignment(Pos.TOP_LEFT);
+
+        VBox titleBox = new VBox(4);
         titleLabel.getStyleClass().add("heading-h2");
+        titleBox.getChildren().add(titleLabel);
+
+        javafx.scene.layout.Region spacer = new javafx.scene.layout.Region();
+        HBox.setHgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
+
+        Button closeBtn = new Button();
+        closeBtn.getStyleClass().add("button-header");
+        closeBtn.setGraphic(new com.example.fitplannerclient.ui.fx.components.Icon("x-icon", java.util.List.of("button-header-icon")));
+        closeBtn.setOnAction(e -> {
+            if (onCloseAction != null) onCloseAction.run();
+        });
+
+        header.getChildren().addAll(titleBox, spacer, closeBtn);
 
         HBox footer = new HBox(12);
         footer.setAlignment(Pos.CENTER_RIGHT);
+        footer.setPadding(new Insets(16, 0, 0, 0));
+        footer.setStyle("-fx-border-color: #E0E0E0; -fx-border-width: 1 0 0 0;");
+        
         Button cancelBtn = new Button("Annulla");
         cancelBtn.getStyleClass().add("button-secondary");
         cancelBtn.setOnAction(e -> { if (onCloseAction != null) onCloseAction.run(); });
 
         Button saveBtn = new Button("Salva");
+        saveBtn.setDefaultButton(true);
         saveBtn.getStyleClass().add("button-primary");
         saveBtn.setOnAction(e -> {
             if (onSaveAction != null && currentParameters != null) {
@@ -52,7 +75,7 @@ public class EditProtocolModal extends VBox {
 
         footer.getChildren().addAll(cancelBtn, saveBtn);
 
-        this.getChildren().addAll(titleLabel, formContainer, footer);
+        this.getChildren().addAll(header, formContainer, footer);
     }
 
     public void setInitialData(String protocolName, Map<String, String> parameters) {

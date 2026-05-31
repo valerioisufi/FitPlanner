@@ -14,7 +14,7 @@ public class BadgeComponent extends HBox {
 
     private java.util.function.Consumer<BadgeComponent> onEditClicked;
 
-    public BadgeComponent(String planNodeId, BadgeType badgeType, String name, String value, BadgeColor color) {
+    public BadgeComponent(String planNodeId, BadgeType badgeType, String name, String value, String displayValue, BadgeColor color) {
         this.planNodeId = planNodeId;
         this.badgeType = badgeType;
         this.name = name;
@@ -30,7 +30,7 @@ public class BadgeComponent extends HBox {
         Label nameLabel = new Label(name.toUpperCase());
         nameLabel.getStyleClass().addAll("label-micro", "badge-label-micro-" + colorSuffix);
 
-        Label valueLabel = new Label(value);
+        Label valueLabel = new Label(displayValue);
         valueLabel.getStyleClass().addAll("label-badge-value", "badge-label-value-" + colorSuffix);
 
         this.getChildren().addAll(nameLabel, valueLabel);
@@ -45,6 +45,10 @@ public class BadgeComponent extends HBox {
                 System.out.println("onEditClicked IS NULL!");
             }
         });
+    }
+
+    public BadgeComponent(String planNodeId, BadgeType badgeType, String name, String value, BadgeColor color) {
+        this(planNodeId, badgeType, name, value, value, color);
     }
 
     public void setOnEditClicked(java.util.function.Consumer<BadgeComponent> onEditClicked) {
@@ -67,11 +71,15 @@ public class BadgeComponent extends HBox {
         return planNodeId;
     }
 
-    public void updateBadge(String newName, String newValue) {
+    public void updateBadge(String newName, String newValue, String newDisplayValue) {
         this.name = newName;
         this.value = newValue;
         ((Label) this.getChildren().get(0)).setText(newName.toUpperCase());
-        ((Label) this.getChildren().get(1)).setText(newValue);
+        ((Label) this.getChildren().get(1)).setText(newDisplayValue);
+    }
+
+    public void updateBadge(String newName, String newValue) {
+        updateBadge(newName, newValue, newValue);
     }
 
     public BadgeType getBadgeType() {
@@ -88,17 +96,30 @@ public class BadgeComponent extends HBox {
     }
 
     public enum BadgeColor {
-        BLUE, GREEN, RED, YELLOW, GRAY, VIOLET
+        BLUE, GREEN, RED, YELLOW, GRAY, VIOLET, ORANGE, AMBER, TEAL, CYAN, INDIGO, PINK
     }
 
-    public static BadgeColor resolveColorFromName(String name) {
+    public static BadgeColor resolveColorFromName(String name, BadgeType type) {
         if (name == null) return BadgeColor.GRAY;
         String lower = name.toLowerCase();
-        if (lower.contains("set") || lower.contains("loop")) return BadgeColor.BLUE;
-        if (lower.contains("rep")) return BadgeColor.YELLOW;
-        if (lower.contains("tut") || lower.contains("dur") || lower.contains("time")) return BadgeColor.VIOLET;
-        if (lower.contains("rpe")) return BadgeColor.RED;
-        if (lower.contains("rest")) return BadgeColor.GREEN;
+        
+        if (type == BadgeType.MODIFIER) {
+            if (lower.contains("set")) return BadgeColor.BLUE;
+            if (lower.contains("rep")) return BadgeColor.VIOLET;
+            if (lower.contains("weight") || lower.contains("distance")) return BadgeColor.YELLOW;
+            if (lower.contains("rpe")) return BadgeColor.ORANGE;
+            if (lower.contains("rest")) return BadgeColor.GREEN;
+            if (lower.contains("tempo")) return BadgeColor.TEAL;
+            if (lower.contains("tut")) return BadgeColor.CYAN;
+
+        } else if (type == BadgeType.DECORATOR) {
+            if (lower.contains("interval")) return BadgeColor.INDIGO;
+            if (lower.contains("time") || lower.contains("limit")) return BadgeColor.PINK;
+            if (lower.contains("loop")) return BadgeColor.RED;
+            if (lower.contains("progression")) return BadgeColor.AMBER;
+            if (lower.contains("rest")) return BadgeColor.GRAY;
+        }
+        
         return BadgeColor.GRAY;
     }
 }

@@ -74,6 +74,7 @@ public class EditNodeNameModal extends VBox {
         });
 
         Button saveBtn = new Button("Salva");
+        saveBtn.setDefaultButton(true);
         saveBtn.getStyleClass().add("button-primary");
         saveBtn.setOnAction(e -> {
             if (onSaveAction != null && !nameField.getText().trim().isEmpty()) {

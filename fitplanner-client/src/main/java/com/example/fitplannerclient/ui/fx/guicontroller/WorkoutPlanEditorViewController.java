@@ -1,8 +1,8 @@
 package com.example.fitplannerclient.ui.fx.guicontroller;
 
 import com.example.fitplannerclient.bean.plan.*;
-import com.example.fitplannerclient.controller.plan.EditWorkoutPlanManager;
 import com.example.fitplannerclient.controller.exercise.ExerciseLibraryManager;
+import com.example.fitplannerclient.controller.plan.EditWorkoutPlanManager;
 import com.example.fitplannerclient.controller.plan.observer.WorkoutPlanObserver;
 import com.example.fitplannerclient.ui.fx.GuiController;
 import com.example.fitplannerclient.ui.fx.GuiManager;
@@ -13,10 +13,11 @@ import com.example.fitplannerclient.ui.fx.view.plan.editor.components.BadgeCompo
 import javafx.application.Platform;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
-import java.util.Map;
-import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
+import java.util.Map;
 
 public class WorkoutPlanEditorViewController implements GuiController {
 
@@ -104,52 +105,106 @@ public class WorkoutPlanEditorViewController implements GuiController {
             } else if (event.getEventType() == PlanNodeEvent.DELETE_NODE_REQUESTED) {
                 editWorkoutPlanManager.removeNode(event.getNodeId());
             } else if (event.getEventType() == PlanNodeEvent.NODE_REORDERED) {
-                if (event.isCopy()) {
-                    editWorkoutPlanManager.copyNode(event.getNodeId(), event.getTargetParentId(), event.getTargetIndex());
-                } else {
-                    editWorkoutPlanManager.moveNode(event.getNodeId(), event.getTargetParentId(), event.getTargetIndex());
-                }
+                handleNodeReordered(event);
             } else if (event.getEventType() == PlanNodeEvent.BADGE_REORDERED) {
-                if ("MODIFIER".equals(event.getBadgeType())) {
-                    if (event.isCopy()) {
-                        editWorkoutPlanManager.copyModifier(event.getSourceNodeId(), event.getNodeId(), event.getSourceIndex(), event.getTargetIndex());
-                    } else {
-                        editWorkoutPlanManager.moveModifier(event.getSourceNodeId(), event.getNodeId(), event.getSourceIndex(), event.getTargetIndex());
-                    }
-                } else {
-                    if (event.isCopy()) {
-                        editWorkoutPlanManager.copyDecorator(event.getSourceNodeId(), event.getNodeId(), event.getSourceIndex(), event.getTargetIndex());
-                    } else {
-                        editWorkoutPlanManager.moveDecorator(event.getSourceNodeId(), event.getNodeId(), event.getSourceIndex(), event.getTargetIndex());
-                    }
-                }
+                handleBadgeReordered(event);
             } else if (event.getEventType() == PlanNodeEvent.EDIT_NAME_CLICKED) {
-                // Find node name
-                PlanNodeBean node = activePlan.findNodeById(event.getNodeId());
-                if (node != null) {
-                    this.view.getEditNodeModal().setInitialName(node.getName());
-                    this.view.getEditNodeModal().setOnSaveAction(newName -> {
-                        editWorkoutPlanManager.renameNode(event.getNodeId(), newName);
-                        Navigator.getInstance().getGuiManager().hideModal();
-                    });
-                    Navigator.getInstance().getGuiManager().showModal(this.view.getEditNodeModal());
-                }
+                handleEditNameClicked(event);
             } else if (event.getEventType() == PlanNodeEvent.EDIT_BADGE_CLICKED) {
-                System.out.println("WorkoutPlanEditorViewController received EDIT_BADGE_CLICKED!");
-                BadgeComponent badge = (BadgeComponent) event.getBadgeData();
-                this.view.getEditBadgeModal().setInitialData(badge.getBadgeType(), badge.getName(), badge.getValue());
-                this.view.getEditBadgeModal().setOnSaveAction((newName, newValue) -> {
-                    if ("MODIFIER".equals(event.getBadgeType())) {
-                        editWorkoutPlanManager.updateModifier(event.getNodeId(), badge.getBadgeId(), newName, newValue);
-                    } else {
-                        editWorkoutPlanManager.updateDecorator(event.getNodeId(), badge.getBadgeId(), newName, newValue);
-                    }
-                    Navigator.getInstance().getGuiManager().hideModal();
-                });
-                Navigator.getInstance().getGuiManager().showModal(this.view.getEditBadgeModal());
+                handleEditBadgeClicked(event);
+            } else if (event.getEventType() == PlanNodeEvent.CHANGE_EXERCISE_REQUESTED) {
+                handleChangeExerciseRequested(event);
+            } else if (event.getEventType() == PlanNodeEvent.DUPLICATE_NODE_REQUESTED) {
+                editWorkoutPlanManager.duplicateNode(event.getNodeId());
+            } else if (event.getEventType() == PlanNodeEvent.EMPTY_NODE_REQUESTED) {
+                editWorkoutPlanManager.emptyNode(event.getNodeId());
+            } else if (event.getEventType() == PlanNodeEvent.EDIT_PROTOCOL_PARAMETERS_REQUESTED) {
+                handleEditProtocolParameters(event);
             }
             event.consume();
         });
+
+        this.view.setOnUndoClicked(editWorkoutPlanManager::undo);
+        this.view.setOnRedoClicked(editWorkoutPlanManager::redo);
+    }
+
+    private void handleNodeReordered(PlanNodeEvent event) {
+        if (event.isCopy()) {
+            editWorkoutPlanManager.copyNode(event.getNodeId(), event.getTargetParentId(), event.getTargetIndex());
+        } else {
+            editWorkoutPlanManager.moveNode(event.getNodeId(), event.getTargetParentId(), event.getTargetIndex());
+        }
+    }
+
+    private void handleBadgeReordered(PlanNodeEvent event) {
+        if ("MODIFIER".equals(event.getBadgeType())) {
+            if (event.isCopy()) {
+                editWorkoutPlanManager.copyModifier(event.getSourceNodeId(), event.getNodeId(), event.getSourceIndex(), event.getTargetIndex());
+            } else {
+                editWorkoutPlanManager.moveModifier(event.getSourceNodeId(), event.getNodeId(), event.getSourceIndex(), event.getTargetIndex());
+            }
+
+        } else {
+            FlowDecoratorBean bean = (FlowDecoratorBean) event.getBadgeData();
+            if (event.isCopy()) {
+                editWorkoutPlanManager.copyDecorator(bean.getId(), event.getNodeId(), event.getTargetIndex());
+            } else {
+                editWorkoutPlanManager.moveDecorator(bean.getId(), event.getNodeId(), event.getTargetIndex());
+            }
+        }
+
+    }
+
+    private void handleEditNameClicked(PlanNodeEvent event) {
+        PlanNodeBean node = activePlan.findNodeById(event.getNodeId());
+
+        if (node != null) {
+            this.view.getEditNodeModal().setInitialName(node.getName());
+            this.view.getEditNodeModal().setOnSaveAction(newName -> {
+                editWorkoutPlanManager.renameNode(event.getNodeId(), newName);
+                Navigator.getInstance().getGuiManager().hideModal();
+            });
+            Navigator.getInstance().getGuiManager().showModal(this.view.getEditNodeModal());
+        }
+
+    }
+
+    private void handleEditBadgeClicked(PlanNodeEvent event) {
+        BadgeComponent badge = (BadgeComponent) event.getBadgeData();
+        String targetScopeId = "MODIFIER".equals(event.getBadgeType()) ? event.getNodeId() : badge.getBadgeId();
+        List<String> vars = editWorkoutPlanManager.getAvailableVariablesForNode(targetScopeId);
+
+        this.view.getEditBadgeModal().setInitialData(badge.getBadgeType(), badge.getName(), badge.getValue(), vars);
+        this.view.getEditBadgeModal().setOnSaveAction((newName, newValue) -> {
+            if ("MODIFIER".equals(event.getBadgeType())) {
+                editWorkoutPlanManager.updateModifier(event.getNodeId(), badge.getBadgeId(), newName, newValue);
+            } else {
+                editWorkoutPlanManager.updateDecorator(event.getNodeId(), badge.getBadgeId(), newName, newValue);
+            }
+            Navigator.getInstance().getGuiManager().hideModal();
+        });
+        Navigator.getInstance().getGuiManager().showModal(this.view.getEditBadgeModal());
+    }
+
+    private void handleChangeExerciseRequested(PlanNodeEvent event) {
+        this.view.getSelectExerciseModal().setOnSaveAction(ex -> {
+            editWorkoutPlanManager.changeExerciseResource(event.getNodeId(), ex.getExerciseId());
+            Navigator.getInstance().getGuiManager().hideModal();
+        });
+        Navigator.getInstance().getGuiManager().showModal(this.view.getSelectExerciseModal());
+    }
+
+    private void handleEditProtocolParameters(PlanNodeEvent event) {
+        PlanNodeBean node = activePlan.findNodeById(event.getNodeId());
+
+        if (node != null && node.getParameters() != null) {
+            this.view.getEditProtocolModal().setInitialData(node.getName(), node.getParameters());
+            this.view.getEditProtocolModal().setOnSaveAction(params -> {
+                editWorkoutPlanManager.updateProtocolParameters(event.getNodeId(), params);
+                Navigator.getInstance().getGuiManager().hideModal();
+            });
+            Navigator.getInstance().getGuiManager().showModal(this.view.getEditProtocolModal());
+        }
     }
 
     private void handleToolboxDrop(PlanNodeEvent event) {
@@ -169,7 +224,7 @@ public class WorkoutPlanEditorViewController implements GuiController {
 
         } else if (payload.startsWith("PROTOCOL:")) {
             String protocolName = payload.substring("PROTOCOL:".length());
-            
+
             Map<String, String> initialParams = editWorkoutPlanManager.getDefaultProtocolParameters(protocolName);
             this.view.getEditProtocolModal().setInitialData(protocolName, initialParams);
             this.view.getEditProtocolModal().setOnSaveAction(params -> {
@@ -186,7 +241,8 @@ public class WorkoutPlanEditorViewController implements GuiController {
             }
 
             String type = payload.substring("MODIFIER:".length());
-            this.view.getEditBadgeModal().setInitialData(BadgeComponent.BadgeType.MODIFIER, type, "");
+            List<String> vars = editWorkoutPlanManager.getAvailableVariablesForNode(targetParentId);
+            this.view.getEditBadgeModal().setInitialData(BadgeComponent.BadgeType.MODIFIER, type, "", vars);
             this.view.getEditBadgeModal().setOnSaveAction((name, val) -> {
                 editWorkoutPlanManager.addModifierFromToolbox(name.toUpperCase(), val, targetParentId);
                 Navigator.getInstance().getGuiManager().hideModal();
@@ -195,7 +251,8 @@ public class WorkoutPlanEditorViewController implements GuiController {
 
         } else if (payload.startsWith("DECORATOR:")) {
             String type = payload.substring("DECORATOR:".length());
-            this.view.getEditBadgeModal().setInitialData(BadgeComponent.BadgeType.DECORATOR, type, "");
+            List<String> vars = editWorkoutPlanManager.getAvailableVariablesForNode(targetParentId);
+            this.view.getEditBadgeModal().setInitialData(BadgeComponent.BadgeType.DECORATOR, type, "", vars);
             this.view.getEditBadgeModal().setOnSaveAction((name, val) -> {
                 editWorkoutPlanManager.addDecoratorFromToolbox(name, val, targetParentId);
                 Navigator.getInstance().getGuiManager().hideModal();
@@ -215,9 +272,9 @@ public class WorkoutPlanEditorViewController implements GuiController {
         Platform.runLater(() -> {
             editWorkoutPlanManager.buildProtocolBlockLibrary();
             view.setProtocolBlocks(editWorkoutPlanManager.getProtocolBlockLibraryCache());
-            
+
             view.setDecorators(List.of("Rest", "Loop", "Time Limit", "Interval", "Progression"));
-            view.setModifiers(List.of("Sets", "Reps", "RPE", "Tempo", "Weight"));
+            view.setModifiers(List.of("REPS", "WEIGHT", "TUT", "RPE"));
         });
     }
 

@@ -6,7 +6,6 @@ import com.example.fitplannerclient.bean.plan.NodeType;
 import com.example.fitplannerclient.bean.plan.PlanNodeBean;
 import com.example.fitplannerclient.ui.fx.view.plan.editor.dnd.BadgeDragHandler;
 import com.example.fitplannerclient.ui.fx.view.plan.editor.dnd.NodeDragHandler;
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -67,7 +66,12 @@ public class PlanNodeComponent extends VBox {
                 }
             });
         } else if(bean.getType() == NodeType.EXERCISE) {
-            // TODO modificare il tipo di esercizio
+            nameLabel.setOnMouseClicked(e -> {
+                if (e.getClickCount() == 1) {
+                    this.fireEvent(new PlanNodeEvent(PlanNodeEvent.CHANGE_EXERCISE_REQUESTED, this.planNodeId));
+                    e.consume();
+                }
+            });
         }
 
         inlineDecoratorsBox = new HBox(8);
@@ -87,11 +91,11 @@ public class PlanNodeComponent extends VBox {
             switch (bean.getType()) {
                 case EXERCISE -> {
                     menu.getItems().addAll(
-                        MenuUtils.createCustomMenuItem("Sostituisci Esercizio", "edit-icon", "button-header-icon", null, () -> {
-                            // TODO: Dispatch change exercise event
+                        MenuUtils.createCustomMenuItem("Cambia Esercizio...", "swap-icon", "button-header-icon", null, () -> {
+                            this.fireEvent(new PlanNodeEvent(PlanNodeEvent.CHANGE_EXERCISE_REQUESTED, this.planNodeId));
                         }),
                         MenuUtils.createCustomMenuItem("Duplica", "copy-icon", "button-header-icon", null, () -> {
-                            // TODO: Dispatch duplicate event
+                            this.fireEvent(new PlanNodeEvent(PlanNodeEvent.DUPLICATE_NODE_REQUESTED, this.planNodeId));
                         }),
                         MenuUtils.createCustomMenuItem("Elimina", "delete-icon", "button-header-danger-icon", "-fx-text-fill: #ef4444;", () -> {
                             this.fireEvent(new PlanNodeEvent(PlanNodeEvent.DELETE_NODE_REQUESTED, this.planNodeId));
@@ -104,10 +108,10 @@ public class PlanNodeComponent extends VBox {
                             this.fireEvent(new PlanNodeEvent(PlanNodeEvent.EDIT_NAME_CLICKED, this.planNodeId));
                         }),
                         MenuUtils.createCustomMenuItem("Duplica Blocco", "copy-icon", "button-header-icon", null, () -> {
-                            // TODO: Duplicate logic
+                            this.fireEvent(new PlanNodeEvent(PlanNodeEvent.DUPLICATE_NODE_REQUESTED, this.planNodeId));
                         }),
-                        MenuUtils.createCustomMenuItem("Svuota Blocco", "delete-icon", "button-header-icon", null, () -> {
-                            // TODO: Empty block logic
+                        MenuUtils.createCustomMenuItem("Svuota Blocco", "eraser-icon", "button-header-icon", null, () -> {
+                            this.fireEvent(new PlanNodeEvent(PlanNodeEvent.EMPTY_NODE_REQUESTED, this.planNodeId));
                         }),
                         MenuUtils.createCustomMenuItem("Elimina Blocco", "delete-icon", "button-header-danger-icon", "-fx-text-fill: #ef4444;", () -> {
                             this.fireEvent(new PlanNodeEvent(PlanNodeEvent.DELETE_NODE_REQUESTED, this.planNodeId));
@@ -116,11 +120,11 @@ public class PlanNodeComponent extends VBox {
                 }
                 case PROTOCOL_BLOCK -> {
                     menu.getItems().addAll(
-                        MenuUtils.createCustomMenuItem("Modifica Parametri", "edit-icon", "button-header-icon", null, () -> {
-                            // TODO: Dispatch edit parameters event
+                        MenuUtils.createCustomMenuItem("Modifica Parametri Protocollo", "sliders-icon", "button-header-icon", null, () -> {
+                            this.fireEvent(new PlanNodeEvent(PlanNodeEvent.EDIT_PROTOCOL_PARAMETERS_REQUESTED, this.planNodeId));
                         }),
-                        MenuUtils.createCustomMenuItem("Svuota Protocollo", "delete-icon", "button-header-icon", null, () -> {
-                            // TODO: Empty protocol
+                        MenuUtils.createCustomMenuItem("Svuota Protocollo", "eraser-icon", "button-header-icon", null, () -> {
+                            this.fireEvent(new PlanNodeEvent(PlanNodeEvent.EMPTY_NODE_REQUESTED, this.planNodeId));
                         }),
                         MenuUtils.createCustomMenuItem("Elimina Protocollo", "delete-icon", "button-header-danger-icon", "-fx-text-fill: #ef4444;", () -> {
                             this.fireEvent(new PlanNodeEvent(PlanNodeEvent.DELETE_NODE_REQUESTED, this.planNodeId));
@@ -154,18 +158,6 @@ public class PlanNodeComponent extends VBox {
         updateExpansionState();
 
         VBox nodeContent = new VBox(8, headerBox);
-        
-        if (bean.getType() == NodeType.PROTOCOL_BLOCK) {
-
-            if (bean.getParameters() != null) {
-                bean.getParameters().forEach((key, value) -> {
-                    Label paramLabel = new Label(key + ": " + value);
-                    paramLabel.getStyleClass().add("protocol-param-label");
-                    badgesBox.getChildren().add(paramLabel);
-                });
-            }
-        }
-        
         nodeContent.getChildren().add(childrenContainer);
         
         nodeContent.getStyleClass().add("plan-node");
@@ -182,7 +174,9 @@ public class PlanNodeComponent extends VBox {
 
         // Initialize Drag and Drop logic via external handlers
         NodeDragHandler.setup(this, headerBox);
-        BadgeDragHandler.setupFallbackDropZone(this, headerBox);
+        if (parentWrapper != null) {
+            BadgeDragHandler.setupFallbackDropZone(this, headerBox);
+        }
     }
 
     private void updateExpansionState() {
@@ -203,10 +197,6 @@ public class PlanNodeComponent extends VBox {
         return this.planNodeId;
     }
 
-    public String getNodeName() {
-        return this.originalBean.getName();
-    }
-
     public void addChildNode(PlanNodeComponent child) {
         childrenContainer.getChildren().add(child);
     }
@@ -216,12 +206,10 @@ public class PlanNodeComponent extends VBox {
     public PlanNodeBean getOriginalBean() { return originalBean; }
 
     private void fireEditBadgeClicked(BadgeComponent badge) {
-        System.out.println("PlanNodeComponent.fireEditBadgeClicked called for badge: " + badge.getName());
         this.fireEvent(new PlanNodeEvent(PlanNodeEvent.EDIT_BADGE_CLICKED, this.planNodeId)
             .setBadgeType(badge.getBadgeType().name())
             .setBadgeData(badge)
         );
-        System.out.println("PlanNodeEvent.EDIT_BADGE_CLICKED fired!");
     }
 
     // --- RENDERING METHODS ---
@@ -229,26 +217,39 @@ public class PlanNodeComponent extends VBox {
     private void renderModifiers() {
         badgesBox.getChildren().clear();
 
-        if (exerciseModifierBeans.isEmpty()) {
+        boolean hasModifiers = !exerciseModifierBeans.isEmpty();
+        boolean hasParameters = originalBean.getType() == NodeType.PROTOCOL_BLOCK && originalBean.getParameters() != null && !originalBean.getParameters().isEmpty();
+
+        if (!hasModifiers && !hasParameters) {
             badgesBox.setVisible(false);
             badgesBox.setManaged(false);
         } else {
             badgesBox.setVisible(true);
             badgesBox.setManaged(true);
 
-            for (int i = 0; i < exerciseModifierBeans.size(); i++) {
-                ExerciseModifierBean modifier = exerciseModifierBeans.get(i);
-                BadgeComponent.BadgeColor color = resolveColorFromName(modifier.getName());
-                BadgeComponent badge = new BadgeComponent(
-                        modifier.getId(),
-                        BadgeComponent.BadgeType.MODIFIER,
-                        modifier.getName(),
-                        modifier.getValue(),
-                        color
-                );
-                badge.setOnEditClicked(this::fireEditBadgeClicked);
-                BadgeDragHandler.setup(this, badge, modifier, BadgeComponent.BadgeType.MODIFIER, i);
-                badgesBox.getChildren().add(badge);
+            if (hasModifiers) {
+                for (int i = 0; i < exerciseModifierBeans.size(); i++) {
+                    ExerciseModifierBean modifier = exerciseModifierBeans.get(i);
+                    BadgeComponent.BadgeColor color = resolveColorFromName(modifier.getName(), BadgeComponent.BadgeType.MODIFIER);
+                    BadgeComponent badge = new BadgeComponent(
+                            modifier.getId(),
+                            BadgeComponent.BadgeType.MODIFIER,
+                            modifier.getName(),
+                            formatValueWithUnit(modifier.getName(), modifier.getValue()),
+                            color
+                    );
+                    badge.setOnEditClicked(this::fireEditBadgeClicked);
+                    BadgeDragHandler.setup(this, badge, modifier, BadgeComponent.BadgeType.MODIFIER, i);
+                    badgesBox.getChildren().add(badge);
+                }
+            }
+
+            if (hasParameters) {
+                originalBean.getParameters().forEach((key, value) -> {
+                    Label paramLabel = new Label(key + ": " + value);
+                    paramLabel.getStyleClass().add("protocol-param-label");
+                    badgesBox.getChildren().add(paramLabel);
+                });
             }
         }
     }
@@ -262,9 +263,9 @@ public class PlanNodeComponent extends VBox {
             FlowDecoratorBean decorator = flowDecoratorBeans.get(i);
 
             String typeName = decorator.getType().name().replace("_", " ");
-            BadgeComponent.BadgeColor color = resolveColorFromName(typeName);
+            BadgeComponent.BadgeColor color = resolveColorFromName(typeName, BadgeComponent.BadgeType.DECORATOR);
 
-            BadgeComponent badge = new BadgeComponent(decorator.getId(), BadgeComponent.BadgeType.DECORATOR, typeName, decorator.getValue(), color);
+            BadgeComponent badge = new BadgeComponent(decorator.getId(), BadgeComponent.BadgeType.DECORATOR, typeName, formatValueWithUnit(typeName, decorator.getValue()), color);
             badge.setOnEditClicked(this::fireEditBadgeClicked);
 
             BadgeDragHandler.setup(this, badge, decorator, BadgeComponent.BadgeType.DECORATOR, i);
@@ -283,5 +284,23 @@ public class PlanNodeComponent extends VBox {
     public void updateName(String newName) {
         this.originalBean.setName(newName);
         this.nameLabel.setText(newName);
+    }
+
+    private String formatValueWithUnit(String type, String value) {
+        if (value == null || value.trim().isEmpty()) return value;
+        // Se è già una variabile formattata come ${nome}, non aggiungiamo unità
+        if (value.startsWith("${") && value.endsWith("}")) return value;
+        // Non aggiungere l'unità alla progressione che è una stringa complessa
+        if (type.equalsIgnoreCase("PROGRESSION")) return value;
+
+        String unit = switch (type.toUpperCase().replace(" ", "_")) {
+            case "REST", "TIME_LIMIT", "INTERVAL", "TEMPO" -> "s";
+            case "LOOP", "SETS" -> "x";
+            case "WEIGHT" -> " kg";
+            case "DISTANCE" -> " km";
+            default -> "";
+        };
+
+        return value + unit;
     }
 }

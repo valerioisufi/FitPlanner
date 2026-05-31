@@ -4,7 +4,6 @@ import com.example.fitplannerclient.bean.exercise.ExerciseDescriptionBean;
 import com.example.fitplannerclient.bean.plan.PlanNodeBean;
 import com.example.fitplannerclient.bean.plan.WorkoutPlanBean;
 import com.example.fitplannerclient.bean.plan.WorkoutSessionBean;
-import com.example.fitplannerclient.ui.fx.components.FormField;
 import com.example.fitplannerclient.ui.fx.components.Icon;
 import com.example.fitplannerclient.ui.fx.view.plan.editor.components.BadgeComponent;
 import com.example.fitplannerclient.ui.fx.view.plan.editor.dnd.DragConstants;
@@ -13,14 +12,15 @@ import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
+import javafx.scene.SnapshotParameters;
 import javafx.scene.control.*;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
 
 import java.util.List;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public class WorkoutPlanEditorView extends BorderPane {
@@ -56,6 +56,8 @@ public class WorkoutPlanEditorView extends BorderPane {
     private Runnable onManageSessionsRequested;
     private Runnable onSavePlanClicked;
     private Runnable onCancelClicked;
+    private Runnable onUndoClicked;
+    private Runnable onRedoClicked;
 
     // Callback for generic modal actions
     private Consumer<Node> onShowModalRequested;
@@ -160,6 +162,9 @@ public class WorkoutPlanEditorView extends BorderPane {
         btnRedo.setGraphic(new Icon("redo-icon", List.of("button-header-icon")));
         btnRedo.getStyleClass().add("button-header");
 
+        btnUndo.setOnAction(e -> { if(onUndoClicked != null) onUndoClicked.run(); });
+        btnRedo.setOnAction(e -> { if(onRedoClicked != null) onRedoClicked.run(); });
+
         leftBox.getChildren().addAll(planNameLabel, new Separator(Orientation.VERTICAL), sessionComboBox, btnManageSessions, new Separator(Orientation.VERTICAL), btnUndo, btnRedo);
 
         // --- CENTER: Spacer ---
@@ -181,6 +186,14 @@ public class WorkoutPlanEditorView extends BorderPane {
         toolbar.getChildren().addAll(leftBox, centerSpacer, rightBox);
 
         return toolbar;
+    }
+
+    public void setOnUndoClicked(Runnable onUndoClicked) {
+        this.onUndoClicked = onUndoClicked;
+    }
+
+    public void setOnRedoClicked(Runnable onRedoClicked) {
+        this.onRedoClicked = onRedoClicked;
     }
 
     public SelectExerciseModal getSelectExerciseModal() { return selectExerciseModal; }
@@ -262,6 +275,11 @@ public class WorkoutPlanEditorView extends BorderPane {
             ClipboardContent content = new ClipboardContent();
             content.put(DragConstants.FITPLANNER_FORMAT, dragPayload);
             db.setContent(content);
+
+            SnapshotParameters snapParams = new SnapshotParameters();
+            snapParams.setFill(Color.TRANSPARENT);
+            db.setDragView(item.snapshot(snapParams, null));
+
             e.consume();
         });
 
@@ -284,7 +302,7 @@ public class WorkoutPlanEditorView extends BorderPane {
     public void setDecorators(List<String> decoratorTypes) {
         decoratorsContainer.getChildren().clear();
         for (String type : decoratorTypes) {
-            BadgeComponent badge = new BadgeComponent(null, BadgeComponent.BadgeType.DECORATOR, type, "", BadgeComponent.resolveColorFromName(type));
+            BadgeComponent badge = new BadgeComponent(null, BadgeComponent.BadgeType.DECORATOR, type, "", BadgeComponent.resolveColorFromName(type, BadgeComponent.BadgeType.DECORATOR));
             decoratorsContainer.getChildren().add(
                 createToolboxItem(type, "TOOLBOX:DECORATOR:" + type, badge)
             );
@@ -294,7 +312,7 @@ public class WorkoutPlanEditorView extends BorderPane {
     public void setModifiers(List<String> modifierTypes) {
         modifiersContainer.getChildren().clear();
         for (String type : modifierTypes) {
-            BadgeComponent badge = new BadgeComponent(null, BadgeComponent.BadgeType.MODIFIER, type, "", BadgeComponent.resolveColorFromName(type));
+            BadgeComponent badge = new BadgeComponent(null, BadgeComponent.BadgeType.MODIFIER, type, "", BadgeComponent.resolveColorFromName(type, BadgeComponent.BadgeType.MODIFIER));
             modifiersContainer.getChildren().add(
                 createToolboxItem(type, "TOOLBOX:MODIFIER:" + type, badge)
             );
@@ -322,7 +340,7 @@ public class WorkoutPlanEditorView extends BorderPane {
                     WorkoutSessionBean toSelect = plan.getSessions().stream()
                             .filter(s -> s.getDay() == finalSelectedDay)
                             .findFirst()
-                            .orElse(plan.getSessions().get(0));
+                            .orElse(plan.getSessions().getFirst());
                     sessionComboBox.getSelectionModel().select(toSelect);
                 }
             }

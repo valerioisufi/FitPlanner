@@ -12,6 +12,10 @@ public class PlanNodeEvent extends Event {
     public static final EventType<PlanNodeEvent> TOOLBOX_ITEM_DROPPED = new EventType<>(ANY, "TOOLBOX_ITEM_DROPPED");
     public static final EventType<PlanNodeEvent> NODE_REORDERED = new EventType<>(ANY, "NODE_REORDERED");
     public static final EventType<PlanNodeEvent> BADGE_REORDERED = new EventType<>(ANY, "BADGE_REORDERED");
+    public static final EventType<PlanNodeEvent> CHANGE_EXERCISE_REQUESTED = new EventType<>(ANY, "CHANGE_EXERCISE_REQUESTED");
+    public static final EventType<PlanNodeEvent> DUPLICATE_NODE_REQUESTED = new EventType<>(ANY, "DUPLICATE_NODE_REQUESTED");
+    public static final EventType<PlanNodeEvent> EMPTY_NODE_REQUESTED = new EventType<>(ANY, "EMPTY_NODE_REQUESTED");
+    public static final EventType<PlanNodeEvent> EDIT_PROTOCOL_PARAMETERS_REQUESTED = new EventType<>(ANY, "EDIT_PROTOCOL_PARAMETERS_REQUESTED");
 
     // Event properties
     private String nodeId;
