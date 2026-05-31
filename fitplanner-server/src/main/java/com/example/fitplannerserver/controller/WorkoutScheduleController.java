@@ -132,7 +132,7 @@ public class WorkoutScheduleController {
             return schedule;
 
         } catch (DaoException e){
-            throw new SystemException("Errore nel recuperare lo schedule corrente");
+            throw new SystemException("Errore nel recuperare lo schedule corrente", e);
         }
 
     }

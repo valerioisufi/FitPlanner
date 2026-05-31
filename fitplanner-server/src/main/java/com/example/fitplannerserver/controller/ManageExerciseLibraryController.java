@@ -49,7 +49,7 @@ public class ManageExerciseLibraryController {
             exerciseLibraryDao.saveExercise(newExercise);
 
         } catch (DaoException e){
-            throw new SystemException("Errore nell'aggiunta dell'esercizio");
+            throw new SystemException("Errore nell'aggiunta dell'esercizio", e);
         }
 
         return newExerciseId;
@@ -75,7 +75,7 @@ public class ManageExerciseLibraryController {
             exerciseLibraryDao.saveExercise(exercise);
 
         } catch (DaoException e){
-            throw new SystemException("Errore nell'aggiornamento dell'esercizio");
+            throw new SystemException("Errore nell'aggiornamento dell'esercizio", e);
         }
 
     }
@@ -92,7 +92,7 @@ public class ManageExerciseLibraryController {
             exerciseLibraryDao.deleteExercise(exerciseId);
 
         } catch (DaoException e){
-            throw new SystemException("Errore nell'aggiornamento dell'esercizio");
+            throw new SystemException("Errore nell'aggiornamento dell'esercizio", e);
         }
 
     }
@@ -126,7 +126,7 @@ public class ManageExerciseLibraryController {
                     .toList();
 
         } catch(DaoException e){
-            throw new SystemException("Errore nel recupero degli esercizi");
+            throw new SystemException("Errore nel recupero degli esercizi", e);
         }
     }
 
@@ -150,7 +150,7 @@ public class ManageExerciseLibraryController {
                     .toList();
 
         } catch(DaoException e){
-            throw new SystemException("Errore nel recupero della libreria di esercizi");
+            throw new SystemException("Errore nel recupero della libreria di esercizi", e);
         }
     }
 

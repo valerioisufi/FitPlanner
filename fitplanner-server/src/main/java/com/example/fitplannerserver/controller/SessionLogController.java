@@ -56,7 +56,7 @@ public class SessionLogController {
                 }
 
             } catch (DaoException e) {
-                throw new SystemException("Errore durante la verifica del rapporto trainer-atleta");
+                throw new SystemException("Errore durante la verifica del rapporto trainer-atleta", e);
             }
         }
 
@@ -70,7 +70,7 @@ public class SessionLogController {
             return sessionLogDTOS;
 
         } catch (DaoException e) {
-            throw new SystemException("Errore nel recuperare i session logs");
+            throw new SystemException("Errore nel recuperare i session logs", e);
         }
     }
 
@@ -84,7 +84,7 @@ public class SessionLogController {
             sessionLogDao.saveSessionLog(sessionLog);
 
         } catch (DaoException e) {
-            throw new SystemException("Errore nel salvare il session log");
+            throw new SystemException("Errore nel salvare il session log", e);
         }
     }
 
@@ -114,7 +114,7 @@ public class SessionLogController {
             throw new ResourceNotFoundException("Esercizio non trovato in nessun session log recente");
 
         } catch (DaoException e) {
-            throw new SystemException("Errore nel recuperare l'ultimo log per l'esercizio");
+            throw new SystemException("Errore nel recuperare l'ultimo log per l'esercizio", e);
         }
 
     }

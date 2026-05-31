@@ -43,7 +43,7 @@ public class WorkoutPlanManagementController {
                     .toList();
 
         } catch (DaoException e) {
-            throw new SystemException("Errore nel recuperare i WorkoutPlan creati");
+            throw new SystemException("Errore nel recuperare i WorkoutPlan creati", e);
         }
     }
 
@@ -60,7 +60,7 @@ public class WorkoutPlanManagementController {
             return PlanMapper.toDto(workoutPlan);
 
         } catch (DaoException e) {
-            throw new SystemException("Errore nel recuperare i WorkoutPlan creati");
+            throw new SystemException("Errore nel recuperare i WorkoutPlan creati", e);
         }
     }
 
@@ -74,7 +74,7 @@ public class WorkoutPlanManagementController {
             );
 
         } catch (DaoException e) {
-            throw new SystemException("Errore nel recuperare il WorkoutPlan assegnato");
+            throw new SystemException("Errore nel recuperare il WorkoutPlan assegnato", e);
         }
     }
 
@@ -93,7 +93,7 @@ public class WorkoutPlanManagementController {
             return planId;
 
         } catch (DaoException e) {
-            throw new SystemException("Errore nel creare il WorkoutPlan");
+            throw new SystemException("Errore nel creare il WorkoutPlan", e);
         }
     }
 
@@ -135,7 +135,7 @@ public class WorkoutPlanManagementController {
             workoutPlanDao.savePlan(athleteSpecificPlan);
 
         } catch (DaoException e) {
-            throw new SystemException("Errore nell'assegnare il WorkoutPlan");
+            throw new SystemException("Errore nell'assegnare il WorkoutPlan", e);
         }
     }
 
@@ -163,7 +163,7 @@ public class WorkoutPlanManagementController {
             workoutPlanDao.savePlan(newPlan);
 
         } catch (DaoException e) {
-            throw new SystemException("Errore nell'aggiornamento del piano");
+            throw new SystemException("Errore nell'aggiornamento del piano", e);
         }
     }
 
@@ -184,7 +184,7 @@ public class WorkoutPlanManagementController {
 
             workoutPlanDao.deletePlan(planId);
         } catch (DaoException e) {
-            throw new SystemException("Errore nell'eliminazione del WorkoutPlan");
+            throw new SystemException("Errore nell'eliminazione del WorkoutPlan", e);
         }
     }
 }

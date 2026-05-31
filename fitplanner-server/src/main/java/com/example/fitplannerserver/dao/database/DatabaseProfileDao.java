@@ -20,7 +20,7 @@ public class DatabaseProfileDao implements ProfileDao {
     public Optional<User> findById(String userId) throws DaoException {
         Objects.requireNonNull(userId, "userId cannot be null");
 
-        String sql = "SELECT (user_id, first_name, last_name, contact_email, phone_number, invitation_code) FROM profiles WHERE user_id=?";
+        String sql = "SELECT user_id, first_name, last_name, contact_email, phone_number, invitation_code FROM profiles WHERE user_id=?";
         Connection conn = null;
 
         try {
@@ -33,7 +33,7 @@ public class DatabaseProfileDao implements ProfileDao {
                                 rs.getString("user_id"),
                                 rs.getString("first_name"),
                                 rs.getString("last_name"),
-                                rs.getString("email"),
+                                rs.getString("contact_email"),
                                 rs.getString("phone_number"),
                                 rs.getString(INVITATION_CODE)
                         );
@@ -56,19 +56,26 @@ public class DatabaseProfileDao implements ProfileDao {
         Objects.requireNonNull(user, "user cannot be null");
 
         String sql = """
-                UPDATE profiles SET first_name=?, last_name=?, contact_email=?, phone_number=?, invitation_code=? WHERE user_id=?;
+                INSERT INTO profiles (user_id, first_name, last_name, contact_email, phone_number, invitation_code)
+                VALUES (?, ?, ?, ?, ?, ?)
+                ON DUPLICATE KEY UPDATE
+                first_name=VALUES(first_name),
+                last_name=VALUES(last_name),
+                contact_email=VALUES(contact_email),
+                phone_number=VALUES(phone_number),
+                invitation_code=VALUES(invitation_code);
                 """;
         Connection conn = null;
 
         try {
             conn = DbConnection.getInstance().getConnection();
             try (PreparedStatement stm = conn.prepareStatement(sql)) {
-                stm.setString(1, user.getFirstName());
-                stm.setString(2, user.getLastName());
-                stm.setString(3, user.getContactEmail());
-                stm.setString(4, user.getPhoneNumber());
-                stm.setString(5, user.getInvitationCode());
-                stm.setString(6, user.getId());
+                stm.setString(1, user.getId());
+                stm.setString(2, user.getFirstName());
+                stm.setString(3, user.getLastName());
+                stm.setString(4, user.getContactEmail());
+                stm.setString(5, user.getPhoneNumber());
+                stm.setString(6, user.getInvitationCode());
                 stm.executeUpdate();
             }
         } catch (SQLException e) {
@@ -86,7 +93,7 @@ public class DatabaseProfileDao implements ProfileDao {
             return Optional.empty();
         }
 
-        String sql = "SELECT (user_id, first_name, last_name, contact_email, phone_number, invitation_code) FROM profiles WHERE invitation_code=?";
+        String sql = "SELECT user_id, first_name, last_name, contact_email, phone_number, invitation_code FROM profiles WHERE invitation_code=?";
         Connection conn = null;
 
         try {

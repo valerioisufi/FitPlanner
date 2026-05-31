@@ -40,7 +40,7 @@ public class ProfileController {
             return ProfileMapper.toBean(user, identityProvider.getUserRole());
 
         } catch (DaoException e) {
-            throw new SystemException("Errore durante il recupero delle informazioni del profilo");
+            throw new SystemException("Errore durante il recupero delle informazioni del profilo", e);
         }
     }
 
@@ -62,7 +62,7 @@ public class ProfileController {
             profileDao.save(newUser);
 
         } catch (DaoException e) {
-            throw new SystemException("Errore durante l'aggiornamento delle informazioni del profilo");
+            throw new SystemException("Errore durante l'aggiornamento delle informazioni del profilo", e);
         }
 
     }
@@ -79,7 +79,7 @@ public class ProfileController {
 
             return ProfileMapper.toBean(trainer, Account.Role.TRAINER);
         } catch (DaoException e){
-            throw new SystemException("Errore nel recuperare il profilo del trainer");
+            throw new SystemException("Errore nel recuperare il profilo del trainer", e);
         }
     }
 
@@ -100,7 +100,7 @@ public class ProfileController {
             return athletes;
 
         } catch (DaoException e){
-            throw new SystemException("Errore nel recuperare il profilo del trainer");
+            throw new SystemException("Errore nel recuperare il profilo del trainer", e);
         }
     }
 
@@ -123,7 +123,7 @@ public class ProfileController {
             }
 
         } catch (DaoException e){
-            throw new SystemException("Errore durante il collegamento al trainer");
+            throw new SystemException("Errore durante il collegamento al trainer", e);
         }
     }
 
@@ -136,7 +136,7 @@ public class ProfileController {
 
             return new InvitationCodeDTO(invitationCode);
         } catch (Exception e) {
-            throw new SystemException("Errore durante il recupero del codice di invito");
+            throw new SystemException("Errore durante il recupero del codice di invito", e);
         }
     }
 

@@ -62,7 +62,7 @@ public class AuthenticationController {
 
             return tokenDTO;
         } catch (DaoException e) {
-            throw new SystemException("Errore durante il login");
+            throw new SystemException("Errore durante il login", e);
         }
     }
 
@@ -111,7 +111,7 @@ public class AuthenticationController {
                 throw new InvalidCredentialsException("Email già utilizzata");
             }
         } catch (DaoException e) {
-            throw new SystemException("Errore durante la registrazione");
+            throw new SystemException("Errore durante la registrazione", e);
         }
     }
 
@@ -131,7 +131,7 @@ public class AuthenticationController {
             throw new InvalidCredentialsException("Refresh token non valido");
 
         } catch (DaoException e) {
-            throw new SystemException("Errore durante il recupero dell'account");
+            throw new SystemException("Errore durante il recupero dell'account", e);
         }
     }
 

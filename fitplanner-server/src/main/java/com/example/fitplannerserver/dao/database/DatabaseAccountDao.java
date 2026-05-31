@@ -24,7 +24,7 @@ public class DatabaseAccountDao implements AccountDao {
         Objects.requireNonNull(account, NULL_ACC_MSG);
         Objects.requireNonNull(account.getEmail(), NULL_EMAIL_MSG);
 
-        String sql = "INSERT INTO accounts(user_id, email, password_hash, refreshToken, profileType) VALUES (?,?,?,?,?)";
+        String sql = "INSERT INTO accounts(user_id, email, password_hash, refreshToken, profile_type) VALUES (?,?,?,?,?)";
         Connection conn = null;
         try {
             conn = DbConnection.getInstance().getConnection();
@@ -37,12 +37,11 @@ public class DatabaseAccountDao implements AccountDao {
                 int rowsAffected = stm.executeUpdate();
                 return rowsAffected > 0;
             }
-        } catch (SQLException e) {
-            if (e instanceof SQLException sqlException && sqlException.getSQLState() != null
-                && sqlException.getSQLState().startsWith("23")) {
+        } catch (SQLException sqlException) {
+            if (sqlException.getSQLState() != null && sqlException.getSQLState().startsWith("23")) {
                 return false;
             }
-            throw new DaoException("Errore durante la creazione dell'account o di rete", e);
+            throw new DaoException("Errore durante la creazione dell'account o di rete", sqlException);
         } finally {
             if (conn != null) {
                 DbConnection.getInstance().releaseConnection(conn);
@@ -58,7 +57,7 @@ public class DatabaseAccountDao implements AccountDao {
         Objects.requireNonNull(account.getEmail(), NULL_EMAIL_MSG);
 
         String sql = """
-                UPDATE accounts SET email=?, password_hash=?, refreshToken=?, profileType=? WHERE user_id = ?;
+                UPDATE accounts SET email=?, password_hash=?, refreshToken=?, profile_type=? WHERE user_id = ?;
                 """;
         Connection conn = null;
 
@@ -85,7 +84,7 @@ public class DatabaseAccountDao implements AccountDao {
     public Optional<Account> findByEmail(String email) throws DaoException {
         Objects.requireNonNull(email, NULL_EMAIL_MSG);
 
-        String sql = "SELECT (user_id, email, password_hash, refreshToken, profileType) FROM accounts WHERE email=?";
+        String sql = "SELECT user_id, email, password_hash, refreshToken, profile_type FROM accounts WHERE email=?";
         Connection conn = null;
 
         try {
@@ -99,7 +98,7 @@ public class DatabaseAccountDao implements AccountDao {
                                 rs.getString("email"),
                                 rs.getString("password_hash"),
                                 rs.getString("refreshToken"),
-                                Account.Role.valueOf(rs.getString("profileType"))
+                                Account.Role.valueOf(rs.getString("profile_type"))
                         );
                         return Optional.of(account);
                     }
@@ -121,7 +120,7 @@ public class DatabaseAccountDao implements AccountDao {
             return Optional.empty();
         }
 
-        String sql = "SELECT (user_id, email, password_hash, refreshToken, profileType) FROM accounts WHERE refreshToken=?";
+        String sql = "SELECT user_id, email, password_hash, refreshToken, profile_type FROM accounts WHERE refreshToken=?";
         Connection conn = null;
 
         try {
@@ -135,7 +134,7 @@ public class DatabaseAccountDao implements AccountDao {
                                 rs.getString("email"),
                                 rs.getString("password_hash"),
                                 rs.getString("refreshToken"),
-                                Account.Role.valueOf(rs.getString("profileType"))
+                                Account.Role.valueOf(rs.getString("profile_type"))
                         );
                         return Optional.of(account);
                     }

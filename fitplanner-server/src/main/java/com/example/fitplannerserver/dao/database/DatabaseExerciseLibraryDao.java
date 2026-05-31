@@ -26,18 +26,23 @@ public class DatabaseExerciseLibraryDao implements ExerciseLibraryDao {
         Objects.requireNonNull(exercise.getTrainerId(), "trainer id cannot be null");
 
         String sql = """
-                UPDATE exercise_library SET name=?, execution=?, muscle_groups=? WHERE (trainer_id=? AND exercise_id=?)
+                INSERT INTO exercise_library (trainer_id, exercise_id, name, execution, muscle_groups)
+                VALUES (?, ?, ?, ?, ?)
+                ON DUPLICATE KEY UPDATE
+                name=VALUES(name),
+                execution=VALUES(execution),
+                muscle_groups=VALUES(muscle_groups);
                 """;
         Connection conn = null;
 
         try {
             conn = DbConnection.getInstance().getConnection();
             try (PreparedStatement stm = conn.prepareStatement(sql)) {
-                stm.setString(1, exercise.getName());
-                stm.setString(2, exercise.getExecution());
-                stm.setString(3, String.join(",", exercise.getMuscleGroups()));
-                stm.setString(4, exercise.getTrainerId());
-                stm.setString(5, exercise.getExerciseId());
+                stm.setString(1, exercise.getTrainerId());
+                stm.setString(2, exercise.getExerciseId());
+                stm.setString(3, exercise.getName());
+                stm.setString(4, exercise.getExecution());
+                stm.setString(5, String.join(",", exercise.getMuscleGroups()));
                 stm.executeUpdate();
             }
         } catch (SQLException e) {
@@ -76,7 +81,7 @@ public class DatabaseExerciseLibraryDao implements ExerciseLibraryDao {
         Objects.requireNonNull(exerciseId, "exerciseId cannot be null");
 
         String sql = """
-                SELECT (exercise_id, trainer_id, name, execution, muscle_groups) FROM exercise_library WHERE exercise_id=?;
+                SELECT exercise_id, trainer_id, name, execution, muscle_groups FROM exercise_library WHERE exercise_id=?;
                 """;
         Connection conn = null;
 
@@ -109,7 +114,7 @@ public class DatabaseExerciseLibraryDao implements ExerciseLibraryDao {
         Objects.requireNonNull(trainerId, "trainerId cannot be null");
 
         String sql = """
-                SELECT (exercise_id, trainer_id, name, execution, muscle_groups) FROM exercise_library WHERE trainer_id=?;
+                SELECT exercise_id, trainer_id, name, execution, muscle_groups FROM exercise_library WHERE trainer_id=?;
                 """;
         Connection conn = null;
 
@@ -125,7 +130,7 @@ public class DatabaseExerciseLibraryDao implements ExerciseLibraryDao {
                                 rs.getString(TRAINER_ID),
                                 rs.getString("name"),
                                 rs.getString(EXECUTION),
-                                List.of(rs.getString("muscle_group").split(",")));
+                                List.of(rs.getString("muscle_groups").split(",")));
                         exercises.add(exercise);
                     }
                     return exercises;
@@ -144,7 +149,7 @@ public class DatabaseExerciseLibraryDao implements ExerciseLibraryDao {
 
         List<ExerciseDescription> exercises = new java.util.ArrayList<>();
         String sql = """
-                SELECT (exercise_id, trainer_id, name, execution, muscle_groups) FROM exercise_library WHERE exercise_id IN (?);
+                SELECT exercise_id, trainer_id, name, execution, muscle_groups FROM exercise_library WHERE exercise_id IN (?);
                 """;
         Connection conn = null;
 
@@ -159,7 +164,7 @@ public class DatabaseExerciseLibraryDao implements ExerciseLibraryDao {
                                 rs.getString(TRAINER_ID),
                                 rs.getString("name"),
                                 rs.getString(EXECUTION),
-                                List.of(rs.getString("muscle_group").split(",")));
+                                List.of(rs.getString("muscle_groups").split(",")));
                         exercises.add(exercise);
                     }
                     return exercises;

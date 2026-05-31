@@ -33,6 +33,12 @@ public class DatabaseWorkoutPlanDao implements WorkoutPlanDao {
             conn= DbConnection.getInstance().getConnection();
             conn.setAutoCommit(false);
             insertPlan(conn, plan);
+            
+            try (PreparedStatement delStm = conn.prepareStatement("DELETE FROM workout_session WHERE plan_id=?")) {
+                delStm.setString(1, plan.getPlanId());
+                delStm.executeUpdate();
+            }
+
             insertWorkoutSession(conn, plan.getPlanId(), plan.getAllSessions());
             conn.commit();
         } catch (SQLException e) {
@@ -154,7 +160,16 @@ public class DatabaseWorkoutPlanDao implements WorkoutPlanDao {
     }
 
     private void insertPlan(Connection conn, WorkoutPlan plan) throws SQLException {
-        String sqlPlan="INSERT INTO workout_plan (plan_id, title, cycle_length, start_date, athlete_id, trainer_id) VALUES (?,?,?,?,?,?)";
+        String sqlPlan="""
+                INSERT INTO workout_plan (plan_id, title, cycle_length, start_date, athlete_id, trainer_id) 
+                VALUES (?,?,?,?,?,?)
+                ON DUPLICATE KEY UPDATE
+                title=VALUES(title),
+                cycle_length=VALUES(cycle_length),
+                start_date=VALUES(start_date),
+                athlete_id=VALUES(athlete_id),
+                trainer_id=VALUES(trainer_id)
+                """;
         try(PreparedStatement stm= conn.prepareStatement(sqlPlan)){
             stm.setString(1, plan.getPlanId());
             stm.setString(2, plan.getTitle());
