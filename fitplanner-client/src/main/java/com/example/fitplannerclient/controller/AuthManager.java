@@ -3,6 +3,7 @@ package com.example.fitplannerclient.controller;
 import com.example.fitplannerclient.bean.profile.ProfileBean;
 import com.example.fitplannerclient.bean.auth.LoginBean;
 import com.example.fitplannerclient.bean.auth.RegisterBean;
+import com.example.fitplannerclient.exception.InvalidInputException;
 import com.example.fitplannerclient.service.api.AuthApi;
 import com.example.fitplannercommon.LoginDTO;
 import com.example.fitplannercommon.ProfileDTO;
@@ -25,7 +26,7 @@ public class AuthManager {
         String passError = ValidationUtils.validateRequired(loginBean.getPassword(), "Password", 32);
 
         if (emailError != null || passError != null) {
-            return CompletableFuture.failedFuture(new IllegalArgumentException("Credenziali non valide"));
+            return CompletableFuture.failedFuture(new InvalidInputException("Credenziali non valide"));
         }
 
         // Map Bean -> DTO
@@ -50,7 +51,7 @@ public class AuthManager {
 
         if (emailError != null || passError != null || nameError != null ||
                 lastNameError != null || contactEmailError != null || phoneError != null) {
-            return CompletableFuture.failedFuture(new IllegalArgumentException("Dati di registrazione non validi"));
+            return CompletableFuture.failedFuture(new InvalidInputException("Dati di registrazione non validi"));
         }
 
         // Map Bean -> DTO

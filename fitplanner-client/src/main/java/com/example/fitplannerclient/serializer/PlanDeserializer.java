@@ -103,23 +103,17 @@ public class PlanDeserializer {
                 if (dto.getChildren() == null || dto.getChildren().isEmpty()) {
                     throw new IllegalArgumentException("Flow decorator must have a wrapped node as child");
                 }
-                PlanNode wrappedNode = deserializeNode(dto.getChildren().get(0));
+                PlanNode wrappedNode = deserializeNode(dto.getChildren().getFirst());
                 
                 PlanNodeDTO.FlowDecorator fd = dto.getFlowDecorator();
-                switch (fd.type()) {
-                    case LOOP:
-                        return new LoopDecorator(wrappedNode, fd.value());
-                    case REST:
-                        return new RestDecorator(wrappedNode, fd.value());
-                    case TIME_LIMIT:
-                        return new TimeLimitDecorator(wrappedNode, fd.value());
-                    case INTERVAL:
-                        return new IntervalDecorator(wrappedNode, fd.value());
-                    case PROGRESSION:
-                        return new ProgressionDecorator(wrappedNode, fd.value());
-                    default:
-                        throw new IllegalArgumentException("Unknown flow decorator type: " + fd.type());
-                }
+                return switch (fd.type()) {
+                    case LOOP -> new LoopDecorator(wrappedNode, fd.value());
+                    case REST -> new RestDecorator(wrappedNode, fd.value());
+                    case TIME_LIMIT -> new TimeLimitDecorator(wrappedNode, fd.value());
+                    case INTERVAL -> new IntervalDecorator(wrappedNode, fd.value());
+                    case PROGRESSION -> new ProgressionDecorator(wrappedNode, fd.value());
+                    default -> throw new IllegalArgumentException("Unknown flow decorator type: " + fd.type());
+                };
 
             default:
                 throw new IllegalArgumentException("Unknown node type: " + dto.getType());
@@ -181,23 +175,13 @@ public class PlanDeserializer {
         if (bean.getFlowDecorators() != null) {
             for (int i = bean.getFlowDecorators().size() - 1; i >= 0; i--) {
                 FlowDecoratorBean decBean = bean.getFlowDecorators().get(i);
-                switch (decBean.getType()) {
-                    case LOOP:
-                        currentNode = new LoopDecorator(currentNode, decBean.getValue());
-                        break;
-                    case REST:
-                        currentNode = new RestDecorator(currentNode, decBean.getValue());
-                        break;
-                    case TIME_LIMIT:
-                        currentNode = new TimeLimitDecorator(currentNode, decBean.getValue());
-                        break;
-                    case INTERVAL:
-                        currentNode = new IntervalDecorator(currentNode, decBean.getValue());
-                        break;
-                    case PROGRESSION:
-                        currentNode = new ProgressionDecorator(currentNode, decBean.getValue());
-                        break;
-                }
+                currentNode = switch (decBean.getType()) {
+                    case LOOP -> new LoopDecorator(currentNode, decBean.getValue());
+                    case REST -> new RestDecorator(currentNode, decBean.getValue());
+                    case TIME_LIMIT -> new TimeLimitDecorator(currentNode, decBean.getValue());
+                    case INTERVAL -> new IntervalDecorator(currentNode, decBean.getValue());
+                    case PROGRESSION -> new ProgressionDecorator(currentNode, decBean.getValue());
+                };
             }
         }
 

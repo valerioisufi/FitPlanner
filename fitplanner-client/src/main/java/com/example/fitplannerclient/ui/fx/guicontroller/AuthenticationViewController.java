@@ -8,7 +8,6 @@ import com.example.fitplannerclient.ui.fx.GuiController;
 import com.example.fitplannerclient.ui.fx.GuiManager;
 import com.example.fitplannerclient.ui.fx.view.auth.AuthenticationView;
 import com.example.fitplannerclient.util.ValidationUtils;
-import javafx.application.Platform;
 import javafx.scene.layout.Pane;
 
 public class AuthenticationViewController implements GuiController {

@@ -2,6 +2,7 @@ package com.example.fitplannerclient.controller.exercise;
 
 import com.example.fitplannerclient.bean.exercise.ExerciseDescriptionBean;
 import com.example.fitplannerclient.entity.ExerciseDescription;
+import com.example.fitplannerclient.exception.InvalidInputException;
 import com.example.fitplannerclient.repository.ExerciseRepository;
 import com.example.fitplannerclient.util.ValidationUtils;
 
@@ -49,19 +50,19 @@ public class ExerciseLibraryManager {
     }
 
     // validation
-    private void validateExerciseBean(ExerciseDescriptionBean bean) throws IllegalArgumentException {
+    private void validateExerciseBean(ExerciseDescriptionBean bean) {
         String nameError = ValidationUtils.validateRequired(bean.getName(), "Nome Esercizio", 50);
         String descError = (bean.getExecution() != null && bean.getExecution().length() > 500) 
                 ? "La descrizione non può superare i 500 caratteri" : null;
 
         if (nameError != null || descError != null) {
-            throw new IllegalArgumentException("Dati dell'esercizio non validi");
+            throw new InvalidInputException("Dati dell'esercizio non validi");
         }
 
         if (bean.getMuscleGroups() != null) {
             for (String tag : bean.getMuscleGroups()) {
                 if (tag != null && tag.length() > 50) {
-                    throw new IllegalArgumentException("I gruppi muscolari non possono superare i 50 caratteri");
+                    throw new InvalidInputException("I gruppi muscolari non possono superare i 50 caratteri");
                 }
             }
         }

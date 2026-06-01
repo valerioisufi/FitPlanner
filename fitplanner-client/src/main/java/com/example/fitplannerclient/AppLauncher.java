@@ -1,62 +1,64 @@
 package com.example.fitplannerclient;
 
 import com.example.fitplannerclient.config.ConfigurationManager;
-import com.example.fitplannerclient.service.*;
+import com.example.fitplannerclient.exception.ConfigException;
+import com.example.fitplannerclient.service.HttpService;
+import com.example.fitplannerclient.service.SessionManager;
 import com.example.fitplannerclient.service.api.*;
-import com.example.fitplannerclient.ui.fx.GuiManager;
-import com.example.fitplannerclient.ui.fx.Navigator;
+import com.example.fitplannerclient.ui.cli.CliEngine;
 import javafx.application.Application;
-import javafx.application.Platform;
-import javafx.scene.image.Image;
-import javafx.stage.Stage;
 
-import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
-public class AppLauncher extends Application {
-
-    private Navigator navigator;
+public class AppLauncher {
 
     public static void main(String[] args) {
-        launch(args);
-    }
+        try {
+            ConfigurationManager configManager = new ConfigurationManager();
+            
+            if (configManager.getTypeOfUI() == ConfigurationManager.UiType.CLI) {
+                System.setProperty("org.slf4j.simpleLogger.logFile", "cli.log");
+            }
+            
+            SessionManager sessionManager = new SessionManager();
+            String apiUrl = configManager.getApiUrl();
 
-    @Override
-    public void start(Stage stage) {
-        stage.setTitle("FitPlanner");
-        stage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/app_icon.png"))));
-
-        // 1. Initialize Configuration
-        ConfigurationManager configManager = new ConfigurationManager();
-
-        // 2. Initialize Core Services
-        SessionManager sessionManager = new SessionManager();
-
-        HttpService httpService = new HttpService(configManager.getApiUrl(), sessionManager, () -> {
-            CompletableFuture<Boolean> manualLoginFuture = new CompletableFuture<>();
-            Platform.runLater(() -> {
-                this.navigator.requireAuthenticationOverlay(() -> manualLoginFuture.complete(true));
+            HttpService httpService = new HttpService(apiUrl, sessionManager, () -> {
+                CompletableFuture<Boolean> future = new CompletableFuture<>();
+                if (configManager.getTypeOfUI() == ConfigurationManager.UiType.JAVAFX && JavaFxApp.onUnauthorized != null) {
+                    JavaFxApp.onUnauthorized.accept(future);
+                } else {
+                    System.out.println("\nSessione scaduta o non autorizzato. Ritorno al login...");
+                    future.complete(false);
+                }
+                return future;
             });
-            return manualLoginFuture;
-        });
 
-        AuthApi authApi = new HttpAuthApi(httpService, sessionManager);
-        ProfileApi profileApi = new HttpProfileApi(httpService);
-        ExerciseLibraryApi exerciseLibraryApi = new HttpExerciseLibraryApi(httpService);
-        WorkoutPlanApi workoutPlanApi = new HttpWorkoutPlanApi(httpService);
-        SessionLogApi sessionLogApi = new HttpSessionLogApi(httpService);
+            AuthApi authApi = new HttpAuthApi(httpService, sessionManager);
+            ProfileApi profileApi = new HttpProfileApi(httpService);
+            ExerciseLibraryApi exerciseLibraryApi = new HttpExerciseLibraryApi(httpService);
+            WorkoutPlanApi workoutPlanApi = new HttpWorkoutPlanApi(httpService);
+            SessionLogApi sessionLogApi = new HttpSessionLogApi(httpService);
 
-        AppControllerFactory factory = new AppControllerFactory(
-                authApi, profileApi, exerciseLibraryApi, workoutPlanApi, sessionLogApi
-        );
+            AppControllerFactory factory = new AppControllerFactory(
+                    authApi, profileApi, exerciseLibraryApi, workoutPlanApi, sessionLogApi
+            );
 
-        GuiManager guiManager = new GuiManager(stage);
-        this.navigator = new Navigator(guiManager, factory, sessionManager);
+            switch (configManager.getTypeOfUI()) {
+                case CLI -> {
+                    CliEngine cliEngine = new CliEngine(factory, sessionManager);
+                    cliEngine.start();
+                }
+                case JAVAFX -> {
+                    JavaFxApp.factory = factory;
+                    JavaFxApp.sessionManager = sessionManager;
+                    Application.launch(JavaFxApp.class, args);
+                }
+            }
+        } catch (ConfigException e) {
+            System.err.println("Configuration error: " + e.getMessage());
+            System.exit(1);
+        }
 
-        // 3. Start the flow
-//        // start application
-        this.navigator.goHome();
-
-        stage.show();
     }
 }

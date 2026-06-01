@@ -41,4 +41,19 @@ public class ConfigurationManager {
         return url;
     }
 
+    public UiType getTypeOfUI() {
+        String uiTypeString = properties.getProperty("ui.type");
+        try {
+            return UiType.valueOf(uiTypeString);
+        } catch (IllegalArgumentException e) {
+            throw new ConfigException("Tipo di UI non valido: " + uiTypeString);
+        }
+
+    }
+
+    public enum UiType {
+        JAVAFX,
+        CLI
+    }
+
 }

@@ -1,5 +1,9 @@
 package com.example.fitplannerclient.ui.cli;
 
 public interface CliView {
-    CliView execute(CliView context);
+
+    CliView execute(CliEngine engine);
+
+    void stop();
+
 }
