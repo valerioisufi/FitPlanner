@@ -5,7 +5,6 @@ import com.example.fitplannerserver.dao.WorkoutPlanDao;
 import com.example.fitplannerserver.exception.DaoException;
 import com.example.fitplannerserver.model.plan.WorkoutPlan;
 import com.example.fitplannerserver.model.plan.WorkoutSession;
-import com.example.fitplannerserver.exception.SystemException;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -222,27 +221,24 @@ public class DatabaseWorkoutPlanDao implements WorkoutPlanDao {
         Map<String, WorkoutPlan> workoutPlanMap= new LinkedHashMap<>();
         while(rs.next()){
             String planId= rs.getString("plan_id");
-            workoutPlanMap.computeIfAbsent(planId, k-> {
-                try {
-                    WorkoutPlan plan= new WorkoutPlan(
-                            planId,
-                            rs.getString("plan_title"),
-                            rs.getInt("cycle_length")
-                    );
-                    java.sql.Date sqlDate = rs.getDate("start_date");
-                    if (sqlDate != null) {
-                        plan.setStartDate(sqlDate.toLocalDate());
-                    }
-                    plan.assignTo(rs.getString("athlete_id"));
-                    plan.setAuthorId(rs.getString("trainer_id"));
-
-                    return plan;
+            WorkoutPlan currentPlan = workoutPlanMap.get(planId);
+            
+            if (currentPlan == null) {
+                currentPlan = new WorkoutPlan(
+                        planId,
+                        rs.getString("plan_title"),
+                        rs.getInt("cycle_length")
+                );
+                java.sql.Date sqlDate = rs.getDate("start_date");
+                if (sqlDate != null) {
+                    currentPlan.setStartDate(sqlDate.toLocalDate());
                 }
-                catch (SQLException e){
-                    throw new SystemException("Errore di mappatura dei dati", e);
-                }
-            });
-            WorkoutPlan currentPlan= workoutPlanMap.get(planId);
+                currentPlan.assignTo(rs.getString("athlete_id"));
+                currentPlan.setAuthorId(rs.getString("trainer_id"));
+                
+                workoutPlanMap.put(planId, currentPlan);
+            }
+            
             String workoutSessionId= rs.getString("workout_session_id");
             if(workoutSessionId!=null){
                 WorkoutSession currentWorkoutSession= new WorkoutSession(
@@ -253,7 +249,7 @@ public class DatabaseWorkoutPlanDao implements WorkoutPlanDao {
                 currentPlan.addSession(currentWorkoutSession);
             }
         }
-    return new ArrayList<>(workoutPlanMap.values());
+        return new ArrayList<>(workoutPlanMap.values());
     }
 
 }

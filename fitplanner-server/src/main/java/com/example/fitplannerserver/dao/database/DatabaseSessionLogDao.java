@@ -5,7 +5,6 @@ import com.example.fitplannerserver.dao.SessionLogDao;
 import com.example.fitplannerserver.exception.DaoException;
 import com.example.fitplannerserver.model.log.ExerciseLog;
 import com.example.fitplannerserver.model.log.SessionLog;
-import com.example.fitplannerserver.exception.SystemException;
 
 import java.sql.*;
 import java.util.*;
@@ -159,21 +158,20 @@ public class DatabaseSessionLogDao implements SessionLogDao {
         Map<Long, SessionLog> map= new LinkedHashMap<>();
         while(rs.next()) {
             long sessionId = rs.getLong("session_id");
-            map.computeIfAbsent(sessionId, id -> {
-                        try {
-                            return new SessionLog(
-                                    rs.getString("user_id"),
-                                    rs.getString("notes"),
-                                    SessionLog.SessionStatus.valueOf(rs.getString("status")),
-                                    rs.getTimestamp("date").toLocalDateTime(),
-                                    rs.getString("plan_referenced"),
-                                    rs.getInt("workout_session_day")
-                            );
-                        } catch (SQLException e) {
-                            throw new SystemException("Errore di mappatura dei dati", e);
-                        }
-                    });
-            SessionLog currentSession= map.get(sessionId);
+            SessionLog currentSession = map.get(sessionId);
+            
+            if (currentSession == null) {
+                currentSession = new SessionLog(
+                        rs.getString("user_id"),
+                        rs.getString("notes"),
+                        SessionLog.SessionStatus.valueOf(rs.getString("status")),
+                        rs.getTimestamp("date").toLocalDateTime(),
+                        rs.getString("plan_referenced"),
+                        rs.getInt("workout_session_day")
+                );
+                map.put(sessionId, currentSession);
+            }
+            
             String exerciseId= rs.getString("exercise_id");
             if(exerciseId!=null){
                 String rawSet=rs.getString("exercise_set");

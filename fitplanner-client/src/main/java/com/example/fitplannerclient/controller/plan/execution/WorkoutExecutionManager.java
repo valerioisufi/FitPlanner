@@ -16,6 +16,7 @@ import com.example.fitplannercommon.ExerciseLogDTO;
 import com.example.fitplannercommon.SessionLogDTO;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public class WorkoutExecutionManager {
@@ -32,6 +33,7 @@ public class WorkoutExecutionManager {
     private WorkoutPlan currentPlan;
 
     private WorkoutExecutionSubject workoutExecutionSubject = new WorkoutExecutionSubject();
+    private String lastActiveNodeId = null;
 
     public WorkoutExecutionManager(WorkoutPlanRepository planRepository, SessionLogApi logApi, ExerciseRepository exerciseRepository) {
         this.planRepository = planRepository;
@@ -74,8 +76,37 @@ public class WorkoutExecutionManager {
                     // Inizializza la callback funzionale (Clean Architecture)
                     this.engine.setOnUpdateListener((state, activeNode, timeRemaining) -> {
                         WorkoutStatus status = (state != null) ? state.getStatus() : WorkoutStatus.UNKNOWN;
-                        String activeNodeId = (activeNode != null) ? activeNode.getId() : null;
-                        System.out.println("UI Notificata -> Stato: " + status + ", Nodo: " + activeNodeId + ", Tempo: " + timeRemaining);
+                        
+                        WorkoutExecutionObserver.WorkoutExecutionState observerState = WorkoutExecutionObserver.WorkoutExecutionState.STOPPED;
+                        if (status == WorkoutStatus.PLAYING) observerState = WorkoutExecutionObserver.WorkoutExecutionState.PLAYING;
+                        else if (status == WorkoutStatus.PAUSED) observerState = WorkoutExecutionObserver.WorkoutExecutionState.PAUSED;
+                        
+                        workoutExecutionSubject.notifyCurrentWorkoutEngineState(observerState);
+                        
+                        if (timeRemaining > 0) {
+                            workoutExecutionSubject.notifyCurrentRestTime(timeRemaining / 1000);
+                        } else if (timeRemaining <= 0) {
+                            // Non siamo in pausa/riposo, annulliamo il timer visivamente o notifichiamo un tempo 0?
+                            // Il controller gestirà la logica nascondendo il timer quando riceve un updateCurrentExercise.
+                        }
+                        
+                        if (activeNode != null && !activeNode.getId().equals(lastActiveNodeId)) {
+                            lastActiveNodeId = activeNode.getId();
+                            String resourceId = activeNode.getResourceId();
+                            if (resourceId != null && !resourceId.isEmpty()) {
+                                exerciseRepository.getExercisesAsync(List.of(resourceId)).thenAccept(list -> {
+                                    if (!list.isEmpty()) {
+                                        var entity = list.get(0);
+                                        com.example.fitplannerclient.bean.exercise.ExerciseDescriptionBean bean = new com.example.fitplannerclient.bean.exercise.ExerciseDescriptionBean();
+                                        bean.setExerciseId(entity.getExerciseId());
+                                        bean.setName(entity.getName());
+                                        bean.setExecution(entity.getExecution());
+                                        bean.setMuscleGroups(entity.getMuscleGroups());
+                                        workoutExecutionSubject.notifyCurrentExercise(bean);
+                                    }
+                                });
+                            }
+                        }
                     });
                 });
     }

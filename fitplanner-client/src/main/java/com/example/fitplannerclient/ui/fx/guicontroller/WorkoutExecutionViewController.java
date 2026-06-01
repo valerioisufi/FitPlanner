@@ -16,7 +16,12 @@ import com.example.fitplannerclient.ui.fx.components.Icon;
 import java.util.ArrayList;
 import java.util.List;
 
-public class WorkoutExecutionViewController implements GuiController {
+import com.example.fitplannerclient.controller.plan.execution.observer.WorkoutExecutionObserver;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.util.Duration;
+
+public class WorkoutExecutionViewController implements GuiController, WorkoutExecutionObserver {
 
     private final WorkoutExecutionView view;
 
@@ -34,6 +39,9 @@ public class WorkoutExecutionViewController implements GuiController {
 
     private final WorkoutExecutionManager executionManager;
     private final ExerciseLibraryManager exerciseLibraryManager;
+
+    private Timeline restTimeline;
+    private int remainingRestSeconds;
 
     public WorkoutExecutionViewController(String planId, int sessionDay, WorkoutExecutionManager executionManager, ExerciseLibraryManager exerciseLibraryManager) {
         this.planId = planId;
@@ -53,6 +61,7 @@ public class WorkoutExecutionViewController implements GuiController {
         this.view.getBtnEndWorkout().setOnAction(e -> finishWorkoutSession());
         
         this.view.setOnLogSetAction(this::handleLogSet);
+        this.view.setOnSkipRestAction(this::skipNext);
     }
 
     @Override
@@ -62,6 +71,7 @@ public class WorkoutExecutionViewController implements GuiController {
 
     @Override
     public void start() {
+        executionManager.attachObserver(this);
         executionManager.startSessionAsync(planId, sessionDay)
             .thenRun(() -> {
                 Platform.runLater(() -> {
@@ -72,7 +82,7 @@ public class WorkoutExecutionViewController implements GuiController {
                     if (exerciseNodes.isEmpty()) {
                         Navigator.getInstance().goHome();
                     } else {
-                        loadExercise(0);
+                        // Il motore provvederà a fare tick e aggiornare la UI via observer
                     }
                 });
             })
@@ -86,7 +96,10 @@ public class WorkoutExecutionViewController implements GuiController {
     }
 
     @Override
-    public void stop() {}
+    public void stop() {
+        executionManager.detachObserver(this);
+        if (restTimeline != null) restTimeline.stop();
+    }
 
     private void collectExerciseNodes(PlanNodeBean node) {
         if (node == null) return;
@@ -97,55 +110,6 @@ public class WorkoutExecutionViewController implements GuiController {
             for (PlanNodeBean child : node.getChildren()) {
                 collectExerciseNodes(child);
             }
-        }
-    }
-
-    private void loadExercise(int index) {
-        this.currentExerciseIndex = index;
-        this.currentExerciseSets.clear();
-        this.currentSetNum = 1;
-        
-        PlanNodeBean exNode = exerciseNodes.get(index);
-
-        view.clearSets();
-        view.setCurrentExerciseNode(exNode);
-
-        totalSetsForExercise = 3;
-        targetRepsForExercise = 10;
-        if (exNode.getModifiers() != null) {
-            for (ExerciseModifierBean mod : exNode.getModifiers()) {
-                if ("Sets".equalsIgnoreCase(mod.getName())) {
-                    try { totalSetsForExercise = Integer.parseInt(mod.getValue()); } catch (Exception ignored) {}
-                }
-                if ("Reps".equalsIgnoreCase(mod.getName())) {
-                    try { targetRepsForExercise = Integer.parseInt(mod.getValue()); } catch (Exception ignored) {}
-                }
-            }
-        }
-
-        view.setCurrentSetNumber(currentSetNum, "0.0", String.valueOf(targetRepsForExercise));
-
-        // Start by showing placeholders while fetching
-        view.setExerciseDetails("Loading...");
-        view.setInstructions("Loading...", "Fetching instructions...");
-
-        // Fetch exercise details from the library using its resourceId
-        if (exNode.getResourceId() != null) {
-            exerciseLibraryManager.getExercisesAsync(List.of(exNode.getResourceId()))
-                    .thenAccept(exercises -> {
-                        if (!exercises.isEmpty()) {
-                            Platform.runLater(() -> {
-                                var ex = exercises.get(0);
-                                exNode.setName(ex.getName()); // update the node so PlanNodeComponent can pick it up
-                                // Refresh the node component in the view to show the new name
-                                view.setCurrentExerciseNode(exNode);
-
-                                String focus = ex.getMuscleGroups() != null ? String.join(", ", ex.getMuscleGroups()) : "N/A";
-                                view.setExerciseDetails(focus);
-                                view.setInstructions(ex.getName(), ex.getExecution() != null ? ex.getExecution() : "Nessuna istruzione fornita.");
-                            });
-                        }
-                    });
         }
     }
 
@@ -218,5 +182,58 @@ public class WorkoutExecutionViewController implements GuiController {
                     Navigator.getInstance().getGuiManager().showExceptionError("Errore nel salvataggio del log:", ex);
                     return null;
                 });
+    }
+
+    @Override
+    public void updateCurrentExercise(com.example.fitplannerclient.bean.exercise.ExerciseDescriptionBean description) {
+        Platform.runLater(() -> {
+            if (restTimeline != null) restTimeline.stop();
+            view.showExerciseDetails();
+            String focus = description.getMuscleGroups() != null ? String.join(", ", description.getMuscleGroups()) : "N/A";
+            view.setExerciseDetails(focus);
+            view.setInstructions(description.getName(), description.getExecution() != null ? description.getExecution() : "Nessuna istruzione fornita.");
+        });
+    }
+
+    @Override
+    public void updateCurrentWorkoutEngineState(WorkoutExecutionState state) {
+        Platform.runLater(() -> {
+            if (state == WorkoutExecutionState.PLAYING) {
+                isPlaying = true;
+                view.getBtnPlayPause().setGraphic(new Icon("pause-icon", 40, List.of("button-header-icon")));
+            } else if (state == WorkoutExecutionState.PAUSED) {
+                isPlaying = false;
+                view.getBtnPlayPause().setGraphic(new Icon("play-icon", 40, List.of("button-header-icon")));
+            }
+        });
+    }
+
+    @Override
+    public void updateCurrentRestTime(int restTimeSeconds) {
+        Platform.runLater(() -> {
+            if (restTimeline != null) restTimeline.stop();
+            
+            view.showRestTimer();
+            remainingRestSeconds = restTimeSeconds;
+            
+            int min = restTimeSeconds / 60;
+            int sec = restTimeSeconds % 60;
+            view.setTimerTarget(String.format("%02d:%02d", min, sec));
+            view.setTimerText(String.format("%02d:%02d", min, sec));
+            
+            restTimeline = new Timeline(new KeyFrame(Duration.seconds(1), e -> {
+                remainingRestSeconds--;
+                if (remainingRestSeconds <= 0) {
+                    restTimeline.stop();
+                    // Il motore proseguirà da solo e invierà l'update del nuovo esercizio.
+                } else {
+                    int m = remainingRestSeconds / 60;
+                    int s = remainingRestSeconds % 60;
+                    view.setTimerText(String.format("%02d:%02d", m, s));
+                }
+            }));
+            restTimeline.setCycleCount(Timeline.INDEFINITE);
+            restTimeline.play();
+        });
     }
 }

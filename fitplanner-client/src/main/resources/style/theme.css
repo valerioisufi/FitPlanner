@@ -714,3 +714,37 @@
     -fx-text-fill: -fx-color-text-light;
     -fx-font-size: 14px;
 }
+
+/* ==========================================
+ * WORKOUT EXECUTION
+ * ========================================== */
+
+.execution-plan-node-container {
+    -fx-border-color: #E2E8F0;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+    -fx-padding: 20px;
+}
+
+.execution-focus-label {
+    -fx-font-family: 'Space Grotesk Bold';
+    -fx-font-size: 13px;
+    -fx-text-fill: -fx-radix-green-11;
+}
+
+.execution-timer-time {
+    -fx-font-family: 'Space Grotesk Bold';
+    -fx-font-size: 64px;
+    -fx-text-fill: -fx-color-text-body;
+}
+
+.execution-current-set {
+    -fx-font-family: 'Space Grotesk Bold';
+    -fx-font-size: 12px;
+    -fx-text-fill: -fx-radix-green-11;
+}
+
+.execution-btn-log {
+    -fx-background-color: #D3F2A3;
+    -fx-text-fill: -fx-radix-green-12;
+}

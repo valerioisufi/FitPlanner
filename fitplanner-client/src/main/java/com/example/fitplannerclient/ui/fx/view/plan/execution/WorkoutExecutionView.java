@@ -19,6 +19,13 @@ public class WorkoutExecutionView extends BorderPane {
     private final Label lblInstructionTitle = new Label();
     private final Label lblInstructionSteps = new Label();
 
+    private final VBox instructionBox = new VBox(15);
+    private final VBox restTimerBox = new VBox(20);
+    private final Label lblTimerTime = new Label("00:00");
+    private final Label lblTimerTarget = new Label("Target: 00:00");
+    private final Button btnSkipRest = new Button("SKIP REST");
+    private final StackPane leftContentArea = new StackPane();
+
     private final VBox loggedSetsContainer = new VBox(8);
     private final VBox currentSetFormBox = new VBox(15);
     
@@ -59,10 +66,9 @@ public class WorkoutExecutionView extends BorderPane {
         VBox pane = new VBox(20);
         pane.setAlignment(Pos.TOP_LEFT);
 
-        planNodeContainer.setAlignment(Pos.CENTER_LEFT);
-        planNodeContainer.setStyle("-fx-border-color: #E2E8F0; -fx-border-radius: 8px; -fx-background-radius: 8px; -fx-padding: 20px;");
+        planNodeContainer.getStyleClass().add("execution-plan-node-container");
 
-        lblMuscleGroups.setStyle("-fx-font-family: 'Space Grotesk Bold'; -fx-font-size: 13px; -fx-text-fill: -fx-radix-green-11;");
+        lblMuscleGroups.getStyleClass().add("execution-focus-label");
         lblMuscleGroups.setWrapText(true);
 
         VBox focusBox = new VBox(4);
@@ -79,11 +85,71 @@ public class WorkoutExecutionView extends BorderPane {
         ScrollPane textScroll = new ScrollPane(lblInstructionSteps);
         textScroll.setFitToWidth(true);
         textScroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-        textScroll.setBorder(null);
-        textScroll.setStyle("-fx-background-color: transparent;");
+        textScroll.getStyleClass().add("scroll-pane");
+        VBox.setVgrow(textScroll, Priority.ALWAYS);
 
-        pane.getChildren().addAll(planNodeContainer, lblInstructionTitle, textScroll);
+        instructionBox.getChildren().addAll(planNodeContainer, lblInstructionTitle, textScroll);
+        
+        setupRestTimerBox();
+
+        leftContentArea.getChildren().addAll(instructionBox, restTimerBox);
+        leftContentArea.setAlignment(Pos.TOP_LEFT);
+        VBox.setVgrow(leftContentArea, Priority.ALWAYS);
+
+        pane.getChildren().add(leftContentArea);
+        
+        // Default visualizziamo le istruzioni
+        showExerciseDetails();
         return pane;
+    }
+
+    private void setupRestTimerBox() {
+        restTimerBox.getStyleClass().add("card");
+        restTimerBox.setPadding(new Insets(30));
+        restTimerBox.setAlignment(Pos.CENTER);
+
+        BorderPane header = new BorderPane();
+        Label lblRestTitle = new Label("REST TIME");
+        lblRestTitle.getStyleClass().addAll("heading-h3", "text-color-light");
+        Icon clockIcon = new Icon("clock-icon", 24, List.of("text-color-light")); // you might need a clock icon
+        header.setLeft(lblRestTitle);
+        header.setRight(clockIcon);
+
+        lblTimerTime.getStyleClass().add("execution-timer-time");
+        lblTimerTarget.getStyleClass().add("body-base");
+
+        VBox centerBox = new VBox(10);
+        centerBox.setAlignment(Pos.CENTER);
+        centerBox.getChildren().addAll(lblTimerTime, lblTimerTarget);
+        VBox.setVgrow(centerBox, Priority.ALWAYS);
+
+        btnSkipRest.getStyleClass().addAll("button-secondary");
+        btnSkipRest.setMaxWidth(Double.MAX_VALUE);
+
+        restTimerBox.getChildren().addAll(header, centerBox, btnSkipRest);
+        restTimerBox.setVisible(false);
+    }
+
+    public void showRestTimer() {
+        instructionBox.setVisible(false);
+        restTimerBox.setVisible(true);
+    }
+
+    public void showExerciseDetails() {
+        instructionBox.setVisible(true);
+        restTimerBox.setVisible(false);
+    }
+
+    public void setTimerText(String time) {
+        lblTimerTime.setText(time);
+    }
+
+    public void setTimerTarget(String target) {
+        lblTimerTarget.setText("Target: " + target);
+    }
+
+    public void setOnSkipRestAction(Runnable action) {
+        btnSkipRest.setOnAction(e -> action.run());
     }
 
     private VBox createRightPane() {
@@ -153,10 +219,10 @@ public class WorkoutExecutionView extends BorderPane {
         headerBox.setAlignment(Pos.CENTER_LEFT);
         
         Label lblCurrentSet = new Label("CURRENT SET");
-        lblCurrentSet.setStyle("-fx-font-family: 'Space Grotesk Bold'; -fx-font-size: 12px; -fx-text-fill: -fx-radix-green-11;");
+        lblCurrentSet.getStyleClass().add("execution-current-set");
         
         lblCurrentSetHeader = new Label("Set 1");
-        lblCurrentSetHeader.setStyle("-fx-font-family: 'Space Grotesk Bold'; -fx-font-size: 16px;");
+        lblCurrentSetHeader.getStyleClass().add("heading-h3");
         
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
@@ -184,8 +250,7 @@ public class WorkoutExecutionView extends BorderPane {
         fieldsBox.getChildren().addAll(weightField, repsField, rpeField);
 
         btnLogSet = new Button("LOG SET");
-        btnLogSet.getStyleClass().add("button-primary");
-        btnLogSet.setStyle("-fx-background-color: #D3F2A3; -fx-text-fill: -fx-radix-green-12;");
+        btnLogSet.getStyleClass().addAll("button-primary", "execution-btn-log");
         btnLogSet.setMaxWidth(Double.MAX_VALUE);
 
         currentSetFormBox.getChildren().addAll(headerBox, fieldsBox, btnLogSet);
