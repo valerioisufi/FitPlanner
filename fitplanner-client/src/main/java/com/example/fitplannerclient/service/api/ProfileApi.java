@@ -2,7 +2,7 @@ package com.example.fitplannerclient.service.api;
 
 import com.example.fitplannercommon.InvitationCodeDTO;
 import com.example.fitplannercommon.ProfileDTO;
-import java.util.Arrays;
+
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 

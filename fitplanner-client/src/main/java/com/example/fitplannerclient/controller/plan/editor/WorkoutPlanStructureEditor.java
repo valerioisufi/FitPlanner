@@ -1,9 +1,9 @@
 package com.example.fitplannerclient.controller.plan.editor;
 
 import com.example.fitplannerclient.controller.plan.core.library.ProtocolLibraryManager;
+import com.example.fitplannerclient.controller.plan.core.visitor.NodeFinderVisitor;
 import com.example.fitplannerclient.controller.plan.editor.command.*;
 import com.example.fitplannerclient.controller.plan.editor.observer.WorkoutPlanSubject;
-import com.example.fitplannerclient.controller.plan.core.visitor.NodeFinderVisitor;
 import com.example.fitplannerclient.entity.plan.PlanNode;
 import com.example.fitplannerclient.entity.plan.WorkoutPlan;
 import com.example.fitplannerclient.entity.plan.WorkoutSession;

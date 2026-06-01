@@ -1,15 +1,13 @@
 package com.example.fitplannerclient.repository;
 
-import com.example.fitplannerclient.bean.profile.ProfileBean;
 import com.example.fitplannerclient.entity.profile.Profile;
+import com.example.fitplannerclient.exception.RequestException;
 import com.example.fitplannerclient.service.api.ProfileApi;
-import com.example.fitplannercommon.InvitationCodeDTO;
 import com.example.fitplannercommon.ProfileDTO;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
-import com.example.fitplannerclient.exception.RequestException;
 
 public class ProfileRepository {
 

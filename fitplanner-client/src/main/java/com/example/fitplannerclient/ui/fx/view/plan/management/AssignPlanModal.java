@@ -5,8 +5,15 @@ import com.example.fitplannerclient.bean.profile.ProfileBean;
 import com.example.fitplannerclient.ui.fx.components.Icon;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.control.*;
-import javafx.scene.layout.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
+
 import java.util.List;
 import java.util.function.Consumer;
 

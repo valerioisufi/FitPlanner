@@ -4,15 +4,10 @@ import com.example.fitplannerclient.entity.plan.PlanNode;
 import com.example.fitplannerclient.entity.plan.WorkoutPlan;
 import com.example.fitplannerclient.entity.plan.WorkoutSession;
 import com.example.fitplannerclient.entity.plan.block.Block;
-import com.example.fitplannerclient.repository.ExerciseRepository;
 import com.example.fitplannerclient.serializer.PlanDeserializer;
 import com.example.fitplannerclient.serializer.PlanToDtoVisitor;
 import com.example.fitplannerclient.service.api.WorkoutPlanApi;
-import com.example.fitplannercommon.WorkoutPlanSummaryDTO;
-import com.example.fitplannercommon.WorkoutScheduleDTO;
 
-import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 public class WorkoutPlanRepository {

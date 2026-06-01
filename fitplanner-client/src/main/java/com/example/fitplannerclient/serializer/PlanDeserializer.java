@@ -1,6 +1,8 @@
 package com.example.fitplannerclient.serializer;
 
-import com.example.fitplannerclient.bean.plan.*;
+import com.example.fitplannerclient.bean.plan.ExerciseModifierBean;
+import com.example.fitplannerclient.bean.plan.FlowDecoratorBean;
+import com.example.fitplannerclient.bean.plan.PlanNodeBean;
 import com.example.fitplannerclient.entity.plan.PlanNode;
 import com.example.fitplannerclient.entity.plan.WorkoutPlan;
 import com.example.fitplannerclient.entity.plan.WorkoutSession;

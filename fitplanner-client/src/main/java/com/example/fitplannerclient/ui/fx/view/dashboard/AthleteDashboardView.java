@@ -1,14 +1,15 @@
 package com.example.fitplannerclient.ui.fx.view.dashboard;
 
-import com.example.fitplannerclient.bean.profile.ProfileBean;
-import com.example.fitplannerclient.bean.plan.WorkoutPlanBean;
 import com.example.fitplannerclient.bean.log.SessionLogBean;
+import com.example.fitplannerclient.bean.plan.WorkoutPlanBean;
+import com.example.fitplannerclient.bean.profile.ProfileBean;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.*;
+
 import java.util.List;
 
 public class AthleteDashboardView extends BorderPane {

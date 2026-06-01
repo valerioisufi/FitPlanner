@@ -1,25 +1,25 @@
 package com.example.fitplannerclient.ui.fx.guicontroller;
 
-import com.example.fitplannerclient.bean.plan.*;
+import com.example.fitplannerclient.bean.plan.NodeType;
+import com.example.fitplannerclient.bean.plan.PlanNodeBean;
+import com.example.fitplannerclient.controller.exercise.ExerciseLibraryManager;
+import com.example.fitplannerclient.controller.plan.execution.WorkoutExecutionManager;
+import com.example.fitplannerclient.controller.plan.execution.observer.WorkoutExecutionObserver;
 import com.example.fitplannerclient.ui.fx.GuiController;
 import com.example.fitplannerclient.ui.fx.GuiManager;
 import com.example.fitplannerclient.ui.fx.Navigator;
-import com.example.fitplannerclient.controller.exercise.ExerciseLibraryManager;
+import com.example.fitplannerclient.ui.fx.components.Icon;
 import com.example.fitplannerclient.ui.fx.view.plan.execution.WorkoutExecutionView;
-import com.example.fitplannerclient.controller.plan.execution.WorkoutExecutionManager;
 import com.example.fitplannercommon.ExerciseLogDTO;
 import com.example.fitplannercommon.ExerciseSetDTO;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.scene.layout.Pane;
-import com.example.fitplannerclient.ui.fx.components.Icon;
+import javafx.util.Duration;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import com.example.fitplannerclient.controller.plan.execution.observer.WorkoutExecutionObserver;
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
-import javafx.util.Duration;
 
 public class WorkoutExecutionViewController implements GuiController, WorkoutExecutionObserver {
 

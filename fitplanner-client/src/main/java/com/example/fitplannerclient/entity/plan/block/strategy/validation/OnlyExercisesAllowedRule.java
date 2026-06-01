@@ -3,8 +3,6 @@ package com.example.fitplannerclient.entity.plan.block.strategy.validation;
 import com.example.fitplannerclient.controller.plan.core.visitor.EmptyWorkoutPlanVisitor;
 import com.example.fitplannerclient.controller.plan.core.visitor.WorkoutPlanVisitor;
 import com.example.fitplannerclient.entity.plan.PlanNode;
-import com.example.fitplannerclient.entity.plan.WorkoutPlan;
-import com.example.fitplannerclient.entity.plan.WorkoutSession;
 import com.example.fitplannerclient.entity.plan.block.Block;
 import com.example.fitplannerclient.entity.plan.block.ProtocolBlock;
 import com.example.fitplannerclient.entity.plan.decorator.*;

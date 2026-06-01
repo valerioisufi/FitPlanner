@@ -13,8 +13,6 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static com.example.fitplannerserver.dao.filesystem.CsvUtils.*;
-import static com.example.fitplannerserver.dao.filesystem.CsvUtils.convertEmptyStringToNull;
-import static com.example.fitplannerserver.dao.filesystem.CsvUtils.convertNullToEmptyString;
 
 public class FileSystemExerciseLibraryDao implements ExerciseLibraryDao {
     private static final String CSV_HEADER= "trainer_id;exercise_id;name;execution;muscle_groups";

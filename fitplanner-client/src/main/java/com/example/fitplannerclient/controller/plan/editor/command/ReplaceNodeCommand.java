@@ -3,7 +3,7 @@ package com.example.fitplannerclient.controller.plan.editor.command;
 import com.example.fitplannerclient.controller.plan.core.visitor.GroupingWorkoutPlanVisitor;
 import com.example.fitplannerclient.entity.plan.PlanNode;
 import com.example.fitplannerclient.entity.plan.block.GroupNode;
-import com.example.fitplannerclient.entity.plan.decorator.*;
+import com.example.fitplannerclient.entity.plan.decorator.FlowDecorator;
 
 import java.util.function.Consumer;
 

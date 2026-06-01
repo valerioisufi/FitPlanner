@@ -1,6 +1,6 @@
 package com.example.fitplannerclient.controller.plan.editor.command;
 
-import com.example.fitplannerclient.controller.plan.core.visitor.EmpyWorkoutPlanVisitor;
+import com.example.fitplannerclient.controller.plan.core.visitor.EmptyWorkoutPlanVisitor;
 import com.example.fitplannerclient.entity.plan.decorator.*;
 
 public class UpdateDecoratorValueCommand implements WorkoutPlanEditorCommand {
@@ -17,7 +17,7 @@ public class UpdateDecoratorValueCommand implements WorkoutPlanEditorCommand {
 
     @Override
     public void execute() {
-        flowDecorator.accept(new EmpyWorkoutPlanVisitor() {
+        flowDecorator.accept(new EmptyWorkoutPlanVisitor() {
             @Override
             public void visit(RestDecorator restDecorator) {
                 previousValue = restDecorator.getRestDuration();
@@ -52,7 +52,7 @@ public class UpdateDecoratorValueCommand implements WorkoutPlanEditorCommand {
 
     @Override
     public void undo() {
-        flowDecorator.accept(new EmpyWorkoutPlanVisitor() {
+        flowDecorator.accept(new EmptyWorkoutPlanVisitor() {
             @Override
             public void visit(RestDecorator restDecorator) {
                 restDecorator.setRestDuration(previousValue);

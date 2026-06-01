@@ -4,11 +4,7 @@ import com.example.fitplannerclient.entity.plan.block.ProtocolBlock;
 import com.example.fitplannerclient.entity.plan.block.strategy.composition.WrapWithDecoratorRule;
 import com.example.fitplannerclient.entity.plan.block.strategy.validation.NodeCountRangeRule;
 import com.example.fitplannerclient.entity.plan.block.strategy.validation.OnlyExercisesAllowedRule;
-import com.example.fitplannerclient.entity.plan.decorator.IntervalDecorator;
-import com.example.fitplannerclient.entity.plan.decorator.LoopDecorator;
-import com.example.fitplannerclient.entity.plan.decorator.ProgressionDecorator;
-import com.example.fitplannerclient.entity.plan.decorator.RestDecorator;
-import com.example.fitplannerclient.entity.plan.decorator.TimeLimitDecorator;
+import com.example.fitplannerclient.entity.plan.decorator.*;
 
 import java.util.List;
 

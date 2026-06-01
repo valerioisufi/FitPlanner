@@ -1,11 +1,14 @@
 package com.example.fitplannerclient.ui.fx.view.plan.editor.modal;
 
-import com.example.fitplannerclient.ui.fx.view.plan.editor.components.BadgeComponent;
 import com.example.fitplannerclient.ui.fx.components.Icon;
+import com.example.fitplannerclient.ui.fx.view.plan.editor.components.BadgeComponent;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
-import javafx.scene.layout.*;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
 
 import java.util.List;
 import java.util.function.Consumer;

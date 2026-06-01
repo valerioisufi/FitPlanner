@@ -1,6 +1,6 @@
 package com.example.fitplannerclient.ui.fx.view.plan.editor;
 
-import com.example.fitplannerclient.bean.plan.*;
+import com.example.fitplannerclient.bean.plan.PlanNodeBean;
 import com.example.fitplannerclient.ui.fx.view.plan.editor.components.PlanNodeComponent;
 import javafx.geometry.Insets;
 import javafx.scene.control.ScrollPane;

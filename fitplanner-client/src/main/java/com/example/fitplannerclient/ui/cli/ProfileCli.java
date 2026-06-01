@@ -1,7 +1,6 @@
 package com.example.fitplannerclient.ui.cli;
 
 import com.example.fitplannerclient.bean.profile.ProfileBean;
-import com.example.fitplannerclient.controller.AuthManager;
 import com.example.fitplannerclient.controller.profile.ProfileManager;
 import com.example.fitplannerclient.util.ValidationUtils;
 

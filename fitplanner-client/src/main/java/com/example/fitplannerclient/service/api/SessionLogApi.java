@@ -2,7 +2,7 @@ package com.example.fitplannerclient.service.api;
 
 import com.example.fitplannercommon.ExerciseLogDTO;
 import com.example.fitplannercommon.SessionLogDTO;
-import java.util.Arrays;
+
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 

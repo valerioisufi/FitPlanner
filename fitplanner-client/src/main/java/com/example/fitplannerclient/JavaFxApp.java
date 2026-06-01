@@ -1,9 +1,7 @@
 package com.example.fitplannerclient;
 
-import com.example.fitplannerclient.config.ConfigurationManager;
 import com.example.fitplannerclient.exception.ConfigException;
-import com.example.fitplannerclient.service.*;
-import com.example.fitplannerclient.service.api.*;
+import com.example.fitplannerclient.service.SessionManager;
 import com.example.fitplannerclient.ui.fx.GuiManager;
 import com.example.fitplannerclient.ui.fx.Navigator;
 import javafx.application.Application;

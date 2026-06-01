@@ -3,7 +3,7 @@ package com.example.fitplannerclient.service.api;
 import com.example.fitplannercommon.WorkoutPlanDTO;
 import com.example.fitplannercommon.WorkoutPlanSummaryDTO;
 import com.example.fitplannercommon.WorkoutScheduleDTO;
-import java.util.Arrays;
+
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 

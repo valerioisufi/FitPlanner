@@ -2,8 +2,8 @@ package com.example.fitplannerserver;
 
 import com.example.fitplannerserver.controller.*;
 import com.example.fitplannerserver.dao.DaoFactory;
-import com.example.fitplannerserver.security.JwtUtil;
 import com.example.fitplannerserver.security.IdentityProvider;
+import com.example.fitplannerserver.security.JwtUtil;
 import com.example.fitplannerserver.security.SpringIdentityProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

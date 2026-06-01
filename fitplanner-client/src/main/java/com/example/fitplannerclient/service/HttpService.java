@@ -3,6 +3,8 @@ package com.example.fitplannerclient.service;
 import com.example.fitplannerclient.exception.RequestException;
 import com.example.fitplannercommon.ErrorResponseDTO;
 import com.example.fitplannercommon.TokenDTO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
 
@@ -14,8 +16,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import java.util.stream.Stream;
 
 public class HttpService {

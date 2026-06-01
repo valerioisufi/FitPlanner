@@ -5,7 +5,6 @@ import com.example.fitplannerclient.controller.exercise.ExerciseLibraryManager;
 import com.example.fitplannerclient.controller.profile.ProfileManager;
 import com.example.fitplannerclient.ui.fx.GuiController;
 import com.example.fitplannerclient.ui.fx.GuiManager;
-import com.example.fitplannerclient.ui.fx.Navigator;
 import com.example.fitplannerclient.ui.fx.view.library.ExerciseLibraryView;
 import com.example.fitplannerclient.util.ValidationUtils;
 import javafx.application.Platform;

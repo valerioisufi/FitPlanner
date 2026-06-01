@@ -9,7 +9,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
-import java.util.ArrayList;
+
 import java.util.List;
 
 public class WorkoutExecutionView extends BorderPane {

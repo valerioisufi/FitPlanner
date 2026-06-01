@@ -1,10 +1,10 @@
 package com.example.fitplannerclient.ui.fx.view.dashboard;
 
 import com.example.fitplannerclient.bean.plan.WorkoutPlanBean;
-import com.example.fitplannerclient.bean.plan.WorkoutSessionBean;
 import com.example.fitplannerclient.bean.plan.WorkoutScheduleBean;
-import com.example.fitplannercommon.WorkoutState;
+import com.example.fitplannerclient.bean.plan.WorkoutSessionBean;
 import com.example.fitplannerclient.ui.fx.view.plan.editor.PlanViewer;
+import com.example.fitplannercommon.WorkoutState;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -12,6 +12,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.*;
+
 import java.util.List;
 import java.util.function.Consumer;
 

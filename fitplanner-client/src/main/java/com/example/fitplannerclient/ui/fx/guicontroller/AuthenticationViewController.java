@@ -1,9 +1,9 @@
 package com.example.fitplannerclient.ui.fx.guicontroller;
 
-import com.example.fitplannerclient.bean.profile.ProfileBean;
-import com.example.fitplannerclient.controller.AuthManager;
 import com.example.fitplannerclient.bean.auth.LoginBean;
 import com.example.fitplannerclient.bean.auth.RegisterBean;
+import com.example.fitplannerclient.bean.profile.ProfileBean;
+import com.example.fitplannerclient.controller.AuthManager;
 import com.example.fitplannerclient.ui.fx.GuiController;
 import com.example.fitplannerclient.ui.fx.GuiManager;
 import com.example.fitplannerclient.ui.fx.view.auth.AuthenticationView;

@@ -1,6 +1,5 @@
 package com.example.fitplannerclient.ui.fx.guicontroller;
 
-import com.example.fitplannerclient.bean.plan.WorkoutPlanBean;
 import com.example.fitplannerclient.bean.profile.ProfileBean;
 import com.example.fitplannerclient.controller.plan.WorkoutPlanManager;
 import com.example.fitplannerclient.controller.profile.ProfileManager;
@@ -9,7 +8,6 @@ import com.example.fitplannerclient.ui.fx.GuiManager;
 import com.example.fitplannerclient.ui.fx.Navigator;
 import com.example.fitplannerclient.ui.fx.view.plan.management.PlanManagementView;
 import javafx.application.Platform;
-import javafx.scene.control.Alert;
 import javafx.scene.layout.Pane;
 
 import java.util.ArrayList;

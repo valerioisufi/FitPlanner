@@ -1,6 +1,7 @@
 package com.example.fitplannerclient.ui.fx.view.library;
 
 import com.example.fitplannerclient.bean.exercise.ExerciseDescriptionBean;
+import com.example.fitplannerclient.ui.fx.components.CardListView;
 import com.example.fitplannerclient.ui.fx.components.Icon;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -8,8 +9,6 @@ import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
-import com.example.fitplannerclient.ui.fx.components.ModalOverlay;
-import com.example.fitplannerclient.ui.fx.components.CardListView;
 import javafx.scene.layout.*;
 
 import java.util.List;

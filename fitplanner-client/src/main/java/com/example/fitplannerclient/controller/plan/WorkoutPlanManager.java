@@ -1,19 +1,19 @@
 package com.example.fitplannerclient.controller.plan;
 
 import com.example.fitplannerclient.bean.plan.*;
-import com.example.fitplannerclient.service.api.WorkoutPlanApi;
-import com.example.fitplannercommon.*;
-import com.example.fitplannerclient.serializer.PlanDeserializer;
-import com.example.fitplannerclient.serializer.PlanToBeanVisitor;
 import com.example.fitplannerclient.entity.plan.PlanNode;
 import com.example.fitplannerclient.entity.plan.WorkoutPlan;
+import com.example.fitplannerclient.repository.ExerciseRepository;
+import com.example.fitplannerclient.serializer.PlanDeserializer;
+import com.example.fitplannerclient.serializer.PlanToBeanVisitor;
+import com.example.fitplannerclient.service.api.WorkoutPlanApi;
+import com.example.fitplannercommon.WorkoutPlanSummaryDTO;
+import com.example.fitplannercommon.WorkoutSessionDTO;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
-
-import com.example.fitplannerclient.repository.ExerciseRepository;
 
 public class WorkoutPlanManager {
 

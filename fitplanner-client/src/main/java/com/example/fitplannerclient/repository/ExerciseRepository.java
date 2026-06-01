@@ -4,7 +4,10 @@ import com.example.fitplannerclient.entity.ExerciseDescription;
 import com.example.fitplannerclient.service.api.ExerciseLibraryApi;
 import com.example.fitplannercommon.ExerciseDescriptionDTO;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 

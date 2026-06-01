@@ -1,11 +1,8 @@
 package com.example.fitplannerserver.dao.filesystem;
 
-import com.example.fitplannerserver.dao.*;
-import com.example.fitplannerserver.exception.DaoException;
-import com.example.fitplannerserver.model.Account;
-import com.example.fitplannerserver.model.User;
-import com.github.f4b6a3.uuid.UuidCreator;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import com.example.fitplannerserver.dao.DaoFactory;
+import com.example.fitplannerserver.dao.DataInitializer;
+
 import java.nio.file.Path;
 import java.util.logging.Level;
 import java.util.logging.Logger;

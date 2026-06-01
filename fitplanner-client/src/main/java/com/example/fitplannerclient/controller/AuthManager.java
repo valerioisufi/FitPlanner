@@ -1,14 +1,14 @@
 package com.example.fitplannerclient.controller;
 
-import com.example.fitplannerclient.bean.profile.ProfileBean;
 import com.example.fitplannerclient.bean.auth.LoginBean;
 import com.example.fitplannerclient.bean.auth.RegisterBean;
+import com.example.fitplannerclient.bean.profile.ProfileBean;
 import com.example.fitplannerclient.exception.InvalidInputException;
 import com.example.fitplannerclient.service.api.AuthApi;
+import com.example.fitplannerclient.util.ValidationUtils;
 import com.example.fitplannercommon.LoginDTO;
 import com.example.fitplannercommon.ProfileDTO;
 import com.example.fitplannercommon.RegisterDTO;
-import com.example.fitplannerclient.util.ValidationUtils;
 
 import java.util.concurrent.CompletableFuture;
 

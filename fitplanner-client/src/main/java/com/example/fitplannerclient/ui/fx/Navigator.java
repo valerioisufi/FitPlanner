@@ -1,7 +1,6 @@
 package com.example.fitplannerclient.ui.fx;
 
 import com.example.fitplannerclient.AppControllerFactory;
-import com.example.fitplannerclient.bean.plan.WorkoutSessionBean;
 import com.example.fitplannerclient.bean.profile.ProfileBean;
 import com.example.fitplannerclient.controller.AuthManager;
 import com.example.fitplannerclient.service.SessionManager;

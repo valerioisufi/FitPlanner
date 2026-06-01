@@ -5,7 +5,6 @@ import com.example.fitplannerclient.entity.profile.Profile;
 import com.example.fitplannerclient.repository.ProfileRepository;
 import com.example.fitplannerclient.service.api.ProfileApi;
 import com.example.fitplannercommon.InvitationCodeDTO;
-import com.example.fitplannercommon.ProfileDTO;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;

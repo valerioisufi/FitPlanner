@@ -1,14 +1,17 @@
 package com.example.fitplannerserver.controller;
 
 import com.example.fitplannercommon.InvitationCodeDTO;
+import com.example.fitplannercommon.ProfileDTO;
 import com.example.fitplannerserver.beanvalidator.ProfileValidator;
 import com.example.fitplannerserver.dao.CoachingDao;
 import com.example.fitplannerserver.dao.ProfileDao;
-import com.example.fitplannerserver.exception.*;
+import com.example.fitplannerserver.exception.DaoException;
+import com.example.fitplannerserver.exception.ResourceNotFoundException;
+import com.example.fitplannerserver.exception.SystemException;
+import com.example.fitplannerserver.exception.WrongArgumentsException;
 import com.example.fitplannerserver.mapper.ProfileMapper;
 import com.example.fitplannerserver.model.Account;
 import com.example.fitplannerserver.model.User;
-import com.example.fitplannercommon.ProfileDTO;
 import com.example.fitplannerserver.security.IdentityProvider;
 
 import java.util.ArrayList;

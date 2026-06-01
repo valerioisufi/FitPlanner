@@ -1,7 +1,5 @@
 package com.example.fitplannerclient.entity.log;
 
-import com.example.fitplannercommon.SessionLogDTO;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
