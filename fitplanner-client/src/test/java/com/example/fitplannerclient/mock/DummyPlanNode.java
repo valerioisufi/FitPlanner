@@ -25,6 +25,11 @@ public class DummyPlanNode extends PlanNode {
     }
 
     @Override
+    public PlanNode deepCopy() {
+        return null;
+    }
+
+    @Override
     public void accept(WorkoutPlanVisitor visitor) {
         // Metodo vuoto intenzionalmente nel mock per i test
     }
