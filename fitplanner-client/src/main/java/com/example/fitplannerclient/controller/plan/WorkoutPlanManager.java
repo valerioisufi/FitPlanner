@@ -13,12 +13,18 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
+import com.example.fitplannerclient.repository.ExerciseRepository;
+
 public class WorkoutPlanManager {
 
+    private final WorkoutPlanRepository planRepository;
     private final WorkoutPlanApi planApi;
+    private final ExerciseRepository exerciseRepository;
 
-    public WorkoutPlanManager(WorkoutPlanApi planApi) {
+    public WorkoutPlanManager(WorkoutPlanRepository planRepository, WorkoutPlanApi planApi, ExerciseRepository exerciseRepository) {
+        this.planRepository = planRepository;
         this.planApi = planApi;
+        this.exerciseRepository = exerciseRepository;
     }
 
     public CompletableFuture<List<WorkoutPlanSummaryBean>> getMyCreatedPlansSummaryAsync() {
@@ -40,8 +46,8 @@ public class WorkoutPlanManager {
     }
 
     public CompletableFuture<WorkoutPlanBean> getAssignedPlanAsync() {
-        return planApi.getAssignedPlanAsync()
-                .thenApply(this::dtoToBean);
+        return planRepository.getAssignedPlanAsync()
+                .thenApply(this::entityToBean);
     }
 
     public CompletableFuture<WorkoutPlanBean> getAssignedPlanOfAthleteAsync(String athleteId) {
@@ -53,9 +59,13 @@ public class WorkoutPlanManager {
                             .map(WorkoutPlanSummaryDTO::getPlanId);
 
                     return planId.map(s -> planApi.getPlanDetailsByIdAsync(s)
-                                    .thenApply(this::dtoToBean)
+                                    .thenApply(dto -> {
+                                        if (dto == null) return null;
+                                        PlanDeserializer deserializer = new PlanDeserializer();
+                                        WorkoutPlan entity = deserializer.toEntity(dto);
+                                        return entityToBean(entity);
+                                    })
                             ).orElseGet(() -> CompletableFuture.completedFuture(null));
-
                 });
     }
 
@@ -98,7 +108,7 @@ public class WorkoutPlanManager {
                 PlanDeserializer deserializer = new PlanDeserializer();
                 PlanNode root = deserializer.deserialize(sDto.getContent());
                 if (root != null) {
-                    PlanToBeanVisitor visitor = new PlanToBeanVisitor();
+                    PlanToBeanVisitor visitor = new PlanToBeanVisitor(this::resolveExerciseName);
                     visitor.getAccumulatedDecorators().clear();
                     root.accept(visitor);
                     rootNode = visitor.getCurrentPlanNodeBean();
@@ -113,19 +123,27 @@ public class WorkoutPlanManager {
         return new WorkoutSessionBean(String.valueOf(sDto.getDay()), sDto.getDay(), rootNode);
     }
 
-    public WorkoutPlanBean dtoToBean(WorkoutPlanDTO dto) {
-        if (dto == null) return null;
-        try {
-            PlanDeserializer deserializer = new PlanDeserializer();
-            WorkoutPlan entity = deserializer.toEntity(dto);
+    public WorkoutPlanBean entityToBean(WorkoutPlan plan) {
+        if (plan == null) return null;
+        PlanToBeanVisitor visitor = new PlanToBeanVisitor(
+                uuid -> {
+                    if (exerciseRepository != null) {
+                        var exercise = exerciseRepository.getCachedExercise(uuid);
+                        if (exercise != null) return exercise.getName();
+                    }
+                    return "Esercizio Sconosciuto";
+                }
+        );
+        plan.accept(visitor);
+        return visitor.getPlanBean();
+    }
 
-            PlanToBeanVisitor visitor = new PlanToBeanVisitor();
-            entity.accept(visitor);
-
-            return visitor.getPlanBean();
-        } catch (Exception e) {
-            throw new CompletionException("Failed to map WorkoutPlanDTO to WorkoutPlanBean", e);
+    private String resolveExerciseName(String uuid) {
+        if (exerciseRepository != null) {
+            var entity = exerciseRepository.getCachedExercise(uuid);
+            if (entity != null) return entity.getName();
         }
+        return "Esercizio Sconosciuto";
     }
 
 }

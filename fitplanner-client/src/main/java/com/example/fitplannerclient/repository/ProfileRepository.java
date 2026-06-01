@@ -8,6 +8,8 @@ import com.example.fitplannercommon.ProfileDTO;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+import com.example.fitplannerclient.exception.RequestException;
 
 public class ProfileRepository {
 
@@ -51,7 +53,21 @@ public class ProfileRepository {
     public CompletableFuture<Profile> getMyTrainerAsync() {
         return profileApi.getMyTrainerAsync()
                 .thenApply(this::dtoToEntity);
+    }
 
+    public CompletableFuture<Boolean> hasTrainerAsync() {
+        return profileApi.getMyTrainerAsync()
+                .thenApply(dto -> true)
+                .exceptionally(ex -> {
+                    Throwable cause = ex;
+                    while (cause instanceof CompletionException && cause.getCause() != null) {
+                        cause = cause.getCause();
+                    }
+                    if (cause instanceof RequestException && ((RequestException) cause).getStatusCode() == 404) {
+                        return false;
+                    }
+                    throw new CompletionException(ex);
+                });
     }
 
     public CompletableFuture<List<Profile>> getMyAthletesAsync() {
@@ -60,6 +76,7 @@ public class ProfileRepository {
     }
 
     private Profile dtoToEntity(ProfileDTO dto) {
+        if (dto == null) return null;
         Profile.ProfileType profileType =  switch(dto.getProfileType()){
             case TRAINER -> Profile.ProfileType.TRAINER;
             case ATHLETE -> Profile.ProfileType.ATHLETE;
@@ -78,6 +95,7 @@ public class ProfileRepository {
     }
 
     private ProfileDTO entityToDto(Profile entity) {
+        if (entity == null) return null;
         ProfileDTO.ProfileType profileType = switch(entity.getProfileType()){
             case TRAINER -> ProfileDTO.ProfileType.TRAINER;
             case ATHLETE -> ProfileDTO.ProfileType.ATHLETE;

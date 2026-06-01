@@ -159,8 +159,8 @@ public class Navigator {
         Platform.runLater(() -> navigateTo(controller));
     }
 
-    public void goToWorkoutExecution(WorkoutSessionBean session) {
-        WorkoutExecutionViewController controller = new WorkoutExecutionViewController(session, appControllerFactory.createWorkoutExecutionManager(), appControllerFactory.createProfileManager(), appControllerFactory.createExerciseLibraryManager());
+    public void goToWorkoutExecution(String planId, int sessionDay) {
+        WorkoutExecutionViewController controller = new WorkoutExecutionViewController(planId, sessionDay, appControllerFactory.createWorkoutExecutionManager(), appControllerFactory.createExerciseLibraryManager());
         Platform.runLater(() -> navigateTo(controller));
     }
 

@@ -2,7 +2,7 @@ package com.example.fitplannerclient.ui.fx.view.dashboard;
 
 import com.example.fitplannerclient.bean.profile.ProfileBean;
 import com.example.fitplannerclient.bean.plan.WorkoutPlanBean;
-import com.example.fitplannercommon.SessionLogDTO;
+import com.example.fitplannerclient.bean.log.SessionLogBean;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -89,7 +89,7 @@ public class AthleteDashboardView extends BorderPane {
         planSection.getChildren().add(card);
     }
 
-    public void setSessionLogs(List<SessionLogDTO> logs) {
+    public void setSessionLogs(List<SessionLogBean> logs) {
         // Clear previous logs
         while (logsSection.getChildren().size() > 1) {
             logsSection.getChildren().remove(1);
@@ -104,7 +104,7 @@ public class AthleteDashboardView extends BorderPane {
 
         VBox listContainer = new VBox(10);
         java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm");
-        for (SessionLogDTO log : logs) {
+        for (SessionLogBean log : logs) {
             HBox row = new HBox(15);
             row.setAlignment(Pos.CENTER_LEFT);
             row.getStyleClass().add("card");
@@ -120,7 +120,7 @@ public class AthleteDashboardView extends BorderPane {
             Region spacer = new Region();
             HBox.setHgrow(spacer, Priority.ALWAYS);
 
-            Label durationLabel = new Label(log.getStatus().name());
+            Label durationLabel = new Label(log.getStatus() != null ? log.getStatus() : "Sconosciuto");
             durationLabel.setStyle("-fx-font-family: 'Space Grotesk Medium'; -fx-font-size: 12px; -fx-text-fill: -fx-radix-blue-11; -fx-background-color: -fx-radix-blue-3; -fx-padding: 4px 12px; -fx-background-radius: 6px;");
 
             row.getChildren().addAll(infoBox, spacer, durationLabel);

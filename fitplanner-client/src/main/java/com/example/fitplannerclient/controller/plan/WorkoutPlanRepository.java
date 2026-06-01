@@ -1,52 +1,29 @@
 package com.example.fitplannerclient.controller.plan;
 
-import com.example.fitplannerclient.bean.plan.WorkoutPlanBean;
-import com.example.fitplannerclient.entity.ExerciseDescription;
 import com.example.fitplannerclient.entity.plan.PlanNode;
 import com.example.fitplannerclient.entity.plan.WorkoutPlan;
 import com.example.fitplannerclient.entity.plan.WorkoutSession;
 import com.example.fitplannerclient.entity.plan.block.Block;
 import com.example.fitplannerclient.repository.ExerciseRepository;
 import com.example.fitplannerclient.serializer.PlanDeserializer;
-import com.example.fitplannerclient.serializer.PlanToBeanVisitor;
 import com.example.fitplannerclient.serializer.PlanToDtoVisitor;
 import com.example.fitplannerclient.service.api.WorkoutPlanApi;
+import com.example.fitplannercommon.WorkoutPlanSummaryDTO;
+import com.example.fitplannercommon.WorkoutScheduleDTO;
 
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 public class WorkoutPlanRepository {
 
     private final WorkoutPlanApi planApi;
-    private final ExerciseRepository exerciseRepository;
+    private final PlanDeserializer deserializer = new PlanDeserializer();
 
-    public WorkoutPlanRepository(WorkoutPlanApi planApi, ExerciseRepository exerciseRepository) {
+    private WorkoutPlan cachedAssignedPlan;
+
+    public WorkoutPlanRepository(WorkoutPlanApi planApi) {
         this.planApi = planApi;
-        this.exerciseRepository = exerciseRepository;
-        
-        if (exerciseRepository != null) {
-            exerciseRepository.getExercisesAsync(null).thenAccept(entities -> {});
-        }
-    }
-
-    public CompletableFuture<WorkoutPlanBean> getPlanAsync(WorkoutPlan plan) {
-        if (plan == null) return CompletableFuture.completedFuture(null);
-
-        if (exerciseRepository == null) {
-            PlanToBeanVisitor visitor = new PlanToBeanVisitor();
-            plan.accept(visitor);
-            return CompletableFuture.completedFuture(visitor.getPlanBean());
-        }
-
-        return exerciseRepository.getExercisesAsync(null).thenApply(entities -> {
-            PlanToBeanVisitor visitor = new PlanToBeanVisitor(
-                    uuid -> {
-                        ExerciseDescription entity = exerciseRepository.getCachedExercise(uuid);
-                        return entity != null ? entity.getName() : "Esercizio Sconosciuto";
-                    }
-            );
-            plan.accept(visitor);
-            return visitor.getPlanBean();
-        });
     }
 
     public CompletableFuture<WorkoutPlan> createNewPlan() {
@@ -69,8 +46,6 @@ public class WorkoutPlanRepository {
     }
 
     public CompletableFuture<WorkoutPlan> editExistingPlan(String planId, boolean isCopy) {
-        PlanDeserializer deserializer = new PlanDeserializer();
-
         return planApi.getPlanDetailsByIdAsync(planId)
                 .thenCompose(planDto -> {
                     WorkoutPlan plan = deserializer.toEntity(planDto);
@@ -108,5 +83,22 @@ public class WorkoutPlanRepository {
         plan.accept(serializer);
 
         return planApi.updatePlanAsync(plan.getPlanId(), serializer.getPlanDto());
+    }
+
+    public CompletableFuture<WorkoutPlan> getAssignedPlanAsync() {
+        if (cachedAssignedPlan != null) {
+            return CompletableFuture.completedFuture(cachedAssignedPlan);
+        }
+        return planApi.getAssignedPlanAsync()
+                .thenApply(dto -> {
+                    if (dto == null) return null;
+                    WorkoutPlan plan = deserializer.toEntity(dto);
+                    cachedAssignedPlan = plan;
+                    return plan;
+                });
+    }
+
+    public WorkoutPlan getCachedAssignedPlan() {
+        return cachedAssignedPlan;
     }
 }

@@ -1,79 +1,120 @@
 package com.example.fitplannerclient.controller.plan.execution;
 
+import com.example.fitplannerclient.bean.plan.PlanNodeBean;
+import com.example.fitplannerclient.controller.plan.WorkoutPlanRepository;
 import com.example.fitplannerclient.controller.plan.execution.engine.WorkoutEngine;
 import com.example.fitplannerclient.controller.plan.execution.engine.WorkoutEngineImpl;
+import com.example.fitplannerclient.controller.plan.execution.observer.WorkoutExecutionObserver;
+import com.example.fitplannerclient.controller.plan.execution.observer.WorkoutExecutionSubject;
+import com.example.fitplannerclient.entity.plan.WorkoutPlan;
 import com.example.fitplannerclient.entity.plan.WorkoutSession;
 import com.example.fitplannerclient.entity.plan.context.WorkoutStatus;
+import com.example.fitplannerclient.repository.ExerciseRepository;
+import com.example.fitplannerclient.serializer.PlanToBeanVisitor;
 import com.example.fitplannerclient.service.api.SessionLogApi;
 import com.example.fitplannercommon.ExerciseLogDTO;
 import com.example.fitplannercommon.SessionLogDTO;
-import com.example.fitplannerclient.bean.plan.WorkoutSessionBean;
-import com.example.fitplannerclient.serializer.PlanDeserializer;
-import com.example.fitplannerclient.entity.plan.PlanNode;
 
 import java.util.ArrayList;
 import java.util.concurrent.CompletableFuture;
 
 public class WorkoutExecutionManager {
 
-    private WorkoutEngine engine;
     private final SessionLogApi logApi;
+    private final WorkoutPlanRepository planRepository;
+    private final ExerciseRepository exerciseRepository;
+
+    private WorkoutEngine engine;
 
     private String currentPlanId;
     private WorkoutSession currentSession;
 
-    // TODO: Aggiungi qui il subject per la UI
-    // private WorkoutExecutionSubject uiSubject = new WorkoutExecutionSubject();
+    private WorkoutPlan currentPlan;
 
-    public WorkoutExecutionManager(SessionLogApi logApi) {
+    private WorkoutExecutionSubject workoutExecutionSubject = new WorkoutExecutionSubject();
+
+    public WorkoutExecutionManager(WorkoutPlanRepository planRepository, SessionLogApi logApi, ExerciseRepository exerciseRepository) {
+        this.planRepository = planRepository;
         this.logApi = logApi;
+        this.exerciseRepository = exerciseRepository;
     }
 
-    public void startSession(String planId, WorkoutSessionBean sessionBean) {
+    public void attachObserver(WorkoutExecutionObserver observer) {
+        workoutExecutionSubject.attach(observer);
+    }
+
+    public void detachObserver(WorkoutExecutionObserver observer) {
+        workoutExecutionSubject.detach(observer);
+    }
+
+    public CompletableFuture<Void> startSessionAsync(String planId, int workoutSessionDay) {
         this.currentPlanId = planId;
 
-        // Deserializza il Bean della sessione in Entity di dominio
-        PlanDeserializer deserializer = new PlanDeserializer();
-        PlanNode rootNode = deserializer.toEntity(sessionBean.getPlanRoot());
-        this.currentSession = new WorkoutSession(sessionBean.getName(), sessionBean.getDay(), rootNode);
+        // Recupera il piano direttamente tramite il repository (sfrutta la cache se possibile)
+        return planRepository.getAssignedPlanAsync()
+                .thenAccept(plan -> {
+                    if (plan == null) throw new IllegalStateException("Nessun piano assegnato");
+                    this.currentPlan = plan;
 
-        // Inizializza il motore passando la radice della sessione
-        this.engine = new WorkoutEngineImpl(this.currentSession.getRoot());
+                    WorkoutSession targetSession = null;
+                    for (WorkoutSession s : plan.getSessions()) {
+                        if (s.getDay() == workoutSessionDay) {
+                            targetSession = s;
+                            break;
+                        }
+                    }
+                    if (targetSession == null) {
+                        throw new IllegalArgumentException("Sessione non trovata per il giorno specificato");
+                    }
+                    this.currentSession = targetSession;
 
-        // Inizializza la callback funzionale (Clean Architecture)
-        this.engine.setOnUpdateListener((state, activeNode, timeRemaining) -> {
-            
-            // 1. Leggi lo stato (usando l'Enum condiviso)
-            WorkoutStatus status = (state != null) ? state.getStatus() : WorkoutStatus.UNKNOWN;
+                    // Inizializza il motore passando la radice della sessione (Entity)
+                    this.engine = new WorkoutEngineImpl(this.currentSession.getRoot());
 
-            // 2. Ottieni l'ID del nodo (DTO)
-            String activeNodeId = (activeNode != null) ? activeNode.getId() : null;
+                    // Inizializza la callback funzionale (Clean Architecture)
+                    this.engine.setOnUpdateListener((state, activeNode, timeRemaining) -> {
+                        WorkoutStatus status = (state != null) ? state.getStatus() : WorkoutStatus.UNKNOWN;
+                        String activeNodeId = (activeNode != null) ? activeNode.getId() : null;
+                        System.out.println("UI Notificata -> Stato: " + status + ", Nodo: " + activeNodeId + ", Tempo: " + timeRemaining);
+                    });
+                });
+    }
 
-            // 3. Notifica la UI (passando l'Enum)
-            // uiSubject.notifyObservers(status, activeNodeId, timeRemaining);
-            
-            System.out.println("UI Notificata -> Stato: " + status + ", Nodo: " + activeNodeId + ", Tempo: " + timeRemaining);
+    public PlanNodeBean getSessionRootBeanForUi() {
+        if (currentSession == null || currentSession.getRoot() == null) return null;
+        PlanToBeanVisitor visitor = new PlanToBeanVisitor(uuid -> {
+            if (exerciseRepository != null) {
+                var ex = exerciseRepository.getCachedExercise(uuid);
+                if (ex != null) return ex.getName();
+            }
+            return "Esercizio Sconosciuto";
         });
+        currentSession.getRoot().accept(visitor);
+        return visitor.getCurrentPlanNodeBean();
+    }
+
+    public WorkoutSession getCurrentSession() {
+        return currentSession;
     }
 
     public void play() {
-        engine.play();
+        if (engine != null) engine.play();
     }
 
     public void pause() {
-        engine.pause();
+        if (engine != null) engine.pause();
     }
 
     public void stop() {
-        engine.stop();
+        if (engine != null) engine.stop();
     }
 
     public void skipNext() {
-        engine.skipNext();
+        if (engine != null) engine.skipNext();
     }
 
     public void skipPrevious() {
-        engine.skipPrevious();
+        if (engine != null) engine.skipPrevious();
     }
 
     public void done() {
@@ -90,8 +131,7 @@ public class WorkoutExecutionManager {
         }
 
         SessionLogDTO.SessionStatus status = SessionLogDTO.SessionStatus.COMPLETED;
-        if (engine != null && engine.getState().getStatus() != WorkoutStatus.STOPPED) {
-            // Se l'engine non era fermo ma l'utente ha terminato forzatamente
+        if (engine != null && engine.getState() != null && engine.getState().getStatus() != WorkoutStatus.STOPPED) {
             status = SessionLogDTO.SessionStatus.INTERRUPTED;
         }
 

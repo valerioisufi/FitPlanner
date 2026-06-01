@@ -7,14 +7,12 @@ public class ExerciseLog {
     private final String exerciseId;
 
     private final List<ExerciseSet> sets;
-    private final int rpe;
-    private final String notes;
+    private String notes;
 
-    public ExerciseLog(String name, String exerciseId, List<ExerciseSet> sets, int rpe, String notes) {
+    public ExerciseLog(String name, String exerciseId, List<ExerciseSet> sets, String notes) {
         this.name = name;
         this.exerciseId = exerciseId;
         this.sets = sets;
-        this.rpe = rpe;
         this.notes = notes;
     }
 
@@ -23,5 +21,16 @@ public class ExerciseLog {
     }
 
     public String getExerciseId() { return exerciseId; }
+    public String getName() { return name; }
     public List<ExerciseSet> getSets() { return sets; }
+
+    public String getNotes() { return notes; }
+    public void updateNotes(String notes){
+        this.notes = notes;
+    }
+
+    public void addSets(List<ExerciseSet> newSets) {
+        this.sets.addAll(newSets);
+    }
+
 }

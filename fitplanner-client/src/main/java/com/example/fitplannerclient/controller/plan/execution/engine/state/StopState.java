@@ -1,5 +1,6 @@
-package com.example.fitplannerclient.controller.plan.execution.engine;
+package com.example.fitplannerclient.controller.plan.execution.engine.state;
 
+import com.example.fitplannerclient.controller.plan.execution.engine.WorkoutEngineImpl;
 import com.example.fitplannerclient.entity.plan.context.WorkoutStatus;
 
 public class StopState extends EngineState {

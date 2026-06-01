@@ -1,5 +1,6 @@
 package com.example.fitplannerclient.controller.plan.execution.engine;
 
+import com.example.fitplannerclient.controller.plan.execution.engine.state.EngineState;
 import com.example.fitplannerclient.entity.plan.exercise.ExerciseNode;
 
 public interface WorkoutEngine {

@@ -40,6 +40,10 @@ public class ProfileManager {
                 .thenApply(this::entityToBean);
     }
 
+    public CompletableFuture<Boolean> hasTrainerAsync() {
+        return profileRepository.hasTrainerAsync();
+    }
+
     public CompletableFuture<List<ProfileBean>> getMyAthletesAsync() {
         return profileRepository.getMyAthletesAsync()
                 .thenApply(list -> list.stream().map(this::entityToBean).toList());
@@ -55,6 +59,7 @@ public class ProfileManager {
 
 
     private Profile beanToEntity(ProfileBean bean){
+        if (bean == null) return null;
         Profile.ProfileType profileType =  switch(bean.getProfileType()){
             case TRAINER -> Profile.ProfileType.TRAINER;
             case ATHLETE -> Profile.ProfileType.ATHLETE;
@@ -74,6 +79,7 @@ public class ProfileManager {
     }
 
     private ProfileBean entityToBean(Profile entity){
+        if (entity == null) return null;
         ProfileBean.ProfileType profileType = switch(entity.getProfileType()){
             case TRAINER -> ProfileBean.ProfileType.TRAINER;
             case ATHLETE -> ProfileBean.ProfileType.ATHLETE;

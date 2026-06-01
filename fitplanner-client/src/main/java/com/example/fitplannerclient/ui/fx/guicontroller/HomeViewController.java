@@ -59,7 +59,10 @@ public class HomeViewController implements GuiController {
             // Fetch and set invite code
             profileManager.getInvitationCodeAsync()
                     .thenAccept(code -> javafx.application.Platform.runLater(() -> trainerView.setInviteCode(code)))
-                    .exceptionally(ex -> null);
+                    .exceptionally(ex -> {
+                        Navigator.getInstance().getGuiManager().showExceptionError("Errore nel recupero del codice di invito:", ex);
+                        return null;
+                    });
 
             // Fetch and set athletes
             profileManager.getMyAthletesAsync()
@@ -81,7 +84,7 @@ public class HomeViewController implements GuiController {
                         Platform.runLater(() -> {
                             athleteView.showAthleteDashboard(plan, schedule, () -> {
                                 if (schedule != null && schedule.getNextSuggestedSession() != null) {
-                                    Navigator.getInstance().goToWorkoutExecution(schedule.getNextSuggestedSession());
+                                    Navigator.getInstance().goToWorkoutExecution(schedule.getPlanId(), schedule.getNextSuggestedSession().getDay());
                                 }
                             });
                             checkAndShowTrainerInvite(athleteView);
@@ -99,8 +102,8 @@ public class HomeViewController implements GuiController {
     }
 
     private void checkAndShowTrainerInvite(AthleteHomeView athleteView) {
-        profileManager.getMyTrainerAsync().thenAccept(trainer -> {
-            if (trainer == null) {
+        profileManager.hasTrainerAsync().thenAccept(hasTrainer -> {
+            if (!hasTrainer) {
                 Platform.runLater(() -> athleteView.showTrainerInviteCard(code -> {
                     profileManager.linkTrainerAsync(code).thenRun(() -> {
                         Platform.runLater(() -> {
@@ -113,7 +116,10 @@ public class HomeViewController implements GuiController {
                     });
                 }));
             }
-        }).exceptionally(e -> null);
+        }).exceptionally(e -> {
+            Platform.runLater(() -> Navigator.getInstance().getGuiManager().showExceptionError("Errore durante il controllo del trainer:", e));
+            return null;
+        });
     }
 
     @Override

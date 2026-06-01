@@ -10,6 +10,7 @@ import com.example.fitplannerclient.controller.plan.execution.WorkoutExecutionMa
 import com.example.fitplannerclient.controller.profile.ProfileManager;
 import com.example.fitplannerclient.repository.ExerciseRepository;
 import com.example.fitplannerclient.repository.ProfileRepository;
+import com.example.fitplannerclient.repository.SessionLogRepository;
 import com.example.fitplannerclient.service.api.*;
 
 public class AppControllerFactory {
@@ -28,6 +29,7 @@ public class AppControllerFactory {
     private WorkoutPlanManager workoutPlanManager;
     private WorkoutPlanRepository workoutPlanRepository;
     private EditWorkoutPlanManager editWorkoutPlanManager;
+    private SessionLogRepository sessionLogRepository;
 
     public AppControllerFactory(
             AuthApi authApi,
@@ -73,18 +75,18 @@ public class AppControllerFactory {
     }
 
     public WorkoutPlanManager createWorkoutPlanManager() {
-        return new WorkoutPlanManager(workoutPlanApi);
+        return new WorkoutPlanManager(createWorkoutPlanRepository(), workoutPlanApi, createExerciseRepository());
     }
 
     public WorkoutPlanRepository createWorkoutPlanRepository() {
         if (workoutPlanRepository == null) {
-            workoutPlanRepository = new WorkoutPlanRepository(workoutPlanApi, createExerciseRepository());
+            workoutPlanRepository = new WorkoutPlanRepository(workoutPlanApi);
         }
         return workoutPlanRepository;
     }
 
     public EditWorkoutPlanManager createEditWorkoutPlanManager() {
-        return editWorkoutPlanManager = new EditWorkoutPlanManager(createWorkoutPlanRepository());
+        return editWorkoutPlanManager = new EditWorkoutPlanManager(createWorkoutPlanRepository(), createExerciseRepository());
     }
 
     public SessionLogApi createSessionLogApi() {
@@ -92,7 +94,7 @@ public class AppControllerFactory {
     }
 
     public WorkoutExecutionManager createWorkoutExecutionManager() {
-        return new WorkoutExecutionManager(sessionLogApi);
+        return new WorkoutExecutionManager(createWorkoutPlanRepository(), sessionLogApi, createExerciseRepository());
     }
 
     public void resetManagers() {
@@ -108,7 +110,14 @@ public class AppControllerFactory {
         this.workoutPlanRepository = null;
     }
 
+    public SessionLogRepository createSessionLogRepository() {
+        if (sessionLogRepository == null) {
+            sessionLogRepository = new SessionLogRepository(sessionLogApi);
+        }
+        return sessionLogRepository;
+    }
+
     public WorkoutHistoryManager createWorkoutHistoryManager() {
-        return new WorkoutHistoryManager(sessionLogApi);
+        return new WorkoutHistoryManager(createSessionLogRepository());
     }
 }

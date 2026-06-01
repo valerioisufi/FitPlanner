@@ -13,6 +13,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.*;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class AthleteHomeView extends BorderPane {
 
@@ -247,7 +248,7 @@ public class AthleteHomeView extends BorderPane {
         contentBox.getChildren().add(card);
     }
 
-    public void showTrainerInviteCard(java.util.function.Consumer<String> onSubmit) {
+    public void showTrainerInviteCard(Consumer<String> onSubmit) {
         VBox card = new VBox(15);
         card.getStyleClass().add("card");
         card.setPadding(new Insets(25));

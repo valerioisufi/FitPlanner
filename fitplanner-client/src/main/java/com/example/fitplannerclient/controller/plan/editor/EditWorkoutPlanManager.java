@@ -8,6 +8,8 @@ import com.example.fitplannerclient.controller.plan.editor.observer.WorkoutPlanO
 import com.example.fitplannerclient.controller.plan.editor.observer.WorkoutPlanSubject;
 import com.example.fitplannerclient.controller.plan.editor.command.EditorHistoryManager;
 import com.example.fitplannerclient.entity.plan.WorkoutPlan;
+import com.example.fitplannerclient.repository.ExerciseRepository;
+import com.example.fitplannerclient.serializer.PlanToBeanVisitor;
 
 import java.util.List;
 import java.util.Map;
@@ -21,12 +23,14 @@ public class EditWorkoutPlanManager {
     private WorkoutPlan plan;
 
     private final WorkoutPlanRepository repository;
+    private final ExerciseRepository exerciseRepository;
     private final WorkoutPlanStructureEditor structureEditor;
     private final WorkoutPlanBadgeEditor badgeEditor;
     private final ProtocolLibraryManager protocolLibraryManager;
 
-    public EditWorkoutPlanManager(WorkoutPlanRepository repository) {
+    public EditWorkoutPlanManager(WorkoutPlanRepository repository, ExerciseRepository exerciseRepository) {
         this.repository = repository;
+        this.exerciseRepository = exerciseRepository;
         this.protocolLibraryManager = new ProtocolLibraryManager();
         this.structureEditor = new WorkoutPlanStructureEditor(historyManager, workoutPlanSubject, protocolLibraryManager);
         this.badgeEditor = new WorkoutPlanBadgeEditor(historyManager, workoutPlanSubject);
@@ -40,7 +44,19 @@ public class EditWorkoutPlanManager {
     }
 
     public CompletableFuture<WorkoutPlanBean> getPlanAsync() {
-        return repository.getPlanAsync(this.plan);
+        if (this.plan == null) return CompletableFuture.completedFuture(null);
+        
+        PlanToBeanVisitor visitor = new PlanToBeanVisitor(
+                uuid -> {
+                    if (exerciseRepository != null) {
+                        var exercise = exerciseRepository.getCachedExercise(uuid);
+                        if (exercise != null) return exercise.getName();
+                    }
+                    return "Esercizio Sconosciuto";
+                }
+        );
+        this.plan.accept(visitor);
+        return CompletableFuture.completedFuture(visitor.getPlanBean());
     }
 
     public CompletableFuture<Void> createNewPlan() {
