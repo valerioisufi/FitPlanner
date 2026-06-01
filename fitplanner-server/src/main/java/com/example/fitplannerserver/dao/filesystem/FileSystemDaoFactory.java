@@ -36,56 +36,20 @@ public class FileSystemDaoFactory extends DaoFactory {
         exerciseLibraryDao = new FileSystemExerciseLibraryDao(exerciseLibraryPath);
         workoutPlanDao = new FileSystemWorkoutPlanDao(workoutPlansPath);
         coachingDao = new FileSystemCoachingDao(coachingPath);
+
         defaultData();
+
     }
 
     private void defaultData(){
         try {
-            if(this.accountDao.findByEmail("trainer@fitplanner.com").isPresent()){
-                return;
-            }
-            BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-            String defaultPasswordHash = encoder.encode("password");
-
-            //trainer default
-            String trainerId= UuidCreator.getTimeOrderedEpoch().toString();
-            Account trainerAccount = new Account(
-                    trainerId,
-                    "trainer@fitplanner.com",
-                    defaultPasswordHash,
-                    null,
-                    Account.Role.TRAINER);
-            this.accountDao.create(trainerAccount);
-
-            User trainerProfile = new User(
-                    trainerId,
-                    "super",
-                    "Trainer",
-                    "trainer@fitplanner.com",
-                    "1234567890",
-                    null
+            DataInitializer initializer = new DataInitializer(
+                    this.accountDao,
+                    this.profileDao,
+                    this.coachingDao,
+                    this.exerciseLibraryDao
             );
-            this.profileDao.save(trainerProfile);
-
-            //athlete default
-            String athleteId = UuidCreator.getTimeOrderedEpoch().toString();
-            Account athleteAccount = new Account(
-                    athleteId,
-                    "athlete@fitplanner.com",
-                    defaultPasswordHash,
-                    null,
-                    Account.Role.ATHLETE
-            );
-            this.accountDao.create(athleteAccount);
-            User athleteProfile = new User(
-                    athleteId,
-                    "Kanye",
-                    "West",
-                    "athlete@fitplanner.com",
-                    "0987654321",
-                    null
-            );
-            this.profileDao.save(athleteProfile);
+            initializer.initialize();;
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Impossibile generare gli utenti di default sul File System", e);
 

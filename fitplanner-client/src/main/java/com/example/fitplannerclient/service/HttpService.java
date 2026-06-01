@@ -14,11 +14,12 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.stream.Stream;
 
 public class HttpService {
-    private static final Logger logger = Logger.getLogger(HttpService.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(HttpService.class);
     private static final String CONTENT_TYPE = "application/json";
 
     private final String baseUrl;
@@ -117,7 +118,7 @@ public class HttpService {
             Class<T> resType,
             boolean isRetry
     ) {
-        logger.info(String.format("Response: %d for %s\nBody: %s", res.statusCode(), req.uri(), res.body()));
+        logger.info("Response: {} for {}\nBody: {}", res.statusCode(), req.uri(), res.body());
 
         if (res.statusCode() == 401 && !isRetry && !req.uri().getPath().contains("/auth")) {
             return executeWithRetry(
@@ -139,7 +140,7 @@ public class HttpService {
             BiConsumer<String, String> processor,
             boolean isRetry
     ) {
-        logger.info(String.format("SSE Status: %d for %s", res.statusCode(), req.uri()));
+        logger.info("SSE Status: {} for {}", res.statusCode(), req.uri());
 
         if (res.statusCode() == 401 && !isRetry) {
             return executeWithRetry(builder, () -> executeSseRequest(builder, processor, true), "SSE Server Error (401)");
@@ -232,7 +233,7 @@ public class HttpService {
                 cleanMessage = errorDto.getMessage();
             }
         } catch (JacksonException e) {
-            logger.warning("Could not parse error response: " + rawBody);
+            logger.warn("Could not parse error response: {}", rawBody);
             cleanMessage = !rawBody.isBlank() ? rawBody : cleanMessage;
         }
 
@@ -276,7 +277,7 @@ public class HttpService {
                 }
             }
         } catch (Exception e) {
-            logger.warning("SSE Stream ended or interrupted: " + e.getMessage());
+            logger.warn("SSE Stream ended or interrupted: {}", e.getMessage());
         }
     }
 

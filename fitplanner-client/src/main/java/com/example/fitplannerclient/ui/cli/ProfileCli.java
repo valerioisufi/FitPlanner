@@ -21,19 +21,34 @@ public class ProfileCli implements CliView {
 
         profileManager = engine.getControllerFactory().createProfileManager();
 
-        printer.printHeader("PROFILO");
-        printer.printMenu(null, List.of("Indietro", "Visualizza", "Modifica", "logout"));
+        ProfileBean.ProfileType type = profileManager.getProfileInfoAsync().join().getProfileType();
+        String msg = "";
+        if (type == ProfileBean.ProfileType.ATHLETE) {
+            msg = "Aggiungi trainer";
+        } else {
+            msg = "Visualizza codice d'invito";
+        }
 
-        int scelta = reader.readInt("Scegli un'opzione: ", 1, 4);
+        printer.printHeader("PROFILO");
+        printer.printMenu(null, List.of("Indietro", "Visualizza", "Modifica", msg, "Logout"));
+
+        int scelta = reader.readInt("Scegli un'opzione: ", 1, 5);
 
         if (scelta == 1) {
-            new DashboardCli();
+            return new DashboardCli();
         } else if (scelta == 2) {
             printProfileData();
         } else if (scelta == 3) {
             updateProfileData();
         } else if (scelta == 4) {
+            if (type == ProfileBean.ProfileType.ATHLETE) {
+                useTrainerCode();
+            } else {
+                printInvitationCode();
+            }
+        } else if (scelta == 5) {
             engine.getSessionManager().logout();
+            return new AuthenticationCli();
         }
 
         return this;
@@ -61,25 +76,50 @@ public class ProfileCli implements CliView {
     }
 
     public void updateProfileData() {
-        String name = reader.readStringAndValidate("Inserisci il nuovo nome: ", input -> ValidationUtils.validateName(input, "Nome", 50));
-        String surname = reader.readStringAndValidate("Inserisci il nuovo cognome: ", input -> ValidationUtils.validateName(input, "Cognome", 50));
-        String email = reader.readStringAndValidate("Inserisci la nuova email di contatto: ", ValidationUtils::validateEmail);
-        String phone = reader.readStringAndValidate("Inserisci il nuovo numero di telefono: ", ValidationUtils::validatePhone);
-
-        ProfileBean profileBean = new ProfileBean();
-        profileBean.setFirstName(name);
-        profileBean.setLastName(surname);
-        profileBean.setContactEmail(email);
-        profileBean.setPhoneNumber(phone);
-
         try{
-            profileManager.updateProfileInfoAsync(profileBean).join();
+            var profile = profileManager.getProfileInfoAsync().join();
+            String name = reader.readStringAndValidate("Inserisci il nuovo nome", input -> ValidationUtils.validateName(input, "Nome", 50), profile.getFirstName());
+            String surname = reader.readStringAndValidate("Inserisci il nuovo cognome", input -> ValidationUtils.validateName(input, "Cognome", 50), profile.getLastName());
+            String email = reader.readStringAndValidate("Inserisci la nuova email di contatto", ValidationUtils::validateEmail, profile.getContactEmail());
+            String phone = reader.readStringAndValidate("Inserisci il nuovo numero di telefono", ValidationUtils::validatePhone, profile.getPhoneNumber());
+
+            profile.setFirstName(name);
+            profile.setLastName(surname);
+            profile.setContactEmail(email);
+            profile.setPhoneNumber(phone);
+
+            profileManager.updateProfileInfoAsync(profile).join();
             printer.printSuccess("Profilo aggiornato con successo!");
         } catch (Exception ex) {
             printer.printException("Errore durante l'aggiornamento del profilo: ", ex);
         }
-        
+
         printProfileData();
+    }
+
+    public void printInvitationCode() {
+        try {
+            String code = profileManager.getInvitationCodeAsync().join();
+            printer.printSuccess("Codice d'invito: " + code);
+        } catch (Exception ex) {
+            printer.printException("Errore nel recupero del codice d'invito: ", ex);
+        }
+
+        reader.waitForEnter();
+    }
+
+    public void useTrainerCode() {
+
+        String invitationCode = reader.readString("Inserisci il codice d'invito: ");
+
+        try {
+            profileManager.linkTrainerAsync(invitationCode).join();
+            printer.printSuccess("Trainer collegato con successo!");
+        } catch (Exception ex) {
+            printer.printException("Errore nel recupero del codice d'invito: ", ex);
+        }
+
+        reader.waitForEnter();
     }
 
 

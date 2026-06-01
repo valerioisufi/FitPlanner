@@ -29,6 +29,24 @@ public class InputReader {
         return input;
     }
 
+    public String readStringAndValidate(String prompt, Function<String, String> validator, String defaultInput) {
+        System.out.print(prompt + " [" + defaultInput + "]: ");
+        String input = scanner.nextLine().trim();
+
+        if (input.isEmpty()) {
+            input = defaultInput;
+        }
+
+        String msg = validator.apply(input);
+
+        if (msg != null) {
+            printer.printError(msg);
+            return readStringAndValidate(prompt, validator);
+        }
+
+        return input;
+    }
+
     public int readInt(String prompt) {
         while (true) {
             System.out.print(prompt);

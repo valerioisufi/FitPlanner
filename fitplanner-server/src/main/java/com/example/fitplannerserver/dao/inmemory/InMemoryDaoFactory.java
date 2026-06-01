@@ -1,6 +1,7 @@
 package com.example.fitplannerserver.dao.inmemory;
 
 import com.example.fitplannerserver.dao.DaoFactory;
+import com.example.fitplannerserver.dao.DataInitializer;
 
 public class InMemoryDaoFactory extends DaoFactory {
 
@@ -19,7 +20,7 @@ public class InMemoryDaoFactory extends DaoFactory {
         this.workoutPlanDao = new InMemoryWorkoutPlanDao();
         this.coachingDao = new InMemoryCoachingDao();
 
-        InMemoryDataInitializer initializer = new InMemoryDataInitializer(
+        DataInitializer initializer = new DataInitializer(
                 this.accountDao,
                 this.profileDao,
                 this.coachingDao,
