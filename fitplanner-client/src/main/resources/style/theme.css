@@ -661,3 +661,56 @@
 .workout-row-upcoming .dom-label, .workout-row-upcoming .session-label {
     -fx-text-fill: -fx-radix-slate-12;
 }
+
+/* ==========================================
+ * ATHLETE DASHBOARD
+ * ========================================== */
+
+.dashboard-tag {
+    -fx-background-color: -fx-radix-blue-3;
+    -fx-text-fill: -fx-radix-blue-11;
+    -fx-font-family: 'Space Grotesk Bold';
+    -fx-font-size: 14px;
+}
+
+.dashboard-plan-viewer {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+    -fx-border-width: 0;
+}
+
+.dashboard-date-range {
+    -fx-text-fill: -fx-color-text-light;
+    -fx-font-size: 13px;
+    -fx-alignment: center;
+}
+
+.dow-label {
+    -fx-font-family: 'Space Grotesk Medium';
+    -fx-font-size: 12px;
+}
+
+.dom-label {
+    -fx-font-family: 'Space Grotesk Bold';
+    -fx-font-size: 18px;
+}
+
+.session-label {
+    -fx-font-family: 'Space Grotesk Bold';
+    -fx-font-size: 15px;
+}
+
+.status-label {
+    -fx-font-size: 12px;
+}
+
+.icon-label {
+    -fx-font-family: 'Space Grotesk Bold';
+    -fx-font-size: 14px;
+}
+
+.dashboard-duration {
+    -fx-font-family: 'Space Grotesk Medium';
+    -fx-text-fill: -fx-color-text-light;
+    -fx-font-size: 14px;
+}

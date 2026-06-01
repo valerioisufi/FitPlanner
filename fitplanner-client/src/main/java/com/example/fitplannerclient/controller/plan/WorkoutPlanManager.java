@@ -120,7 +120,7 @@ public class WorkoutPlanManager {
         if (rootNode == null) {
             rootNode = new PlanNodeBean("root-" + sDto.getDay(), sDto.getName(), NodeType.BLOCK);
         }
-        return new WorkoutSessionBean(String.valueOf(sDto.getDay()), sDto.getDay(), rootNode);
+        return new WorkoutSessionBean(sDto.getName(), sDto.getDay(), rootNode);
     }
 
     public WorkoutPlanBean entityToBean(WorkoutPlan plan) {

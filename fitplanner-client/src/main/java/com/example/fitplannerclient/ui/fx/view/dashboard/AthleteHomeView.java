@@ -55,7 +55,7 @@ public class AthleteHomeView extends BorderPane {
         welcomeSubtitle.setText(subtitle);
     }
 
-    public void showAthleteDashboard(WorkoutPlanBean plan, WorkoutScheduleBean schedule, Runnable onStartSession) {
+    public void showAthleteDashboard(WorkoutPlanBean plan, WorkoutScheduleBean schedule, Consumer<Integer> onStartSession) {
         // Clear old dashboard cards (keep welcome section)
         while (contentBox.getChildren().size() > 1) {
             contentBox.getChildren().remove(1);
@@ -77,48 +77,26 @@ public class AthleteHomeView extends BorderPane {
         HBox.setHgrow(leftPanel, Priority.ALWAYS);
         leftPanel.getStyleClass().add("card");
         leftPanel.setPadding(new Insets(25));
-
-        BorderPane cardHeader = new BorderPane();
-
-        Label tag = new Label(session.getName());
-        tag.getStyleClass().addAll("badge");
-        tag.setStyle("-fx-background-color: -fx-radix-blue-3; -fx-text-fill: -fx-radix-blue-11; -fx-font-family: 'Space Grotesk Bold'; -fx-font-size: 14px;");
-
-        VBox titleBox = new VBox(4);
-        titleBox.setAlignment(Pos.CENTER);
-        Label mainTitle = new Label("TODAY'S WORKOUT");
-        mainTitle.getStyleClass().add("heading-h2");
-        Label subTitle = new Label(plan.getName());
-        subTitle.setStyle("-fx-text-fill: -fx-color-text-light; -fx-font-size: 14px;");
-        titleBox.getChildren().addAll(mainTitle, subTitle);
-
-        Label duration = new Label("~60 min");
-        duration.setStyle("-fx-font-family: 'Space Grotesk Medium'; -fx-text-fill: -fx-color-text-light; -fx-font-size: 14px;");
-
-        cardHeader.setLeft(tag);
-        cardHeader.setCenter(titleBox);
-        cardHeader.setRight(duration);
-
-        // Use PlanViewer for the session tree
-        PlanViewer planViewer = new PlanViewer();
-        planViewer.setEditable(false);
-        planViewer.setRootNode(session.getPlanRoot());
-        planViewer.setStyle("-fx-background-color: transparent; -fx-background: transparent; -fx-border-width: 0;");
-        VBox.setVgrow(planViewer, Priority.ALWAYS);
+        // Initialize left panel with next suggested session
+        WorkoutSessionBean suggested = schedule.getNextSuggestedSession();
+        int suggestedRelativeDay = suggested.getDay();
         
-        // Footer (Buttons)
-        HBox footer = new HBox(15);
-        footer.setAlignment(Pos.CENTER_RIGHT);
+        java.time.Instant startInst = java.time.Instant.ofEpochMilli(schedule.getCycleStartDate());
+        java.time.LocalDate startDate = java.time.LocalDate.ofInstant(startInst, java.time.ZoneOffset.UTC);
+        int cycleLength = plan.getCycleLength();
+        int absoluteStartDay = (schedule.getCurrentCycleDay() / cycleLength) * cycleLength;
+        int suggestedAbsoluteDay = absoluteStartDay + suggestedRelativeDay;
+        // Se la sessione suggerita è in un ciclo precedente o successivo, non ci preoccupiamo troppo dell'esattezza qui
+        // ma di solito è nel ciclo corrente o prossimo. Facciamo un calcolo approssimativo.
+        if (suggestedAbsoluteDay < schedule.getCurrentCycleDay()) {
+            suggestedAbsoluteDay += cycleLength;
+        }
+        java.time.LocalDate suggestedDate = startDate.plusDays(suggestedAbsoluteDay);
+        String suggestedTitleDate = suggestedDate.getDayOfMonth() + " " + suggestedDate.getMonth().name().substring(0,3) + " " + suggestedDate.getDayOfWeek().name().substring(0,3);
 
-        Button btnStart = new Button("Inizia Allenamento");
-        btnStart.getStyleClass().add("button-primary");
-        btnStart.setMaxWidth(Double.MAX_VALUE);
-        HBox.setHgrow(btnStart, Priority.ALWAYS);
-        btnStart.setOnAction(e -> onStartSession.run());
+        boolean isSuggestedToday = (suggestedAbsoluteDay == schedule.getCurrentCycleDay());
 
-        footer.getChildren().add(btnStart);
-
-        leftPanel.getChildren().addAll(cardHeader, planViewer, footer);
+        updateLeftPanel(leftPanel, suggested, suggestedRelativeDay, isSuggestedToday, suggestedTitleDate, plan, onStartSession);
 
         // --- Right Panel: THIS WEEK ---
         VBox rightPanel = new VBox(20);
@@ -131,14 +109,12 @@ public class AthleteHomeView extends BorderPane {
         weekTitle.getStyleClass().add("heading-h2");
         
         // Calcola l'inizio e la fine della settimana (approssimata al ciclo o ai prossimi 7 giorni)
-        java.time.Instant startInst = java.time.Instant.ofEpochMilli(schedule.getCycleStartDate());
-        java.time.LocalDate startDate = java.time.LocalDate.ofInstant(startInst, java.time.ZoneOffset.UTC);
         java.time.LocalDate endDate = java.time.LocalDate.ofInstant(java.time.Instant.ofEpochMilli(schedule.getCycleEndDate()), java.time.ZoneOffset.UTC);
         
         String dateRange = startDate.getMonth().name().substring(0,3) + " " + startDate.getDayOfMonth() + " - " +
                            endDate.getMonth().name().substring(0,3) + " " + endDate.getDayOfMonth();
         Label dateRangeLabel = new Label(dateRange);
-        dateRangeLabel.setStyle("-fx-text-fill: -fx-color-text-light; -fx-font-size: 13px; -fx-alignment: center;");
+        dateRangeLabel.getStyleClass().add("dashboard-date-range");
         dateRangeLabel.setMaxWidth(Double.MAX_VALUE);
 
         rightPanel.getChildren().addAll(weekTitle, dateRangeLabel);
@@ -146,9 +122,6 @@ public class AthleteHomeView extends BorderPane {
         VBox daysList = new VBox(10);
         
         List<WorkoutState> states = schedule.getWorkoutStates();
-        int cycleLength = plan.getCycleLength();
-        
-        int absoluteStartDay = (schedule.getCurrentCycleDay() / cycleLength) * cycleLength;
 
         for (int i = 0; i < states.size(); i++) {
             WorkoutState state = states.get(i);
@@ -174,20 +147,16 @@ public class AthleteHomeView extends BorderPane {
             VBox dateBox = new VBox(2);
             dateBox.setAlignment(Pos.CENTER);
             Label dowLbl = new Label(dayOfWeekStr);
-            dowLbl.setStyle("-fx-font-family: 'Space Grotesk Medium'; -fx-font-size: 12px;");
             dowLbl.getStyleClass().add("dow-label");
             Label domLbl = new Label(dayOfMonthStr);
-            domLbl.setStyle("-fx-font-family: 'Space Grotesk Bold'; -fx-font-size: 18px;");
             domLbl.getStyleClass().add("dom-label");
             dateBox.getChildren().addAll(dowLbl, domLbl);
 
             VBox infoBox = new VBox(2);
             Label sessionNameLbl = new Label(sessionName);
-            sessionNameLbl.setStyle("-fx-font-family: 'Space Grotesk Bold'; -fx-font-size: 15px;");
             sessionNameLbl.getStyleClass().add("session-label");
             
             Label statusLbl = new Label();
-            statusLbl.setStyle("-fx-font-size: 12px;");
             statusLbl.getStyleClass().add("status-label");
             infoBox.getChildren().addAll(sessionNameLbl, statusLbl);
             
@@ -195,7 +164,6 @@ public class AthleteHomeView extends BorderPane {
             HBox.setHgrow(spacer, Priority.ALWAYS);
 
             Label iconLbl = new Label();
-            iconLbl.setStyle("-fx-font-family: 'Space Grotesk Bold'; -fx-font-size: 14px;");
             iconLbl.getStyleClass().add("icon-label");
 
             if (state == WorkoutState.DONE) {
@@ -218,6 +186,12 @@ public class AthleteHomeView extends BorderPane {
                 dayRow.getChildren().addAll(dateBox, infoBox);
             }
 
+            if (session != null && !sessionName.equals("Rest")) {
+                String titleDate = dayOfMonthStr + " " + dayDate.getMonth().name().substring(0,3) + " " + dayOfWeekStr;
+                dayRow.setOnMouseClicked(e -> updateLeftPanel(leftPanel, session, relativeDay, isToday, titleDate, plan, onStartSession));
+                dayRow.setStyle("-fx-cursor: hand;");
+            }
+
             daysList.getChildren().add(dayRow);
         }
 
@@ -225,6 +199,45 @@ public class AthleteHomeView extends BorderPane {
         splitLayout.getChildren().addAll(leftPanel, rightPanel);
 
         contentBox.getChildren().add(splitLayout);
+    }
+
+    private void updateLeftPanel(VBox leftPanel, WorkoutSessionBean session, int relativeDay, boolean isToday, String titleDate, WorkoutPlanBean plan, Consumer<Integer> onStartSession) {
+        leftPanel.getChildren().clear();
+
+        BorderPane cardHeader = new BorderPane();
+
+        Label tag = new Label(session.getName());
+        tag.getStyleClass().addAll("badge", "dashboard-tag");
+
+        VBox titleBox = new VBox(4);
+        titleBox.setAlignment(Pos.CENTER);
+        Label mainTitle = new Label(isToday ? "IL PIANO DI OGGI" : titleDate.toUpperCase());
+        mainTitle.getStyleClass().add("heading-h2");
+        Label subTitle = new Label(plan.getName());
+        subTitle.getStyleClass().add("body-small");
+        titleBox.getChildren().addAll(mainTitle, subTitle);
+
+        cardHeader.setLeft(tag);
+        cardHeader.setCenter(titleBox);
+
+        PlanViewer planViewer = new PlanViewer();
+        planViewer.setEditable(false);
+        planViewer.setRootNode(session.getPlanRoot());
+        planViewer.getStyleClass().add("dashboard-plan-viewer");
+        VBox.setVgrow(planViewer, Priority.ALWAYS);
+        
+        HBox footer = new HBox(15);
+        footer.setAlignment(Pos.CENTER_RIGHT);
+
+        Button btnStart = new Button("Inizia Allenamento");
+        btnStart.getStyleClass().add("button-primary");
+        btnStart.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(btnStart, Priority.ALWAYS);
+        btnStart.setOnAction(e -> onStartSession.accept(relativeDay));
+
+        footer.getChildren().add(btnStart);
+
+        leftPanel.getChildren().addAll(cardHeader, planViewer, footer);
     }
 
     public void showNoPlanAssigned() {

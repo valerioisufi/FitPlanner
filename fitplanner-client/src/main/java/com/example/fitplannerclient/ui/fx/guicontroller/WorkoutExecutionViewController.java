@@ -5,12 +5,11 @@ import com.example.fitplannerclient.ui.fx.GuiController;
 import com.example.fitplannerclient.ui.fx.GuiManager;
 import com.example.fitplannerclient.ui.fx.Navigator;
 import com.example.fitplannerclient.controller.exercise.ExerciseLibraryManager;
-import com.example.fitplannerclient.ui.fx.view.execution.WorkoutExecutionView;
+import com.example.fitplannerclient.ui.fx.view.plan.execution.WorkoutExecutionView;
 import com.example.fitplannerclient.controller.plan.execution.WorkoutExecutionManager;
 import com.example.fitplannercommon.ExerciseLogDTO;
 import com.example.fitplannercommon.ExerciseSetDTO;
 import javafx.application.Platform;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import com.example.fitplannerclient.ui.fx.components.Icon;
 

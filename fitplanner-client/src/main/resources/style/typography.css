@@ -99,3 +99,7 @@
     -fx-font-family: 'Space Grotesk Bold';
     -fx-font-size: 20px;
 }
+
+.text-color-light {
+    -fx-text-fill: -fx-color-text-light;
+}

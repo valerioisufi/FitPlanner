@@ -1,4 +1,4 @@
-package com.example.fitplannerclient.ui.fx.view.execution;
+package com.example.fitplannerclient.ui.fx.view.plan.execution;
 
 import com.example.fitplannerclient.bean.plan.PlanNodeBean;
 import com.example.fitplannerclient.ui.fx.components.FormField;

@@ -10,7 +10,6 @@ import com.example.fitplannerclient.ui.fx.view.dashboard.AthleteHomeView;
 import com.example.fitplannerclient.ui.fx.view.dashboard.TrainerHomeView;
 import javafx.application.Platform;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.BorderPane;
 
 public class HomeViewController implements GuiController {
     private Pane view;
@@ -58,7 +57,7 @@ public class HomeViewController implements GuiController {
 
             // Fetch and set invite code
             profileManager.getInvitationCodeAsync()
-                    .thenAccept(code -> javafx.application.Platform.runLater(() -> trainerView.setInviteCode(code)))
+                    .thenAccept(code -> Platform.runLater(() -> trainerView.setInviteCode(code)))
                     .exceptionally(ex -> {
                         Navigator.getInstance().getGuiManager().showExceptionError("Errore nel recupero del codice di invito:", ex);
                         return null;
@@ -66,7 +65,7 @@ public class HomeViewController implements GuiController {
 
             // Fetch and set athletes
             profileManager.getMyAthletesAsync()
-                    .thenAccept(athletes -> javafx.application.Platform.runLater(() -> 
+                    .thenAccept(athletes -> Platform.runLater(() ->
                             trainerView.showAthleteList(athletes, athlete -> Navigator.getInstance().goToAthleteDashboard(athlete))
                     ))
                     .exceptionally(ex -> {
@@ -82,9 +81,9 @@ public class HomeViewController implements GuiController {
             planManager.getAssignedPlanAsync()
                     .thenCombine(planManager.getCurrentCycleScheduleAsync(), (plan, schedule) -> {
                         Platform.runLater(() -> {
-                            athleteView.showAthleteDashboard(plan, schedule, () -> {
-                                if (schedule != null && schedule.getNextSuggestedSession() != null) {
-                                    Navigator.getInstance().goToWorkoutExecution(schedule.getPlanId(), schedule.getNextSuggestedSession().getDay());
+                            athleteView.showAthleteDashboard(plan, schedule, (selectedRelativeDay) -> {
+                                if (schedule != null) {
+                                    Navigator.getInstance().goToWorkoutExecution(schedule.getPlanId(), selectedRelativeDay);
                                 }
                             });
                             checkAndShowTrainerInvite(athleteView);
@@ -111,7 +110,7 @@ public class HomeViewController implements GuiController {
                             start(); // Refresh home view
                         });
                     }).exceptionally(e -> {
-                        Navigator.getInstance().getGuiManager().showExceptionError("Codice invito non valido o errore di rete:", e);
+                        Navigator.getInstance().getGuiManager().showExceptionError("Errore:", e);
                         return null;
                     });
                 }));
