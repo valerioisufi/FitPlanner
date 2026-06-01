@@ -21,6 +21,7 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 
 import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public class WorkoutPlanEditorView extends BorderPane {
@@ -363,30 +364,30 @@ public class WorkoutPlanEditorView extends BorderPane {
         if (onShowModalRequested != null) onShowModalRequested.accept(manageSessionsModal);
     }
 
-    public void setOnCycleLengthChanged(java.util.function.Consumer<Integer> callback) {
+    public void setOnCycleLengthChanged(Consumer<Integer> callback) {
         manageSessionsModal.setOnCycleLengthChanged(callback);
     }
 
-    public void setOnSessionNameChanged(java.util.function.BiConsumer<Integer, String> callback) {
+    public void setOnSessionNameChanged(BiConsumer<Integer, String> callback) {
         manageSessionsModal.setOnSessionNameChanged(callback);
     }
 
-    public void setOnSessionDayChanged(java.util.function.BiConsumer<Integer, Integer> callback) {
+    public void setOnSessionDayChanged(BiConsumer<Integer, Integer> callback) {
         manageSessionsModal.setOnSessionDayChanged(callback);
     }
 
-    public void setOnSessionAdded(java.util.function.Consumer<Integer> callback) {
+    public void setOnSessionAdded(Consumer<Integer> callback) {
         manageSessionsModal.setOnSessionAdded(callback);
     }
 
-    public void setOnSessionRemoved(java.util.function.Consumer<Integer> callback) {
+    public void setOnSessionRemoved(Consumer<Integer> callback) {
         manageSessionsModal.setOnSessionRemoved(callback);
     }
 
     public void setOnSavePlanClicked(Runnable callback) { this.onSavePlanClicked = callback; }
     public void setOnCancelClicked(Runnable callback) { this.onCancelClicked = callback; }
 
-    public void setOnShowModalRequested(Consumer<javafx.scene.Node> onShowModalRequested) { this.onShowModalRequested = onShowModalRequested; }
+    public void setOnShowModalRequested(Consumer<Node> onShowModalRequested) { this.onShowModalRequested = onShowModalRequested; }
     public void setOnHideModalRequested(Runnable onHideModalRequested) { this.onHideModalRequested = onHideModalRequested; }
     public void setOnPlanNameChanged(Consumer<String> callback) { this.onPlanNameChanged = callback; }
 }

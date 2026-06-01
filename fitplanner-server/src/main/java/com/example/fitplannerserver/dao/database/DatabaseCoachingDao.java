@@ -8,6 +8,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -95,7 +96,7 @@ public class DatabaseCoachingDao implements CoachingDao {
         Objects.requireNonNull(trainerId, "trainerId cannot be NULL");
 
 
-        List<String> athleteIds = new java.util.ArrayList<>();
+        List<String> athleteIds = new ArrayList<>();
         String sql = "SELECT athlete FROM coaching WHERE trainer=?";
         Connection conn = null;
 

@@ -11,6 +11,8 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
+import java.util.function.Consumer;
+
 public class ProfileView extends VBox {
 
     // --- Inputs ---
@@ -160,7 +162,7 @@ public class ProfileView extends VBox {
         trainerLinkBox.setManaged(show);
     }
 
-    public void setLinkTrainerAction(java.util.function.Consumer<String> action) {
+    public void setLinkTrainerAction(Consumer<String> action) {
         btnLinkTrainer.setOnAction(e -> {
             if (!inviteCodeInput.getText().isBlank()) {
                 action.accept(inviteCodeInput.getText().trim());

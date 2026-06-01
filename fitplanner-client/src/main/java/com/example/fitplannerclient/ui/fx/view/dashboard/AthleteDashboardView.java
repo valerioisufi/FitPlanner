@@ -10,6 +10,8 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.*;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 public class AthleteDashboardView extends BorderPane {
@@ -104,7 +106,7 @@ public class AthleteDashboardView extends BorderPane {
         }
 
         VBox listContainer = new VBox(10);
-        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm");
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm");
         for (SessionLogBean log : logs) {
             HBox row = new HBox(15);
             row.setAlignment(Pos.CENTER_LEFT);
@@ -114,7 +116,7 @@ public class AthleteDashboardView extends BorderPane {
             VBox infoBox = new VBox(4);
             Label planName = new Label("Giorno Sessione: " + log.getWorkoutSessionDay());
             planName.setStyle("-fx-font-family: 'Space Grotesk Bold'; -fx-font-size: 14px; -fx-text-fill: -fx-color-text-body;");
-            Label sessionName = new Label("Data: " + sdf.format(new java.util.Date(log.getDate())));
+            Label sessionName = new Label("Data: " + sdf.format(new Date(log.getDate())));
             sessionName.setStyle("-fx-text-fill: -fx-color-text-light; -fx-font-size: 13px;");
             infoBox.getChildren().addAll(planName, sessionName);
 

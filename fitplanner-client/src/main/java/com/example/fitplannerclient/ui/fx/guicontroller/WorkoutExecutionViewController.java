@@ -1,5 +1,6 @@
 package com.example.fitplannerclient.ui.fx.guicontroller;
 
+import com.example.fitplannerclient.bean.exercise.ExerciseDescriptionBean;
 import com.example.fitplannerclient.bean.plan.NodeType;
 import com.example.fitplannerclient.bean.plan.PlanNodeBean;
 import com.example.fitplannerclient.controller.exercise.ExerciseLibraryManager;
@@ -185,7 +186,7 @@ public class WorkoutExecutionViewController implements GuiController, WorkoutExe
     }
 
     @Override
-    public void updateCurrentExercise(com.example.fitplannerclient.bean.exercise.ExerciseDescriptionBean description) {
+    public void updateCurrentExercise(ExerciseDescriptionBean description) {
         Platform.runLater(() -> {
             if (restTimeline != null) restTimeline.stop();
             view.showExerciseDetails();

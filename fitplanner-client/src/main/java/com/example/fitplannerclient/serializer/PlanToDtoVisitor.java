@@ -13,6 +13,7 @@ import com.example.fitplannercommon.WorkoutSessionDTO;
 import tools.jackson.databind.ObjectMapper;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class PlanToDtoVisitor implements WorkoutPlanVisitor {
@@ -102,7 +103,7 @@ public class PlanToDtoVisitor implements WorkoutPlanVisitor {
     public void visit(ProtocolBlock protocolBlock) {
         currentNodeDto.setType(PlanNodeDTO.NodeType.PROTOCOL_BLOCK);
         currentNodeDto.setName(protocolBlock.getSemanticType());
-        currentNodeDto.setParameters(protocolBlock.getParameters() != null ? new java.util.HashMap<>(protocolBlock.getParameters()) : new java.util.HashMap<>());
+        currentNodeDto.setParameters(protocolBlock.getParameters() != null ? new HashMap<>(protocolBlock.getParameters()) : new HashMap<>());
 
         PlanNodeDTO thisNodeDto = currentNodeDto;
 

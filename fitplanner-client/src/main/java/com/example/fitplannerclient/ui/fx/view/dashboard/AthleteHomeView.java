@@ -11,8 +11,12 @@ import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.*;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -82,8 +86,8 @@ public class AthleteHomeView extends BorderPane {
         WorkoutSessionBean suggested = schedule.getNextSuggestedSession();
         int suggestedRelativeDay = suggested.getDay();
         
-        java.time.Instant startInst = java.time.Instant.ofEpochMilli(schedule.getCycleStartDate());
-        java.time.LocalDate startDate = java.time.LocalDate.ofInstant(startInst, java.time.ZoneOffset.UTC);
+        Instant startInst = Instant.ofEpochMilli(schedule.getCycleStartDate());
+        LocalDate startDate = LocalDate.ofInstant(startInst, ZoneOffset.UTC);
         int cycleLength = plan.getCycleLength();
         int absoluteStartDay = (schedule.getCurrentCycleDay() / cycleLength) * cycleLength;
         int suggestedAbsoluteDay = absoluteStartDay + suggestedRelativeDay;
@@ -92,7 +96,7 @@ public class AthleteHomeView extends BorderPane {
         if (suggestedAbsoluteDay < schedule.getCurrentCycleDay()) {
             suggestedAbsoluteDay += cycleLength;
         }
-        java.time.LocalDate suggestedDate = startDate.plusDays(suggestedAbsoluteDay);
+        LocalDate suggestedDate = startDate.plusDays(suggestedAbsoluteDay);
         String suggestedTitleDate = suggestedDate.getDayOfMonth() + " " + suggestedDate.getMonth().name().substring(0,3) + " " + suggestedDate.getDayOfWeek().name().substring(0,3);
 
         boolean isSuggestedToday = (suggestedAbsoluteDay == schedule.getCurrentCycleDay());
@@ -110,7 +114,7 @@ public class AthleteHomeView extends BorderPane {
         weekTitle.getStyleClass().add("heading-h2");
         
         // Calcola l'inizio e la fine della settimana (approssimata al ciclo o ai prossimi 7 giorni)
-        java.time.LocalDate endDate = java.time.LocalDate.ofInstant(java.time.Instant.ofEpochMilli(schedule.getCycleEndDate()), java.time.ZoneOffset.UTC);
+        LocalDate endDate = LocalDate.ofInstant(Instant.ofEpochMilli(schedule.getCycleEndDate()), ZoneOffset.UTC);
         
         String dateRange = startDate.getMonth().name().substring(0,3) + " " + startDate.getDayOfMonth() + " - " +
                            endDate.getMonth().name().substring(0,3) + " " + endDate.getDayOfMonth();
@@ -128,7 +132,7 @@ public class AthleteHomeView extends BorderPane {
             WorkoutState state = states.get(i);
             int absoluteDay = absoluteStartDay + i;
             int relativeDay = absoluteDay % cycleLength;
-            java.time.LocalDate dayDate = startDate.plusDays(absoluteDay);
+            LocalDate dayDate = startDate.plusDays(absoluteDay);
             
             String dayOfWeekStr = dayDate.getDayOfWeek().name().substring(0,3);
             String dayOfMonthStr = String.valueOf(dayDate.getDayOfMonth());
@@ -273,7 +277,7 @@ public class AthleteHomeView extends BorderPane {
         subtitle.getStyleClass().addAll("body-base", "text-color-light");
 
         HBox inputBox = new HBox(10);
-        javafx.scene.control.TextField codeInput = new javafx.scene.control.TextField();
+        TextField codeInput = new TextField();
         codeInput.setPromptText("Es. ABC123XYZ");
         codeInput.getStyleClass().add("text-field");
         HBox.setHgrow(codeInput, Priority.ALWAYS);

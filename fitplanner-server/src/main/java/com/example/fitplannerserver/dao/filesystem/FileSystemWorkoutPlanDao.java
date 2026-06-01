@@ -7,6 +7,7 @@ import com.example.fitplannerserver.model.plan.WorkoutSession;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -140,7 +141,7 @@ public class FileSystemWorkoutPlanDao implements WorkoutPlanDao {
     }
 
     private WorkoutPlan planFromCsvRows(String[] parts){
-        List<WorkoutSession> sessionsList = new java.util.ArrayList<>();
+        List<WorkoutSession> sessionsList = new ArrayList<>();
         String sessions = convertEmptyStringToNull(parts[6]);
         if (sessions != null && !sessions.isBlank()) {
             String[] sessionsArray = sessions.split("\\|");
@@ -158,7 +159,7 @@ public class FileSystemWorkoutPlanDao implements WorkoutPlanDao {
         }
         String startDateStr = convertEmptyStringToNull(parts[2]);
         if (startDateStr != null) {
-            workoutPlan.setStartDate(java.time.LocalDate.parse(startDateStr));
+            workoutPlan.setStartDate(LocalDate.parse(startDateStr));
         }
         workoutPlan.assignTo(convertEmptyStringToNull(parts[4]));
         workoutPlan.setAuthorId(convertEmptyStringToNull(parts[5]));

@@ -1,6 +1,7 @@
 package com.example.fitplannerclient.ui.fx.view.plan.editor.modal;
 
 import com.example.fitplannerclient.bean.exercise.ExerciseDescriptionBean;
+import com.example.fitplannerclient.ui.fx.components.Icon;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -42,7 +43,7 @@ public class SelectExerciseModal extends VBox {
 
         Button closeBtn = new Button();
         closeBtn.getStyleClass().add("button-header");
-        closeBtn.setGraphic(new com.example.fitplannerclient.ui.fx.components.Icon("x-icon", java.util.List.of("button-header-icon")));
+        closeBtn.setGraphic(new Icon("x-icon", List.of("button-header-icon")));
         closeBtn.setOnAction(e -> {
             if (onCloseAction != null) onCloseAction.run();
         });

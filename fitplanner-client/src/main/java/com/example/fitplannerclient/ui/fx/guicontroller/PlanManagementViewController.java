@@ -1,5 +1,6 @@
 package com.example.fitplannerclient.ui.fx.guicontroller;
 
+import com.example.fitplannerclient.bean.plan.WorkoutPlanSummaryBean;
 import com.example.fitplannerclient.bean.profile.ProfileBean;
 import com.example.fitplannerclient.controller.plan.WorkoutPlanManager;
 import com.example.fitplannerclient.controller.profile.ProfileManager;
@@ -87,7 +88,7 @@ public class PlanManagementViewController implements GuiController {
         view.getAssignModal().setOnCloseAction(guiManager::hideModal);
         
         view.getAssignModal().setOnAssignAction(athlete -> {
-            com.example.fitplannerclient.bean.plan.WorkoutPlanSummaryBean planToAssign = view.getAssignModal().getCurrentPlan();
+            WorkoutPlanSummaryBean planToAssign = view.getAssignModal().getCurrentPlan();
             if (planToAssign != null) {
                 planManager.assignPlanToAthleteAsync(planToAssign.getPlanId(), athlete.getUserId())
                     .thenRun(() -> {

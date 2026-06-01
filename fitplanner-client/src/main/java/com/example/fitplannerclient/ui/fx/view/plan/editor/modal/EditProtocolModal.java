@@ -1,15 +1,19 @@
 package com.example.fitplannerclient.ui.fx.view.plan.editor.modal;
 
 import com.example.fitplannerclient.ui.fx.components.FormField;
+import com.example.fitplannerclient.ui.fx.components.Icon;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -29,7 +33,7 @@ public class EditProtocolModal extends VBox {
         this.setPadding(new Insets(32));
         this.setSpacing(24);
         this.setMaxWidth(450);
-        this.setMaxHeight(javafx.scene.layout.Region.USE_PREF_SIZE);
+        this.setMaxHeight(Region.USE_PREF_SIZE);
 
         // --- HEADER ---
         HBox header = new HBox();
@@ -39,12 +43,12 @@ public class EditProtocolModal extends VBox {
         titleLabel.getStyleClass().add("heading-h2");
         titleBox.getChildren().add(titleLabel);
 
-        javafx.scene.layout.Region spacer = new javafx.scene.layout.Region();
-        HBox.setHgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
 
         Button closeBtn = new Button();
         closeBtn.getStyleClass().add("button-header");
-        closeBtn.setGraphic(new com.example.fitplannerclient.ui.fx.components.Icon("x-icon", java.util.List.of("button-header-icon")));
+        closeBtn.setGraphic(new Icon("x-icon", List.of("button-header-icon")));
         closeBtn.setOnAction(e -> {
             if (onCloseAction != null) onCloseAction.run();
         });

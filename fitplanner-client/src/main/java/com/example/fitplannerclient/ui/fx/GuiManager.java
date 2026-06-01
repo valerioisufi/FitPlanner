@@ -8,6 +8,7 @@ import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
@@ -77,7 +78,7 @@ public class GuiManager {
         });
     }
 
-    public void showModal(javafx.scene.Node content) {
+    public void showModal(Node content) {
         Platform.runLater(() -> {
             ModalOverlay modal = new ModalOverlay(content);
             modal.show();

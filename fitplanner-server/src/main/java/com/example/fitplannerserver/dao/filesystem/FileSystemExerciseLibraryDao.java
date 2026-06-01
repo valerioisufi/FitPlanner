@@ -6,6 +6,7 @@ import com.example.fitplannerserver.model.plan.ExerciseDescription;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -99,7 +100,7 @@ public class FileSystemExerciseLibraryDao implements ExerciseLibraryDao {
                 List<String> foundIds = foundExercises.stream()
                         .map(ExerciseDescription::getExerciseId)
                         .toList();
-                List<String> missingIds = new java.util.ArrayList<>(exerciseIds);
+                List<String> missingIds = new ArrayList<>(exerciseIds);
                 missingIds.removeAll(foundIds);
                 throw new DaoException("I seguenti esercizi non sono stati trovati nel database: " + missingIds);
             }

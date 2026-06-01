@@ -9,6 +9,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -124,7 +125,7 @@ public class DatabaseExerciseLibraryDao implements ExerciseLibraryDao {
             try (PreparedStatement stm = conn.prepareStatement(sql)) {
                 stm.setString(1, trainerId);
                 try (ResultSet rs = stm.executeQuery()) {
-                    List<ExerciseDescription> exercises = new java.util.ArrayList<>();
+                    List<ExerciseDescription> exercises = new ArrayList<>();
                     while (rs.next()) {
                         ExerciseDescription exercise = new ExerciseDescription(
                                 rs.getString(EXERCISE_ID),
@@ -148,7 +149,7 @@ public class DatabaseExerciseLibraryDao implements ExerciseLibraryDao {
     public List<ExerciseDescription> findByIds(List<String> exerciseIds) throws DaoException {
         Objects.requireNonNull(exerciseIds, "exerciseIds cannot be null");
 
-        List<ExerciseDescription> exercises = new java.util.ArrayList<>();
+        List<ExerciseDescription> exercises = new ArrayList<>();
         String sql = """
                 SELECT exercise_id, trainer_id, name, execution, muscle_groups FROM exercise_library WHERE exercise_id IN (?);
                 """;

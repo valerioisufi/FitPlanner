@@ -1,5 +1,6 @@
 package com.example.fitplannerclient.ui.fx.view.dashboard;
 
+import com.example.fitplannerclient.bean.profile.ProfileBean;
 import com.example.fitplannerclient.ui.fx.components.CardListView;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -9,6 +10,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.*;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class TrainerHomeView extends BorderPane {
 
@@ -108,7 +110,7 @@ public class TrainerHomeView extends BorderPane {
         contentBox.getChildren().add(grid);
     }
 
-    public void showAthleteList(List<com.example.fitplannerclient.bean.profile.ProfileBean> athletes, java.util.function.Consumer<com.example.fitplannerclient.bean.profile.ProfileBean> onAthleteSelected) {
+    public void showAthleteList(List<ProfileBean> athletes, Consumer<ProfileBean> onAthleteSelected) {
         VBox athletesSection = new VBox(15);
         athletesSection.setPadding(new Insets(20, 0, 0, 0));
 
@@ -120,7 +122,7 @@ public class TrainerHomeView extends BorderPane {
         nameHeader.setPrefWidth(250);
         Label emailHeader = new Label("Email");
 
-        CardListView<com.example.fitplannerclient.bean.profile.ProfileBean> cardListView = new CardListView<>(List.of(nameHeader, emailHeader));
+        CardListView<ProfileBean> cardListView = new CardListView<>(List.of(nameHeader, emailHeader));
         
         cardListView.setRowRenderer((athlete, isLast) -> {
             HBox row = new HBox(15);

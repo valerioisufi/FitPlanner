@@ -1,5 +1,6 @@
 package com.example.fitplannerclient.controller.plan.execution;
 
+import com.example.fitplannerclient.bean.exercise.ExerciseDescriptionBean;
 import com.example.fitplannerclient.bean.plan.PlanNodeBean;
 import com.example.fitplannerclient.controller.plan.WorkoutPlanRepository;
 import com.example.fitplannerclient.controller.plan.execution.engine.WorkoutEngine;
@@ -97,7 +98,7 @@ public class WorkoutExecutionManager {
                                 exerciseRepository.getExercisesAsync(List.of(resourceId)).thenAccept(list -> {
                                     if (!list.isEmpty()) {
                                         var entity = list.get(0);
-                                        com.example.fitplannerclient.bean.exercise.ExerciseDescriptionBean bean = new com.example.fitplannerclient.bean.exercise.ExerciseDescriptionBean();
+                                        ExerciseDescriptionBean bean = new ExerciseDescriptionBean();
                                         bean.setExerciseId(entity.getExerciseId());
                                         bean.setName(entity.getName());
                                         bean.setExecution(entity.getExecution());

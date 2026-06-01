@@ -7,6 +7,7 @@ import com.example.fitplannerserver.model.plan.WorkoutPlan;
 import com.example.fitplannerserver.model.plan.WorkoutSession;
 
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -174,7 +175,7 @@ public class DatabaseWorkoutPlanDao implements WorkoutPlanDao {
             stm.setString(1, plan.getPlanId());
             stm.setString(2, plan.getTitle());
             stm.setInt(3, plan.getCycleLength());
-            stm.setDate(4, plan.getStartDate() == null ? null : java.sql.Date.valueOf(plan.getStartDate()));
+            stm.setDate(4, plan.getStartDate() == null ? null : Date.valueOf(plan.getStartDate()));
             stm.setString(5, plan.getAssignedToId());
             stm.setString(6, plan.getAuthorId());
             stm.executeUpdate();
@@ -229,7 +230,7 @@ public class DatabaseWorkoutPlanDao implements WorkoutPlanDao {
                         rs.getString("plan_title"),
                         rs.getInt("cycle_length")
                 );
-                java.sql.Date sqlDate = rs.getDate("start_date");
+                Date sqlDate = rs.getDate("start_date");
                 if (sqlDate != null) {
                     currentPlan.setStartDate(sqlDate.toLocalDate());
                 }

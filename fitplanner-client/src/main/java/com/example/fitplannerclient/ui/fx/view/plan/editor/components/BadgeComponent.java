@@ -4,6 +4,8 @@ import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 
+import java.util.function.Consumer;
+
 public class BadgeComponent extends HBox {
     private final String planNodeId;
     private final BadgeType badgeType;
@@ -12,7 +14,7 @@ public class BadgeComponent extends HBox {
     private String value;
     private BadgeColor color;
 
-    private java.util.function.Consumer<BadgeComponent> onEditClicked;
+    private Consumer<BadgeComponent> onEditClicked;
 
     public BadgeComponent(String planNodeId, BadgeType badgeType, String name, String value, String displayValue, BadgeColor color) {
         this.planNodeId = planNodeId;
@@ -51,7 +53,7 @@ public class BadgeComponent extends HBox {
         this(planNodeId, badgeType, name, value, value, color);
     }
 
-    public void setOnEditClicked(java.util.function.Consumer<BadgeComponent> onEditClicked) {
+    public void setOnEditClicked(Consumer<BadgeComponent> onEditClicked) {
         this.onEditClicked = onEditClicked;
     }
 

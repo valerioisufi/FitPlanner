@@ -15,6 +15,9 @@ import javafx.scene.layout.VBox;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 public class ManageSessionsModal extends VBox {
 
@@ -23,11 +26,11 @@ public class ManageSessionsModal extends VBox {
     
     private List<WorkoutSessionBean> currentSessions;
     
-    private java.util.function.Consumer<Integer> onCycleLengthChanged;
-    private java.util.function.BiConsumer<Integer, String> onSessionNameChanged;
-    private java.util.function.BiConsumer<Integer, Integer> onSessionDayChanged;
-    private java.util.function.Consumer<Integer> onSessionAdded;
-    private java.util.function.Consumer<Integer> onSessionRemoved;
+    private Consumer<Integer> onCycleLengthChanged;
+    private BiConsumer<Integer, String> onSessionNameChanged;
+    private BiConsumer<Integer, Integer> onSessionDayChanged;
+    private Consumer<Integer> onSessionAdded;
+    private Consumer<Integer> onSessionRemoved;
     private Runnable onCloseAction;
 
     public ManageSessionsModal() {
@@ -81,7 +84,7 @@ public class ManageSessionsModal extends VBox {
         
         Button addSessionBtn = new Button("Aggiungi Sessione");
         addSessionBtn.getStyleClass().add("button-primary");
-        addSessionBtn.setGraphic(new com.example.fitplannerclient.ui.fx.components.Icon("plus-icon", List.of("button-primary-icon")));
+        addSessionBtn.setGraphic(new Icon("plus-icon", List.of("button-primary-icon")));
         addSessionBtn.setMinWidth(Region.USE_PREF_SIZE);
         addSessionBtn.setOnAction(e -> addNewSessionRow());
         
@@ -172,8 +175,8 @@ public class ManageSessionsModal extends VBox {
         int newDay = maxDay + 1;
         String name = String.valueOf(newDay);
 
-        PlanNodeBean rootNode = new PlanNodeBean("root-" + java.util.UUID.randomUUID(), "Sessione Giorno " + newDay, NodeType.BLOCK);
-        rootNode.addFlowDecorator(new FlowDecoratorBean(java.util.UUID.randomUUID().toString(), FlowDecoratorType.REST, "90s"));
+        PlanNodeBean rootNode = new PlanNodeBean("root-" + UUID.randomUUID(), "Sessione Giorno " + newDay, NodeType.BLOCK);
+        rootNode.addFlowDecorator(new FlowDecoratorBean(UUID.randomUUID().toString(), FlowDecoratorType.REST, "90s"));
         
         WorkoutSessionBean newSession = new WorkoutSessionBean(name, newDay, rootNode);
         currentSessions.add(newSession);
@@ -183,23 +186,23 @@ public class ManageSessionsModal extends VBox {
         }
     }
 
-    public void setOnCycleLengthChanged(java.util.function.Consumer<Integer> onCycleLengthChanged) {
+    public void setOnCycleLengthChanged(Consumer<Integer> onCycleLengthChanged) {
         this.onCycleLengthChanged = onCycleLengthChanged;
     }
 
-    public void setOnSessionNameChanged(java.util.function.BiConsumer<Integer, String> onSessionNameChanged) {
+    public void setOnSessionNameChanged(BiConsumer<Integer, String> onSessionNameChanged) {
         this.onSessionNameChanged = onSessionNameChanged;
     }
 
-    public void setOnSessionDayChanged(java.util.function.BiConsumer<Integer, Integer> onSessionDayChanged) {
+    public void setOnSessionDayChanged(BiConsumer<Integer, Integer> onSessionDayChanged) {
         this.onSessionDayChanged = onSessionDayChanged;
     }
 
-    public void setOnSessionAdded(java.util.function.Consumer<Integer> onSessionAdded) {
+    public void setOnSessionAdded(Consumer<Integer> onSessionAdded) {
         this.onSessionAdded = onSessionAdded;
     }
 
-    public void setOnSessionRemoved(java.util.function.Consumer<Integer> onSessionRemoved) {
+    public void setOnSessionRemoved(Consumer<Integer> onSessionRemoved) {
         this.onSessionRemoved = onSessionRemoved;
     }
 

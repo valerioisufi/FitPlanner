@@ -10,6 +10,7 @@ import java.nio.file.Path;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -61,7 +62,7 @@ public class FileSystemSessionLogDao implements SessionLogDao {
 
         lock.readLock().lock();
         try {
-            List<SessionLog> results = new java.util.ArrayList<>();
+            List<SessionLog> results = new ArrayList<>();
             List<String[]> rows = CsvUtils.search(path, EXPECTED_SESSION_LOG_COLUMNS, parts -> parts[0].equals(athleteId), -1);
 
             for (String[] row : rows) {
@@ -87,7 +88,7 @@ public class FileSystemSessionLogDao implements SessionLogDao {
 
         lock.readLock().lock();
         try {
-            List<SessionLog> allAthleteLogs = new java.util.ArrayList<>();
+            List<SessionLog> allAthleteLogs = new ArrayList<>();
             List<String[]> rows = CsvUtils.search(path, EXPECTED_SESSION_LOG_COLUMNS, parts -> parts[0].equals(athleteId), -1);
 
             for (String[] row : rows) {
@@ -181,7 +182,7 @@ public class FileSystemSessionLogDao implements SessionLogDao {
     }
 
     private List<ExerciseLog.ExerciseSet> parseExerciseSets(String exerciseSetsString) throws DaoException {
-        List<ExerciseLog.ExerciseSet> setsList = new java.util.ArrayList<>();
+        List<ExerciseLog.ExerciseSet> setsList = new ArrayList<>();
         if (exerciseSetsString == null || exerciseSetsString.isBlank()) return setsList;
 
         String[] setsArray = exerciseSetsString.split(",");

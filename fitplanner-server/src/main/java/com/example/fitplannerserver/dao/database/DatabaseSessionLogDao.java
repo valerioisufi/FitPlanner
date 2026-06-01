@@ -120,7 +120,7 @@ public class DatabaseSessionLogDao implements SessionLogDao {
             sessionStm.setInt(3, log.getWorkoutSessionDay());
             sessionStm.setString(4, log.getStatus().name());
             sessionStm.setString(5, log.getNotes());
-            sessionStm.setTimestamp(6, java.sql.Timestamp.valueOf(log.getDate()));
+            sessionStm.setTimestamp(6, Timestamp.valueOf(log.getDate()));
 
             sessionStm.executeUpdate();
             try (ResultSet rs = sessionStm.getGeneratedKeys()) {
@@ -190,7 +190,7 @@ public class DatabaseSessionLogDao implements SessionLogDao {
     }
 
     private List<ExerciseLog.ExerciseSet> parseSetsFromString(String rawSets) {
-        List<ExerciseLog.ExerciseSet> sets = new java.util.ArrayList<>();
+        List<ExerciseLog.ExerciseSet> sets = new ArrayList<>();
         // Se il campo nel DB è vuoto o null, restituiamo una lista vuota sicura
         if (rawSets == null || rawSets.isBlank()) {
             return sets;
