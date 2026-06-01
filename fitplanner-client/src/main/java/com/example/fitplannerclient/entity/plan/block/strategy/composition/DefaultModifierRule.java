@@ -1,5 +1,6 @@
 package com.example.fitplannerclient.entity.plan.block.strategy.composition;
 
+import com.example.fitplannerclient.controller.plan.core.visitor.EmptyWorkoutPlanVisitor;
 import com.example.fitplannerclient.controller.plan.core.visitor.WorkoutPlanVisitor;
 import com.example.fitplannerclient.entity.plan.PlanNode;
 import com.example.fitplannerclient.entity.plan.WorkoutPlan;
@@ -20,9 +21,7 @@ public class DefaultModifierRule implements CompositionRule {
     @Override
     public PlanNode apply(PlanNode node) {
 
-        WorkoutPlanVisitor visitor = new WorkoutPlanVisitor() {
-            @Override public void visit(WorkoutPlan workoutPlan) {}
-            @Override public void visit(WorkoutSession workoutSession) {}
+        WorkoutPlanVisitor visitor = new EmptyWorkoutPlanVisitor() {
 
             @Override
             public void visit(ExerciseNode exerciseNode) {

@@ -1,5 +1,6 @@
 package com.example.fitplannerclient.entity.plan.block.strategy.validation;
 
+import com.example.fitplannerclient.controller.plan.core.visitor.EmptyWorkoutPlanVisitor;
 import com.example.fitplannerclient.controller.plan.core.visitor.WorkoutPlanVisitor;
 import com.example.fitplannerclient.entity.plan.PlanNode;
 import com.example.fitplannerclient.entity.plan.WorkoutPlan;
@@ -15,7 +16,7 @@ public class OnlyExercisesAllowedRule implements ValidationRule {
     public ValidationResult validate(ProtocolBlock block) {
         ValidationResult result = new ValidationResult();
 
-        WorkoutPlanVisitor checker = new WorkoutPlanVisitor() {
+        WorkoutPlanVisitor checker = new EmptyWorkoutPlanVisitor() {
             // nodi validi
             @Override public void visit(ExerciseNode exerciseNode) {
                 // nessun errore
@@ -30,8 +31,7 @@ public class OnlyExercisesAllowedRule implements ValidationRule {
             @Override public void visit(ProgressionDecorator progressionDecorator) { addError(progressionDecorator); }
             @Override public void visit(IntervalDecorator intervalDecorator) { addError(intervalDecorator); }
 
-            @Override public void visit(WorkoutPlan workoutPlan) { }
-            @Override public void visit(WorkoutSession workoutSession) { }
+
 
             private void addError(PlanNode node) {
                 result.addError(

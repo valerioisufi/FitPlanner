@@ -4,7 +4,9 @@ public class TokenDTO {
     private String accessToken;
     private String refreshToken;
 
-    public TokenDTO() {}
+    public TokenDTO() {
+        // Costruttore vuoto necessario per la deserializzazione JSON
+    }
 
     public String getAccessToken() {
         return accessToken;

@@ -9,7 +9,9 @@ public class WorkoutPlanDTO {
     private int cycleLength;
     private List<WorkoutSessionDTO> workoutSessions;
 
-    public WorkoutPlanDTO() {}
+    public WorkoutPlanDTO() {
+        // Costruttore vuoto necessario per la deserializzazione JSON
+    }
 
     public String getPlanId() {
         return planId;

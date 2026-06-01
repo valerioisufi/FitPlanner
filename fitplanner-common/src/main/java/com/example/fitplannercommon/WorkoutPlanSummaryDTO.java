@@ -6,7 +6,9 @@ public class WorkoutPlanSummaryDTO {
 
     private String assignedTo;
 
-    public WorkoutPlanSummaryDTO() {}
+    public WorkoutPlanSummaryDTO() {
+        // Costruttore vuoto necessario per la deserializzazione JSON
+    }
 
     public String getPlanId() {
         return planId;

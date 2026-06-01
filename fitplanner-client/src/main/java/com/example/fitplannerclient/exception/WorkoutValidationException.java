@@ -4,7 +4,7 @@ import java.util.List;
 
 public class WorkoutValidationException extends Exception {
 
-    private final List<WorkoutValidationError> validationErrors;
+    private final transient List<WorkoutValidationError> validationErrors;
 
     public WorkoutValidationException(List<WorkoutValidationError> errors) {
         super("Validazione del piano fallita con " + errors.size() + " errori");

@@ -1,5 +1,6 @@
 package com.example.fitplannerclient.entity.plan.block.strategy.validation;
 
+import com.example.fitplannerclient.controller.plan.core.visitor.EmptyWorkoutPlanVisitor;
 import com.example.fitplannerclient.controller.plan.core.visitor.WorkoutPlanVisitor;
 import com.example.fitplannerclient.entity.plan.PlanNode;
 import com.example.fitplannerclient.entity.plan.WorkoutPlan;
@@ -21,11 +22,7 @@ public class RequiredModifierRule implements ValidationRule {
     public ValidationResult validate(ProtocolBlock block) {
         ValidationResult result = new ValidationResult();
 
-        WorkoutPlanVisitor checker = new WorkoutPlanVisitor() {
-            @Override public void visit(WorkoutPlan workoutPlan) {}
-            @Override public void visit(WorkoutSession workoutSession) {}
-            @Override public void visit(Block blockNode) {}
-            @Override public void visit(ProtocolBlock protocolBlock) {}
+        WorkoutPlanVisitor checker = new EmptyWorkoutPlanVisitor() {
 
             @Override
             public void visit(ExerciseNode exerciseNode) {
