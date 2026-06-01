@@ -61,7 +61,7 @@ public class ProfileRepository {
                     while (cause instanceof CompletionException && cause.getCause() != null) {
                         cause = cause.getCause();
                     }
-                    if (cause instanceof RequestException && ((RequestException) cause).getStatusCode() == 404) {
+                    if (cause instanceof RequestException requestException && requestException.getStatusCode() == 404) {
                         return false;
                     }
                     throw new CompletionException(ex);

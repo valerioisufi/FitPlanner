@@ -14,6 +14,12 @@ import java.util.List;
 
 public class WorkoutExecutionView extends BorderPane {
 
+    private static final String BUTTON_HEADER_ICON = "button-header-icon";
+    private static final String BUTTON_TRANSPARENT = "button-transparent";
+    private static final String CURSOR_HAND_STYLE = "-fx-cursor: hand;";
+    private static final String BOLD_FONT_10_LIGHT = "-fx-font-family: 'Space Grotesk Bold'; -fx-font-size: 10px; -fx-text-fill: -fx-color-text-light;";
+    private static final String BOLD_FONT_14 = "-fx-font-family: 'Space Grotesk Bold'; -fx-font-size: 14px;";
+
     private final VBox planNodeContainer = new VBox();
     private final Label lblMuscleGroups = new Label();
     private final Label lblInstructionTitle = new Label();
@@ -185,23 +191,23 @@ public class WorkoutExecutionView extends BorderPane {
         playerControls.setAlignment(Pos.CENTER);
         playerControls.setPadding(new Insets(20, 0, 0, 0));
 
-        btnSkipPrevious.setGraphic(new Icon("skip-previous-icon", 32, List.of("button-header-icon")));
-        btnSkipPrevious.getStyleClass().add("button-transparent");
-        btnSkipPrevious.setStyle("-fx-cursor: hand;");
+        btnSkipPrevious.setGraphic(new Icon("skip-previous-icon", 32, List.of(BUTTON_HEADER_ICON)));
+        btnSkipPrevious.getStyleClass().add(BUTTON_TRANSPARENT);
+        btnSkipPrevious.setStyle(CURSOR_HAND_STYLE);
 
-        btnPlayPause.setGraphic(new Icon("pause-icon", 40, List.of("button-header-icon")));
-        btnPlayPause.getStyleClass().add("button-transparent");
-        btnPlayPause.setStyle("-fx-cursor: hand;");
+        btnPlayPause.setGraphic(new Icon("pause-icon", 40, List.of(BUTTON_HEADER_ICON)));
+        btnPlayPause.getStyleClass().add(BUTTON_TRANSPARENT);
+        btnPlayPause.setStyle(CURSOR_HAND_STYLE);
 
-        btnSkipNext.setGraphic(new Icon("skip-next-icon", 32, List.of("button-header-icon")));
-        btnSkipNext.getStyleClass().add("button-transparent");
-        btnSkipNext.setStyle("-fx-cursor: hand;");
+        btnSkipNext.setGraphic(new Icon("skip-next-icon", 32, List.of(BUTTON_HEADER_ICON)));
+        btnSkipNext.getStyleClass().add(BUTTON_TRANSPARENT);
+        btnSkipNext.setStyle(CURSOR_HAND_STYLE);
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        btnEndWorkout.setGraphic(new Icon("stop-icon", 24, List.of("button-header-icon")));
-        btnEndWorkout.getStyleClass().add("button-transparent");
+        btnEndWorkout.setGraphic(new Icon("stop-icon", 24, List.of(BUTTON_HEADER_ICON)));
+        btnEndWorkout.getStyleClass().add(BUTTON_TRANSPARENT);
         btnEndWorkout.setStyle("-fx-cursor: hand; -fx-background-color: -fx-radix-red-3; -fx-padding: 8px; -fx-background-radius: 50%;");
         
         playerControls.getChildren().addAll(btnSkipPrevious, btnPlayPause, btnSkipNext, spacer, btnEndWorkout);
@@ -268,23 +274,23 @@ public class WorkoutExecutionView extends BorderPane {
 
         VBox setBox = new VBox(2);
         Label lblSetTitle = new Label("SET");
-        lblSetTitle.setStyle("-fx-font-family: 'Space Grotesk Bold'; -fx-font-size: 10px; -fx-text-fill: -fx-color-text-light;");
+        lblSetTitle.setStyle(BOLD_FONT_10_LIGHT);
         Label lblSet = new Label(String.valueOf(setNum));
-        lblSet.setStyle("-fx-font-family: 'Space Grotesk Bold'; -fx-font-size: 14px;");
+        lblSet.setStyle(BOLD_FONT_14);
         setBox.getChildren().addAll(lblSetTitle, lblSet);
 
         VBox weightBox = new VBox(2);
         Label lblWeightTitle = new Label("WEIGHT");
-        lblWeightTitle.setStyle("-fx-font-family: 'Space Grotesk Bold'; -fx-font-size: 10px; -fx-text-fill: -fx-color-text-light;");
+        lblWeightTitle.setStyle(BOLD_FONT_10_LIGHT);
         Label lblWeight = new Label(weight + " kg");
-        lblWeight.setStyle("-fx-font-family: 'Space Grotesk Bold'; -fx-font-size: 14px;");
+        lblWeight.setStyle(BOLD_FONT_14);
         weightBox.getChildren().addAll(lblWeightTitle, lblWeight);
 
         VBox repsBox = new VBox(2);
         Label lblRepsTitle = new Label("REPS");
-        lblRepsTitle.setStyle("-fx-font-family: 'Space Grotesk Bold'; -fx-font-size: 10px; -fx-text-fill: -fx-color-text-light;");
+        lblRepsTitle.setStyle(BOLD_FONT_10_LIGHT);
         Label lblReps = new Label(reps);
-        lblReps.setStyle("-fx-font-family: 'Space Grotesk Bold'; -fx-font-size: 14px;");
+        lblReps.setStyle(BOLD_FONT_14);
         repsBox.getChildren().addAll(lblRepsTitle, lblReps);
 
         Region spacer = new Region();

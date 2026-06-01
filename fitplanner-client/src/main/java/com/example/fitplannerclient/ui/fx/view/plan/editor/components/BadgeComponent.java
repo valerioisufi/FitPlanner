@@ -3,10 +3,14 @@ package com.example.fitplannerclient.ui.fx.view.plan.editor.components;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.function.Consumer;
 
 public class BadgeComponent extends HBox {
+    private static final Logger logger = LoggerFactory.getLogger(BadgeComponent.class);
+
     private final String planNodeId;
     private final BadgeType badgeType;
 
@@ -38,13 +42,13 @@ public class BadgeComponent extends HBox {
         this.getChildren().addAll(nameLabel, valueLabel);
 
         this.setOnMouseClicked(e -> {
-            System.out.println("BadgeComponent clicked! type=" + badgeType + ", name=" + name + ", value=" + value);
+            logger.info("BadgeComponent clicked! type={}, name={}, value={}", badgeType, name, value);
             if (onEditClicked != null) {
-                System.out.println("onEditClicked is NOT null, calling accept...");
+                logger.info("onEditClicked is NOT null, calling accept...");
                 onEditClicked.accept(this);
                 e.consume();
             } else {
-                System.out.println("onEditClicked IS NULL!");
+                logger.info("onEditClicked IS NULL!");
             }
         });
     }
@@ -70,7 +74,7 @@ public class BadgeComponent extends HBox {
     }
 
     public String getBadgeId() {
-        return planNodeId;
+        return getPlanNodeId();
     }
 
     public void updateBadge(String newName, String newValue, String newDisplayValue) {

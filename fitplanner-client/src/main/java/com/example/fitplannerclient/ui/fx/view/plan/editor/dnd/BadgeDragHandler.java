@@ -14,6 +14,9 @@ import javafx.scene.paint.Color;
 
 public class BadgeDragHandler {
 
+    private static final String BADGE_DROP_LEFT = "badge-drop-left";
+    private static final String BADGE_DROP_RIGHT = "badge-drop-right";
+
     private static BadgeDragContext activeBadgeDrag;
 
     public record BadgeDragContext(
@@ -44,14 +47,14 @@ public class BadgeDragHandler {
             if (e.getGestureSource() != badge && activeBadgeDrag != null && type.equals(activeBadgeDrag.badgeType())) {
                 e.acceptTransferModes(TransferMode.COPY_OR_MOVE);
                 boolean dropBefore = e.getX() < (badge.getWidth() / 2);
-                badge.getStyleClass().removeAll("badge-drop-left", "badge-drop-right");
-                badge.getStyleClass().add(dropBefore ? "badge-drop-left" : "badge-drop-right");
+                badge.getStyleClass().removeAll(BADGE_DROP_LEFT, BADGE_DROP_RIGHT);
+                badge.getStyleClass().add(dropBefore ? BADGE_DROP_LEFT : BADGE_DROP_RIGHT);
             }
             e.consume();
         });
 
         badge.setOnDragExited(e -> {
-            badge.getStyleClass().removeAll("badge-drop-left", "badge-drop-right");
+            badge.getStyleClass().removeAll(BADGE_DROP_LEFT, BADGE_DROP_RIGHT);
             e.consume();
         });
 

@@ -59,13 +59,7 @@ public class WorkoutExecutionManager {
                     if (plan == null) throw new IllegalStateException("Nessun piano assegnato");
                     this.currentPlan = plan;
 
-                    WorkoutSession targetSession = null;
-                    for (WorkoutSession s : plan.getSessions()) {
-                        if (s.getDay() == workoutSessionDay) {
-                            targetSession = s;
-                            break;
-                        }
-                    }
+                    WorkoutSession targetSession = findTargetSession(plan, workoutSessionDay);
                     if (targetSession == null) {
                         throw new IllegalArgumentException("Sessione non trovata per il giorno specificato");
                     }
@@ -75,41 +69,53 @@ public class WorkoutExecutionManager {
                     this.engine = new WorkoutEngineImpl(this.currentSession.getRoot());
 
                     // Inizializza la callback funzionale (Clean Architecture)
-                    this.engine.setOnUpdateListener((state, activeNode, timeRemaining) -> {
-                        WorkoutStatus status = (state != null) ? state.getStatus() : WorkoutStatus.UNKNOWN;
-                        
-                        WorkoutExecutionObserver.WorkoutExecutionState observerState = WorkoutExecutionObserver.WorkoutExecutionState.STOPPED;
-                        if (status == WorkoutStatus.PLAYING) observerState = WorkoutExecutionObserver.WorkoutExecutionState.PLAYING;
-                        else if (status == WorkoutStatus.PAUSED) observerState = WorkoutExecutionObserver.WorkoutExecutionState.PAUSED;
-                        
-                        workoutExecutionSubject.notifyCurrentWorkoutEngineState(observerState);
-                        
-                        if (timeRemaining > 0) {
-                            workoutExecutionSubject.notifyCurrentRestTime(timeRemaining / 1000);
-                        } else if (timeRemaining <= 0) {
-                            // Non siamo in pausa/riposo, annulliamo il timer visivamente o notifichiamo un tempo 0?
-                            // Il controller gestirà la logica nascondendo il timer quando riceve un updateCurrentExercise.
-                        }
-                        
-                        if (activeNode != null && !activeNode.getId().equals(lastActiveNodeId)) {
-                            lastActiveNodeId = activeNode.getId();
-                            String resourceId = activeNode.getResourceId();
-                            if (resourceId != null && !resourceId.isEmpty()) {
-                                exerciseRepository.getExercisesAsync(List.of(resourceId)).thenAccept(list -> {
-                                    if (!list.isEmpty()) {
-                                        var entity = list.get(0);
-                                        ExerciseDescriptionBean bean = new ExerciseDescriptionBean();
-                                        bean.setExerciseId(entity.getExerciseId());
-                                        bean.setName(entity.getName());
-                                        bean.setExecution(entity.getExecution());
-                                        bean.setMuscleGroups(entity.getMuscleGroups());
-                                        workoutExecutionSubject.notifyCurrentExercise(bean);
-                                    }
-                                });
-                            }
-                        }
-                    });
+                    setupEngineUpdateListener();
                 });
+    }
+
+    private WorkoutSession findTargetSession(WorkoutPlan plan, int workoutSessionDay) {
+        return plan.getSessions().stream()
+                .filter(s -> s.getDay() == workoutSessionDay)
+                .findFirst()
+                .orElse(null);
+    }
+
+    private void setupEngineUpdateListener() {
+        this.engine.setOnUpdateListener((state, activeNode, timeRemaining) -> {
+            WorkoutStatus status = (state != null) ? state.getStatus() : WorkoutStatus.UNKNOWN;
+            
+            WorkoutExecutionObserver.WorkoutExecutionState observerState = WorkoutExecutionObserver.WorkoutExecutionState.STOPPED;
+            if (status == WorkoutStatus.PLAYING) observerState = WorkoutExecutionObserver.WorkoutExecutionState.PLAYING;
+            else if (status == WorkoutStatus.PAUSED) observerState = WorkoutExecutionObserver.WorkoutExecutionState.PAUSED;
+            
+            workoutExecutionSubject.notifyCurrentWorkoutEngineState(observerState);
+            
+            if (timeRemaining > 0) {
+                workoutExecutionSubject.notifyCurrentRestTime(timeRemaining / 1000);
+            }
+            
+            if (activeNode != null && !activeNode.getId().equals(lastActiveNodeId)) {
+                lastActiveNodeId = activeNode.getId();
+                String resourceId = activeNode.getResourceId();
+                if (resourceId != null && !resourceId.isEmpty()) {
+                    fetchAndNotifyExercise(resourceId);
+                }
+            }
+        });
+    }
+
+    private void fetchAndNotifyExercise(String resourceId) {
+        exerciseRepository.getExercisesAsync(List.of(resourceId)).thenAccept(list -> {
+            if (!list.isEmpty()) {
+                var entity = list.getFirst();
+                ExerciseDescriptionBean bean = new ExerciseDescriptionBean();
+                bean.setExerciseId(entity.getExerciseId());
+                bean.setName(entity.getName());
+                bean.setExecution(entity.getExecution());
+                bean.setMuscleGroups(entity.getMuscleGroups());
+                workoutExecutionSubject.notifyCurrentExercise(bean);
+            }
+        });
     }
 
     public PlanNodeBean getSessionRootBeanForUi() {

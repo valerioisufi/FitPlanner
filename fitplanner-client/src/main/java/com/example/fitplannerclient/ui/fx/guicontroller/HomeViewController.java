@@ -102,7 +102,7 @@ public class HomeViewController implements GuiController {
 
     private void checkAndShowTrainerInvite(AthleteHomeView athleteView) {
         profileManager.hasTrainerAsync().thenAccept(hasTrainer -> {
-            if (!hasTrainer) {
+            if (Boolean.FALSE.equals(hasTrainer)) {
                 Platform.runLater(() -> athleteView.showTrainerInviteCard(code -> {
                     profileManager.linkTrainerAsync(code).thenRun(() -> {
                         Platform.runLater(() -> {

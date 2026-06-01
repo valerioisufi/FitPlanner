@@ -9,9 +9,10 @@ import com.example.fitplannerclient.entity.plan.block.ProtocolBlock;
 import com.example.fitplannerclient.entity.plan.decorator.*;
 import com.example.fitplannerclient.entity.plan.exercise.ExerciseNode;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.List;
-import java.util.Stack;
 
 public class NodeFinderVisitor implements WorkoutPlanVisitor {
     protected final String id;
@@ -27,7 +28,7 @@ public class NodeFinderVisitor implements WorkoutPlanVisitor {
 
     private List<PlanNode> foundPath = new ArrayList<>();
 
-    private final Stack<PlanNode> currentPath = new Stack<>();
+    private final Deque<PlanNode> currentPath = new ArrayDeque<>();
 
     public NodeFinderVisitor(String id) {
         this.id = id;

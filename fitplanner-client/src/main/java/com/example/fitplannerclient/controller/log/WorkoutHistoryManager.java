@@ -6,7 +6,6 @@ import com.example.fitplannerclient.repository.SessionLogRepository;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 public class WorkoutHistoryManager {
     private final SessionLogRepository logRepository;
@@ -20,7 +19,7 @@ public class WorkoutHistoryManager {
         return logRepository.getFilteredSessionLogsAsync(athleteId, startTimestamp, endTimestamp)
                 .thenApply(entities -> entities.stream()
                         .map(this::entityToBean)
-                        .collect(Collectors.toList()));
+                        .toList());
     }
 
     private SessionLogBean entityToBean(SessionLog entity) {

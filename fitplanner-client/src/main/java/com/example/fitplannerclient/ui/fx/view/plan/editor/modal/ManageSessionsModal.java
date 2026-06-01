@@ -21,6 +21,9 @@ import java.util.function.Consumer;
 
 public class ManageSessionsModal extends VBox {
 
+    private static final String LABEL_FIELD_CLASS = "label-field";
+    private static final String TEXT_FIELD_CLASS = "text-field";
+
     private final TextField cycleLengthField;
     private final VBox sessionsContainer;
     
@@ -59,16 +62,16 @@ public class ManageSessionsModal extends VBox {
         HBox cycleLengthBox = new HBox(12);
         cycleLengthBox.setAlignment(Pos.CENTER_LEFT);
         Label cycleLabel = new Label("Durata ciclo (giorni):");
-        cycleLabel.getStyleClass().add("label-field");
+        cycleLabel.getStyleClass().add(LABEL_FIELD_CLASS);
         cycleLengthField = new TextField();
         cycleLengthField.setPrefWidth(80);
-        cycleLengthField.getStyleClass().add("text-field");
+        cycleLengthField.getStyleClass().add(TEXT_FIELD_CLASS);
         cycleLengthField.textProperty().addListener((obs, oldV, newV) -> {
             try {
                 if (!newV.isEmpty() && onCycleLengthChanged != null) {
                     onCycleLengthChanged.accept(Integer.parseInt(newV.trim()));
                 }
-            } catch (NumberFormatException ignored) {}
+            } catch (NumberFormatException ignored) { /* ignored */ }
         });
         cycleLengthBox.getChildren().addAll(cycleLabel, cycleLengthField);
 
@@ -118,9 +121,9 @@ public class ManageSessionsModal extends VBox {
         row.setStyle("-fx-border-color: #E0E0E0; -fx-border-radius: 6; -fx-border-width: 1; -fx-background-color: #FAFAFA;");
 
         Label nameLabel = new Label("Nome:");
-        nameLabel.getStyleClass().add("label-field");
+        nameLabel.getStyleClass().add(LABEL_FIELD_CLASS);
         TextField nameField = new TextField(session.getName());
-        nameField.getStyleClass().add("text-field");
+        nameField.getStyleClass().add(TEXT_FIELD_CLASS);
         HBox.setHgrow(nameField, Priority.ALWAYS);
         nameField.textProperty().addListener((obs, oldV, newV) -> {
             session.setName(newV);
@@ -130,10 +133,10 @@ public class ManageSessionsModal extends VBox {
         });
 
         Label dayLabel = new Label("Giorno:");
-        dayLabel.getStyleClass().add("label-field");
+        dayLabel.getStyleClass().add(LABEL_FIELD_CLASS);
         TextField dayField = new TextField(String.valueOf(session.getDay()));
         dayField.setPrefWidth(60);
-        dayField.getStyleClass().add("text-field");
+        dayField.getStyleClass().add(TEXT_FIELD_CLASS);
         // Quando il focus viene perso, aggiorna il giorno se cambiato
         dayField.focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
             if (!isNowFocused) {
@@ -149,7 +152,7 @@ public class ManageSessionsModal extends VBox {
                             }
                         }
                     }
-                } catch (NumberFormatException ignored) {}
+                } catch (NumberFormatException ignored) { /* ignored */ }
             }
         });
 

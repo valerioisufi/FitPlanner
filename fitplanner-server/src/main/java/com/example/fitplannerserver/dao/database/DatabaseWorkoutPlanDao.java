@@ -6,11 +6,8 @@ import com.example.fitplannerserver.exception.DaoException;
 import com.example.fitplannerserver.model.plan.WorkoutPlan;
 import com.example.fitplannerserver.model.plan.WorkoutSession;
 
-import java.sql.Connection;
+import java.sql.*;
 import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;

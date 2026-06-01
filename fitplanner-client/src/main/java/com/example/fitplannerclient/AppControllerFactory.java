@@ -86,7 +86,8 @@ public class AppControllerFactory {
     }
 
     public EditWorkoutPlanManager createEditWorkoutPlanManager() {
-        return editWorkoutPlanManager = new EditWorkoutPlanManager(createWorkoutPlanRepository(), createExerciseRepository());
+        editWorkoutPlanManager = new EditWorkoutPlanManager(createWorkoutPlanRepository(), createExerciseRepository());
+        return editWorkoutPlanManager;
     }
 
     public SessionLogApi createSessionLogApi() {

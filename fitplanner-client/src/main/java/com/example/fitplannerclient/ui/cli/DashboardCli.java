@@ -12,12 +12,9 @@ public class DashboardCli implements CliView {
         int scelta = engine.getInput().readInt("Scegli un'opzione: ", 1, 3);
 
         if (scelta == 1) {
-            // E puoi recuperare i manager usando la factory!
-            // es: engine.getControllerFactory().getAuthManager();
-//            return new UnAltraCliView();
             return new ProfileCli();
         } else if (scelta == 2) {
-
+            // Temporaneamente vuoto
         } else if (scelta == 3) {
             return null;
         }
@@ -26,5 +23,7 @@ public class DashboardCli implements CliView {
     }
 
     @Override
-    public void stop() { }
+    public void stop() { 
+        // Intenzionalmente vuoto
+    }
 }

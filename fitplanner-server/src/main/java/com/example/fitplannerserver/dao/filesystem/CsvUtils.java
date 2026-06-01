@@ -64,7 +64,8 @@ public class CsvUtils {
         try (BufferedReader in = Files.newBufferedReader(file)) {
             List<String[]> results = new ArrayList<>();
 
-            if (in.readLine() == null) {
+            String header = in.readLine();
+            if (header == null) {
                 return results; // scarto l'intestazione
             }
 
@@ -103,18 +104,18 @@ public class CsvUtils {
                     isFirstLine = false;
                     writer.write(line);
                     writer.newLine();
-                    continue;
-                }
-                if (line.trim().isEmpty()) continue;
-
-                String[] parts = csvSplit(line, expectedColumns);
-                if (!updated && filter.test(parts)) {
-                    writer.write(newRow);
-                    updated = true;
                 } else {
-                    writer.write(line);
+                    if (line.trim().isEmpty()) continue;
+    
+                    String[] parts = csvSplit(line, expectedColumns);
+                    if (!updated && filter.test(parts)) {
+                        writer.write(newRow);
+                        updated = true;
+                    } else {
+                        writer.write(line);
+                    }
+                    writer.newLine();
                 }
-                writer.newLine();
             }
 
             if (!updated) {
@@ -151,15 +152,15 @@ public class CsvUtils {
                     isFirstLine = false;
                     writer.write(line);
                     writer.newLine();
-                    continue;
-                }
-                if (line.trim().isEmpty()) continue;
-
-                if (filter.test(csvSplit(line, expectedColumns))) {
-                    isDeleted = true;
                 } else {
-                    writer.write(line);
-                    writer.newLine();
+                    if (line.trim().isEmpty()) continue;
+    
+                    if (filter.test(csvSplit(line, expectedColumns))) {
+                        isDeleted = true;
+                    } else {
+                        writer.write(line);
+                        writer.newLine();
+                    }
                 }
             }
         }

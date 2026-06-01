@@ -139,9 +139,9 @@ public class WorkoutPlanEditorViewController implements GuiController {
     private void handleBadgeReordered(PlanNodeEvent event) {
         if ("MODIFIER".equals(event.getBadgeType())) {
             if (event.isCopy()) {
-                editWorkoutPlanManager.copyModifier(event.getSourceNodeId(), event.getNodeId(), event.getSourceIndex(), event.getTargetIndex());
+                editWorkoutPlanManager.copyModifier(event.getSourceNodeId(), event.getNodeId(), event.getSourceIndex());
             } else {
-                editWorkoutPlanManager.moveModifier(event.getSourceNodeId(), event.getNodeId(), event.getSourceIndex(), event.getTargetIndex());
+                editWorkoutPlanManager.moveModifier(event.getSourceNodeId(), event.getNodeId(), event.getSourceIndex());
             }
 
         } else {
@@ -265,7 +265,7 @@ public class WorkoutPlanEditorViewController implements GuiController {
         exerciseManager.getExercisesAsync(null)
                 .thenAccept(exercises -> Platform.runLater(() -> view.setExercises(exercises)))
                 .exceptionally(ex -> {
-                    System.err.println("Errore caricamento esercizi: " + ex.getMessage());
+                    logger.error("Errore caricamento esercizi", ex);
                     return null;
                 });
 

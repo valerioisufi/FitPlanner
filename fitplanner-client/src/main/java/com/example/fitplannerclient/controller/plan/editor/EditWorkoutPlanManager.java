@@ -139,12 +139,12 @@ public class EditWorkoutPlanManager {
         badgeEditor.updateDecorator(this.plan, decoratorId, newValue);
     }
 
-    public void copyModifier(String sourceNodeId, String targetNodeId, int sourceIndex, int targetIndex) {
-        badgeEditor.copyModifier(this.plan, sourceNodeId, targetNodeId, sourceIndex, targetIndex);
+    public void copyModifier(String sourceNodeId, String targetNodeId, int sourceIndex) {
+        badgeEditor.copyModifier(this.plan, sourceNodeId, targetNodeId, sourceIndex);
     }
 
-    public void moveModifier(String sourceNodeId, String targetNodeId, int sourceIndex, int targetIndex) {
-        badgeEditor.moveModifier(this.plan, sourceNodeId, targetNodeId, sourceIndex, targetIndex);
+    public void moveModifier(String sourceNodeId, String targetNodeId, int sourceIndex) {
+        badgeEditor.moveModifier(this.plan, sourceNodeId, targetNodeId, sourceIndex);
     }
 
     public void copyDecorator(String sourceDecoratorId, String targetNodeId, int targetIndex) {

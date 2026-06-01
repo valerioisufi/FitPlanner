@@ -14,7 +14,7 @@ import com.example.fitplannerclient.util.IDGenerator;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.function.Function;
+import java.util.function.UnaryOperator;
 
 public class PlanToBeanVisitor implements WorkoutPlanVisitor {
 
@@ -24,13 +24,13 @@ public class PlanToBeanVisitor implements WorkoutPlanVisitor {
     private PlanNodeBean currentPlanNodeBean;
     private final List<FlowDecoratorBean> accumulatedDecorators = new ArrayList<>();
 
-    private final Function<String, String> nameResolver;
+    private final UnaryOperator<String> nameResolver;
 
     public PlanToBeanVisitor() {
         this.nameResolver = id -> "Esercizio Sconosciuto";
     }
 
-    public PlanToBeanVisitor(Function<String, String> nameResolver) {
+    public PlanToBeanVisitor(UnaryOperator<String> nameResolver) {
         this.nameResolver = nameResolver;
     }
 

@@ -24,6 +24,10 @@ import static com.example.fitplannerclient.ui.fx.view.plan.editor.components.Bad
 
 public class PlanNodeComponent extends VBox {
 
+    private static final String BUTTON_HEADER_ICON = "button-header-icon";
+    private static final String BUTTON_HEADER_DANGER_ICON = "button-header-danger-icon";
+    private static final String BUTTON_DANGER_STYLE = "-fx-text-fill: #ef4444;";
+
     private final String planNodeId;
     private final PlanNodeBean originalBean;
 
@@ -86,7 +90,7 @@ public class PlanNodeComponent extends VBox {
 
         Button optionsBtn = new Button();
         optionsBtn.getStyleClass().add("button-header");
-        optionsBtn.setGraphic(new Icon("dots-vertical-icon", List.of("button-header-icon")));
+        optionsBtn.setGraphic(new Icon("dots-vertical-icon", List.of(BUTTON_HEADER_ICON)));
         
         if (isEditable) {
             optionsBtn.setOnMousePressed(e -> {
@@ -103,42 +107,42 @@ public class PlanNodeComponent extends VBox {
                 switch (bean.getType()) {
                     case EXERCISE -> {
                         menu.getItems().addAll(
-                            MenuUtils.createCustomMenuItem("Cambia Esercizio...", "swap-icon", "button-header-icon", null, () -> {
+                            MenuUtils.createCustomMenuItem("Cambia Esercizio...", "swap-icon", BUTTON_HEADER_ICON, null, () -> {
                                 this.fireEvent(new PlanNodeEvent(PlanNodeEvent.CHANGE_EXERCISE_REQUESTED, this.planNodeId));
                             }),
-                            MenuUtils.createCustomMenuItem("Duplica", "copy-icon", "button-header-icon", null, () -> {
+                            MenuUtils.createCustomMenuItem("Duplica", "copy-icon", BUTTON_HEADER_ICON, null, () -> {
                                 this.fireEvent(new PlanNodeEvent(PlanNodeEvent.DUPLICATE_NODE_REQUESTED, this.planNodeId));
                             }),
-                            MenuUtils.createCustomMenuItem("Elimina", "delete-icon", "button-header-danger-icon", "-fx-text-fill: #ef4444;", () -> {
+                            MenuUtils.createCustomMenuItem("Elimina", "delete-icon", BUTTON_HEADER_DANGER_ICON, BUTTON_DANGER_STYLE, () -> {
                                 this.fireEvent(new PlanNodeEvent(PlanNodeEvent.DELETE_NODE_REQUESTED, this.planNodeId));
                             })
                         );
                     }
                     case BLOCK -> {
                         menu.getItems().addAll(
-                            MenuUtils.createCustomMenuItem("Modifica Nome", "edit-icon", "button-header-icon", null, () -> {
+                            MenuUtils.createCustomMenuItem("Modifica Nome", "edit-icon", BUTTON_HEADER_ICON, null, () -> {
                                 this.fireEvent(new PlanNodeEvent(PlanNodeEvent.EDIT_NAME_CLICKED, this.planNodeId));
                             }),
-                            MenuUtils.createCustomMenuItem("Duplica Blocco", "copy-icon", "button-header-icon", null, () -> {
+                            MenuUtils.createCustomMenuItem("Duplica Blocco", "copy-icon", BUTTON_HEADER_ICON, null, () -> {
                                 this.fireEvent(new PlanNodeEvent(PlanNodeEvent.DUPLICATE_NODE_REQUESTED, this.planNodeId));
                             }),
-                            MenuUtils.createCustomMenuItem("Svuota Blocco", "eraser-icon", "button-header-icon", null, () -> {
+                            MenuUtils.createCustomMenuItem("Svuota Blocco", "eraser-icon", BUTTON_HEADER_ICON, null, () -> {
                                 this.fireEvent(new PlanNodeEvent(PlanNodeEvent.EMPTY_NODE_REQUESTED, this.planNodeId));
                             }),
-                            MenuUtils.createCustomMenuItem("Elimina Blocco", "delete-icon", "button-header-danger-icon", "-fx-text-fill: #ef4444;", () -> {
+                            MenuUtils.createCustomMenuItem("Elimina Blocco", "delete-icon", BUTTON_HEADER_DANGER_ICON, BUTTON_DANGER_STYLE, () -> {
                                 this.fireEvent(new PlanNodeEvent(PlanNodeEvent.DELETE_NODE_REQUESTED, this.planNodeId));
                             })
                         );
                     }
                     case PROTOCOL_BLOCK -> {
                         menu.getItems().addAll(
-                            MenuUtils.createCustomMenuItem("Modifica Parametri Protocollo", "sliders-icon", "button-header-icon", null, () -> {
+                            MenuUtils.createCustomMenuItem("Modifica Parametri Protocollo", "sliders-icon", BUTTON_HEADER_ICON, null, () -> {
                                 this.fireEvent(new PlanNodeEvent(PlanNodeEvent.EDIT_PROTOCOL_PARAMETERS_REQUESTED, this.planNodeId));
                             }),
-                            MenuUtils.createCustomMenuItem("Svuota Protocollo", "eraser-icon", "button-header-icon", null, () -> {
+                            MenuUtils.createCustomMenuItem("Svuota Protocollo", "eraser-icon", BUTTON_HEADER_ICON, null, () -> {
                                 this.fireEvent(new PlanNodeEvent(PlanNodeEvent.EMPTY_NODE_REQUESTED, this.planNodeId));
                             }),
-                            MenuUtils.createCustomMenuItem("Elimina Protocollo", "delete-icon", "button-header-danger-icon", "-fx-text-fill: #ef4444;", () -> {
+                            MenuUtils.createCustomMenuItem("Elimina Protocollo", "delete-icon", BUTTON_HEADER_DANGER_ICON, BUTTON_DANGER_STYLE, () -> {
                                 this.fireEvent(new PlanNodeEvent(PlanNodeEvent.DELETE_NODE_REQUESTED, this.planNodeId));
                             })
                         );

@@ -12,6 +12,12 @@ import javafx.scene.paint.Color;
 
 public class NodeDragHandler {
 
+    private static final String NODE_PREFIX = "NODE_";
+    private static final String TOOLBOX_PREFIX = "TOOLBOX:";
+    private static final String DROP_ABOVE = "drop-above";
+    private static final String DROP_BELOW = "drop-below";
+    private static final String DROP_INSIDE = "drop-inside";
+
     private static String currentDraggedNodeId = null;
     private static PlanNodeComponent currentDropTarget = null;
 
@@ -20,7 +26,7 @@ public class NodeDragHandler {
             dragHandle.setOnDragDetected(event -> {
                 Dragboard db = dragHandle.startDragAndDrop(TransferMode.COPY_OR_MOVE);
                 ClipboardContent content = new ClipboardContent();
-                content.put(DragConstants.FITPLANNER_FORMAT, "NODE_" + component.getPlanNodeId());
+                content.put(DragConstants.FITPLANNER_FORMAT, NODE_PREFIX + component.getPlanNodeId());
                 db.setContent(content);
 
                 SnapshotParameters snapParams = new SnapshotParameters();
@@ -36,9 +42,9 @@ public class NodeDragHandler {
             boolean hasFitData = event.getDragboard().hasContent(DragConstants.FITPLANNER_FORMAT);
             String payload = hasFitData ? (String) event.getDragboard().getContent(DragConstants.FITPLANNER_FORMAT) : "";
             
-            boolean isToolboxBadge = payload.startsWith("TOOLBOX:MODIFIER") || payload.startsWith("TOOLBOX:DECORATOR");
-            boolean isToolboxNode = payload.startsWith("TOOLBOX:") && !isToolboxBadge;
-            boolean isNode = payload.startsWith("NODE_");
+            boolean isToolboxBadge = payload.startsWith(TOOLBOX_PREFIX + "MODIFIER") || payload.startsWith(TOOLBOX_PREFIX + "DECORATOR");
+            boolean isToolboxNode = payload.startsWith(TOOLBOX_PREFIX) && !isToolboxBadge;
+            boolean isNode = payload.startsWith(NODE_PREFIX);
 
             if (isToolboxBadge && component.getParentWrapper() == null) {
                 return;
@@ -52,11 +58,11 @@ public class NodeDragHandler {
 
             if (isToolboxNode || isToolboxBadge || isNode) {
                 if (currentDropTarget != null && currentDropTarget != component) {
-                    currentDropTarget.getStyleClass().removeAll("drop-above", "drop-below", "drop-inside");
+                    currentDropTarget.getStyleClass().removeAll(DROP_ABOVE, DROP_BELOW, DROP_INSIDE);
                 }
                 currentDropTarget = component;
 
-                component.getStyleClass().removeAll("drop-above", "drop-below", "drop-inside");
+                component.getStyleClass().removeAll(DROP_ABOVE, DROP_BELOW, DROP_INSIDE);
                 DropPosition pos;
                 if (isToolboxBadge) {
                     pos = DropPosition.INSIDE;
@@ -64,15 +70,15 @@ public class NodeDragHandler {
                     pos = getDropPosition(component, event.getY());
                 }
                 
-                if (pos == DropPosition.ABOVE) component.getStyleClass().add("drop-above");
-                else if (pos == DropPosition.BELOW) component.getStyleClass().add("drop-below");
-                else component.getStyleClass().add("drop-inside");
+                if (pos == DropPosition.ABOVE) component.getStyleClass().add(DROP_ABOVE);
+                else if (pos == DropPosition.BELOW) component.getStyleClass().add(DROP_BELOW);
+                else component.getStyleClass().add(DROP_INSIDE);
             }
             event.consume();
         });
 
         component.setOnDragExited(event -> {
-            component.getStyleClass().removeAll("drop-above", "drop-below", "drop-inside");
+            component.getStyleClass().removeAll(DROP_ABOVE, DROP_BELOW, DROP_INSIDE);
             if (currentDropTarget == component) {
                 currentDropTarget = null;
             }
@@ -85,7 +91,7 @@ public class NodeDragHandler {
             
             boolean hasFitData = db.hasContent(DragConstants.FITPLANNER_FORMAT);
             String payload = hasFitData ? (String) db.getContent(DragConstants.FITPLANNER_FORMAT) : "";
-            boolean isToolboxBadge = payload.startsWith("TOOLBOX:MODIFIER") || payload.startsWith("TOOLBOX:DECORATOR");
+            boolean isToolboxBadge = payload.startsWith(TOOLBOX_PREFIX + "MODIFIER") || payload.startsWith(TOOLBOX_PREFIX + "DECORATOR");
 
             if (isToolboxBadge && component.getParentWrapper() == null) {
                 return;
@@ -110,7 +116,7 @@ public class NodeDragHandler {
             }
 
             if (targetParentId != null) {
-                if (payload.startsWith("NODE_") && currentDraggedNodeId != null) {
+                if (payload.startsWith(NODE_PREFIX) && currentDraggedNodeId != null) {
                     boolean isCopy = event.getTransferMode() != TransferMode.COPY;
                     component.fireEvent(
                         new PlanNodeEvent(PlanNodeEvent.NODE_REORDERED, currentDraggedNodeId)
@@ -120,8 +126,8 @@ public class NodeDragHandler {
                     );
                     success = true;
 
-                } else if (payload.startsWith("TOOLBOX:")) {
-                    String toolboxPayload = payload.substring("TOOLBOX:".length());
+                } else if (payload.startsWith(TOOLBOX_PREFIX)) {
+                    String toolboxPayload = payload.substring(TOOLBOX_PREFIX.length());
                     component.fireEvent(
                         new PlanNodeEvent(PlanNodeEvent.TOOLBOX_ITEM_DROPPED, component.getPlanNodeId())
                             .setPayload(toolboxPayload)
@@ -141,11 +147,11 @@ public class NodeDragHandler {
             currentDraggedNodeId = null;
 
             if (currentDropTarget != null) {
-                currentDropTarget.getStyleClass().removeAll("drop-above", "drop-below", "drop-inside");
+                currentDropTarget.getStyleClass().removeAll(DROP_ABOVE, DROP_BELOW, DROP_INSIDE);
                 currentDropTarget = null;
             }
 
-            component.getStyleClass().removeAll("drop-above", "drop-below", "drop-inside");
+            component.getStyleClass().removeAll(DROP_ABOVE, DROP_BELOW, DROP_INSIDE);
             event.consume();
         });
     }

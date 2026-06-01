@@ -21,6 +21,10 @@ import java.util.function.Consumer;
 
 public class PlanManagementView extends BorderPane {
 
+    private static final String BODY_BASE_CLASS = "body-base";
+    private static final String BUTTON_HEADER_ICON = "button-header-icon";
+    private static final String TEXT_COLOR_LIGHT = "text-color-light";
+
     private final CardListView<WorkoutPlanSummaryBean> cardListView;
     private List<ProfileBean> athletesCache;
     
@@ -44,7 +48,7 @@ public class PlanManagementView extends BorderPane {
 
         VBox titleBox = new VBox(4);
         Label subtitle = new Label("Crea, modifica, assegna o duplica i tuoi piani di allenamento");
-        subtitle.getStyleClass().addAll("body-base", "text-color-light");
+        subtitle.getStyleClass().addAll(BODY_BASE_CLASS, TEXT_COLOR_LIGHT);
         titleBox.getChildren().addAll(subtitle);
 
         Region spacer = new Region();
@@ -103,7 +107,7 @@ public class PlanManagementView extends BorderPane {
 
         // Plan Name
         Label nameLbl = new Label(plan.getPlanTitle() != null ? plan.getPlanTitle() : "Senza Nome");
-        nameLbl.getStyleClass().add("body-base");
+        nameLbl.getStyleClass().add(BODY_BASE_CLASS);
         nameLbl.setPrefWidth(300);
 
         // Assigned To
@@ -120,13 +124,13 @@ public class PlanManagementView extends BorderPane {
 
         if (assignedAthlete != null) {
             Label athleteName = new Label(assignedAthlete.getFirstName() + " " + assignedAthlete.getLastName());
-            athleteName.getStyleClass().add("body-base");
+            athleteName.getStyleClass().add(BODY_BASE_CLASS);
             Label athleteEmail = new Label(assignedAthlete.getContactEmail());
-            athleteEmail.getStyleClass().addAll("body-small", "text-color-light");
+            athleteEmail.getStyleClass().addAll("body-small", TEXT_COLOR_LIGHT);
             assignBox.getChildren().addAll(athleteName, athleteEmail);
         } else {
             Label nessunoLbl = new Label("Nessuno");
-            nessunoLbl.getStyleClass().addAll("body-small", "text-color-light");
+            nessunoLbl.getStyleClass().addAll("body-small", TEXT_COLOR_LIGHT);
             assignBox.getChildren().add(nessunoLbl);
         }
 
@@ -139,7 +143,7 @@ public class PlanManagementView extends BorderPane {
 
         Button optionsBtn = new Button();
         optionsBtn.getStyleClass().add("button-header");
-        optionsBtn.setGraphic(new Icon("dots-vertical-icon", List.of("button-header-icon")));
+        optionsBtn.setGraphic(new Icon("dots-vertical-icon", List.of(BUTTON_HEADER_ICON)));
         
         optionsBtn.setOnMousePressed(e -> {
             ContextMenu existingMenu = (ContextMenu) optionsBtn.getProperties().get("activeMenu");
@@ -153,13 +157,13 @@ public class PlanManagementView extends BorderPane {
             optionsBtn.getProperties().put("activeMenu", menu);
             
             menu.getItems().addAll(
-                MenuUtils.createCustomMenuItem("Modifica", "edit-icon", "button-header-icon", null, () -> {
+                MenuUtils.createCustomMenuItem("Modifica", "edit-icon", BUTTON_HEADER_ICON, null, () -> {
                     if (onEditAction != null) onEditAction.accept(plan);
                 }),
-                MenuUtils.createCustomMenuItem("Assegna", "plus-icon", "button-header-icon", null, () -> {
+                MenuUtils.createCustomMenuItem("Assegna", "plus-icon", BUTTON_HEADER_ICON, null, () -> {
                     if (onAssignButtonClick != null) onAssignButtonClick.accept(plan);
                 }),
-                MenuUtils.createCustomMenuItem("Duplica", "copy-icon", "button-header-icon", null, () -> {
+                MenuUtils.createCustomMenuItem("Duplica", "copy-icon", BUTTON_HEADER_ICON, null, () -> {
                     if (onCloneAction != null) onCloneAction.accept(plan);
                 }),
                 MenuUtils.createCustomMenuItem("Elimina", "delete-icon", "button-header-danger-icon", "-fx-text-fill: #ef4444;", () -> {

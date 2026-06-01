@@ -16,7 +16,9 @@ public class WorkoutScheduleBean {
 
     private WorkoutSessionBean nextSuggestedSession;
 
-    public WorkoutScheduleBean() {}
+    public WorkoutScheduleBean() {
+        // Default constructor for bean
+    }
 
     public String getPlanId() {
         return planId;

@@ -54,7 +54,9 @@ public class ProfileCli implements CliView {
     }
 
     @Override
-    public void stop() {}
+    public void stop() {
+        // Intenzionalmente vuoto
+    }
 
     public void printProfileData() {
         try {

@@ -19,8 +19,12 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.IntConsumer;
 
 public class AthleteHomeView extends BorderPane {
+
+    private static final String BODY_BASE_CLASS = "body-base";
+    private static final String HEADING_H2_CLASS = "heading-h2";
 
     private final VBox contentBox;
     private final Label welcomeTitle;
@@ -42,7 +46,7 @@ public class AthleteHomeView extends BorderPane {
         welcomeTitle = new Label("Benvenuto in FitPlanner!");
         welcomeTitle.getStyleClass().add("heading-h1");
         welcomeSubtitle = new Label("Oggi è il momento perfetto per superare i tuoi limiti.");
-        welcomeSubtitle.getStyleClass().add("body-base");
+        welcomeSubtitle.getStyleClass().add(BODY_BASE_CLASS);
         titles.getChildren().addAll(welcomeTitle, welcomeSubtitle);
 
         welcomeSection.setLeft(titles);
@@ -60,7 +64,7 @@ public class AthleteHomeView extends BorderPane {
         welcomeSubtitle.setText(subtitle);
     }
 
-    public void showAthleteDashboard(WorkoutPlanBean plan, WorkoutScheduleBean schedule, Consumer<Integer> onStartSession) {
+    public void showAthleteDashboard(WorkoutPlanBean plan, WorkoutScheduleBean schedule, IntConsumer onStartSession) {
         // Clear old dashboard cards (keep welcome section)
         while (contentBox.getChildren().size() > 1) {
             contentBox.getChildren().remove(1);
@@ -111,7 +115,7 @@ public class AthleteHomeView extends BorderPane {
         rightPanel.setPadding(new Insets(25));
 
         Label weekTitle = new Label("THIS WEEK");
-        weekTitle.getStyleClass().add("heading-h2");
+        weekTitle.getStyleClass().add(HEADING_H2_CLASS);
         
         // Calcola l'inizio e la fine della settimana (approssimata al ciclo o ai prossimi 7 giorni)
         LocalDate endDate = LocalDate.ofInstant(Instant.ofEpochMilli(schedule.getCycleEndDate()), ZoneOffset.UTC);
@@ -206,7 +210,7 @@ public class AthleteHomeView extends BorderPane {
         contentBox.getChildren().add(splitLayout);
     }
 
-    private void updateLeftPanel(VBox leftPanel, WorkoutSessionBean session, int relativeDay, boolean isToday, String titleDate, WorkoutPlanBean plan, Consumer<Integer> onStartSession) {
+    private void updateLeftPanel(VBox leftPanel, WorkoutSessionBean session, int relativeDay, boolean isToday, String titleDate, WorkoutPlanBean plan, IntConsumer onStartSession) {
         leftPanel.getChildren().clear();
 
         BorderPane cardHeader = new BorderPane();
@@ -257,10 +261,10 @@ public class AthleteHomeView extends BorderPane {
         card.setPadding(new Insets(30));
 
         Label noPlanLabel = new Label("Nessun piano di allenamento attivo");
-        noPlanLabel.getStyleClass().add("heading-h2");
+        noPlanLabel.getStyleClass().add(HEADING_H2_CLASS);
 
         Label detailLabel = new Label("Richiedi un piano al tuo trainer per iniziare ad allenarti.");
-        detailLabel.getStyleClass().add("body-base");
+        detailLabel.getStyleClass().add(BODY_BASE_CLASS);
 
         card.getChildren().addAll(noPlanLabel, detailLabel);
         contentBox.getChildren().add(card);
@@ -274,7 +278,7 @@ public class AthleteHomeView extends BorderPane {
         Label title = new Label("Collegati a un Trainer");
         title.getStyleClass().add("heading-h3");
         Label subtitle = new Label("Inserisci il codice invito fornito dal tuo trainer per collegarti e ricevere i suoi piani di allenamento.");
-        subtitle.getStyleClass().addAll("body-base", "text-color-light");
+        subtitle.getStyleClass().addAll(BODY_BASE_CLASS, "text-color-light");
 
         HBox inputBox = new HBox(10);
         TextField codeInput = new TextField();

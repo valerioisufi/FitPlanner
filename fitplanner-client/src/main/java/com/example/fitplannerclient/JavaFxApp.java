@@ -12,6 +12,8 @@ import javafx.stage.Stage;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class JavaFxApp extends Application {
 
@@ -42,7 +44,8 @@ public class JavaFxApp extends Application {
 
             stage.show();
         } catch (ConfigException configException) {
-            System.err.println("Errore durante la lettura della configurazione: " + configException.getMessage());
+            Logger.getLogger(JavaFxApp.class.getName())
+                    .log(Level.SEVERE, "Errore durante la lettura della configurazione", configException);
             System.exit(1);
         }
     }

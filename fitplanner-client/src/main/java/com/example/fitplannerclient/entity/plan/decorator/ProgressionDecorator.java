@@ -5,10 +5,7 @@ import com.example.fitplannerclient.entity.plan.PlanNode;
 import com.example.fitplannerclient.entity.plan.context.ExecutionContext;
 import com.example.fitplannerclient.entity.plan.context.ExecutionResult;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ProgressionDecorator extends LoopDecorator {
     private String progressionString;
@@ -45,7 +42,7 @@ public class ProgressionDecorator extends LoopDecorator {
 
     private Map<String, List<String>> parseProgressions(String str) {
         if (str == null || str.trim().isEmpty()) {
-            return null;
+            return Collections.emptyMap();
         }
 
         // la stringa da parsare è del tipo
@@ -70,7 +67,7 @@ public class ProgressionDecorator extends LoopDecorator {
             }
         }
 
-        return result.isEmpty() ? null : result;
+        return result.isEmpty() ? Collections.emptyMap() : result;
     }
 
     @Override

@@ -56,7 +56,7 @@ public class WorkoutPlanBadgeEditor {
         }
     }
 
-    public void copyModifier(WorkoutPlan plan, String sourceNodeId, String targetNodeId, int sourceIndex, int targetIndex) {
+    public void copyModifier(WorkoutPlan plan, String sourceNodeId, String targetNodeId, int sourceIndex) {
         if (plan == null) return;
         if (sourceNodeId.equals(targetNodeId)) return;
 
@@ -80,7 +80,7 @@ public class WorkoutPlanBadgeEditor {
         }
     }
 
-    public void moveModifier(WorkoutPlan plan, String sourceNodeId, String targetNodeId, int sourceIndex, int targetIndex) {
+    public void moveModifier(WorkoutPlan plan, String sourceNodeId, String targetNodeId, int sourceIndex) {
         if (plan == null) return;
         if (sourceNodeId.equals(targetNodeId)) return;
 
@@ -219,6 +219,7 @@ public class WorkoutPlanBadgeEditor {
             case "TIME_LIMIT" -> newDecorator = new TimeLimitDecorator(null, value);
             case "INTERVAL" -> newDecorator = new IntervalDecorator(null, value);
             case "PROGRESSION" -> newDecorator = new ProgressionDecorator(null, value);
+            default -> throw new IllegalArgumentException("Unknown decorator type: " + decoratorType);
         }
         return newDecorator;
     }

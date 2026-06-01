@@ -73,7 +73,7 @@ public class AuthenticationCli implements CliView {
 
         String email = reader.readStringAndValidate("Email: ", ValidationUtils::validateEmail);
         String password = reader.readStringAndValidate("Password: ", ValidationUtils::validatePassword);
-        String confirmPassword = reader.readStringAndValidate("Conferma password: ", confirm ->
+        reader.readStringAndValidate("Conferma password: ", confirm ->
                 ValidationUtils.validatePasswordMatch(password, confirm)
         );
 
@@ -102,5 +102,7 @@ public class AuthenticationCli implements CliView {
     }
 
     @Override
-    public void stop() { }
+    public void stop() { 
+        // Intenzionalmente vuoto
+    }
 }

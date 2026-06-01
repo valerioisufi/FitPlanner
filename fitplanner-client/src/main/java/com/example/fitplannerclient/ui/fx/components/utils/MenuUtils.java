@@ -9,6 +9,8 @@ import javafx.scene.layout.HBox;
 import java.util.List;
 
 public class MenuUtils {
+    
+    private MenuUtils() {}
 
     public static CustomMenuItem createCustomMenuItem(String text, String iconName, String iconClass, String textStyle, Runnable action) {
         HBox box = new HBox(8);

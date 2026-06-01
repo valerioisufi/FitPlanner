@@ -24,6 +24,8 @@ import java.util.List;
 
 public class WorkoutExecutionViewController implements GuiController, WorkoutExecutionObserver {
 
+    private static final String BUTTON_HEADER_ICON = "button-header-icon";
+
     private final WorkoutExecutionView view;
 
     private final String planId;
@@ -127,10 +129,10 @@ public class WorkoutExecutionViewController implements GuiController, WorkoutExe
     private void togglePlayPause() {
         if (isPlaying) {
             executionManager.pause();
-            view.getBtnPlayPause().setGraphic(new Icon("play-icon", 40, List.of("button-header-icon")));
+            view.getBtnPlayPause().setGraphic(new Icon("play-icon", 40, List.of(BUTTON_HEADER_ICON)));
         } else {
             executionManager.play();
-            view.getBtnPlayPause().setGraphic(new Icon("pause-icon", 40, List.of("button-header-icon")));
+            view.getBtnPlayPause().setGraphic(new Icon("pause-icon", 40, List.of(BUTTON_HEADER_ICON)));
         }
         isPlaying = !isPlaying;
     }
@@ -142,8 +144,8 @@ public class WorkoutExecutionViewController implements GuiController, WorkoutExe
         
         double weight = 0.0;
         int reps = 0;
-        try { weight = Double.parseDouble(weightStr); } catch (Exception ignored) {}
-        try { reps = Integer.parseInt(repsStr); } catch (Exception ignored) {}
+        try { weight = Double.parseDouble(weightStr); } catch (NumberFormatException ignored) { /* ignored */ }
+        try { reps = Integer.parseInt(repsStr); } catch (NumberFormatException ignored) { /* ignored */ }
         
         // Save logic
         currentExerciseSets.add(new ExerciseSetDTO(reps, weight));
@@ -153,13 +155,7 @@ public class WorkoutExecutionViewController implements GuiController, WorkoutExe
         
         // Prepare next set
         currentSetNum++;
-        if (currentSetNum <= totalSetsForExercise) {
-            view.setCurrentSetNumber(currentSetNum, weightStr, String.valueOf(targetRepsForExercise));
-        } else {
-            // Automatically advance or show it's done? Let's just keep the form ready for "extra sets"
-            // or just leave it at Set n+1
-            view.setCurrentSetNumber(currentSetNum, weightStr, String.valueOf(targetRepsForExercise));
-        }
+        view.setCurrentSetNumber(currentSetNum, weightStr, String.valueOf(targetRepsForExercise));
     }
 
     private void saveCurrentExerciseLogs() {
@@ -201,10 +197,10 @@ public class WorkoutExecutionViewController implements GuiController, WorkoutExe
         Platform.runLater(() -> {
             if (state == WorkoutExecutionState.PLAYING) {
                 isPlaying = true;
-                view.getBtnPlayPause().setGraphic(new Icon("pause-icon", 40, List.of("button-header-icon")));
+                view.getBtnPlayPause().setGraphic(new Icon("pause-icon", 40, List.of(BUTTON_HEADER_ICON)));
             } else if (state == WorkoutExecutionState.PAUSED) {
                 isPlaying = false;
-                view.getBtnPlayPause().setGraphic(new Icon("play-icon", 40, List.of("button-header-icon")));
+                view.getBtnPlayPause().setGraphic(new Icon("play-icon", 40, List.of(BUTTON_HEADER_ICON)));
             }
         });
     }
@@ -219,8 +215,9 @@ public class WorkoutExecutionViewController implements GuiController, WorkoutExe
             
             int min = restTimeSeconds / 60;
             int sec = restTimeSeconds % 60;
-            view.setTimerTarget(String.format("%02d:%02d", min, sec));
-            view.setTimerText(String.format("%02d:%02d", min, sec));
+            String timeStr = String.format("%02d:%02d", min, sec);
+            view.setTimerTarget(timeStr);
+            view.setTimerText(timeStr);
             
             restTimeline = new Timeline(new KeyFrame(Duration.seconds(1), e -> {
                 remainingRestSeconds--;

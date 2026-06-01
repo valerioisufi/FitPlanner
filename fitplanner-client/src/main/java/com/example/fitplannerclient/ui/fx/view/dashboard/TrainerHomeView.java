@@ -14,6 +14,9 @@ import java.util.function.Consumer;
 
 public class TrainerHomeView extends BorderPane {
 
+    private static final String BODY_BASE_CLASS = "body-base";
+    private static final String HEADING_H2_CLASS = "heading-h2";
+
     private final VBox contentBox;
     private final Label welcomeTitle;
     private final Label welcomeSubtitle;
@@ -34,7 +37,7 @@ public class TrainerHomeView extends BorderPane {
         welcomeTitle = new Label("Benvenuto in FitPlanner!");
         welcomeTitle.getStyleClass().add("heading-h1");
         welcomeSubtitle = new Label("Oggi è il momento perfetto per superare i tuoi limiti.");
-        welcomeSubtitle.getStyleClass().add("body-base");
+        welcomeSubtitle.getStyleClass().add(BODY_BASE_CLASS);
         titles.getChildren().addAll(welcomeTitle, welcomeSubtitle);
 
         welcomeSection.setLeft(titles);
@@ -81,9 +84,9 @@ public class TrainerHomeView extends BorderPane {
         card1.getStyleClass().add("card");
         card1.setPrefWidth(300);
         Label title1 = new Label("Libreria Esercizi");
-        title1.getStyleClass().add("heading-h2");
+        title1.getStyleClass().add(HEADING_H2_CLASS);
         Label desc1 = new Label("Visualizza, crea, modifica e cancella gli esercizi della libreria globale.");
-        desc1.getStyleClass().add("body-base");
+        desc1.getStyleClass().add(BODY_BASE_CLASS);
         desc1.setWrapText(true);
         Button btn1 = new Button("Gestisci Esercizi");
         btn1.getStyleClass().add("button-primary");
@@ -95,9 +98,9 @@ public class TrainerHomeView extends BorderPane {
         card2.getStyleClass().add("card");
         card2.setPrefWidth(300);
         Label title2 = new Label("Gestione Piani");
-        title2.getStyleClass().add("heading-h2");
+        title2.getStyleClass().add(HEADING_H2_CLASS);
         Label desc2 = new Label("Crea nuovi schemi di allenamento settimanali e assegnali ai tuoi atleti.");
-        desc2.getStyleClass().add("body-base");
+        desc2.getStyleClass().add(BODY_BASE_CLASS);
         desc2.setWrapText(true);
         Button btn2 = new Button("Pianifica Allenamenti");
         btn2.getStyleClass().add("button-primary");
@@ -115,7 +118,7 @@ public class TrainerHomeView extends BorderPane {
         athletesSection.setPadding(new Insets(20, 0, 0, 0));
 
         Label sectionTitle = new Label("I Miei Atleti");
-        sectionTitle.getStyleClass().add("heading-h2");
+        sectionTitle.getStyleClass().add(HEADING_H2_CLASS);
         athletesSection.getChildren().add(sectionTitle);
 
         Label nameHeader = new Label("Nome Atleta");
@@ -127,7 +130,7 @@ public class TrainerHomeView extends BorderPane {
         cardListView.setRowRenderer((athlete, isLast) -> {
             HBox row = new HBox(15);
             row.setAlignment(Pos.CENTER_LEFT);
-            row.getStyleClass().add(isLast ? "list-row-last" : "list-row");
+            row.getStyleClass().add(Boolean.TRUE.equals(isLast) ? "list-row-last" : "list-row");
             row.setStyle("-fx-cursor: hand;");
             row.setOnMouseClicked(e -> onAthleteSelected.accept(athlete));
 
@@ -137,7 +140,7 @@ public class TrainerHomeView extends BorderPane {
             nameBox.maxWidthProperty().bind(nameHeader.widthProperty());
 
             Label nameLabel = new Label(athlete.getFirstName() + " " + athlete.getLastName());
-            nameLabel.getStyleClass().add("body-base");
+            nameLabel.getStyleClass().add(BODY_BASE_CLASS);
             nameBox.getChildren().addAll(nameLabel);
 
             Label emailLabel = new Label(athlete.getContactEmail());
