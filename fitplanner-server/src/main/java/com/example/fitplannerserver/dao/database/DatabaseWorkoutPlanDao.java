@@ -5,6 +5,7 @@ import com.example.fitplannerserver.dao.WorkoutPlanDao;
 import com.example.fitplannerserver.exception.DaoException;
 import com.example.fitplannerserver.model.plan.WorkoutPlan;
 import com.example.fitplannerserver.model.plan.WorkoutSession;
+import com.example.fitplannerserver.exception.SystemException;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -184,8 +185,8 @@ public class DatabaseWorkoutPlanDao implements WorkoutPlanDao {
     private void insertWorkoutSession(Connection conn, String planId, List<WorkoutSession> workoutSessions) throws SQLException {
         String sqlSession="INSERT INTO workout_session (plan_id, title, content, day) VALUES (?,?,?,?)";
         try(PreparedStatement stm= conn.prepareStatement(sqlSession)){
+            stm.setString(1, planId);
             for(WorkoutSession session : workoutSessions){
-                stm.setString(1, planId);
                 stm.setString(2, session.getTitle());
                 stm.setString(3, session.getContent());
                 stm.setInt(4, session.getDay());
@@ -238,7 +239,7 @@ public class DatabaseWorkoutPlanDao implements WorkoutPlanDao {
                     return plan;
                 }
                 catch (SQLException e){
-                    throw new RuntimeException("Errore di mappatura dei dati");
+                    throw new SystemException("Errore di mappatura dei dati", e);
                 }
             });
             WorkoutPlan currentPlan= workoutPlanMap.get(planId);

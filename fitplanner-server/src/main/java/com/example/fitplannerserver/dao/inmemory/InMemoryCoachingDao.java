@@ -8,6 +8,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public class InMemoryCoachingDao implements CoachingDao {
 
+    private static final String ATHLETE_ID_CANNOT_BE_NULL = "athleteId cannot be null";
+    private static final String TRAINER_ID_CANNOT_BE_NULL = "trainerId cannot be null";
+
     // Map: trainerId -> List of athleteIds
     private final Map<String, List<String>> trainerToAthletes = new ConcurrentHashMap<>();
 
@@ -16,8 +19,8 @@ public class InMemoryCoachingDao implements CoachingDao {
 
     @Override
     public synchronized void linkAthleteToTrainer(String athleteId, String trainerId) {
-        Objects.requireNonNull(athleteId, "athleteId cannot be null");
-        Objects.requireNonNull(trainerId, "trainerId cannot be null");
+        Objects.requireNonNull(athleteId, ATHLETE_ID_CANNOT_BE_NULL);
+        Objects.requireNonNull(trainerId, TRAINER_ID_CANNOT_BE_NULL);
 
         // If the athlete already has a different trainer
         String oldTrainerId = athleteToTrainer.get(athleteId);
@@ -32,8 +35,8 @@ public class InMemoryCoachingDao implements CoachingDao {
 
     @Override
     public synchronized void unlink(String athleteId, String trainerId) {
-        Objects.requireNonNull(athleteId, "athleteId cannot be null");
-        Objects.requireNonNull(trainerId, "trainerId cannot be null");
+        Objects.requireNonNull(athleteId, ATHLETE_ID_CANNOT_BE_NULL);
+        Objects.requireNonNull(trainerId, TRAINER_ID_CANNOT_BE_NULL);
 
         List<String> athletes = trainerToAthletes.get(trainerId);
         if (athletes != null) {
@@ -49,15 +52,15 @@ public class InMemoryCoachingDao implements CoachingDao {
 
     @Override
     public boolean isClientOf(String trainerId, String athleteId) {
-        Objects.requireNonNull(athleteId, "athleteId cannot be null");
-        Objects.requireNonNull(trainerId, "trainerId cannot be null");
+        Objects.requireNonNull(athleteId, ATHLETE_ID_CANNOT_BE_NULL);
+        Objects.requireNonNull(trainerId, TRAINER_ID_CANNOT_BE_NULL);
 
         return trainerId.equals(athleteToTrainer.get(athleteId));
     }
 
     @Override
     public List<String> findAthleteIdsByTrainerId(String trainerId) {
-        Objects.requireNonNull(trainerId, "trainerId cannot be null");
+        Objects.requireNonNull(trainerId, TRAINER_ID_CANNOT_BE_NULL);
 
         List<String> athletes = trainerToAthletes.get(trainerId);
 
@@ -70,7 +73,7 @@ public class InMemoryCoachingDao implements CoachingDao {
 
     @Override
     public Optional<String> findTrainerIdByAthleteId(String athleteId) {
-        Objects.requireNonNull(athleteId, "athleteId cannot be null");
+        Objects.requireNonNull(athleteId, ATHLETE_ID_CANNOT_BE_NULL);
 
         return Optional.ofNullable(athleteToTrainer.get(athleteId));
     }

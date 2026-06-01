@@ -18,6 +18,7 @@ public class DatabaseExerciseLibraryDao implements ExerciseLibraryDao {
     private static final String TRAINER_ID="trainer_id";
     private static final String EXERCISE_ID="exercise_id";
     private static final String EXECUTION="execution";
+    private static final String MUSCLE_GROUPS="muscle_groups";
 
     @Override
     public void saveExercise(ExerciseDescription exercise) throws DaoException {
@@ -96,7 +97,7 @@ public class DatabaseExerciseLibraryDao implements ExerciseLibraryDao {
                                 rs.getString(EXERCISE_ID),
                                 rs.getString("name"),
                                 rs.getString(EXECUTION),
-                                List.of(rs.getString("muscle_groups").split(",")));
+                                List.of(rs.getString(MUSCLE_GROUPS).split(",")));
                         return Optional.of(exercise);
                     }
                 }
@@ -130,7 +131,7 @@ public class DatabaseExerciseLibraryDao implements ExerciseLibraryDao {
                                 rs.getString(TRAINER_ID),
                                 rs.getString("name"),
                                 rs.getString(EXECUTION),
-                                List.of(rs.getString("muscle_groups").split(",")));
+                                List.of(rs.getString(MUSCLE_GROUPS).split(",")));
                         exercises.add(exercise);
                     }
                     return exercises;
@@ -164,7 +165,7 @@ public class DatabaseExerciseLibraryDao implements ExerciseLibraryDao {
                                 rs.getString(TRAINER_ID),
                                 rs.getString("name"),
                                 rs.getString(EXECUTION),
-                                List.of(rs.getString("muscle_groups").split(",")));
+                                List.of(rs.getString(MUSCLE_GROUPS).split(",")));
                         exercises.add(exercise);
                     }
                     return exercises;

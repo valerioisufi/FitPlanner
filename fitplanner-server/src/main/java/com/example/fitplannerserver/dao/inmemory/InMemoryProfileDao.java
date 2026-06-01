@@ -12,10 +12,11 @@ public class InMemoryProfileDao implements ProfileDao {
 
     // Map Key: userId
     private final Map<String, User> profiles = new ConcurrentHashMap<>();
+    private static final String USER_ID_CANNOT_BE_NULL = "userId cannot be null";
 
     @Override
     public Optional<User> findById(String userId) {
-        Objects.requireNonNull(userId, "userId cannot be null");
+        Objects.requireNonNull(userId, USER_ID_CANNOT_BE_NULL);
 
         User userProfile = profiles.get(userId);
 
@@ -25,7 +26,7 @@ public class InMemoryProfileDao implements ProfileDao {
     @Override
     public void save(User user) {
         Objects.requireNonNull(user, "user cannot be null");
-        Objects.requireNonNull(user.getId(), "userId cannot be null");
+        Objects.requireNonNull(user.getId(), USER_ID_CANNOT_BE_NULL);
 
         User copyOfUser = new User(user);
 
@@ -49,7 +50,7 @@ public class InMemoryProfileDao implements ProfileDao {
 
     @Override
     public Optional<String> getInvitationCode(String userId) {
-        Objects.requireNonNull(userId, "userId cannot be null");
+        Objects.requireNonNull(userId, USER_ID_CANNOT_BE_NULL);
         Objects.requireNonNull(profiles.get(userId), "User profile not found for userId: " + userId);
 
         User user = profiles.get(userId);

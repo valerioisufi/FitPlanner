@@ -13,6 +13,8 @@ import java.util.List;
 
 public class DataInitializer {
 
+    private static final String GAMBE = "Gambe";
+
     private final AccountDao accountDao;
     private final ProfileDao profileDao;
     private final CoachingDao coachingDao;
@@ -71,12 +73,12 @@ public class DataInitializer {
             }
 
             // Crea esercizi per il trainer
-            createExercise(trainerId, "Squat", "Esecuzione dello squat con bilanciere", List.of("Gambe", "Glutei"));
+            createExercise(trainerId, "Squat", "Esecuzione dello squat con bilanciere", List.of(GAMBE, "Glutei"));
             createExercise(trainerId, "Panca Piana", "Distensioni su panca piana con bilanciere", List.of("Petto", "Tricipiti", "Spalle"));
             createExercise(trainerId, "Trazioni", "Trazioni alla sbarra presa prona", List.of("Schiena", "Bicipiti"));
-            createExercise(trainerId, "Stacco da terra", "Stacco da terra regolare", List.of("Schiena", "Gambe", "Glutei"));
+            createExercise(trainerId, "Stacco da terra", "Stacco da terra regolare", List.of("Schiena", GAMBE, "Glutei"));
             createExercise(trainerId, "Military Press", "Spinte in alto con bilanciere in piedi", List.of("Spalle", "Tricipiti"));
-            createExercise(trainerId, "Leg Press", "Pressa a 45 gradi", List.of("Gambe"));
+            createExercise(trainerId, "Leg Press", "Pressa a 45 gradi", List.of(GAMBE));
 
         } catch (DaoException e) {
             throw new SystemException("Errore durante l'inizializzazione dei dati", e);

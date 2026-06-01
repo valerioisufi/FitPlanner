@@ -64,7 +64,9 @@ public class CsvUtils {
         try (BufferedReader in = Files.newBufferedReader(file)) {
             List<String[]> results = new ArrayList<>();
 
-            in.readLine(); // scarto l'intestazione
+            if (in.readLine() == null) {
+                return results; // scarto l'intestazione
+            }
 
             String line;
             while ((line = in.readLine()) != null) {

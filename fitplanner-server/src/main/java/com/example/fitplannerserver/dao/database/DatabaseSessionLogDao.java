@@ -5,6 +5,7 @@ import com.example.fitplannerserver.dao.SessionLogDao;
 import com.example.fitplannerserver.exception.DaoException;
 import com.example.fitplannerserver.model.log.ExerciseLog;
 import com.example.fitplannerserver.model.log.SessionLog;
+import com.example.fitplannerserver.exception.SystemException;
 
 import java.sql.*;
 import java.util.*;
@@ -138,10 +139,10 @@ public class DatabaseSessionLogDao implements SessionLogDao {
                 INSERT INTO exercise_log (session_id, exercise_id, order_index, exercise_set, rpe, name, note) VALUES (?,?,?,?,?,?,?)
                 """;
         try(PreparedStatement exerciseStm = conn.prepareStatement(sqlExercise)){
+            exerciseStm.setLong(1, sessionId);
             for(int i=0; i<exerciseLogs.size(); i++){
                 ExerciseLog exerciseLog = exerciseLogs.get(i);
                 String serializedSet = exerciseLog.getSets().stream().map(Object::toString).collect(Collectors.joining(";"));
-                exerciseStm.setLong(1, sessionId);
                 exerciseStm.setString(2, exerciseLog.getExerciseId());
                 exerciseStm.setInt(3, i+1);
                 exerciseStm.setString(4, serializedSet);
@@ -169,7 +170,7 @@ public class DatabaseSessionLogDao implements SessionLogDao {
                                     rs.getInt("workout_session_day")
                             );
                         } catch (SQLException e) {
-                            throw new RuntimeException("Errore di mappatura dei dati");
+                            throw new SystemException("Errore di mappatura dei dati", e);
                         }
                     });
             SessionLog currentSession= map.get(sessionId);

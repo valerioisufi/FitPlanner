@@ -18,6 +18,7 @@ public class FileSystemProfileDao implements ProfileDao {
 
     private static final String CSV_HEADER = "userId;firstName;lastName;contactEmail;phoneNumber;invitationCode";
     private static final int EXPECTED_COLUMNS = 6;
+    private static final String USER_ID_CANNOT_BE_NULL = "userId cannot be null";
 
     private final Path path;
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
@@ -29,7 +30,7 @@ public class FileSystemProfileDao implements ProfileDao {
 
     @Override
     public Optional<User> findById(String userId) throws DaoException {
-        Objects.requireNonNull(userId, "userId cannot be null");
+        Objects.requireNonNull(userId, USER_ID_CANNOT_BE_NULL);
 
         lock.readLock().lock();
 
@@ -49,7 +50,7 @@ public class FileSystemProfileDao implements ProfileDao {
     @Override
     public void save(User user) throws DaoException {
         Objects.requireNonNull(user, "user cannot be null");
-        Objects.requireNonNull(user.getId(), "userId cannot be null");
+        Objects.requireNonNull(user.getId(), USER_ID_CANNOT_BE_NULL);
 
         String newRow = toCsvRow(user);
         lock.writeLock().lock();
@@ -75,7 +76,7 @@ public class FileSystemProfileDao implements ProfileDao {
         try {
             return search(path, EXPECTED_COLUMNS, parts -> parts[5].equals(invitationCode),1).stream().findFirst().map(this::fromCsvRow);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new DaoException("Errore durante la ricerca per invitation code", e);
         }finally {
             lock.readLock().unlock();
         }
@@ -83,7 +84,7 @@ public class FileSystemProfileDao implements ProfileDao {
 
     @Override
     public Optional<String> getInvitationCode(String userId) throws DaoException {
-        Objects.requireNonNull(userId, "userId cannot be null");
+        Objects.requireNonNull(userId, USER_ID_CANNOT_BE_NULL);
 
         return findById(userId).map(User::getInvitationCode).filter(code -> code != null && !code.isBlank());
     }

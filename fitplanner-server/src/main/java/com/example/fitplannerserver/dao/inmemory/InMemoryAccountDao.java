@@ -12,11 +12,13 @@ public class InMemoryAccountDao implements AccountDao {
 
     // Map Key: email (Account.email)
     private final Map<String, Account> accounts = new ConcurrentHashMap<>();
+    private static final String ACCOUNT_CANNOT_BE_NULL = "Account cannot be null";
+    private static final String ACCOUNT_EMAIL_CANNOT_BE_NULL = "Account email cannot be null";
 
     @Override
     public boolean create(Account account) {
-        Objects.requireNonNull(account, "Account cannot be null");
-        Objects.requireNonNull(account.getEmail(), "Account email cannot be null");
+        Objects.requireNonNull(account, ACCOUNT_CANNOT_BE_NULL);
+        Objects.requireNonNull(account.getEmail(), ACCOUNT_EMAIL_CANNOT_BE_NULL);
 
         Account copyOfAccount = new Account(account);
 
@@ -25,8 +27,8 @@ public class InMemoryAccountDao implements AccountDao {
 
     @Override
     public void save(Account account) {
-        Objects.requireNonNull(account, "Account cannot be null");
-        Objects.requireNonNull(account.getEmail(), "Account email cannot be null");
+        Objects.requireNonNull(account, ACCOUNT_CANNOT_BE_NULL);
+        Objects.requireNonNull(account.getEmail(), ACCOUNT_EMAIL_CANNOT_BE_NULL);
 
         Account copyOfAccount = new Account(account);
 
@@ -60,8 +62,8 @@ public class InMemoryAccountDao implements AccountDao {
 
     @Override
     public void delete(Account account) {
-        Objects.requireNonNull(account, "Account cannot be null");
-        Objects.requireNonNull(account.getEmail(), "Account email cannot be null");
+        Objects.requireNonNull(account, ACCOUNT_CANNOT_BE_NULL);
+        Objects.requireNonNull(account.getEmail(), ACCOUNT_EMAIL_CANNOT_BE_NULL);
 
         accounts.remove(account.getEmail());
     }

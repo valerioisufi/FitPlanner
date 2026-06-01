@@ -49,7 +49,7 @@ public class FileSystemDaoFactory extends DaoFactory {
                     this.coachingDao,
                     this.exerciseLibraryDao
             );
-            initializer.initialize();;
+            initializer.initialize();
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Impossibile generare gli utenti di default sul File System", e);
 

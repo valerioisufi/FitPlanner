@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Optional;
 
 public class WorkoutPlanManagementController {
+    private static final String PLAN_NOT_FOUND_MSG = "WorkoutPlan non trovato";
     private final IdentityProvider identityProvider;
 
     private final WorkoutPlanDao workoutPlanDao;
@@ -52,7 +53,7 @@ public class WorkoutPlanManagementController {
 
         try {
             WorkoutPlan workoutPlan = workoutPlanDao.findPlanById(planId)
-                    .orElseThrow(() -> new ResourceNotFoundException("WorkoutPlan non trovato"));
+                    .orElseThrow(() -> new ResourceNotFoundException(PLAN_NOT_FOUND_MSG));
 
             if(!workoutPlan.getAuthorId().equals(identityProvider.getUserId()))
                 throw new ForbiddenException("Non puoi visualizzare i dettagli di un WorkoutPlan che non ti appartiene");
@@ -113,7 +114,7 @@ public class WorkoutPlanManagementController {
                 throw new ForbiddenException("L'utente non è tuo cliente");
 
             WorkoutPlan templatePlan = workoutPlanDao.findPlanById(planId)
-                    .orElseThrow(() -> new ResourceNotFoundException("WorkoutPlan non trovato"));
+                    .orElseThrow(() -> new ResourceNotFoundException(PLAN_NOT_FOUND_MSG));
 
             if (templatePlan.getAuthorId() == null || !templatePlan.getAuthorId().equals(trainerId)) {
                 throw new ForbiddenException("Non puoi assegnare un WorkoutPlan che non ti appartiene");
@@ -149,7 +150,7 @@ public class WorkoutPlanManagementController {
 
         try {
             WorkoutPlan oldPlan = workoutPlanDao.findPlanById(planId)
-                    .orElseThrow(() -> new ResourceNotFoundException("WorkoutPlan non trovato"));
+                    .orElseThrow(() -> new ResourceNotFoundException(PLAN_NOT_FOUND_MSG));
 
             if(oldPlan.getAuthorId() == null || !oldPlan.getAuthorId().equals(identityProvider.getUserId())) {
                 throw new ForbiddenException("Il WorkoutPlan non ti appartiene");
@@ -176,7 +177,7 @@ public class WorkoutPlanManagementController {
 
         try {
             WorkoutPlan plan = workoutPlanDao.findPlanById(planId)
-                    .orElseThrow(() -> new ResourceNotFoundException("WorkoutPlan non trovato"));
+                    .orElseThrow(() -> new ResourceNotFoundException(PLAN_NOT_FOUND_MSG));
 
             if(plan.getAuthorId() == null || !plan.getAuthorId().equals(identityProvider.getUserId())) {
                 throw new ForbiddenException("Il WorkoutPlan non ti appartiene");

@@ -9,6 +9,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public class InMemoryExerciseLibraryDao implements ExerciseLibraryDao {
 
+    private static final String EXERCISE_ID_CANNOT_BE_NULL = "exerciseId cannot be null";
+
     // Map Key: exerciseId
     private final Map<String, ExerciseDescription> exerciseIdToExerciseDescription = new ConcurrentHashMap<>();
 
@@ -18,7 +20,7 @@ public class InMemoryExerciseLibraryDao implements ExerciseLibraryDao {
     @Override
     public synchronized void saveExercise(ExerciseDescription exercise) {
         Objects.requireNonNull(exercise, "exercise cannot be null");
-        Objects.requireNonNull(exercise.getExerciseId(), "exerciseId cannot be null");
+        Objects.requireNonNull(exercise.getExerciseId(), EXERCISE_ID_CANNOT_BE_NULL);
         Objects.requireNonNull(exercise.getTrainerId(), "trainerId cannot be null");
 
         ExerciseDescription copyOfExercise = new ExerciseDescription(exercise);
@@ -38,7 +40,7 @@ public class InMemoryExerciseLibraryDao implements ExerciseLibraryDao {
 
     @Override
     public synchronized void deleteExercise(String exerciseId) {
-        Objects.requireNonNull(exerciseId, "exerciseId cannot be null");
+        Objects.requireNonNull(exerciseId, EXERCISE_ID_CANNOT_BE_NULL);
 
         ExerciseDescription exerciseToDelete = exerciseIdToExerciseDescription.get(exerciseId);
         if (exerciseToDelete != null) {
@@ -59,7 +61,7 @@ public class InMemoryExerciseLibraryDao implements ExerciseLibraryDao {
 
     @Override
     public Optional<ExerciseDescription> findById(String exerciseId) {
-        Objects.requireNonNull(exerciseId, "exerciseId cannot be null");
+        Objects.requireNonNull(exerciseId, EXERCISE_ID_CANNOT_BE_NULL);
 
         return Optional.ofNullable(exerciseIdToExerciseDescription.get(exerciseId))
                 .map(ExerciseDescription::new);

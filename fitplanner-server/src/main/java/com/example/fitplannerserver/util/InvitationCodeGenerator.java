@@ -9,6 +9,8 @@ public class InvitationCodeGenerator {
 
     private static final SecureRandom RANDOM = new SecureRandom();
 
+    private InvitationCodeGenerator() {}
+
     /**
      * Generates a random human-readable code formatted as XXXX-XXXX
      */

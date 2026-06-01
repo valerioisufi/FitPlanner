@@ -18,6 +18,8 @@ public class FileSystemAccountDao implements AccountDao {
     private static final String CSV_DELIMITER = ";";
     private static final String CSV_HEADER = "userId;email;passwordHash;refreshToken;profileType";
     private static final int EXPECTED_COLUMNS = 5;
+    private static final String ACCOUNT_CANNOT_BE_NULL = "account cannot be null";
+    private static final String EMAIL_CANNOT_BE_NULL = "email cannot be null";
 
     private final Path file;
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
@@ -29,8 +31,8 @@ public class FileSystemAccountDao implements AccountDao {
 
     @Override
     public boolean create(Account account) throws DaoException {
-        Objects.requireNonNull(account, "account cannot be null");
-        Objects.requireNonNull(account.getEmail(), "email cannot be null");
+        Objects.requireNonNull(account, ACCOUNT_CANNOT_BE_NULL);
+        Objects.requireNonNull(account.getEmail(), EMAIL_CANNOT_BE_NULL);
 
         String targetEmail= account.getEmail().toLowerCase();
         Account copyOfAccount = new Account(account);
@@ -57,8 +59,8 @@ public class FileSystemAccountDao implements AccountDao {
 
     @Override
     public void save(Account account) throws DaoException {
-        Objects.requireNonNull(account, "account cannot be null");
-        Objects.requireNonNull(account.getEmail(), "email cannot be null");
+        Objects.requireNonNull(account, ACCOUNT_CANNOT_BE_NULL);
+        Objects.requireNonNull(account.getEmail(), EMAIL_CANNOT_BE_NULL);
 
         Account copyOfAccount = new Account(account);
         String newRow = toCsvRow(copyOfAccount);
@@ -76,7 +78,7 @@ public class FileSystemAccountDao implements AccountDao {
 
     @Override
     public Optional<Account> findByEmail(String email) throws DaoException {
-        Objects.requireNonNull(email, "email cannot be null");
+        Objects.requireNonNull(email, EMAIL_CANNOT_BE_NULL);
 
         String targetEmail = email.toLowerCase();
 
@@ -119,8 +121,8 @@ public class FileSystemAccountDao implements AccountDao {
 
     @Override
     public void delete(Account account) throws DaoException {
-        Objects.requireNonNull(account, "account cannot be null");
-        Objects.requireNonNull(account.getEmail(), "email cannot be null");
+        Objects.requireNonNull(account, ACCOUNT_CANNOT_BE_NULL);
+        Objects.requireNonNull(account.getEmail(), EMAIL_CANNOT_BE_NULL);
 
         Account copyOfAccount= new Account(account);
 

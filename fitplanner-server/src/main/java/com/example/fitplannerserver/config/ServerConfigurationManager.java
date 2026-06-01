@@ -1,6 +1,7 @@
 package com.example.fitplannerserver.config;
 
 import com.example.fitplannerserver.dao.PersistencyLayer;
+import com.example.fitplannerserver.exception.SystemException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +38,7 @@ public class ServerConfigurationManager {
             }
 
         } catch (IOException ex) {
-            throw new RuntimeException("Errore durante la lettura di " + fileName, ex);
+            throw new SystemException("Errore durante la lettura di " + fileName, ex);
         }
     }
 
