@@ -21,7 +21,6 @@ public class UIDebugger extends Application {
 
         VBox root = new VBox();
         root.getStyleClass().addAll("card");
-        PlanViewer planViewer = new PlanViewer();
         ProfileView profileView = new ProfileView();
 
         VBox.setVgrow(profileView, Priority.ALWAYS);

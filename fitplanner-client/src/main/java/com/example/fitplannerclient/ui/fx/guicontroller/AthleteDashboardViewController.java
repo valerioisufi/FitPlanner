@@ -59,6 +59,7 @@ public class AthleteDashboardViewController implements GuiController {
 
     @Override
     public void stop() {
+        // Nessuna risorsa da rilasciare
     }
 
     @Override

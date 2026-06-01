@@ -122,5 +122,7 @@ public class HomeViewController implements GuiController {
     }
 
     @Override
-    public void stop() {}
+    public void stop() {
+        // Metodo intenzionalmente vuoto
+    }
 }

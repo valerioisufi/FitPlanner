@@ -10,6 +10,7 @@ import java.util.concurrent.CompletableFuture;
 
 public class HttpWorkoutPlanApi implements WorkoutPlanApi {
 
+    private static final String PLAN_ENDPOINT = "/plan/";
     private final HttpService httpService;
 
     public HttpWorkoutPlanApi(HttpService httpService) {
@@ -27,7 +28,7 @@ public class HttpWorkoutPlanApi implements WorkoutPlanApi {
 
     @Override
     public CompletableFuture<WorkoutPlanDTO> getPlanDetailsByIdAsync(String planId) {
-        return httpService.getAsync("/plan/" + planId, WorkoutPlanDTO.class);
+        return httpService.getAsync(PLAN_ENDPOINT + planId, WorkoutPlanDTO.class);
     }
 
     /**
@@ -35,7 +36,7 @@ public class HttpWorkoutPlanApi implements WorkoutPlanApi {
      */
     @Override
     public CompletableFuture<WorkoutPlanDTO> getAssignedPlanAsync() {
-        return httpService.getAsync("/plan/assigned", WorkoutPlanDTO.class);
+        return httpService.getAsync(PLAN_ENDPOINT + "assigned", WorkoutPlanDTO.class);
     }
 
     /**
@@ -43,7 +44,7 @@ public class HttpWorkoutPlanApi implements WorkoutPlanApi {
      */
     @Override
     public CompletableFuture<WorkoutScheduleDTO> getCurrentCycleScheduleAsync() {
-        return httpService.getAsync("/plan/schedule", WorkoutScheduleDTO.class);
+        return httpService.getAsync(PLAN_ENDPOINT + "schedule", WorkoutScheduleDTO.class);
     }
 
     /**
@@ -59,7 +60,7 @@ public class HttpWorkoutPlanApi implements WorkoutPlanApi {
      */
     @Override
     public CompletableFuture<Void> assignPlanToAsync(String planId, String athleteId) {
-        return httpService.postAsync("/plan/" + planId + "/assign/" + athleteId, null, Void.class);
+        return httpService.postAsync(PLAN_ENDPOINT + planId + "/assign/" + athleteId, null, Void.class);
     }
 
     /**
@@ -67,7 +68,7 @@ public class HttpWorkoutPlanApi implements WorkoutPlanApi {
      */
     @Override
     public CompletableFuture<Void> updatePlanAsync(String planId, WorkoutPlanDTO planBean) {
-        return httpService.putAsync("/plan/" + planId, planBean, Void.class);
+        return httpService.putAsync(PLAN_ENDPOINT + planId, planBean, Void.class);
     }
 
     /**
@@ -75,6 +76,6 @@ public class HttpWorkoutPlanApi implements WorkoutPlanApi {
      */
     @Override
     public CompletableFuture<Void> deletePlanAsync(String planId) {
-        return httpService.deleteAsync("/plan/" + planId, Void.class);
+        return httpService.deleteAsync(PLAN_ENDPOINT + planId, Void.class);
     }
 }

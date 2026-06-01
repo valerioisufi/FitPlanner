@@ -230,13 +230,13 @@ public class EditExerciseModal extends VBox {
         Icon closeIcon = new Icon("x-icon", 10);
         closeIcon.getStyleClass().add("tag-close-icon");
 
-        Button closeBtn = new Button();
-        closeBtn.setGraphic(closeIcon);
-        closeBtn.getStyleClass().add("button-transparent");
-        closeBtn.setMinSize(10, 10);
-        closeBtn.setOnAction(e -> removeTag(text));
+        Button removeTagBtn = new Button();
+        removeTagBtn.setGraphic(closeIcon);
+        removeTagBtn.getStyleClass().add("button-transparent");
+        removeTagBtn.setMinSize(10, 10);
+        removeTagBtn.setOnAction(e -> removeTag(text));
 
-        badge.getChildren().addAll(label, closeBtn);
+        badge.getChildren().addAll(label, removeTagBtn);
         return badge;
     }
 }

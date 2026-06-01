@@ -159,13 +159,13 @@ public class HttpService {
             String errorBody
     ) {
         return handleRefreshToken().thenCompose(success -> {
-            if (success) {
+            if (Boolean.TRUE.equals(success)) {
                 applyAuthHeader(builder);
                 return retryAction.get();
             }
             // Token refresh fallito: proseguiamo con il login manuale (UI)
             return onSessionExpired.get().thenCompose(manualLoginSuccess -> {
-                if (manualLoginSuccess) {
+                if (Boolean.TRUE.equals(manualLoginSuccess)) {
                     applyAuthHeader(builder);
                     return retryAction.get();
                 }
@@ -197,7 +197,9 @@ public class HttpService {
                                     sessionManager.setRefreshToken(newToken.getRefreshToken());
                                 }
                                 return true;
-                            } catch (JacksonException ignored) {}
+                            } catch (JacksonException ignored) {
+                                // Ignore json parsing error, will logout
+                            }
                         }
                         sessionManager.logout();
                         return false;

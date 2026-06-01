@@ -89,9 +89,6 @@ public class HeaderViewController {
         notificationMenu.show(anchorNode, Side.BOTTOM, 0, 5);
 
         // 5. Shift the menu to the left so it aligns with the right edge of the icon
-        // This prevents the menu from overflowing outside the right side of your app window
-//        double shiftLeft = notificationMenu.getWidth() - anchorNode.getBoundsInLocal().getWidth();
-//        notificationMenu.setX(notificationMenu.getX() - shiftLeft);
     }
 
     private void showAccountMenu(Node anchorNode) {

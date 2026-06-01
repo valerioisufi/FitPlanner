@@ -25,7 +25,9 @@ public class DummyPlanNode extends PlanNode {
     }
 
     @Override
-    public void accept(WorkoutPlanVisitor visitor) {}
+    public void accept(WorkoutPlanVisitor visitor) {
+        // Metodo vuoto intenzionalmente nel mock per i test
+    }
 
     public int getExecuteCallCount() {
         return executeCallCount;

@@ -117,8 +117,12 @@ public class AuthenticationViewController implements GuiController {
     public Pane getView() { return this.view; }
 
     @Override
-    public void start() {}
+    public void start() {
+        // Metodo intenzionalmente vuoto, nessuna inizializzazione necessaria
+    }
 
     @Override
-    public void stop() {}
+    public void stop() {
+        // Metodo intenzionalmente vuoto, nessuna risorsa da rilasciare
+    }
 }

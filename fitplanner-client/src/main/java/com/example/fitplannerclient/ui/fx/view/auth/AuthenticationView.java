@@ -8,6 +8,8 @@ import javafx.scene.layout.*;
 
 public class AuthenticationView extends BorderPane {
 
+    private static final String BUTTON_PRIMARY_CLASS = "button-primary";
+
     // --- Login Fields ---
     private final FormField loginEmailField = new FormField("Email", "Inserisci la tua email", new TextField());
     private final FormField loginPasswordField = new FormField("Password", "Inserisci la tua password", new PasswordField());
@@ -31,8 +33,8 @@ public class AuthenticationView extends BorderPane {
 
     public AuthenticationView() {
         btnBack.getStyleClass().add("button-secondary");
-        btnRegistration.getStyleClass().add("button-primary");
-        btnLogin.getStyleClass().add("button-primary");
+        btnRegistration.getStyleClass().add(BUTTON_PRIMARY_CLASS);
+        btnLogin.getStyleClass().add(BUTTON_PRIMARY_CLASS);
 
         roleComboBox.getItems().addAll("Atleta", "Trainer");
 
@@ -131,7 +133,7 @@ public class AuthenticationView extends BorderPane {
         buttons.setAlignment(Pos.CENTER);
 
         Button btnGoToLogin = new Button("Accedi");
-        btnGoToLogin.getStyleClass().add("button-primary");
+        btnGoToLogin.getStyleClass().add(BUTTON_PRIMARY_CLASS);
         btnGoToLogin.setMaxWidth(Double.MAX_VALUE);
         btnGoToLogin.setOnAction(e -> showLoginForm());
 

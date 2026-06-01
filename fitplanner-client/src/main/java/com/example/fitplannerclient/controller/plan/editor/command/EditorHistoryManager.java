@@ -1,10 +1,11 @@
 package com.example.fitplannerclient.controller.plan.editor.command;
 
-import java.util.Stack;
+import java.util.ArrayDeque;
+import java.util.Deque;
 
 public class EditorHistoryManager {
-    private final Stack<WorkoutPlanEditorCommand> undoStack = new Stack<>();
-    private final Stack<WorkoutPlanEditorCommand> redoStack = new Stack<>();
+    private final Deque<WorkoutPlanEditorCommand> undoStack = new ArrayDeque<>();
+    private final Deque<WorkoutPlanEditorCommand> redoStack = new ArrayDeque<>();
 
     public void executeCommand(WorkoutPlanEditorCommand command) {
         command.execute();

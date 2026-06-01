@@ -4,16 +4,18 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextInputControl;
 import javafx.scene.layout.VBox;
 
-import java.util.function.Function;
+import java.util.function.UnaryOperator;
 
 public class FormField extends VBox {
+
+    private static final String INPUT_ERROR_CLASS = "input-error";
 
     private final Label titleLabel;
     private final TextInputControl inputField;
     private final Label errorLabel;
 
     // lambda that takes the input text and returns an error message (or null if valid)
-    private Function<String, String> validator;
+    private UnaryOperator<String> validator;
 
     public FormField(String labelText, String placeholder, TextInputControl targetField) {
         this.inputField = targetField;
@@ -58,7 +60,7 @@ public class FormField extends VBox {
         clearError();
     }
 
-    public void setValidator(Function<String, String> validator) {
+    public void setValidator(UnaryOperator<String> validator) {
         this.validator = validator;
     }
 
@@ -81,8 +83,8 @@ public class FormField extends VBox {
         errorLabel.setVisible(true);
         errorLabel.setManaged(true);
 
-        if (!inputField.getStyleClass().contains("input-error")) {
-            inputField.getStyleClass().add("input-error");
+        if (!inputField.getStyleClass().contains(INPUT_ERROR_CLASS)) {
+            inputField.getStyleClass().add(INPUT_ERROR_CLASS);
         }
     }
 
@@ -90,6 +92,6 @@ public class FormField extends VBox {
         errorLabel.setText("");
         errorLabel.setVisible(false);
         errorLabel.setManaged(false);
-        inputField.getStyleClass().remove("input-error");
+        inputField.getStyleClass().remove(INPUT_ERROR_CLASS);
     }
 }

@@ -5,7 +5,7 @@ import com.example.fitplannerclient.entity.plan.PlanNode;
 public abstract class FlowDecorator extends PlanNode{
     protected PlanNode wrappedNode;
 
-    public FlowDecorator(PlanNode wrappedNode) {
+    protected FlowDecorator(PlanNode wrappedNode) {
         this.wrappedNode = wrappedNode;
     }
 
