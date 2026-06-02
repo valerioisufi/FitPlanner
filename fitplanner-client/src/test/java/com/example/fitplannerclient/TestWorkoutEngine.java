@@ -4,6 +4,8 @@ import com.example.fitplannerclient.controller.plan.execution.engine.WorkoutEngi
 import com.example.fitplannerclient.entity.plan.context.WorkoutStatus;
 import com.example.fitplannerclient.mock.DummyPlanNode;
 import org.junit.jupiter.api.Test;
+import java.util.concurrent.TimeUnit;
+import static org.awaitility.Awaitility.await;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -25,7 +27,7 @@ public class TestWorkoutEngine {
     }
 
     @Test
-    void testPlayTransition() throws InterruptedException {
+    void testPlayTransition() {
         // Arrange
         DummyPlanNode rootNode = new DummyPlanNode();
         WorkoutEngineImpl engine = new WorkoutEngineImpl(rootNode);
@@ -33,26 +35,29 @@ public class TestWorkoutEngine {
         // Act
         engine.play();
 
-        // aspetto un istante per permettere al Virtual Thread di avviarsi
-        Thread.sleep(50);
-
         // Assert
-        assertEquals(WorkoutStatus.PLAYING, engine.getState().getStatus());
-        assertTrue(rootNode.getExecuteCallCount() > 0);
+        await().atMost(200, TimeUnit.MILLISECONDS).untilAsserted(() -> {
+            assertEquals(WorkoutStatus.PLAYING, engine.getState().getStatus());
+            assertTrue(rootNode.getExecuteCallCount() > 0);
+        });
 
         // Cleanup
         engine.stop();
     }
 
     @Test
-    void testPauseTransition() throws InterruptedException {
+    void testPauseTransition() {
         // Arrange
         DummyPlanNode rootNode = new DummyPlanNode();
         WorkoutEngineImpl engine = new WorkoutEngineImpl(rootNode);
 
         // Act
         engine.play();
-        Thread.sleep(20);
+        
+        await().atMost(200, TimeUnit.MILLISECONDS).until(() ->
+                engine.getState().getStatus() == WorkoutStatus.PLAYING
+        );
+        
         engine.pause();
 
         // Assert
@@ -63,23 +68,25 @@ public class TestWorkoutEngine {
     }
 
     @Test
-    void testStopTransition() throws InterruptedException {
+    void testStopTransition() {
         // Arrange
         DummyPlanNode rootNode = new DummyPlanNode();
         WorkoutEngineImpl engine = new WorkoutEngineImpl(rootNode);
 
         // Act
         engine.play();
-        Thread.sleep(20);
+        
+        await().atMost(200, TimeUnit.MILLISECONDS).until(() ->
+                engine.getState().getStatus() == WorkoutStatus.PLAYING
+        );
+        
         engine.stop();
 
-        // aspetto che il thread recepisca l'interruzione
-        Thread.sleep(50);
-
         // Assert
-        assertEquals(WorkoutStatus.STOPPED, engine.getState().getStatus());
-        // lo stop dovrebbe chiamare il reset dell'albero (1 volta alla creazione dell'engine, 1 volta allo stop)
-        assertEquals(2, rootNode.getResetCallCount());
+        await().atMost(200, TimeUnit.MILLISECONDS).untilAsserted(() -> {
+            assertEquals(WorkoutStatus.STOPPED, engine.getState().getStatus());
+            assertEquals(2, rootNode.getResetCallCount());
+        });
     }
 
     @Test
