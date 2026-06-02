@@ -35,64 +35,70 @@ public class IntervalDecorator extends FlowDecorator {
         int delta = context.getTickDelta();
 
         if (this.state == PlanNodeState.RUNNING) {
-            int consumed = Math.min(this.timeLeftMillis, delta);
-            this.timeLeftMillis -= consumed;
-
-            if (this.timeLeftMillis == 0) {
-                this.state = PlanNodeState.COMPLETED;
-                context.consumeTickDelta(consumed);
-
-                return new ExecutionResult(PlanNodeState.COMPLETED);
-            }
-
-            ExecutionResult result = wrappedNode.execute(context);
-
-            if (result.getState() == PlanNodeState.COMPLETED || result.getState() == PlanNodeState.SKIPPED) {
-                // il figlio ha finito prima del tempo dell'intervallo
-                this.state = PlanNodeState.WAITING;
-                return new ExecutionResult(PlanNodeState.WAITING, this.timeLeftMillis);
-
-            } else if (result.getState() == PlanNodeState.REVERT) {
-                this.reset();
-                return new ExecutionResult(PlanNodeState.REVERT);
-            } else if (result.getState() == PlanNodeState.RUNNING) {
-                int childSleep = result.getRequestedSleepMillis();
-                int sleepTime = (childSleep < 0) ? this.timeLeftMillis : Math.min(childSleep, this.timeLeftMillis);
-
-                return new ExecutionResult(PlanNodeState.RUNNING, sleepTime);
-            }
-
-            return result;
-
+            return handleRunningState(context, delta);
         } else if (this.state == PlanNodeState.WAITING) {
-
-            if (context.consumeSignal(ControlSignal.SKIP_NEXT)) {
-                // l'utente salta il resto del riposo
-                context.consumeTickDelta(context.getTickDelta());
-
-                this.state = PlanNodeState.COMPLETED;
-                return new ExecutionResult(PlanNodeState.COMPLETED);
-            }
-            if (context.consumeSignal(ControlSignal.SKIP_PREVIOUS)) {
-                context.consumeTickDelta(context.getTickDelta());
-
-                this.reset();
-                return new ExecutionResult(PlanNodeState.REVERT);
-            }
-
-            int consumed = Math.min(this.timeLeftMillis, delta);
-            this.timeLeftMillis -= consumed;
-            context.consumeTickDelta(consumed);
-
-            if (this.timeLeftMillis == 0) {
-                this.state = PlanNodeState.COMPLETED;
-                return new ExecutionResult(PlanNodeState.COMPLETED);
-            } else {
-                return new ExecutionResult(PlanNodeState.WAITING, this.timeLeftMillis);
-            }
+            return handleWaitingState(context, delta);
         }
 
         return new ExecutionResult(this.state);
+    }
+
+    private ExecutionResult handleRunningState(ExecutionContext context, int delta) {
+        int consumed = Math.min(this.timeLeftMillis, delta);
+        this.timeLeftMillis -= consumed;
+
+        if (this.timeLeftMillis == 0) {
+            this.state = PlanNodeState.COMPLETED;
+            context.consumeTickDelta(consumed);
+
+            return new ExecutionResult(PlanNodeState.COMPLETED);
+        }
+
+        ExecutionResult result = wrappedNode.execute(context);
+
+        if (result.getState() == PlanNodeState.COMPLETED || result.getState() == PlanNodeState.SKIPPED) {
+            // il figlio ha finito prima del tempo dell'intervallo
+            this.state = PlanNodeState.WAITING;
+            return new ExecutionResult(PlanNodeState.WAITING, this.timeLeftMillis);
+
+        } else if (result.getState() == PlanNodeState.REVERT) {
+            this.reset();
+            return new ExecutionResult(PlanNodeState.REVERT);
+        } else if (result.getState() == PlanNodeState.RUNNING) {
+            int childSleep = result.getRequestedSleepMillis();
+            int sleepTime = (childSleep < 0) ? this.timeLeftMillis : Math.min(childSleep, this.timeLeftMillis);
+
+            return new ExecutionResult(PlanNodeState.RUNNING, sleepTime);
+        }
+
+        return result;
+    }
+
+    private ExecutionResult handleWaitingState(ExecutionContext context, int delta) {
+        if (context.consumeSignal(ControlSignal.SKIP_NEXT)) {
+            // l'utente salta il resto del riposo
+            context.consumeTickDelta(context.getTickDelta());
+
+            this.state = PlanNodeState.COMPLETED;
+            return new ExecutionResult(PlanNodeState.COMPLETED);
+        }
+        if (context.consumeSignal(ControlSignal.SKIP_PREVIOUS)) {
+            context.consumeTickDelta(context.getTickDelta());
+
+            this.reset();
+            return new ExecutionResult(PlanNodeState.REVERT);
+        }
+
+        int consumed = Math.min(this.timeLeftMillis, delta);
+        this.timeLeftMillis -= consumed;
+        context.consumeTickDelta(consumed);
+
+        if (this.timeLeftMillis == 0) {
+            this.state = PlanNodeState.COMPLETED;
+            return new ExecutionResult(PlanNodeState.COMPLETED);
+        } else {
+            return new ExecutionResult(PlanNodeState.WAITING, this.timeLeftMillis);
+        }
     }
 
     @Override

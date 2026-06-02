@@ -22,6 +22,14 @@ public class NodeDragHandler {
     private static PlanNodeComponent currentDropTarget = null;
 
     public static void setup(PlanNodeComponent component, VBox dragHandle) {
+        setupDragDetected(component, dragHandle);
+        setupDragOver(component);
+        setupDragExited(component);
+        setupDragDropped(component);
+        setupDragDone(component, dragHandle);
+    }
+
+    private static void setupDragDetected(PlanNodeComponent component, VBox dragHandle) {
         if (component.getParentWrapper() != null) {
             dragHandle.setOnDragDetected(event -> {
                 Dragboard db = dragHandle.startDragAndDrop(TransferMode.COPY_OR_MOVE);
@@ -38,6 +46,9 @@ public class NodeDragHandler {
                 event.consume();
             });
         }
+    }
+
+    private static void setupDragOver(PlanNodeComponent component) {
         component.setOnDragOver(event -> {
             boolean hasFitData = event.getDragboard().hasContent(DragConstants.FITPLANNER_FORMAT);
             String payload = hasFitData ? (String) event.getDragboard().getContent(DragConstants.FITPLANNER_FORMAT) : "";
@@ -76,7 +87,9 @@ public class NodeDragHandler {
             }
             event.consume();
         });
+    }
 
+    private static void setupDragExited(PlanNodeComponent component) {
         component.setOnDragExited(event -> {
             component.getStyleClass().removeAll(DROP_ABOVE, DROP_BELOW, DROP_INSIDE);
             if (currentDropTarget == component) {
@@ -84,7 +97,9 @@ public class NodeDragHandler {
             }
             event.consume();
         });
+    }
 
+    private static void setupDragDropped(PlanNodeComponent component) {
         component.setOnDragDropped(event -> {
             boolean success = false;
             Dragboard db = event.getDragboard();
@@ -104,7 +119,6 @@ public class NodeDragHandler {
 
             if (isToolboxBadge) {
                 targetParentId = component.getPlanNodeId();
-                // targetIndex remains -1 since order for badges might not matter when dropping, or they are just appended
             } else if (pos == DropPosition.INSIDE) {
                 targetParentId = component.getPlanNodeId();
                 targetIndex = component.getChildrenContainer().getChildren().size();
@@ -141,7 +155,9 @@ public class NodeDragHandler {
             event.setDropCompleted(success);
             event.consume();
         });
+    }
 
+    private static void setupDragDone(PlanNodeComponent component, VBox dragHandle) {
         dragHandle.setOnDragDone(event -> {
             component.setOpacity(1.0);
             currentDraggedNodeId = null;

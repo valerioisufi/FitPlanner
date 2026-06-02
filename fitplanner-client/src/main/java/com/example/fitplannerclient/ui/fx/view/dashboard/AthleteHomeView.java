@@ -108,6 +108,14 @@ public class AthleteHomeView extends BorderPane {
         updateLeftPanel(leftPanel, suggested, suggestedRelativeDay, isSuggestedToday, suggestedTitleDate, plan, onStartSession);
 
         // --- Right Panel: THIS WEEK ---
+        VBox rightPanel = buildRightPanel(schedule, startDate, absoluteStartDay, cycleLength, plan, session, leftPanel, onStartSession);
+
+        splitLayout.getChildren().addAll(leftPanel, rightPanel);
+
+        contentBox.getChildren().add(splitLayout);
+    }
+
+    private VBox buildRightPanel(WorkoutScheduleBean schedule, LocalDate startDate, int absoluteStartDay, int cycleLength, WorkoutPlanBean plan, WorkoutSessionBean session, VBox leftPanel, IntConsumer onStartSession) {
         VBox rightPanel = new VBox(20);
         rightPanel.setPrefWidth(350);
         rightPanel.setMinWidth(300);
@@ -205,9 +213,7 @@ public class AthleteHomeView extends BorderPane {
         }
 
         rightPanel.getChildren().add(daysList);
-        splitLayout.getChildren().addAll(leftPanel, rightPanel);
-
-        contentBox.getChildren().add(splitLayout);
+        return rightPanel;
     }
 
     private void updateLeftPanel(VBox leftPanel, WorkoutSessionBean session, int relativeDay, boolean isToday, String titleDate, WorkoutPlanBean plan, IntConsumer onStartSession) {
@@ -221,7 +227,7 @@ public class AthleteHomeView extends BorderPane {
         VBox titleBox = new VBox(4);
         titleBox.setAlignment(Pos.CENTER);
         Label mainTitle = new Label(isToday ? "IL PIANO DI OGGI" : titleDate.toUpperCase());
-        mainTitle.getStyleClass().add("heading-h2");
+        mainTitle.getStyleClass().add(HEADING_H2_CLASS);
         Label subTitle = new Label(plan.getName());
         subTitle.getStyleClass().add("body-small");
         titleBox.getChildren().addAll(mainTitle, subTitle);

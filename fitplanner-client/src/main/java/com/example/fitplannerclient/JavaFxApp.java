@@ -17,9 +17,16 @@ import java.util.logging.Logger;
 
 public class JavaFxApp extends Application {
 
-    public static AppControllerFactory factory;
-    public static SessionManager sessionManager;
-    public static Consumer<CompletableFuture<Boolean>> onUnauthorized;
+    private static AppControllerFactory factory;
+    private static SessionManager sessionManager;
+    private static Consumer<CompletableFuture<Boolean>> onUnauthorized;
+
+    public static void setFactory(AppControllerFactory f) { factory = f; }
+    public static void setSessionManager(SessionManager s) { sessionManager = s; }
+    public static void setOnUnauthorized(Consumer<CompletableFuture<Boolean>> onU) { onUnauthorized = onU; }
+    public static Consumer<CompletableFuture<Boolean>> getOnUnauthorized() { return onUnauthorized; }
+    public static AppControllerFactory getFactory() { return factory; }
+    public static SessionManager getSessionManager() { return sessionManager; }
 
     private Navigator navigator;
 
@@ -30,11 +37,11 @@ public class JavaFxApp extends Application {
 
         try {
             // Set the 401 Unauthorized callback
-            JavaFxApp.onUnauthorized = (future) -> {
+            JavaFxApp.setOnUnauthorized((future) -> {
                 Platform.runLater(() -> {
                     this.navigator.requireAuthenticationOverlay(() -> future.complete(true));
                 });
-            };
+            });
 
             GuiManager guiManager = new GuiManager(stage);
             this.navigator = new Navigator(guiManager, factory, sessionManager);

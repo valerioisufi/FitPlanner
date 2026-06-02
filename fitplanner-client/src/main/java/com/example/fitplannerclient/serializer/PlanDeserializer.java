@@ -51,7 +51,7 @@ public class PlanDeserializer {
             PlanNodeDTO planNodeDTO = objectMapper.readValue(json, PlanNodeDTO.class);
             return deserializeNode(planNodeDTO);
         } catch (Exception e) {
-            throw new RuntimeException("Error deserializing plan node JSON", e);
+            throw new IllegalArgumentException("Error deserializing plan node JSON", e);
         }
     }
 
@@ -62,64 +62,76 @@ public class PlanDeserializer {
 
         switch (dto.getType()) {
             case EXERCISE:
-                ExerciseNode exerciseNode = new ExerciseNode();
-                exerciseNode.setResourceId(dto.getResourceId());
-                if (dto.getModifiers() != null) {
-                    for (PlanNodeDTO.Modifier modDto : dto.getModifiers()) {
-                        exerciseNode.addModifier(new ExerciseModifier(
-                                ModifierType.valueOf(modDto.type().name()),
-                                modDto.value()
-                        ));
-                    }
-                }
-                return exerciseNode;
-
+                return deserializeExerciseNode(dto);
             case BLOCK:
-                Block block = new Block(dto.getName());
-                if (dto.getChildren() != null) {
-                    for (PlanNodeDTO childDto : dto.getChildren()) {
-                        block.addNode(deserializeNode(childDto));
-                    }
-                }
-                return block;
-
+                return deserializeBlockNode(dto);
             case PROTOCOL_BLOCK:
-                // Il semanticType viene memorizzato nel campo name del DTO
-                ProtocolBlock protocolBlock = new ProtocolBlock(dto.getName(), null, null, null);
-                if (dto.getParameters() != null) {
-                    for (Map.Entry<String, String> entry : dto.getParameters().entrySet()) {
-                        protocolBlock.setParameter(entry.getKey(), entry.getValue());
-                    }
-                }
-                if (dto.getChildren() != null) {
-                    for (PlanNodeDTO childDto : dto.getChildren()) {
-                        protocolBlock.addNode(deserializeNode(childDto));
-                    }
-                }
-                return protocolBlock;
-
+                return deserializeProtocolBlockNode(dto);
             case FLOW_DECORATOR:
-                if (dto.getFlowDecorator() == null) {
-                    throw new IllegalArgumentException("Flow decorator specified but getFlowDecorator() is null");
-                }
-                if (dto.getChildren() == null || dto.getChildren().isEmpty()) {
-                    throw new IllegalArgumentException("Flow decorator must have a wrapped node as child");
-                }
-                PlanNode wrappedNode = deserializeNode(dto.getChildren().getFirst());
-                
-                PlanNodeDTO.FlowDecorator fd = dto.getFlowDecorator();
-                return switch (fd.type()) {
-                    case LOOP -> new LoopDecorator(wrappedNode, fd.value());
-                    case REST -> new RestDecorator(wrappedNode, fd.value());
-                    case TIME_LIMIT -> new TimeLimitDecorator(wrappedNode, fd.value());
-                    case INTERVAL -> new IntervalDecorator(wrappedNode, fd.value());
-                    case PROGRESSION -> new ProgressionDecorator(wrappedNode, fd.value());
-                    default -> throw new IllegalArgumentException("Unknown flow decorator type: " + fd.type());
-                };
-
+                return deserializeFlowDecorator(dto);
             default:
                 throw new IllegalArgumentException("Unknown node type: " + dto.getType());
         }
+    }
+
+    private ExerciseNode deserializeExerciseNode(PlanNodeDTO dto) {
+        ExerciseNode exerciseNode = new ExerciseNode();
+        exerciseNode.setResourceId(dto.getResourceId());
+        if (dto.getModifiers() != null) {
+            for (PlanNodeDTO.Modifier modDto : dto.getModifiers()) {
+                exerciseNode.addModifier(new ExerciseModifier(
+                        ModifierType.valueOf(modDto.type().name()),
+                        modDto.value()
+                ));
+            }
+        }
+        return exerciseNode;
+    }
+
+    private Block deserializeBlockNode(PlanNodeDTO dto) {
+        Block block = new Block(dto.getName());
+        if (dto.getChildren() != null) {
+            for (PlanNodeDTO childDto : dto.getChildren()) {
+                block.addNode(deserializeNode(childDto));
+            }
+        }
+        return block;
+    }
+
+    private ProtocolBlock deserializeProtocolBlockNode(PlanNodeDTO dto) {
+        // Il semanticType viene memorizzato nel campo name del DTO
+        ProtocolBlock protocolBlock = new ProtocolBlock(dto.getName(), null, null, null);
+        if (dto.getParameters() != null) {
+            for (Map.Entry<String, String> entry : dto.getParameters().entrySet()) {
+                protocolBlock.setParameter(entry.getKey(), entry.getValue());
+            }
+        }
+        if (dto.getChildren() != null) {
+            for (PlanNodeDTO childDto : dto.getChildren()) {
+                protocolBlock.addNode(deserializeNode(childDto));
+            }
+        }
+        return protocolBlock;
+    }
+
+    private PlanNode deserializeFlowDecorator(PlanNodeDTO dto) {
+        if (dto.getFlowDecorator() == null) {
+            throw new IllegalArgumentException("Flow decorator specified but getFlowDecorator() is null");
+        }
+        if (dto.getChildren() == null || dto.getChildren().isEmpty()) {
+            throw new IllegalArgumentException("Flow decorator must have a wrapped node as child");
+        }
+        PlanNode wrappedNode = deserializeNode(dto.getChildren().getFirst());
+        
+        PlanNodeDTO.FlowDecorator fd = dto.getFlowDecorator();
+        return switch (fd.type()) {
+            case LOOP -> new LoopDecorator(wrappedNode, fd.value());
+            case REST -> new RestDecorator(wrappedNode, fd.value());
+            case TIME_LIMIT -> new TimeLimitDecorator(wrappedNode, fd.value());
+            case INTERVAL -> new IntervalDecorator(wrappedNode, fd.value());
+            case PROGRESSION -> new ProgressionDecorator(wrappedNode, fd.value());
+            default -> throw new IllegalArgumentException("Unknown flow decorator type: " + fd.type());
+        };
     }
 
     public PlanNode toEntity(PlanNodeBean bean) {
@@ -130,44 +142,14 @@ public class PlanDeserializer {
         PlanNode coreNode;
         switch (bean.getType()) {
             case EXERCISE:
-                ExerciseNode exerciseNode = new ExerciseNode();
-                exerciseNode.setResourceId(bean.getResourceId());
-                if (bean.getModifiers() != null) {
-                    for (ExerciseModifierBean modBean : bean.getModifiers()) {
-                        exerciseNode.addModifier(new ExerciseModifier(
-                                ModifierType.valueOf(modBean.getName()),
-                                modBean.getValue()
-                        ));
-                    }
-                }
-                coreNode = exerciseNode;
+                coreNode = toEntityExerciseNode(bean);
                 break;
-
             case BLOCK:
-                Block block = new Block(bean.getName());
-                if (bean.getChildren() != null) {
-                    for (PlanNodeBean childBean : bean.getChildren()) {
-                        block.addNode(toEntity(childBean));
-                    }
-                }
-                coreNode = block;
+                coreNode = toEntityBlockNode(bean);
                 break;
-
             case PROTOCOL_BLOCK:
-                ProtocolBlock protocolBlock = new ProtocolBlock(bean.getName(), null, null, null);
-                if (bean.getParameters() != null) {
-                    for (Map.Entry<String, String> entry : bean.getParameters().entrySet()) {
-                        protocolBlock.setParameter(entry.getKey(), entry.getValue());
-                    }
-                }
-                if (bean.getChildren() != null) {
-                    for (PlanNodeBean childBean : bean.getChildren()) {
-                        protocolBlock.addNode(toEntity(childBean));
-                    }
-                }
-                coreNode = protocolBlock;
+                coreNode = toEntityProtocolBlockNode(bean);
                 break;
-
             default:
                 throw new IllegalArgumentException("Unknown bean type: " + bean.getType());
         }
@@ -188,5 +170,44 @@ public class PlanDeserializer {
         }
 
         return currentNode;
+    }
+
+    private ExerciseNode toEntityExerciseNode(PlanNodeBean bean) {
+        ExerciseNode exerciseNode = new ExerciseNode();
+        exerciseNode.setResourceId(bean.getResourceId());
+        if (bean.getModifiers() != null) {
+            for (ExerciseModifierBean modBean : bean.getModifiers()) {
+                exerciseNode.addModifier(new ExerciseModifier(
+                        ModifierType.valueOf(modBean.getName()),
+                        modBean.getValue()
+                ));
+            }
+        }
+        return exerciseNode;
+    }
+
+    private Block toEntityBlockNode(PlanNodeBean bean) {
+        Block block = new Block(bean.getName());
+        if (bean.getChildren() != null) {
+            for (PlanNodeBean childBean : bean.getChildren()) {
+                block.addNode(toEntity(childBean));
+            }
+        }
+        return block;
+    }
+
+    private ProtocolBlock toEntityProtocolBlockNode(PlanNodeBean bean) {
+        ProtocolBlock protocolBlock = new ProtocolBlock(bean.getName(), null, null, null);
+        if (bean.getParameters() != null) {
+            for (Map.Entry<String, String> entry : bean.getParameters().entrySet()) {
+                protocolBlock.setParameter(entry.getKey(), entry.getValue());
+            }
+        }
+        if (bean.getChildren() != null) {
+            for (PlanNodeBean childBean : bean.getChildren()) {
+                protocolBlock.addNode(toEntity(childBean));
+            }
+        }
+        return protocolBlock;
     }
 }

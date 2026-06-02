@@ -22,6 +22,7 @@ import java.util.Map;
 public class WorkoutPlanEditorViewController implements GuiController {
 
     private static final Logger logger = LoggerFactory.getLogger(WorkoutPlanEditorViewController.class);
+    private static final String MODIFIER_BADGE_TYPE = "MODIFIER";
 
     private final BorderPane mainPane;
     private final WorkoutPlanEditorView view;
@@ -137,7 +138,7 @@ public class WorkoutPlanEditorViewController implements GuiController {
     }
 
     private void handleBadgeReordered(PlanNodeEvent event) {
-        if ("MODIFIER".equals(event.getBadgeType())) {
+        if (MODIFIER_BADGE_TYPE.equals(event.getBadgeType())) {
             if (event.isCopy()) {
                 editWorkoutPlanManager.copyModifier(event.getSourceNodeId(), event.getNodeId(), event.getSourceIndex());
             } else {
@@ -171,12 +172,12 @@ public class WorkoutPlanEditorViewController implements GuiController {
 
     private void handleEditBadgeClicked(PlanNodeEvent event) {
         BadgeComponent badge = (BadgeComponent) event.getBadgeData();
-        String targetScopeId = "MODIFIER".equals(event.getBadgeType()) ? event.getNodeId() : badge.getBadgeId();
+        String targetScopeId = MODIFIER_BADGE_TYPE.equals(event.getBadgeType()) ? event.getNodeId() : badge.getBadgeId();
         List<String> vars = editWorkoutPlanManager.getAvailableVariablesForNode(targetScopeId);
 
         this.view.getEditBadgeModal().setInitialData(badge.getBadgeType(), badge.getName(), badge.getValue(), vars);
         this.view.getEditBadgeModal().setOnSaveAction((newValue) -> {
-            if ("MODIFIER".equals(event.getBadgeType())) {
+            if (MODIFIER_BADGE_TYPE.equals(event.getBadgeType())) {
                 editWorkoutPlanManager.updateModifier(event.getNodeId(), badge.getName(), newValue);
             } else {
                 editWorkoutPlanManager.updateDecorator(badge.getBadgeId(), newValue);

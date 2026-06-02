@@ -36,37 +36,42 @@ public class PlayState extends EngineState {
                 }
 
                 int sleepTime = result.getRequestedSleepMillis();
-                
-                if (sleepTime == -1) {
-                    // Nessun limite di tempo -> dorme finché non riceve un segnale (es. DONE o SKIP)
-                    try {
-                        Thread.sleep(Integer.MAX_VALUE);
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                        long now = System.currentTimeMillis();
-                        context.setTickDelta((int) (now - lastWakeUpTime));
-                        lastWakeUpTime = now;
-                    }
-                } else if (sleepTime > 0) {
-                    // Dorme per il tempo esatto richiesto dal nodo (es. RestDecorator o TimeLimit)
-                    try {
-                        Thread.sleep(sleepTime);
-
-                        context.setTickDelta(sleepTime);
-                        lastWakeUpTime = System.currentTimeMillis();
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                        long now = System.currentTimeMillis();
-                        context.setTickDelta((int) (now - lastWakeUpTime));
-                        lastWakeUpTime = now;
-                    }
-                } else {
-                    // sleepTime == 0 -> il nodo ha chiesto di non dormire affatto (tick immediato)
-                    context.setTickDelta(0);
-                    lastWakeUpTime = System.currentTimeMillis();
-                }
+                lastWakeUpTime = handleSleepRequest(context, sleepTime, lastWakeUpTime);
             }
         });
+    }
+
+    private long handleSleepRequest(ExecutionContext context, int sleepTime, long lastWakeUpTime) {
+        if (sleepTime == -1) {
+            // Nessun limite di tempo -> dorme finché non riceve un segnale (es. DONE o SKIP)
+            try {
+                Thread.sleep(Integer.MAX_VALUE);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return updateTickDelta(context, lastWakeUpTime);
+            }
+        } else if (sleepTime > 0) {
+            // Dorme per il tempo esatto richiesto dal nodo (es. RestDecorator o TimeLimit)
+            try {
+                Thread.sleep(sleepTime);
+                context.setTickDelta(sleepTime);
+                return System.currentTimeMillis();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return updateTickDelta(context, lastWakeUpTime);
+            }
+        } else {
+            // sleepTime == 0 -> il nodo ha chiesto di non dormire affatto (tick immediato)
+            context.setTickDelta(0);
+            return System.currentTimeMillis();
+        }
+        return lastWakeUpTime;
+    }
+
+    private long updateTickDelta(ExecutionContext context, long lastWakeUpTime) {
+        long now = System.currentTimeMillis();
+        context.setTickDelta((int) (now - lastWakeUpTime));
+        return now;
     }
 
     @Override

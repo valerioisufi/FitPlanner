@@ -26,6 +26,9 @@ import java.util.function.Consumer;
 
 public class WorkoutPlanEditorView extends BorderPane {
 
+    private static final String BUTTON_HEADER_CLASS = "button-header";
+    private static final String BUTTON_HEADER_ICON_CLASS = "button-header-icon";
+
     private final Label planNameLabel = new Label();
     private final EditPlanNameModal editPlanNameModal;
     private final ComboBox<WorkoutSessionBean> sessionComboBox = new ComboBox<>();
@@ -113,55 +116,19 @@ public class WorkoutPlanEditorView extends BorderPane {
         HBox leftBox = new HBox(10);
         leftBox.setAlignment(Pos.CENTER_LEFT);
 
-        planNameLabel.getStyleClass().add("heading-h1");
-        planNameLabel.setStyle("-fx-cursor: hand; -fx-padding: 0 10 0 0;");
-        planNameLabel.setOnMouseClicked(e -> {
-            if (currentPlan != null) {
-                editPlanNameModal.setInitialName(currentPlan.getName());
-                editPlanNameModal.setOnSaveAction(newName -> {
-                    if (onPlanNameChanged != null) {
-                        onPlanNameChanged.accept(newName);
-                    }
-                    if (onHideModalRequested != null) onHideModalRequested.run();
-                });
-                if (onShowModalRequested != null) onShowModalRequested.accept(editPlanNameModal);
-            }
-        });
-
-        // Cell factory for combo box to display session name
-        sessionComboBox.setCellFactory(lv -> new ListCell<>() {
-            @Override
-            protected void updateItem(WorkoutSessionBean session, boolean empty) {
-                super.updateItem(session, empty);
-                setText(empty || session == null ? null : session.getName());
-            }
-        });
-        sessionComboBox.setButtonCell(new ListCell<>() {
-            @Override
-            protected void updateItem(WorkoutSessionBean session, boolean empty) {
-                super.updateItem(session, empty);
-                setText(empty || session == null ? "Seleziona Giorno" : session.getName());
-            }
-        });
-        sessionComboBox.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal != null) {
-                planViewer.setRootNode(newVal.getPlanRoot());
-                if (onSessionSelected != null) {
-                    onSessionSelected.accept(newVal);
-                }
-            }
-        });
+        setupPlanNameLabel();
+        setupSessionComboBox();
         sessionComboBox.setPrefWidth(200);
 
-        btnManageSessions.setGraphic(new Icon("calendar-icon", List.of("button-header-icon")));
-        btnManageSessions.getStyleClass().add("button-header");
+        btnManageSessions.setGraphic(new Icon("calendar-icon", List.of(BUTTON_HEADER_ICON_CLASS)));
+        btnManageSessions.getStyleClass().add(BUTTON_HEADER_CLASS);
         btnManageSessions.setOnAction(e -> { if(onManageSessionsRequested != null) onManageSessionsRequested.run(); });
 
-        btnUndo.setGraphic(new Icon("undo-icon", List.of("button-header-icon")));
-        btnUndo.getStyleClass().add("button-header");
+        btnUndo.setGraphic(new Icon("undo-icon", List.of(BUTTON_HEADER_ICON_CLASS)));
+        btnUndo.getStyleClass().add(BUTTON_HEADER_CLASS);
 
-        btnRedo.setGraphic(new Icon("redo-icon", List.of("button-header-icon")));
-        btnRedo.getStyleClass().add("button-header");
+        btnRedo.setGraphic(new Icon("redo-icon", List.of(BUTTON_HEADER_ICON_CLASS)));
+        btnRedo.getStyleClass().add(BUTTON_HEADER_CLASS);
 
         btnUndo.setOnAction(e -> { if(onUndoClicked != null) onUndoClicked.run(); });
         btnRedo.setOnAction(e -> { if(onRedoClicked != null) onRedoClicked.run(); });
@@ -187,6 +154,48 @@ public class WorkoutPlanEditorView extends BorderPane {
         toolbar.getChildren().addAll(leftBox, centerSpacer, rightBox);
 
         return toolbar;
+    }
+
+    private void setupPlanNameLabel() {
+        planNameLabel.getStyleClass().add("heading-h1");
+        planNameLabel.setStyle("-fx-cursor: hand; -fx-padding: 0 10 0 0;");
+        planNameLabel.setOnMouseClicked(e -> {
+            if (currentPlan != null) {
+                editPlanNameModal.setInitialName(currentPlan.getName());
+                editPlanNameModal.setOnSaveAction(newName -> {
+                    if (onPlanNameChanged != null) {
+                        onPlanNameChanged.accept(newName);
+                    }
+                    if (onHideModalRequested != null) onHideModalRequested.run();
+                });
+                if (onShowModalRequested != null) onShowModalRequested.accept(editPlanNameModal);
+            }
+        });
+    }
+
+    private void setupSessionComboBox() {
+        sessionComboBox.setCellFactory(lv -> new ListCell<>() {
+            @Override
+            protected void updateItem(WorkoutSessionBean session, boolean empty) {
+                super.updateItem(session, empty);
+                setText(empty || session == null ? null : session.getName());
+            }
+        });
+        sessionComboBox.setButtonCell(new ListCell<>() {
+            @Override
+            protected void updateItem(WorkoutSessionBean session, boolean empty) {
+                super.updateItem(session, empty);
+                setText(empty || session == null ? "Seleziona Giorno" : session.getName());
+            }
+        });
+        sessionComboBox.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null) {
+                planViewer.setRootNode(newVal.getPlanRoot());
+                if (onSessionSelected != null) {
+                    onSessionSelected.accept(newVal);
+                }
+            }
+        });
     }
 
     public void setOnUndoClicked(Runnable onUndoClicked) {

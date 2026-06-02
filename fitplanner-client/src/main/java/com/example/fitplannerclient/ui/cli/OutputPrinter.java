@@ -44,13 +44,21 @@ public class OutputPrinter {
      */
     public void printTable(String[] headers, String[][] data) {
         if (headers == null || headers.length == 0) return;
+        int[] colWidths = calculateColumnWidths(headers, data);
+        String format = buildFormatString(colWidths);
+        printHeaderAndSeparator(headers, colWidths, format);
+        if (data != null) {
+            for (String[] row : data) {
+                System.out.printf(format, (Object[]) row);
+            }
+        }
+    }
 
-        // Trova la larghezza massima per ogni colonna
+    private int[] calculateColumnWidths(String[] headers, String[][] data) {
         int[] colWidths = new int[headers.length];
         for (int i = 0; i < headers.length; i++) {
             colWidths[i] = headers[i].length();
         }
-
         if (data != null) {
             for (String[] row : data) {
                 for (int i = 0; i < row.length; i++) {
@@ -60,30 +68,24 @@ public class OutputPrinter {
                 }
             }
         }
+        return colWidths;
+    }
 
-        // Crea il formato stringa, aggiungendo un po' di padding (es. 2 spazi)
+    private String buildFormatString(int[] colWidths) {
         StringBuilder formatBuilder = new StringBuilder();
         for (int width : colWidths) {
             formatBuilder.append("%-").append(width + 2).append("s");
         }
         formatBuilder.append("%n");
-        String format = formatBuilder.toString();
+        return formatBuilder.toString();
+    }
 
-        // Stampa Header
+    private void printHeaderAndSeparator(String[] headers, int[] colWidths, String format) {
         System.out.printf(format, (Object[]) headers);
-        
-        // Stampa separatore
         StringBuilder separator = new StringBuilder();
         for (int width : colWidths) {
             separator.append("-".repeat(width + 2));
         }
         System.out.println(separator.toString());
-
-        // Stampa Dati
-        if (data != null) {
-            for (String[] row : data) {
-                System.out.printf(format, (Object[]) row);
-            }
-        }
     }
 }

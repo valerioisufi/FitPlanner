@@ -104,35 +104,8 @@ public class EditBadgeModal extends VBox {
         valueLabelDesc.getStyleClass().add("label-field");
         inputContainer.getChildren().addAll(valueLabelDesc, valueField, hintLabel, variableComboBox);
 
-        // Toggle Listener
-        toggleGroup.selectedToggleProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal == fixedValueRadio) {
-                valueField.setVisible(true);
-                valueField.setManaged(true);
-                variableComboBox.setVisible(false);
-                variableComboBox.setManaged(false);
-            } else if (newVal == variableRadio) {
-                valueField.setVisible(false);
-                valueField.setManaged(false);
-                variableComboBox.setVisible(true);
-                variableComboBox.setManaged(true);
-            }
-        });
-
-        // Validation for integers in FlowDecorators
-        valueField.textProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal == null) return;
-            // Allow decimals for weight/distance, but integer for rounds/time.
-            // A simple regex that allows numbers and optional decimal point.
-            boolean isTut = nameLabel.getText() != null && nameLabel.getText().equalsIgnoreCase("TUT");
-            if (isTut) {
-                if (!newVal.matches("[\\d/\\-]*") && toggleBox.isVisible() && fixedValueRadio.isSelected()) {
-                    valueField.setText(oldVal);
-                }
-            } else if (!newVal.matches("\\d*\\.?\\d*") && toggleBox.isVisible() && fixedValueRadio.isSelected()) {
-                valueField.setText(oldVal);
-            }
-        });
+        setupToggleListener();
+        setupValidationListener();
 
         // --- FOOTER ACTIONS ---
         HBox footer = new HBox(12);
@@ -167,6 +140,38 @@ public class EditBadgeModal extends VBox {
         footer.getChildren().addAll(cancelBtn, saveBtn);
 
         this.getChildren().addAll(header, nameFieldBox, toggleBox, inputContainer, footer);
+    }
+
+    private void setupToggleListener() {
+        toggleGroup.selectedToggleProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal == fixedValueRadio) {
+                valueField.setVisible(true);
+                valueField.setManaged(true);
+                variableComboBox.setVisible(false);
+                variableComboBox.setManaged(false);
+            } else if (newVal == variableRadio) {
+                valueField.setVisible(false);
+                valueField.setManaged(false);
+                variableComboBox.setVisible(true);
+                variableComboBox.setManaged(true);
+            }
+        });
+    }
+
+    private void setupValidationListener() {
+        valueField.textProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal == null) return;
+            // Allow decimals for weight/distance, but integer for rounds/time.
+            // A simple regex that allows numbers and optional decimal point.
+            boolean isTut = nameLabel.getText() != null && nameLabel.getText().equalsIgnoreCase("TUT");
+            if (isTut) {
+                if (!newVal.matches("[\\d/\\-]*") && toggleBox.isVisible() && fixedValueRadio.isSelected()) {
+                    valueField.setText(oldVal);
+                }
+            } else if (!newVal.matches("\\d*\\.?\\d*") && toggleBox.isVisible() && fixedValueRadio.isSelected()) {
+                valueField.setText(oldVal);
+            }
+        });
     }
 
     public void setInitialData(BadgeComponent.BadgeType type, String name, String value, List<String> availableVariables) {

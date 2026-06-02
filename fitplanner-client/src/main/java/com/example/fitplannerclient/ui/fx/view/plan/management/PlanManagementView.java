@@ -105,12 +105,22 @@ public class PlanManagementView extends BorderPane {
         row.setAlignment(Pos.CENTER_LEFT);
         row.getStyleClass().add(isLast ? "list-row-last" : "list-row");
 
-        // Plan Name
         Label nameLbl = new Label(plan.getPlanTitle() != null ? plan.getPlanTitle() : "Senza Nome");
         nameLbl.getStyleClass().add(BODY_BASE_CLASS);
         nameLbl.setPrefWidth(300);
 
-        // Assigned To
+        VBox assignBox = buildAssignBox(plan);
+
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        HBox actionsBox = buildActionsBox(plan);
+
+        row.getChildren().addAll(nameLbl, assignBox, spacer, actionsBox);
+        return row;
+    }
+
+    private VBox buildAssignBox(WorkoutPlanSummaryBean plan) {
         VBox assignBox = new VBox(2);
         assignBox.setPrefWidth(200);
         
@@ -133,11 +143,10 @@ public class PlanManagementView extends BorderPane {
             nessunoLbl.getStyleClass().addAll("body-small", TEXT_COLOR_LIGHT);
             assignBox.getChildren().add(nessunoLbl);
         }
+        return assignBox;
+    }
 
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-
-        // Actions
+    private HBox buildActionsBox(WorkoutPlanSummaryBean plan) {
         HBox actionsBox = new HBox(12);
         actionsBox.setAlignment(Pos.CENTER_RIGHT);
 
@@ -175,11 +184,7 @@ public class PlanManagementView extends BorderPane {
         });
 
         actionsBox.getChildren().add(optionsBtn);
-
-
-
-        row.getChildren().addAll(nameLbl, assignBox, spacer, actionsBox);
-        return row;
+        return actionsBox;
     }
 
     public void setOnAssignButtonClick(Consumer<WorkoutPlanSummaryBean> onAssignButtonClick) { this.onAssignButtonClick = onAssignButtonClick; }

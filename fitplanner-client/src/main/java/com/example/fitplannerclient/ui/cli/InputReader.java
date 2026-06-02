@@ -1,7 +1,7 @@
 package com.example.fitplannerclient.ui.cli;
 
 import java.util.Scanner;
-import java.util.function.Function;
+import java.util.function.UnaryOperator;
 
 public class InputReader {
     private final Scanner scanner;
@@ -17,7 +17,7 @@ public class InputReader {
         return scanner.nextLine().trim();
     }
 
-    public String readStringAndValidate(String prompt, Function<String, String> validator) {
+    public String readStringAndValidate(String prompt, UnaryOperator<String> validator) {
         System.out.print(prompt);
         String input = scanner.nextLine().trim();
         String msg = validator.apply(input);
@@ -29,7 +29,7 @@ public class InputReader {
         return input;
     }
 
-    public String readStringAndValidate(String prompt, Function<String, String> validator, String defaultInput) {
+    public String readStringAndValidate(String prompt, UnaryOperator<String> validator, String defaultInput) {
         System.out.print(prompt + " [" + defaultInput + "]: ");
         String input = scanner.nextLine().trim();
 

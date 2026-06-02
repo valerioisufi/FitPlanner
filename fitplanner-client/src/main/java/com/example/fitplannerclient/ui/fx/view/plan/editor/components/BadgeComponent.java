@@ -110,22 +110,31 @@ public class BadgeComponent extends HBox {
         String lower = name.toLowerCase();
         
         if (type == BadgeType.MODIFIER) {
-            if (lower.contains("set")) return BadgeColor.BLUE;
-            if (lower.contains("rep")) return BadgeColor.VIOLET;
-            if (lower.contains("weight") || lower.contains("distance")) return BadgeColor.YELLOW;
-            if (lower.contains("rpe")) return BadgeColor.ORANGE;
-            if (lower.contains("rest")) return BadgeColor.GREEN;
-            if (lower.contains("tempo")) return BadgeColor.TEAL;
-            if (lower.contains("tut")) return BadgeColor.CYAN;
-
+            return resolveModifierColor(lower);
         } else if (type == BadgeType.DECORATOR) {
-            if (lower.contains("interval")) return BadgeColor.INDIGO;
-            if (lower.contains("time") || lower.contains("limit")) return BadgeColor.PINK;
-            if (lower.contains("loop")) return BadgeColor.RED;
-            if (lower.contains("progression")) return BadgeColor.AMBER;
-            if (lower.contains("rest")) return BadgeColor.GRAY;
+            return resolveDecoratorColor(lower);
         }
         
+        return BadgeColor.GRAY;
+    }
+
+    private static BadgeColor resolveModifierColor(String lower) {
+        if (lower.contains("set")) return BadgeColor.BLUE;
+        if (lower.contains("rep")) return BadgeColor.VIOLET;
+        if (lower.contains("weight") || lower.contains("distance")) return BadgeColor.YELLOW;
+        if (lower.contains("rpe")) return BadgeColor.ORANGE;
+        if (lower.contains("rest")) return BadgeColor.GREEN;
+        if (lower.contains("tempo")) return BadgeColor.TEAL;
+        if (lower.contains("tut")) return BadgeColor.CYAN;
+        return BadgeColor.GRAY;
+    }
+
+    private static BadgeColor resolveDecoratorColor(String lower) {
+        if (lower.contains("interval")) return BadgeColor.INDIGO;
+        if (lower.contains("time") || lower.contains("limit")) return BadgeColor.PINK;
+        if (lower.contains("loop")) return BadgeColor.RED;
+        if (lower.contains("progression")) return BadgeColor.AMBER;
+        if (lower.contains("rest")) return BadgeColor.GRAY;
         return BadgeColor.GRAY;
     }
 }

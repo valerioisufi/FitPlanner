@@ -140,19 +140,7 @@ public class ManageSessionsModal extends VBox {
         // Quando il focus viene perso, aggiorna il giorno se cambiato
         dayField.focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
             if (!isNowFocused) {
-                try {
-                    String newV = dayField.getText().trim();
-                    if (!newV.isEmpty()) {
-                        int newDay = Integer.parseInt(newV);
-                        if (newDay != session.getDay()) {
-                            int oldDay = session.getDay();
-                            session.setDay(newDay);
-                            if (onSessionDayChanged != null) {
-                                onSessionDayChanged.accept(oldDay, newDay);
-                            }
-                        }
-                    }
-                } catch (NumberFormatException ignored) { /* ignored */ }
+                handleDayFieldFocusLost(dayField, session);
             }
         });
 
@@ -171,6 +159,22 @@ public class ManageSessionsModal extends VBox {
 
         row.getChildren().addAll(nameLabel, nameField, dayLabel, dayField, removeBtn);
         return row;
+    }
+
+    private void handleDayFieldFocusLost(TextField dayField, WorkoutSessionBean session) {
+        try {
+            String newV = dayField.getText().trim();
+            if (!newV.isEmpty()) {
+                int newDay = Integer.parseInt(newV);
+                if (newDay != session.getDay()) {
+                    int oldDay = session.getDay();
+                    session.setDay(newDay);
+                    if (onSessionDayChanged != null) {
+                        onSessionDayChanged.accept(oldDay, newDay);
+                    }
+                }
+            }
+        } catch (NumberFormatException ignored) { /* ignored */ }
     }
 
     private void addNewSessionRow() {
