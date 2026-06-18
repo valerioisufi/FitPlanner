@@ -46,6 +46,6 @@ public class CliEngine {
 
             currentCliView = nextView;
         }
-        System.out.println("Chiusura dell'applicazione.");
+        outputPrinter.printInfo("Chiusura dell'applicazione.");
     }
 }
