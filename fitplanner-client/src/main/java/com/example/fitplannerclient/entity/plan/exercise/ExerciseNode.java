@@ -2,10 +2,10 @@ package com.example.fitplannerclient.entity.plan.exercise;
 
 import com.example.fitplannerclient.entity.plan.visitor.WorkoutPlanVisitor;
 import com.example.fitplannerclient.entity.plan.PlanNode;
-import com.example.fitplannerclient.entity.plan.context.ControlSignal;
-import com.example.fitplannerclient.entity.plan.context.ExecutionContext;
-import com.example.fitplannerclient.entity.plan.context.ExecutionResult;
-import com.example.fitplannerclient.entity.plan.context.PlanNodeState;
+import com.example.fitplannerclient.entity.plan.execution.ControlSignal;
+import com.example.fitplannerclient.entity.plan.execution.ExecutionContext;
+import com.example.fitplannerclient.entity.plan.execution.ExecutionResult;
+import com.example.fitplannerclient.entity.plan.execution.PlanNodeState;
 
 import java.util.*;
 

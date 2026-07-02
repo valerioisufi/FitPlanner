@@ -2,8 +2,8 @@ package com.example.fitplannerclient.ui.fx;
 
 import com.example.fitplannerclient.bean.profile.ProfileBean;
 import com.example.fitplannerclient.context.UserSessionContext;
-import com.example.fitplannerclient.controller.SessionController;
-import com.example.fitplannerclient.controller.SessionController.LoginOutcome;
+import com.example.fitplannerclient.controller.session.SessionManager;
+import com.example.fitplannerclient.controller.session.SessionManager.LoginOutcome;
 import com.example.fitplannerclient.ui.fx.guicontroller.*;
 import javafx.application.Platform;
 
@@ -15,18 +15,18 @@ import java.util.concurrent.CompletableFuture;
 public class Navigator {
 
     private final GuiManager guiManager;
-    private final SessionController sessionController;
+    private final SessionManager sessionManager;
 
     private GuiController currentGuiController;
 
-    public Navigator(GuiManager guiManager, SessionController sessionController) {
+    public Navigator(GuiManager guiManager, SessionManager sessionManager) {
         this.guiManager = guiManager;
-        this.sessionController = sessionController;
-        sessionController.setReauthenticationHandler(this::promptReauthentication);
+        this.sessionManager = sessionManager;
+        sessionManager.setReauthenticationHandler(this::promptReauthentication);
     }
 
     private UserSessionContext session() {
-        return sessionController.getSession();
+        return sessionManager.getSession();
     }
 
     private void navigateTo(GuiController nextController) {
@@ -47,7 +47,7 @@ public class Navigator {
     public void requireAuthentication(Runnable onSuccess) {
         AuthenticationViewController authGuiController = new AuthenticationViewController(
                 guiManager,
-                sessionController,
+                sessionManager,
                 outcome -> Platform.runLater(() -> {
                     if (outcome == LoginOutcome.SAME_USER && onSuccess != null) {
                         onSuccess.run();
@@ -61,7 +61,7 @@ public class Navigator {
     }
 
     /**
-     * Handler di ri-autenticazione per il SessionController: mostra il login in overlay
+     * Handler di ri-autenticazione per il SessionManager: mostra il login in overlay
      * e completa il future con l'esito. Se l'identità è cambiata, la vista corrente
      * (che apparteneva al vecchio utente) viene abbandonata per la home
      */
@@ -71,7 +71,7 @@ public class Navigator {
         Platform.runLater(() -> {
             AuthenticationViewController authGuiController = new AuthenticationViewController(
                     guiManager,
-                    sessionController,
+                    sessionManager,
                     outcome -> Platform.runLater(() -> {
                         guiManager.hideOverlay();
                         if (outcome == LoginOutcome.NEW_USER) {
@@ -89,15 +89,15 @@ public class Navigator {
     }
 
     public void logout() {
-        sessionController.logout();
+        sessionManager.logout();
         requireAuthentication(null);
     }
 
     public void goHome() {
-        if (sessionController.isAuthenticated()) {
+        if (sessionManager.isAuthenticated()) {
             Platform.runLater(() -> navigateTo(createHomeController()));
-        } else if (sessionController.hasPersistedTokens()) {
-            sessionController.resumeSessionAsync()
+        } else if (sessionManager.hasPersistedTokens()) {
+            sessionManager.resumeSessionAsync()
                     .thenAccept(outcome -> Platform.runLater(() -> navigateTo(createHomeController())))
                     .exceptionally(ex -> {
                         requireAuthentication(null);
@@ -109,7 +109,7 @@ public class Navigator {
     }
 
     public void goToProfile() {
-        if (!sessionController.isAuthenticated()) {
+        if (!sessionManager.isAuthenticated()) {
             goHome();
             return;
         }

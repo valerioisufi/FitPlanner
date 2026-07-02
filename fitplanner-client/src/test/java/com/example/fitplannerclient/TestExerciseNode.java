@@ -1,9 +1,9 @@
 package com.example.fitplannerclient;
 
-import com.example.fitplannerclient.entity.plan.context.ControlSignal;
-import com.example.fitplannerclient.entity.plan.context.ExecutionContext;
-import com.example.fitplannerclient.entity.plan.context.ExecutionResult;
-import com.example.fitplannerclient.entity.plan.context.PlanNodeState;
+import com.example.fitplannerclient.entity.plan.execution.ControlSignal;
+import com.example.fitplannerclient.entity.plan.execution.ExecutionContext;
+import com.example.fitplannerclient.entity.plan.execution.ExecutionResult;
+import com.example.fitplannerclient.entity.plan.execution.PlanNodeState;
 import com.example.fitplannerclient.entity.plan.exercise.ExerciseNode;
 import org.junit.jupiter.api.Test;
 

@@ -1,4 +1,4 @@
-package com.example.fitplannerclient.entity.plan.context;
+package com.example.fitplannerclient.entity.plan.execution;
 
 import com.example.fitplannerclient.entity.plan.exercise.ExerciseNode;
 

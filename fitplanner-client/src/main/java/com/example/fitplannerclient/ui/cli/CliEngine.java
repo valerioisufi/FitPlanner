@@ -1,27 +1,27 @@
 package com.example.fitplannerclient.ui.cli;
 
 import com.example.fitplannerclient.context.UserSessionContext;
-import com.example.fitplannerclient.controller.SessionController;
+import com.example.fitplannerclient.controller.session.SessionManager;
 
 import java.util.Scanner;
 
 public class CliEngine {
-    private final SessionController sessionController;
+    private final SessionManager sessionManager;
 
 
     private final InputReader inputReader;
     private final OutputPrinter outputPrinter;
 
-    public CliEngine(SessionController sessionController) {
-        this.sessionController = sessionController;
+    public CliEngine(SessionManager sessionManager) {
+        this.sessionManager = sessionManager;
 
         Scanner scanner = new Scanner(System.in);
         this.outputPrinter = new OutputPrinter();
         this.inputReader = new InputReader(scanner, outputPrinter);
     }
 
-    public SessionController getSessionController() { return sessionController; }
-    public UserSessionContext getSessionContext() { return sessionController.getSession(); }
+    public SessionManager getSessionManager() { return sessionManager; }
+    public UserSessionContext getSessionContext() { return sessionManager.getSession(); }
 
     public InputReader getInput() { return inputReader; }
     public OutputPrinter getPrinter() { return outputPrinter; }
@@ -34,7 +34,7 @@ public class CliEngine {
             CliView nextView = currentCliView.execute(this);
 
             // sessione non più valida (refresh token scaduto): si torna al login
-            if (nextView != null && !(nextView instanceof AuthenticationCli) && !sessionController.isAuthenticated()) {
+            if (nextView != null && !(nextView instanceof AuthenticationCli) && !sessionManager.isAuthenticated()) {
                 currentCliView.stop();
                 currentCliView = new AuthenticationCli();
                 continue;
@@ -50,9 +50,9 @@ public class CliEngine {
     }
 
     private CliView initialView() {
-        if (sessionController.hasPersistedTokens()) {
+        if (sessionManager.hasPersistedTokens()) {
             try {
-                sessionController.resumeSessionAsync().join();
+                sessionManager.resumeSessionAsync().join();
                 return new DashboardCli();
 
             } catch (Exception e) {

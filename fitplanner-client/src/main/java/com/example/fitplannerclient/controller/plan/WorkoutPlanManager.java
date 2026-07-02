@@ -6,7 +6,7 @@ import com.example.fitplannerclient.entity.plan.WorkoutPlanSummary;
 import com.example.fitplannerclient.entity.plan.WorkoutSession;
 import com.example.fitplannerclient.repository.ExerciseRepository;
 import com.example.fitplannerclient.repository.WorkoutPlanRepository;
-import com.example.fitplannerclient.serializer.PlanToBeanVisitor;
+import com.example.fitplannerclient.controller.plan.mapper.PlanToBeanVisitor;
 
 import java.util.List;
 import java.util.Optional;

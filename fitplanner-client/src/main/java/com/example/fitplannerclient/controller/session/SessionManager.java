@@ -1,4 +1,4 @@
-package com.example.fitplannerclient.controller;
+package com.example.fitplannerclient.controller.session;
 
 import com.example.fitplannerclient.bean.auth.LoginBean;
 import com.example.fitplannerclient.bean.auth.RegisterBean;
@@ -12,7 +12,7 @@ import java.util.function.Supplier;
  * Controller applicativo degli eventi di sessione: login, registrazione, logout,
  * ripresa della sessione persistita e scadenza dei token
  */
-public class SessionController {
+public class SessionManager {
 
     /**
      * Esito di un'autenticazione riuscita: se l'identità è la stessa della sessione
@@ -27,7 +27,7 @@ public class SessionController {
     private UserSessionContext session;
     private Supplier<CompletableFuture<LoginOutcome>> reauthenticationHandler;
 
-    public SessionController(AuthManager authManager, TokenStore tokenStore, Supplier<UserSessionContext> sessionFactory) {
+    public SessionManager(AuthManager authManager, TokenStore tokenStore, Supplier<UserSessionContext> sessionFactory) {
         this.authManager = authManager;
         this.tokenStore = tokenStore;
         this.sessionFactory = sessionFactory;

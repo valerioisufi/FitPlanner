@@ -1,4 +1,4 @@
-package com.example.fitplannerclient.entity.plan.context;
+package com.example.fitplannerclient.entity.plan.execution;
 
 public enum ControlSignal {
     NONE,

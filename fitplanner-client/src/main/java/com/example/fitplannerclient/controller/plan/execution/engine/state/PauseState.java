@@ -1,11 +1,11 @@
 package com.example.fitplannerclient.controller.plan.execution.engine.state;
 
 import com.example.fitplannerclient.controller.plan.execution.engine.WorkoutEngineImpl;
-import com.example.fitplannerclient.entity.plan.context.ControlSignal;
-import com.example.fitplannerclient.entity.plan.context.ExecutionContext;
-import com.example.fitplannerclient.entity.plan.context.ExecutionResult;
+import com.example.fitplannerclient.entity.plan.execution.ControlSignal;
+import com.example.fitplannerclient.entity.plan.execution.ExecutionContext;
+import com.example.fitplannerclient.entity.plan.execution.ExecutionResult;
 
-import com.example.fitplannerclient.entity.plan.context.WorkoutStatus;
+import com.example.fitplannerclient.entity.plan.execution.WorkoutStatus;
 
 public class PauseState extends EngineState {
 

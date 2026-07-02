@@ -1,4 +1,4 @@
-package com.example.fitplannerclient.serializer;
+package com.example.fitplannerclient.controller.plan.mapper;
 
 import com.example.fitplannerclient.bean.plan.*;
 import com.example.fitplannerclient.entity.plan.visitor.WorkoutPlanVisitor;

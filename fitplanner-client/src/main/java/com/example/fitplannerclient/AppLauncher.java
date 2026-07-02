@@ -20,7 +20,7 @@ public class AppLauncher {
                 case CLI -> {
                     System.setProperty("org.slf4j.simpleLogger.logFile", "cli.log");
                     ApplicationContext applicationContext = new ApplicationContext(configManager.getApiUrl());
-                    CliEngine cliEngine = new CliEngine(applicationContext.getSessionController());
+                    CliEngine cliEngine = new CliEngine(applicationContext.getSessionManager());
                     cliEngine.start();
                 }
                 case JAVAFX ->

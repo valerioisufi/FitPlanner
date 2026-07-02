@@ -25,7 +25,7 @@ public class JavaFxApp extends Application {
             ApplicationContext applicationContext = new ApplicationContext(configManager.getApiUrl());
 
             GuiManager guiManager = new GuiManager(stage);
-            Navigator navigator = new Navigator(guiManager, applicationContext.getSessionController());
+            Navigator navigator = new Navigator(guiManager, applicationContext.getSessionManager());
 
             // Start the flow
             navigator.goHome();

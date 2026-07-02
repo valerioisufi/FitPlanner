@@ -1,4 +1,4 @@
-package com.example.fitplannerclient.controller;
+package com.example.fitplannerclient.controller.session;
 
 import com.example.fitplannerclient.bean.auth.LoginBean;
 import com.example.fitplannerclient.bean.auth.RegisterBean;

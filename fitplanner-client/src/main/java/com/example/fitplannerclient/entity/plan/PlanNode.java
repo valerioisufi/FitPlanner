@@ -1,9 +1,9 @@
 package com.example.fitplannerclient.entity.plan;
 
 import com.example.fitplannerclient.entity.plan.visitor.AcceptWorkoutPlanVisitor;
-import com.example.fitplannerclient.entity.plan.context.ExecutionContext;
-import com.example.fitplannerclient.entity.plan.context.ExecutionResult;
-import com.example.fitplannerclient.entity.plan.context.PlanNodeState;
+import com.example.fitplannerclient.entity.plan.execution.ExecutionContext;
+import com.example.fitplannerclient.entity.plan.execution.ExecutionResult;
+import com.example.fitplannerclient.entity.plan.execution.PlanNodeState;
 import com.example.fitplannerclient.util.IDGenerator;
 
 public abstract class PlanNode implements AcceptWorkoutPlanVisitor {

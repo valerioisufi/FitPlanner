@@ -1,7 +1,7 @@
 package com.example.fitplannerclient.controller.plan.execution.engine.state;
 
 import com.example.fitplannerclient.controller.plan.execution.engine.WorkoutEngineImpl;
-import com.example.fitplannerclient.entity.plan.context.WorkoutStatus;
+import com.example.fitplannerclient.entity.plan.execution.WorkoutStatus;
 
 public abstract class EngineState {
 

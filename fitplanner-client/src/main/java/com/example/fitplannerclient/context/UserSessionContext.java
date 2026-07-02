@@ -45,7 +45,7 @@ public class UserSessionContext {
 
     /**
      * Identità dell'utente di questa sessione.
-     * Valida per costruzione: il SessionController espone il contesto solo dopo
+     * Valida per costruzione: il SessionManager espone il contesto solo dopo
      * aver caricato con successo il profilo.
      */
     public String getUserId() {

@@ -13,10 +13,10 @@ import com.example.fitplannerclient.controller.plan.execution.observer.WorkoutEx
 import com.example.fitplannerclient.controller.plan.execution.observer.WorkoutExecutionSubject;
 import com.example.fitplannerclient.entity.plan.WorkoutPlan;
 import com.example.fitplannerclient.entity.plan.WorkoutSession;
-import com.example.fitplannerclient.entity.plan.context.WorkoutStatus;
+import com.example.fitplannerclient.entity.plan.execution.WorkoutStatus;
 import com.example.fitplannerclient.repository.ExerciseRepository;
 import com.example.fitplannerclient.repository.SessionLogRepository;
-import com.example.fitplannerclient.serializer.PlanToBeanVisitor;
+import com.example.fitplannerclient.controller.plan.mapper.PlanToBeanVisitor;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;

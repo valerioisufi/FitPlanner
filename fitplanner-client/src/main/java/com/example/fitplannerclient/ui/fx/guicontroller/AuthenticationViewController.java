@@ -3,7 +3,7 @@ package com.example.fitplannerclient.ui.fx.guicontroller;
 import com.example.fitplannerclient.bean.auth.LoginBean;
 import com.example.fitplannerclient.bean.auth.RegisterBean;
 import com.example.fitplannerclient.bean.profile.ProfileBean;
-import com.example.fitplannerclient.controller.SessionController;
+import com.example.fitplannerclient.controller.session.SessionManager;
 import com.example.fitplannerclient.ui.fx.GuiController;
 import com.example.fitplannerclient.ui.fx.GuiManager;
 import com.example.fitplannerclient.ui.fx.view.auth.AuthenticationView;
@@ -14,13 +14,13 @@ import java.util.function.Consumer;
 
 public class AuthenticationViewController implements GuiController {
     private final GuiManager guiManager;
-    private final SessionController sessionController;
+    private final SessionManager sessionManager;
     private final AuthenticationView view;
-    private final Consumer<SessionController.LoginOutcome> onAuthenticated;
+    private final Consumer<SessionManager.LoginOutcome> onAuthenticated;
 
-    public AuthenticationViewController(GuiManager guiManager, SessionController sessionController, Consumer<SessionController.LoginOutcome> onAuthenticated) {
+    public AuthenticationViewController(GuiManager guiManager, SessionManager sessionManager, Consumer<SessionManager.LoginOutcome> onAuthenticated) {
         this.guiManager = guiManager;
-        this.sessionController = sessionController;
+        this.sessionManager = sessionManager;
         this.onAuthenticated = onAuthenticated;
         this.view = new AuthenticationView();
 
@@ -60,7 +60,7 @@ public class AuthenticationViewController implements GuiController {
 
         LoginBean loginBean = new LoginBean(this.view.getLoginEmail(), this.view.getLoginPassword());
 
-        sessionController.loginAsync(loginBean)
+        sessionManager.loginAsync(loginBean)
                 .thenAccept(onAuthenticated)
                 .exceptionally(ex -> {
                     this.guiManager.showExceptionError("Errore nel login:", ex);
@@ -107,7 +107,7 @@ public class AuthenticationViewController implements GuiController {
         profileBean.setProfileType(profileType);
         registerBean.setProfile(profileBean);
 
-        sessionController.registerAsync(registerBean)
+        sessionManager.registerAsync(registerBean)
                 .thenAccept(onAuthenticated)
                 .exceptionally(ex -> {
                     this.guiManager.showExceptionError("Errore durante la registrazione:", ex);

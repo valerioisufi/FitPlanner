@@ -1,6 +1,5 @@
-package com.example.fitplannerclient.controller.plan.core.factory;
+package com.example.fitplannerclient.entity.plan.block;
 
-import com.example.fitplannerclient.entity.plan.block.ProtocolBlock;
 import com.example.fitplannerclient.entity.plan.block.strategy.composition.WrapWithDecoratorRule;
 import com.example.fitplannerclient.entity.plan.block.strategy.validation.NodeCountRangeRule;
 import com.example.fitplannerclient.entity.plan.block.strategy.validation.OnlyExercisesAllowedRule;

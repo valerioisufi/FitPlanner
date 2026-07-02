@@ -1,9 +1,9 @@
-package com.example.fitplannerclient.controller.plan.core.library;
+package com.example.fitplannerclient.controller.plan;
 
 import com.example.fitplannerclient.bean.plan.PlanNodeBean;
-import com.example.fitplannerclient.controller.plan.core.factory.ProtocolBlockFactory;
+import com.example.fitplannerclient.entity.plan.block.ProtocolBlockFactory;
 import com.example.fitplannerclient.entity.plan.block.ProtocolBlock;
-import com.example.fitplannerclient.serializer.PlanToBeanVisitor;
+import com.example.fitplannerclient.controller.plan.mapper.PlanToBeanVisitor;
 
 import java.util.ArrayList;
 import java.util.List;

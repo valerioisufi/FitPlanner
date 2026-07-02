@@ -5,9 +5,9 @@ import com.example.fitplannerclient.entity.plan.PlanNode;
 import com.example.fitplannerclient.entity.plan.block.strategy.composition.CompositionRule;
 import com.example.fitplannerclient.entity.plan.block.strategy.validation.ValidationResult;
 import com.example.fitplannerclient.entity.plan.block.strategy.validation.ValidationRule;
-import com.example.fitplannerclient.entity.plan.context.ExecutionContext;
-import com.example.fitplannerclient.entity.plan.context.ExecutionResult;
-import com.example.fitplannerclient.entity.plan.context.PlanNodeState;
+import com.example.fitplannerclient.entity.plan.execution.ExecutionContext;
+import com.example.fitplannerclient.entity.plan.execution.ExecutionResult;
+import com.example.fitplannerclient.entity.plan.execution.PlanNodeState;
 
 import java.util.HashMap;
 import java.util.Iterator;

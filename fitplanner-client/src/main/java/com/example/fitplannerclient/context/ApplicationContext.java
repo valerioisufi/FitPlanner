@@ -1,7 +1,7 @@
 package com.example.fitplannerclient.context;
 
-import com.example.fitplannerclient.controller.AuthManager;
-import com.example.fitplannerclient.controller.SessionController;
+import com.example.fitplannerclient.controller.session.AuthManager;
+import com.example.fitplannerclient.controller.session.SessionManager;
 import com.example.fitplannerclient.service.HttpService;
 import com.example.fitplannerclient.service.TokenStore;
 import com.example.fitplannerclient.service.api.*;
@@ -10,7 +10,7 @@ import java.util.concurrent.CompletableFuture;
 
 /**
  * Composition root del client: vive quanto il processo.
- * Possiede i servizi condivisi (token store, http, Api) e il SessionController.
+ * Possiede i servizi condivisi (token store, http, Api) e il SessionManager.
  * Lo stato per-utente non abita qui: sta negli UserSessionContext creati a ogni login.
  */
 public class ApplicationContext {
@@ -22,7 +22,7 @@ public class ApplicationContext {
     private final WorkoutPlanApi workoutPlanApi;
     private final SessionLogApi sessionLogApi;
 
-    private final SessionController sessionController;
+    private final SessionManager sessionManager;
 
     public ApplicationContext(String apiUrl) {
         this.tokenStore = new TokenStore();
@@ -35,11 +35,11 @@ public class ApplicationContext {
         this.workoutPlanApi = new HttpWorkoutPlanApi(httpService);
         this.sessionLogApi = new HttpSessionLogApi(httpService);
 
-        this.sessionController = new SessionController(new AuthManager(authApi), tokenStore, this::createUserSession);
+        this.sessionManager = new SessionManager(new AuthManager(authApi), tokenStore, this::createUserSession);
     }
 
-    public SessionController getSessionController() {
-        return sessionController;
+    public SessionManager getSessionManager() {
+        return sessionManager;
     }
 
     private UserSessionContext createUserSession() {
@@ -47,6 +47,6 @@ public class ApplicationContext {
     }
 
     private CompletableFuture<Boolean> handleSessionExpired() {
-        return sessionController.onSessionExpired();
+        return sessionManager.onSessionExpired();
     }
 }

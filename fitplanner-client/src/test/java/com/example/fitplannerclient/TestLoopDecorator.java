@@ -1,8 +1,8 @@
 package com.example.fitplannerclient;
 
-import com.example.fitplannerclient.entity.plan.context.ExecutionContext;
-import com.example.fitplannerclient.entity.plan.context.ExecutionResult;
-import com.example.fitplannerclient.entity.plan.context.PlanNodeState;
+import com.example.fitplannerclient.entity.plan.execution.ExecutionContext;
+import com.example.fitplannerclient.entity.plan.execution.ExecutionResult;
+import com.example.fitplannerclient.entity.plan.execution.PlanNodeState;
 import com.example.fitplannerclient.entity.plan.decorator.LoopDecorator;
 import com.example.fitplannerclient.mock.DummyPlanNode;
 import org.junit.jupiter.api.Test;

@@ -3,7 +3,7 @@ package com.example.fitplannerclient.controller.plan.editor;
 import com.example.fitplannerclient.bean.plan.PlanNodeBean;
 import com.example.fitplannerclient.bean.plan.WorkoutPlanBean;
 import com.example.fitplannerclient.repository.WorkoutPlanRepository;
-import com.example.fitplannerclient.controller.plan.core.library.ProtocolLibraryManager;
+import com.example.fitplannerclient.controller.plan.ProtocolLibraryManager;
 import com.example.fitplannerclient.entity.plan.visitor.NodeFinderVisitor;
 import com.example.fitplannerclient.controller.plan.editor.command.EditorHistoryManager;
 import com.example.fitplannerclient.controller.plan.editor.observer.WorkoutPlanObserver;
@@ -14,7 +14,7 @@ import com.example.fitplannerclient.entity.plan.block.Block;
 import com.example.fitplannerclient.entity.plan.block.ProtocolBlock;
 import com.example.fitplannerclient.entity.plan.exercise.ExerciseNode;
 import com.example.fitplannerclient.repository.ExerciseRepository;
-import com.example.fitplannerclient.serializer.PlanToBeanVisitor;
+import com.example.fitplannerclient.controller.plan.mapper.PlanToBeanVisitor;
 
 import java.util.HashMap;
 import java.util.List;

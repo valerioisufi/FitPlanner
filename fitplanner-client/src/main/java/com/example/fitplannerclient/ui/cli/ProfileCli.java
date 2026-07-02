@@ -46,7 +46,7 @@ public class ProfileCli implements CliView {
                 printInvitationCode();
             }
         } else if (scelta == 5) {
-            engine.getSessionController().logout();
+            engine.getSessionManager().logout();
             return new AuthenticationCli();
         }
 
