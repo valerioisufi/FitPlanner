@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -52,9 +52,9 @@ public class FileSystemSessionLogDao implements SessionLogDao {
     public List<SessionLog> findLogsByAthleteIdAndDateRange(String athleteId, long startTimestamp, long endTimestamp) throws DaoException {
         Objects.requireNonNull(athleteId, "athleteId cannot be null");
 
-        // Convertiamo i timestamp SECONDI in oggetti LocalDateTime
-        LocalDateTime start = LocalDateTime.ofInstant(Instant.ofEpochSecond(startTimestamp), ZoneId.systemDefault());
-        LocalDateTime end = LocalDateTime.ofInstant(Instant.ofEpochSecond(endTimestamp), ZoneId.systemDefault());
+        // Convertiamo i timestamp in millisecondi in oggetti LocalDateTime
+        LocalDateTime start = LocalDateTime.ofInstant(Instant.ofEpochMilli(startTimestamp), ZoneOffset.UTC);
+        LocalDateTime end = LocalDateTime.ofInstant(Instant.ofEpochMilli(endTimestamp), ZoneOffset.UTC);
 
         lock.readLock().lock();
         try {

@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -65,7 +66,7 @@ class TestWorkoutScheduleController {
         // Arrange
         WorkoutPlan plan = new WorkoutPlan("plan-1", "My Plan", 7);
         plan.assignTo(mockIdentityProvider.getUserId());
-        plan.setStartDate(LocalDate.now().plusDays(2)); // Il piano inizierà tra due giorni
+        plan.setStartDate(LocalDate.now(ZoneOffset.UTC).plusDays(2)); // Il piano inizierà tra due giorni
 
         workoutPlanDao.savePlan(plan);
 
@@ -82,7 +83,7 @@ class TestWorkoutScheduleController {
         // Arrange
         WorkoutPlan plan = new WorkoutPlan("plan-2", "Forza e Ipertrofia", 7);
         plan.assignTo(mockIdentityProvider.getUserId());
-        plan.setStartDate(LocalDate.now().minusDays(2)); // Iniziato due giorni fa (Siamo al day 2 relativo)
+        plan.setStartDate(LocalDate.now(ZoneOffset.UTC).minusDays(2)); // Iniziato due giorni fa (Siamo al day 2 relativo)
 
         WorkoutSession sessionDay0 = new WorkoutSession("Giorno 1", "{}", 0);
         WorkoutSession sessionDay2 = new WorkoutSession("Giorno 2", "{}", 2);
@@ -99,7 +100,7 @@ class TestWorkoutScheduleController {
                 mockIdentityProvider.getUserId(),
                 "Buon allenamento",
                 SessionLog.SessionStatus.COMPLETED,
-                LocalDateTime.now().minusDays(2),
+                LocalDateTime.now(ZoneOffset.UTC).minusDays(2),
                 plan.getPlanId(),
                 0 // Si riferisce alla WorkoutSessionDay 0
         );

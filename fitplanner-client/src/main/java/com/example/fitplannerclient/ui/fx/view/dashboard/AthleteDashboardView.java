@@ -10,8 +10,9 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.*;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 public class AthleteDashboardView extends BorderPane {
@@ -106,7 +107,7 @@ public class AthleteDashboardView extends BorderPane {
         }
 
         VBox listContainer = new VBox(10);
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").withZone(ZoneId.systemDefault());
         for (SessionLogBean log : logs) {
             HBox row = new HBox(15);
             row.setAlignment(Pos.CENTER_LEFT);
@@ -116,7 +117,7 @@ public class AthleteDashboardView extends BorderPane {
             VBox infoBox = new VBox(4);
             Label planName = new Label("Giorno Sessione: " + log.workoutSessionDay());
             planName.setStyle("-fx-font-family: 'Space Grotesk Bold'; -fx-font-size: 14px; -fx-text-fill: -fx-color-text-body;");
-            Label sessionName = new Label("Data: " + sdf.format(new Date(log.date())));
+            Label sessionName = new Label("Data: " + dateFormatter.format(Instant.ofEpochMilli(log.date())));
             sessionName.setStyle("-fx-text-fill: -fx-color-text-light; -fx-font-size: 13px;");
             infoBox.getChildren().addAll(planName, sessionName);
 

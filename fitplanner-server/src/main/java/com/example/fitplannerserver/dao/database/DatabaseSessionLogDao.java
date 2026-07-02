@@ -7,6 +7,9 @@ import com.example.fitplannerserver.model.log.ExerciseLog;
 import com.example.fitplannerserver.model.log.SessionLog;
 
 import java.sql.*;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -55,8 +58,8 @@ public class DatabaseSessionLogDao implements SessionLogDao {
             conn = DbConnection.getInstance().getConnection();
             try(PreparedStatement stm= conn.prepareStatement(sql)){
                 stm.setString(1, athleteId);
-                stm.setTimestamp(2, new Timestamp(startTimestamp));
-                stm.setTimestamp(3, new Timestamp(endTimestamp));
+                stm.setObject(2, LocalDateTime.ofInstant(Instant.ofEpochMilli(startTimestamp), ZoneOffset.UTC));
+                stm.setObject(3, LocalDateTime.ofInstant(Instant.ofEpochMilli(endTimestamp), ZoneOffset.UTC));
                 try(ResultSet rs = stm.executeQuery()){
                     return extractLogs(rs);
                 }
@@ -120,7 +123,7 @@ public class DatabaseSessionLogDao implements SessionLogDao {
             sessionStm.setInt(3, log.getWorkoutSessionDay());
             sessionStm.setString(4, log.getStatus().name());
             sessionStm.setString(5, log.getNotes());
-            sessionStm.setTimestamp(6, Timestamp.valueOf(log.getDate()));
+            sessionStm.setObject(6, log.getDate());
 
             sessionStm.executeUpdate();
             try (ResultSet rs = sessionStm.getGeneratedKeys()) {
@@ -165,7 +168,7 @@ public class DatabaseSessionLogDao implements SessionLogDao {
                         rs.getString("user_id"),
                         rs.getString("notes"),
                         SessionLog.SessionStatus.valueOf(rs.getString("status")),
-                        rs.getTimestamp("date").toLocalDateTime(),
+                        rs.getObject("date", LocalDateTime.class),
                         rs.getString("plan_referenced"),
                         rs.getInt("workout_session_day")
                 );

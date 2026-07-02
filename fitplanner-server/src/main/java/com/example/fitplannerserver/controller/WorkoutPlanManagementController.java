@@ -14,6 +14,7 @@ import com.example.fitplannerserver.util.ValidationUtils;
 import com.github.f4b6a3.uuid.UuidCreator;
 
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 
@@ -133,7 +134,7 @@ public class WorkoutPlanManagementController {
             WorkoutPlan athleteSpecificPlan = new WorkoutPlan(templatePlan, newInstanceId);
 
             athleteSpecificPlan.assignTo(athleteId);
-            athleteSpecificPlan.setStartDate(LocalDate.now());
+            athleteSpecificPlan.setStartDate(LocalDate.now(ZoneOffset.UTC));
             workoutPlanDao.savePlan(athleteSpecificPlan);
 
         } catch (DaoException e) {
