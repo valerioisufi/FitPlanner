@@ -1,4 +1,4 @@
-package com.example.fitplannerclient.controller.plan;
+package com.example.fitplannerclient.repository;
 
 import com.example.fitplannerclient.entity.plan.PlanNode;
 import com.example.fitplannerclient.entity.plan.WorkoutPlan;

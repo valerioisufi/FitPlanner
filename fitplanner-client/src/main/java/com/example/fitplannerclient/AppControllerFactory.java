@@ -4,7 +4,7 @@ import com.example.fitplannerclient.controller.AuthManager;
 import com.example.fitplannerclient.controller.exercise.ExerciseLibraryManager;
 import com.example.fitplannerclient.controller.log.WorkoutHistoryManager;
 import com.example.fitplannerclient.controller.plan.WorkoutPlanManager;
-import com.example.fitplannerclient.controller.plan.WorkoutPlanRepository;
+import com.example.fitplannerclient.repository.WorkoutPlanRepository;
 import com.example.fitplannerclient.controller.plan.editor.EditWorkoutPlanManager;
 import com.example.fitplannerclient.controller.plan.execution.WorkoutExecutionManager;
 import com.example.fitplannerclient.controller.profile.ProfileManager;

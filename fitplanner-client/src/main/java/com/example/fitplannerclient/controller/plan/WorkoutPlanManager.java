@@ -4,6 +4,7 @@ import com.example.fitplannerclient.bean.plan.*;
 import com.example.fitplannerclient.entity.plan.PlanNode;
 import com.example.fitplannerclient.entity.plan.WorkoutPlan;
 import com.example.fitplannerclient.repository.ExerciseRepository;
+import com.example.fitplannerclient.repository.WorkoutPlanRepository;
 import com.example.fitplannerclient.serializer.PlanDeserializer;
 import com.example.fitplannerclient.serializer.PlanToBeanVisitor;
 import com.example.fitplannerclient.service.api.WorkoutPlanApi;

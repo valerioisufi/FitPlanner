@@ -2,7 +2,7 @@ package com.example.fitplannerclient.controller.plan.editor;
 
 import com.example.fitplannerclient.bean.plan.PlanNodeBean;
 import com.example.fitplannerclient.bean.plan.WorkoutPlanBean;
-import com.example.fitplannerclient.controller.plan.WorkoutPlanRepository;
+import com.example.fitplannerclient.repository.WorkoutPlanRepository;
 import com.example.fitplannerclient.controller.plan.core.library.ProtocolLibraryManager;
 import com.example.fitplannerclient.controller.plan.core.visitor.NodeFinderVisitor;
 import com.example.fitplannerclient.controller.plan.editor.command.EditorHistoryManager;

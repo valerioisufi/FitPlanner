@@ -2,7 +2,7 @@ package com.example.fitplannerclient.controller.plan.execution;
 
 import com.example.fitplannerclient.bean.exercise.ExerciseDescriptionBean;
 import com.example.fitplannerclient.bean.plan.PlanNodeBean;
-import com.example.fitplannerclient.controller.plan.WorkoutPlanRepository;
+import com.example.fitplannerclient.repository.WorkoutPlanRepository;
 import com.example.fitplannerclient.controller.plan.execution.engine.WorkoutEngine;
 import com.example.fitplannerclient.controller.plan.execution.engine.WorkoutEngineImpl;
 import com.example.fitplannerclient.controller.plan.execution.observer.WorkoutExecutionObserver;
