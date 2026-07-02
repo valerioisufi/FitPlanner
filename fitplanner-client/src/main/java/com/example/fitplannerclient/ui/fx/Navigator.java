@@ -28,14 +28,6 @@ public class Navigator {
         return instance;
     }
 
-    public GuiManager getGuiManager() {
-        return guiManager;
-    }
-
-    public SessionManager getSessionManager() {
-        return sessionManager;
-    }
-
     private void navigateTo(GuiController nextController) {
         if (currentGuiController != null) {
             currentGuiController.stop();
