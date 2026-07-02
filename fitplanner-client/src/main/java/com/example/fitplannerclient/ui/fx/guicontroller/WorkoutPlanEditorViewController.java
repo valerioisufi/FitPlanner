@@ -46,12 +46,12 @@ public class WorkoutPlanEditorViewController implements GuiController {
         this.mainPane = new BorderPane();
         this.mainPane.setCenter(this.view);
 
-        observer = () -> editWorkoutPlanManager.getPlanAsync().thenAccept(planBean -> {
+        observer = () -> editWorkoutPlanManager.getPlanAsync().thenAccept(planBean ->
             Platform.runLater(() -> {
                 activePlan = planBean;
                 view.setPlan(activePlan);
-            });
-        });
+            })
+        );
         editWorkoutPlanManager.addObserver(observer);
 
         if (planIdToEdit == null) {
@@ -91,8 +91,8 @@ public class WorkoutPlanEditorViewController implements GuiController {
         this.view.setOnSavePlanClicked(this::savePlan);
         this.view.setOnCancelClicked(navigator::goToPlanManagement);
 
-        this.view.setOnShowModalRequested(modalContent -> guiManager.showModal(modalContent));
-        this.view.setOnHideModalRequested(() -> guiManager.hideModal());
+        this.view.setOnShowModalRequested(guiManager::showModal);
+        this.view.setOnHideModalRequested(guiManager::hideModal);
 
         setupPlanNodeEventHandlers();
 
@@ -178,8 +178,8 @@ public class WorkoutPlanEditorViewController implements GuiController {
         String targetScopeId = MODIFIER_BADGE_TYPE.equals(event.getBadgeType()) ? event.getNodeId() : badge.getBadgeId();
         List<String> vars = editWorkoutPlanManager.getAvailableVariablesForNode(targetScopeId);
 
-        this.view.getEditBadgeModal().setInitialData(badge.getBadgeType(), badge.getName(), badge.getValue(), vars);
-        this.view.getEditBadgeModal().setOnSaveAction((newValue) -> {
+        this.view.getEditBadgeModal().setInitialData(badge.getName(), badge.getValue(), vars);
+        this.view.getEditBadgeModal().setOnSaveAction(newValue -> {
             if (MODIFIER_BADGE_TYPE.equals(event.getBadgeType())) {
                 editWorkoutPlanManager.updateModifier(event.getNodeId(), badge.getName(), newValue);
             } else {
@@ -246,7 +246,7 @@ public class WorkoutPlanEditorViewController implements GuiController {
 
             String type = payload.substring("MODIFIER:".length());
             List<String> vars = editWorkoutPlanManager.getAvailableVariablesForNode(targetParentId);
-            this.view.getEditBadgeModal().setInitialData(BadgeComponent.BadgeType.MODIFIER, type, "", vars);
+            this.view.getEditBadgeModal().setInitialData(type, "", vars);
             this.view.getEditBadgeModal().setOnSaveAction(val -> {
                 editWorkoutPlanManager.addModifierFromToolbox(type.toUpperCase(), val, targetParentId);
                 guiManager.hideModal();
@@ -256,7 +256,7 @@ public class WorkoutPlanEditorViewController implements GuiController {
         } else if (payload.startsWith("DECORATOR:")) {
             String type = payload.substring("DECORATOR:".length());
             List<String> vars = editWorkoutPlanManager.getAvailableVariablesForNode(targetParentId);
-            this.view.getEditBadgeModal().setInitialData(BadgeComponent.BadgeType.DECORATOR, type, "", vars);
+            this.view.getEditBadgeModal().setInitialData(type, "", vars);
             this.view.getEditBadgeModal().setOnSaveAction(val -> {
                 editWorkoutPlanManager.addDecoratorFromToolbox(type, val, targetParentId);
                 guiManager.hideModal();

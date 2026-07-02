@@ -31,7 +31,7 @@ public class NotificationController {
 
         emitter.onCompletion(() -> removeEmitter(userId, emitter));
         emitter.onTimeout(() -> removeEmitter(userId, emitter));
-        emitter.onError((e) -> removeEmitter(userId, emitter));
+        emitter.onError(e -> removeEmitter(userId, emitter));
 
         try {
             // initial event to immediately establish the connection

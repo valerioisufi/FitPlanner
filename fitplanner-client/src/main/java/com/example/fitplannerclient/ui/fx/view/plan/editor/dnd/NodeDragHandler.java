@@ -80,10 +80,15 @@ public class NodeDragHandler {
                 } else {
                     pos = getDropPosition(component, event.getY());
                 }
-                
-                if (pos == DropPosition.ABOVE) component.getStyleClass().add(DROP_ABOVE);
-                else if (pos == DropPosition.BELOW) component.getStyleClass().add(DROP_BELOW);
-                else component.getStyleClass().add(DROP_INSIDE);
+
+                switch (pos) {
+                    case DropPosition.ABOVE ->
+                        component.getStyleClass().add(DROP_ABOVE);
+                    case DropPosition.BELOW ->
+                        component.getStyleClass().add(DROP_BELOW);
+                    default ->
+                        component.getStyleClass().add(DROP_INSIDE);
+                }
             }
             event.consume();
         });

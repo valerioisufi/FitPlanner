@@ -22,9 +22,9 @@ public class ReplaceNodeCommand implements WorkoutPlanEditorCommand {
 
     @Override
     public void execute() {
-        executeIfGroupNode(parent, groupNode -> {
-            oldNode = groupNode.replaceNode(index, newNode);
-        });
+        executeIfGroupNode(parent, groupNode ->
+            oldNode = groupNode.replaceNode(index, newNode)
+        );
 
         executeIfFlowDecorator(parent, flowDecorator -> {
             oldNode = flowDecorator.getWrappedNode();
@@ -34,13 +34,13 @@ public class ReplaceNodeCommand implements WorkoutPlanEditorCommand {
 
     @Override
     public void undo() {
-        executeIfGroupNode(parent, groupNode -> {
-            groupNode.replaceNode(index, oldNode);
-        });
+        executeIfGroupNode(parent, groupNode ->
+            groupNode.replaceNode(index, oldNode)
+        );
 
-        executeIfFlowDecorator(parent, flowDecorator -> {
-            flowDecorator.setWrappedNode(oldNode);
-        });
+        executeIfFlowDecorator(parent, flowDecorator ->
+            flowDecorator.setWrappedNode(oldNode)
+        );
     }
 
     private void executeIfGroupNode(PlanNode node, Consumer<GroupNode> action) {

@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * Test dell'esecuzione di un IntervalDecorator (protocolli EMOM).
  * @author Valerio Isufi
  */
-public class TestIntervalDecorator {
+class TestIntervalDecorator {
 
     @Test
     void TestExecuteChildRunning() {

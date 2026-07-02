@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * Test dell'esecuzione di un TimeLimitDecorator.
  * @author Valerio Isufi
  */
-public class TestTimeLimitDecorator {
+class TestTimeLimitDecorator {
 
     @Test
     void TestExecuteChildRunning() {

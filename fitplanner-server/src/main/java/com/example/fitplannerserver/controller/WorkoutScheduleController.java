@@ -97,19 +97,18 @@ public class WorkoutScheduleController {
             WorkoutState workoutState = toWorkoutState(sessionStatus);
             states.add(workoutState);
 
-            if (nextSuggested == null) {
-                if (workoutState == WorkoutState.TO_DO || workoutState == WorkoutState.IN_PROGRESS) {
+            if (nextSuggested == null && (workoutState == WorkoutState.TO_DO || workoutState == WorkoutState.IN_PROGRESS)) {
                     nextSuggested = new WorkoutSessionDTO(template.getTitle(), template.getContent(), absoluteDay);
                 }
-            }
+
         }
 
         schedule.setWorkoutStates(states);
         schedule.setNextSuggestedSession(nextSuggested);
     }
 
-    // Traduce lo stato di una sessione nello stato esposto al client;
-    // l'assenza di log indica una sessione ancora da svolgere
+    // Traduce lo stato di una sessione nello stato esposto al client.
+    // L'assenza di log indica una sessione ancora da svolgere
     private WorkoutState toWorkoutState(SessionLog.SessionStatus sessionStatus) {
         if (sessionStatus == null) {
             return WorkoutState.TO_DO;

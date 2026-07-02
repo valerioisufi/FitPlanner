@@ -13,6 +13,7 @@ import com.example.fitplannerclient.ui.fx.components.Icon;
 import com.example.fitplannerclient.ui.fx.view.plan.execution.WorkoutExecutionView;
 import com.example.fitplannerclient.bean.log.ExerciseLogBean;
 import com.example.fitplannerclient.bean.log.ExerciseSetBean;
+import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
@@ -80,7 +81,7 @@ public class WorkoutExecutionViewController implements GuiController, WorkoutExe
     public void start() {
         executionManager.attachObserver(this);
         executionManager.startSessionAsync(planId, sessionDay)
-            .thenRun(() -> {
+            .thenRun(() ->
                 Platform.runLater(() -> {
                     executionManager.play();
                     PlanNodeBean rootBean = executionManager.getSessionRootBeanForUi();
@@ -91,8 +92,8 @@ public class WorkoutExecutionViewController implements GuiController, WorkoutExe
                     } else {
                         // Il motore provvederà a fare tick e aggiornare la UI via observer
                     }
-                });
-            })
+                })
+            )
             .exceptionally(ex -> {
                 Platform.runLater(() -> {
                     guiManager.showExceptionError("Errore caricamento sessione", ex);
@@ -236,7 +237,7 @@ public class WorkoutExecutionViewController implements GuiController, WorkoutExe
                     view.setTimerText(String.format("%02d:%02d", m, s));
                 }
             }));
-            restTimeline.setCycleCount(Timeline.INDEFINITE);
+            restTimeline.setCycleCount(Animation.INDEFINITE);
             restTimeline.play();
         });
     }

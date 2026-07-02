@@ -85,7 +85,7 @@ public class HomeViewController implements GuiController {
             planManager.getAssignedPlanAsync()
                     .thenCombine(planManager.getCurrentCycleScheduleAsync(), (plan, schedule) -> {
                         Platform.runLater(() -> {
-                            athleteView.showAthleteDashboard(plan, schedule, (selectedRelativeDay) -> {
+                            athleteView.showAthleteDashboard(plan, schedule, selectedRelativeDay -> {
                                 if (schedule != null) {
                                     navigator.goToWorkoutExecution(schedule.getPlanId(), selectedRelativeDay);
                                 }
@@ -107,17 +107,17 @@ public class HomeViewController implements GuiController {
     private void checkAndShowTrainerInvite(AthleteHomeView athleteView) {
         profileManager.hasTrainerAsync().thenAccept(hasTrainer -> {
             if (Boolean.FALSE.equals(hasTrainer)) {
-                Platform.runLater(() -> athleteView.showTrainerInviteCard(code -> {
-                    profileManager.linkTrainerAsync(code).thenRun(() -> {
+                Platform.runLater(() -> athleteView.showTrainerInviteCard(code ->
+                    profileManager.linkTrainerAsync(code).thenRun(() ->
                         Platform.runLater(() -> {
                             guiManager.showNotification(GuiManager.NotificationType.SUCCESS, "Trainer collegato con successo!");
                             start(); // Refresh home view
-                        });
-                    }).exceptionally(e -> {
+                        })
+                    ).exceptionally(e -> {
                         guiManager.showExceptionError("Errore:", e);
                         return null;
-                    });
-                }));
+                    })
+                ));
             }
         }).exceptionally(e -> {
             Platform.runLater(() -> guiManager.showExceptionError("Errore durante il controllo del trainer:", e));

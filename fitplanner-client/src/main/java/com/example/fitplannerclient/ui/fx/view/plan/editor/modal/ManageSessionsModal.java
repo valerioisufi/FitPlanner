@@ -139,7 +139,7 @@ public class ManageSessionsModal extends VBox {
         dayField.getStyleClass().add(TEXT_FIELD_CLASS);
         // Quando il focus viene perso, aggiorna il giorno se cambiato
         dayField.focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
-            if (!isNowFocused) {
+            if (Boolean.FALSE.equals(isNowFocused)) {
                 handleDayFieldFocusLost(dayField, session);
             }
         });

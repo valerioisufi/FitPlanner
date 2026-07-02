@@ -8,7 +8,7 @@ import java.util.Scanner;
 public class CliEngine {
     private final SessionController sessionController;
 
-    private CliView currentCliView;
+
     private final InputReader inputReader;
     private final OutputPrinter outputPrinter;
 
@@ -27,7 +27,7 @@ public class CliEngine {
     public OutputPrinter getPrinter() { return outputPrinter; }
 
     public void start() {
-        currentCliView = initialView();
+        CliView currentCliView = initialView();
 
         while (currentCliView != null) {
 

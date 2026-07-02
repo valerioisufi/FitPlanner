@@ -1,7 +1,6 @@
 package com.example.fitplannerclient.ui.fx.view.plan.editor.modal;
 
 import com.example.fitplannerclient.ui.fx.components.Icon;
-import com.example.fitplannerclient.ui.fx.view.plan.editor.components.BadgeComponent;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
@@ -174,7 +173,7 @@ public class EditBadgeModal extends VBox {
         });
     }
 
-    public void setInitialData(BadgeComponent.BadgeType type, String name, String value, List<String> availableVariables) {
+    public void setInitialData(String name, String value, List<String> availableVariables) {
         nameLabel.setText(name);
         
         variableComboBox.getItems().clear();

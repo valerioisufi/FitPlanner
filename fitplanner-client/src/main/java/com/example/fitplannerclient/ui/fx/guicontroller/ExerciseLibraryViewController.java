@@ -17,12 +17,10 @@ public class ExerciseLibraryViewController implements GuiController {
     private final HeaderViewController headerViewController;
     private final GuiManager guiManager;
     private final ExerciseLibraryManager manager;
-    private final ProfileManager profileManager;
 
     public ExerciseLibraryViewController(Navigator navigator, GuiManager guiManager, ExerciseLibraryManager manager, ProfileManager profileManager) {
         this.guiManager = guiManager;
         this.manager = manager;
-        this.profileManager = profileManager;
         this.headerViewController = new HeaderViewController(navigator, 1, profileManager);
         this.view = new ExerciseLibraryView();
 

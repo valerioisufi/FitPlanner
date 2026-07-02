@@ -109,18 +109,18 @@ public class ExerciseRepository {
     public CompletableFuture<Void> updateExerciseAsync(ExerciseDescription entity) {
 
         return api.updateExerciseAsync(entity.getExerciseId(), entityToDto(entity))
-                .thenAccept(v -> {
+                .thenAccept(v ->
                     // aggiorno la cache locale se l'aggiornamento della descrizione dell'esercizio ha avuto successo
-                    exerciseCache.put(entity.getExerciseId(), entity);
-                });
+                    exerciseCache.put(entity.getExerciseId(), entity)
+                );
     }
 
     public CompletableFuture<Void> removeExerciseAsync(String exerciseId) {
         return api.removeExerciseAsync(exerciseId)
-                .thenAccept(v -> {
+                .thenAccept(v ->
                     // rimuovo l'elemento dalla cache solo se la rimozione remota è completata con successo
-                    exerciseCache.remove(exerciseId);
-                });
+                    exerciseCache.remove(exerciseId)
+                );
     }
 
     // mapper

@@ -15,7 +15,6 @@ public class WorkoutPlan implements AcceptWorkoutPlanVisitor {
     private int cycleLength;
 
     private final Map<Integer, WorkoutSession> sessions = new TreeMap<>();
-    private WorkoutSession currentSession;
 
     public WorkoutPlan(String name, String planId) {
         this.name = name;

@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * Test dell'esecuzione di un RestDecorator
  * @author Valerio Isufi
  */
-public class TestRestDecorator {
+class TestRestDecorator {
 
     @Test
     void TestExecuteChildRunning() {

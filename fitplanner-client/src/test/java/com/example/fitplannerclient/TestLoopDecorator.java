@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * Test dell'esecuzione di un LoopDecorator
  * @author Valerio Isufi
  */
-public class TestLoopDecorator {
+class TestLoopDecorator {
 
     @Test
     void TextExecuteChildRunning() {

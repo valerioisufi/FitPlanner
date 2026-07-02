@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * Test dell'esecuzione di un ExerciseNode
  * @author Valerio Isufi
  */
-public class TestExerciseNode {
+class TestExerciseNode {
 
     @Test
     void testExecuteRunning() {

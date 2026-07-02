@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.*;
  *
  * @author Dennis Imperia
  */
-public class TestExecutionContext {
+class TestExecutionContext {
 
     @Test
     void testActiveNode() {

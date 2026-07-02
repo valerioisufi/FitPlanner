@@ -41,7 +41,7 @@ public class FormField extends VBox {
         this.inputField.textProperty().addListener((obs, oldVal, newVal) -> clearError());
 
         this.inputField.focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
-            if (!isNowFocused) {
+            if (Boolean.FALSE.equals(isNowFocused)) {
                 validate();
             }
         });
