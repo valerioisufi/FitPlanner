@@ -13,7 +13,7 @@ public class TokenStore {
     private final Preferences preferences;
 
     public TokenStore() {
-        // il refresh token viene salvato nelle Preferences;
+        // il refresh token viene salvato nelle Preferences,
         // in un contesto reale andrebbe memorizzato tramite il keystore del SO
         preferences = Preferences.userNodeForPackage(TokenStore.class);
 

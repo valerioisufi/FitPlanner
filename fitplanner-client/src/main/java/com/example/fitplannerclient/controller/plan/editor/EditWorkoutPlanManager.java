@@ -230,7 +230,7 @@ public class EditWorkoutPlanManager {
         if (node instanceof ProtocolBlock protocolBlock) {
             return new HashMap<>(protocolBlock.getParameters());
         }
-        return null;
+        return Map.of();
     }
 
     private PlanNode findNode(String nodeId) {

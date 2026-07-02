@@ -42,7 +42,7 @@ public class ProgressionDecorator extends LoopDecorator {
 
     private Map<String, List<String>> parseProgressions(String str) {
         if (str == null || str.trim().isEmpty()) {
-            return Collections.emptyMap();
+            return Map.of();
         }
 
         // la stringa da parsare è del tipo
@@ -67,7 +67,7 @@ public class ProgressionDecorator extends LoopDecorator {
             }
         }
 
-        return result.isEmpty() ? Collections.emptyMap() : result;
+        return result.isEmpty() ? Map.of() : result;
     }
 
     @Override
