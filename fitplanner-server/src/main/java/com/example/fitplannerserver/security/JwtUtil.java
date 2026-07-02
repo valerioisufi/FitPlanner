@@ -42,11 +42,11 @@ public class JwtUtil {
                     .build()
                     .parseSignedClaims(token);
 
-            if(claims.getPayload().getExpiration().before(new Date())) return null;
+            if(claims.getPayload().getExpiration().before(new Date())) return Jwts.claims().build();
 
             return claims.getPayload();
         } catch (Exception e) {
-            return null;
+            return Jwts.claims().build();
         }
     }
 
