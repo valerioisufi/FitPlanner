@@ -3,6 +3,8 @@ package com.example.fitplannerclient.controller.plan.execution.engine.state;
 import com.example.fitplannerclient.controller.plan.execution.engine.WorkoutEngineImpl;
 import com.example.fitplannerclient.entity.plan.context.*;
 
+import java.time.Duration;
+
 public class PlayState extends EngineState {
 
     private Thread engineThread;
@@ -22,7 +24,7 @@ public class PlayState extends EngineState {
         ExecutionContext context = engine.getContext();
 
         this.engineThread = Thread.startVirtualThread(() -> {
-            long lastWakeUpTime = System.currentTimeMillis();
+            long lastWakeUpTime = System.nanoTime();
 
             while (engine.getState().isPlaying()) {
                 Thread.interrupted();
@@ -55,7 +57,7 @@ public class PlayState extends EngineState {
             try {
                 Thread.sleep(sleepTime);
                 context.setTickDelta(sleepTime);
-                return System.currentTimeMillis();
+                return System.nanoTime();
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 return updateTickDelta(context, lastWakeUpTime);
@@ -63,14 +65,14 @@ public class PlayState extends EngineState {
         } else {
             // sleepTime == 0 -> il nodo ha chiesto di non dormire affatto (tick immediato)
             context.setTickDelta(0);
-            return System.currentTimeMillis();
+            return System.nanoTime();
         }
         return lastWakeUpTime;
     }
 
     private long updateTickDelta(ExecutionContext context, long lastWakeUpTime) {
-        long now = System.currentTimeMillis();
-        context.setTickDelta((int) (now - lastWakeUpTime));
+        long now = System.nanoTime();
+        context.setTickDelta((int) Duration.ofNanos(now - lastWakeUpTime).toMillis());
         return now;
     }
 
