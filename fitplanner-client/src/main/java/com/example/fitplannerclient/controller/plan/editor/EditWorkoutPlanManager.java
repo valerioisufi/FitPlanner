@@ -4,13 +4,19 @@ import com.example.fitplannerclient.bean.plan.PlanNodeBean;
 import com.example.fitplannerclient.bean.plan.WorkoutPlanBean;
 import com.example.fitplannerclient.controller.plan.WorkoutPlanRepository;
 import com.example.fitplannerclient.controller.plan.core.library.ProtocolLibraryManager;
+import com.example.fitplannerclient.controller.plan.core.visitor.NodeFinderVisitor;
 import com.example.fitplannerclient.controller.plan.editor.command.EditorHistoryManager;
 import com.example.fitplannerclient.controller.plan.editor.observer.WorkoutPlanObserver;
 import com.example.fitplannerclient.controller.plan.editor.observer.WorkoutPlanSubject;
+import com.example.fitplannerclient.entity.plan.PlanNode;
 import com.example.fitplannerclient.entity.plan.WorkoutPlan;
+import com.example.fitplannerclient.entity.plan.block.Block;
+import com.example.fitplannerclient.entity.plan.block.ProtocolBlock;
+import com.example.fitplannerclient.entity.plan.exercise.ExerciseNode;
 import com.example.fitplannerclient.repository.ExerciseRepository;
 import com.example.fitplannerclient.serializer.PlanToBeanVisitor;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -203,6 +209,35 @@ public class EditWorkoutPlanManager {
 
     public List<String> getAvailableVariablesForNode(String nodeId) {
         return badgeEditor.getAvailableVariablesForNode(this.plan, nodeId);
+    }
+
+
+    // Query sui nodi
+
+    public boolean isExerciseNode(String nodeId) {
+        return findNode(nodeId) instanceof ExerciseNode;
+    }
+
+    public String getNodeName(String nodeId) {
+        PlanNode node = findNode(nodeId);
+        if (node instanceof Block block) return block.getTitle();
+        if (node instanceof ProtocolBlock protocolBlock) return protocolBlock.getSemanticType();
+        return null;
+    }
+
+    public Map<String, String> getProtocolParameters(String nodeId) {
+        PlanNode node = findNode(nodeId);
+        if (node instanceof ProtocolBlock protocolBlock) {
+            return new HashMap<>(protocolBlock.getParameters());
+        }
+        return null;
+    }
+
+    private PlanNode findNode(String nodeId) {
+        if (this.plan == null) return null;
+        NodeFinderVisitor finder = new NodeFinderVisitor(nodeId);
+        this.plan.accept(finder);
+        return finder.isFound() ? finder.getFoundNode() : null;
     }
 
     public void buildProtocolBlockLibrary() {
