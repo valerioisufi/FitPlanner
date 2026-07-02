@@ -71,7 +71,7 @@ public class ManageExerciseLibraryController {
 
         try {
             exerciseLibraryDao.findById(exercise.getExerciseId())
-                .filter(e -> e.getTrainerId().equals(identityProvider.getUserId()))
+                .filter(e -> e.belongsTo(identityProvider.getUserId()))
                 .orElseThrow(() -> new ForbiddenException("Esercizio non trovato o non appartenente al trainer"));
 
             exerciseLibraryDao.saveExercise(exercise);
@@ -90,7 +90,7 @@ public class ManageExerciseLibraryController {
 
         try {
             exerciseLibraryDao.findById(exerciseId)
-                    .filter(e -> e.getTrainerId().equals(identityProvider.getUserId()))
+                    .filter(e -> e.belongsTo(identityProvider.getUserId()))
                     .orElseThrow(() -> new ForbiddenException("Esercizio non trovato o non appartenente al trainer"));
 
             exerciseLibraryDao.deleteExercise(exerciseId);
@@ -112,15 +112,11 @@ public class ManageExerciseLibraryController {
         }
 
         try{
-            String trainerId = switch(identityProvider.getUserRole()){
-                case Account.Role.TRAINER -> identityProvider.getUserId();
-                case Account.Role.ATHLETE -> coachingDao.findTrainerIdByAthleteId(identityProvider.getUserId())
-                        .orElseThrow(() -> new ForbiddenException("Atleta non associato a nessun trainer"));
-            };
+            String trainerId = resolveTrainerId();
 
             return exerciseLibraryDao.findByIds(exerciseIds)
                     .stream()
-                    .filter(e -> e.getTrainerId().equals(trainerId))
+                    .filter(e -> e.belongsTo(trainerId))
                     .map(e -> new ExerciseDescriptionDTO(
                             e.getExerciseId(),
                             e.getName(),
@@ -137,11 +133,7 @@ public class ManageExerciseLibraryController {
     public List<ExerciseDescriptionDTO> getLibrary() {
 
         try{
-            String trainerId = switch(identityProvider.getUserRole()){
-                case Account.Role.TRAINER -> identityProvider.getUserId();
-                case Account.Role.ATHLETE -> coachingDao.findTrainerIdByAthleteId(identityProvider.getUserId())
-                        .orElseThrow(() -> new ForbiddenException("Atleta non associato a nessun trainer"));
-            };
+            String trainerId = resolveTrainerId();
 
             return exerciseLibraryDao.findAllByTrainerId(trainerId)
                     .stream()
@@ -156,6 +148,16 @@ public class ManageExerciseLibraryController {
         } catch(DaoException e){
             throw new SystemException("Errore nel recupero della libreria di esercizi", e);
         }
+    }
+
+    // Risolve il trainer di riferimento per l'utente corrente:
+    // se è un trainer è lui stesso, se è un atleta è il trainer a cui è associato
+    private String resolveTrainerId() throws DaoException {
+        return switch (identityProvider.getUserRole()) {
+            case TRAINER -> identityProvider.getUserId();
+            case ATHLETE -> coachingDao.findTrainerIdByAthleteId(identityProvider.getUserId())
+                    .orElseThrow(() -> new ForbiddenException("Atleta non associato a nessun trainer"));
+        };
     }
 
 }

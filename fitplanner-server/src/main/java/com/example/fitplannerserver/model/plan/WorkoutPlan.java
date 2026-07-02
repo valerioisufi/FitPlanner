@@ -117,6 +117,10 @@ public class WorkoutPlan {
         this.authorTrainerId = trainerId;
     }
 
+    public boolean isOwnedBy(String trainerId) {
+        return this.authorTrainerId != null && this.authorTrainerId.equals(trainerId);
+    }
+
     public LocalDate getStartDate(){
         return this.startDate;
     }
@@ -138,6 +142,14 @@ public class WorkoutPlan {
         return (int) (daysElapsed % this.cycleLength);
     }
 
+    public int calculateAbsoluteDay(LocalDate targetDate) {
+        if (this.startDate == null || targetDate.isBefore(this.startDate)) {
+            return -1;
+        }
+
+        return (int) ChronoUnit.DAYS.between(this.startDate, targetDate);
+    }
+
     // Restituisce la data di inizio del ciclo che contiene la targetDate
     public LocalDate calculateCycleStartDate(LocalDate targetDate) {
         long currentCycleIndex = calculateCurrentCycleIndex(targetDate);
@@ -155,6 +167,27 @@ public class WorkoutPlan {
         }
 
         return this.startDate.plusDays((currentCycleIndex + 1) * this.cycleLength);
+    }
+
+    // Giorno (assoluto, contato dalla data di inizio del piano) in cui inizia
+    // il ciclo che contiene targetDate. -1 se il piano non è ancora iniziato
+    public int calculateAbsoluteCycleStartDay(LocalDate targetDate) {
+        long currentCycleIndex = calculateCurrentCycleIndex(targetDate);
+        if (currentCycleIndex == -1) {
+            return -1;
+        }
+
+        return (int) (currentCycleIndex * this.cycleLength);
+    }
+
+    // Giorno (assoluto) in cui termina il ciclo che contiene targetDate
+    public int calculateAbsoluteCycleEndDay(LocalDate targetDate) {
+        int absoluteCycleStartDay = calculateAbsoluteCycleStartDay(targetDate);
+        if (absoluteCycleStartDay == -1) {
+            return -1;
+        }
+
+        return absoluteCycleStartDay + this.cycleLength - 1;
     }
 
     private long calculateCurrentCycleIndex(LocalDate targetDate){

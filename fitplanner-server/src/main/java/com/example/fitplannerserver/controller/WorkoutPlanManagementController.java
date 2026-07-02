@@ -56,7 +56,7 @@ public class WorkoutPlanManagementController {
             WorkoutPlan workoutPlan = workoutPlanDao.findPlanById(planId)
                     .orElseThrow(() -> new ResourceNotFoundException(PLAN_NOT_FOUND_MSG));
 
-            if(!workoutPlan.getAuthorId().equals(identityProvider.getUserId()))
+            if(!workoutPlan.isOwnedBy(identityProvider.getUserId()))
                 throw new ForbiddenException("Non puoi visualizzare i dettagli di un WorkoutPlan che non ti appartiene");
 
             return PlanMapper.toDto(workoutPlan);
@@ -117,7 +117,7 @@ public class WorkoutPlanManagementController {
             WorkoutPlan templatePlan = workoutPlanDao.findPlanById(planId)
                     .orElseThrow(() -> new ResourceNotFoundException(PLAN_NOT_FOUND_MSG));
 
-            if (templatePlan.getAuthorId() == null || !templatePlan.getAuthorId().equals(trainerId)) {
+            if (!templatePlan.isOwnedBy(trainerId)) {
                 throw new ForbiddenException("Non puoi assegnare un WorkoutPlan che non ti appartiene");
             }
 
@@ -153,7 +153,7 @@ public class WorkoutPlanManagementController {
             WorkoutPlan oldPlan = workoutPlanDao.findPlanById(planId)
                     .orElseThrow(() -> new ResourceNotFoundException(PLAN_NOT_FOUND_MSG));
 
-            if(oldPlan.getAuthorId() == null || !oldPlan.getAuthorId().equals(identityProvider.getUserId())) {
+            if(!oldPlan.isOwnedBy(identityProvider.getUserId())) {
                 throw new ForbiddenException("Il WorkoutPlan non ti appartiene");
             }
 
@@ -180,7 +180,7 @@ public class WorkoutPlanManagementController {
             WorkoutPlan plan = workoutPlanDao.findPlanById(planId)
                     .orElseThrow(() -> new ResourceNotFoundException(PLAN_NOT_FOUND_MSG));
 
-            if(plan.getAuthorId() == null || !plan.getAuthorId().equals(identityProvider.getUserId())) {
+            if(!plan.isOwnedBy(identityProvider.getUserId())) {
                 throw new ForbiddenException("Il WorkoutPlan non ti appartiene");
             }
 

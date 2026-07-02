@@ -41,6 +41,10 @@ public class ExerciseDescription {
         return trainerId;
     }
 
+    public boolean belongsTo(String trainerId) {
+        return this.trainerId != null && this.trainerId.equals(trainerId);
+    }
+
     public String getExerciseId() { return exerciseId; }
 
     public String getName() { return name; }

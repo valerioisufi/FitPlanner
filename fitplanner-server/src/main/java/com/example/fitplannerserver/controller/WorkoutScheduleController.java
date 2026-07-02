@@ -16,7 +16,6 @@ import com.example.fitplannerserver.security.IdentityProvider;
 
 import java.time.LocalDate;
 import java.time.ZoneOffset;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,18 +44,15 @@ public class WorkoutScheduleController {
             WorkoutPlan activePlan = workoutPlanDao.findAssignedPlanByAthleteId(athleteId)
                     .orElseThrow(() -> new ResourceNotFoundException("Nessun piano assegnato"));
 
-            LocalDate today = LocalDate.now();
+            LocalDate today = LocalDate.now(ZoneOffset.UTC);
 
-            int currentDay = activePlan.calculateCurrentCycleDay(today);
-            LocalDate cycleStart = activePlan.calculateCycleStartDate(today);
-            LocalDate cycleEnd = activePlan.calculateCycleEndDate(today);
-
+            int currentDay = activePlan.calculateAbsoluteDay(today);
             if (currentDay == -1) {
                 throw new ResourceNotFoundException("Piano non ancora iniziato");
             }
 
-            long startMillis = cycleStart.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli();
-            long endMillis = cycleEnd.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli();
+            long startMillis = toEpochMilli(activePlan.calculateCycleStartDate(today));
+            long endMillis = toEpochMilli(activePlan.calculateCycleEndDate(today));
 
             List<SessionLog> cycleLogs = sessionLogDao.findLogsByAthleteIdAndDateRange(
                     athleteId, startMillis, endMillis
@@ -70,64 +66,7 @@ public class WorkoutScheduleController {
                     currentDay
             );
 
-            List<WorkoutState> states = new ArrayList<>();
-            WorkoutSessionDTO nextSuggested = null;
-            boolean foundNextSuggested = false;
-
-            long daysElapsedSinceStart = ChronoUnit.DAYS.between(activePlan.getStartDate(), today);
-            long currentCycleIndex = daysElapsedSinceStart / activePlan.getCycleLength();
-
-            int absoluteCycleStartDay = (int) (currentCycleIndex * activePlan.getCycleLength());
-            int absoluteCycleEndDay = absoluteCycleStartDay + activePlan.getCycleLength() - 1;
-
-            for (int absoluteDay = absoluteCycleStartDay; absoluteDay <= absoluteCycleEndDay; absoluteDay++) {
-
-                SessionLog.SessionStatus sessionStatus = findSessionStateForDay(cycleLogs, absoluteDay);
-                int relativeDayInCycle = absoluteDay % activePlan.getCycleLength();
-
-                WorkoutSession template = activePlan.getSession(relativeDayInCycle);
-
-                if (activePlan.getSession(relativeDayInCycle) == null) {
-                    states.add(WorkoutState.REST);
-                    continue;
-                }
-
-                if (sessionStatus == null) {
-                    states.add(WorkoutState.TO_DO);
-
-                    if (!foundNextSuggested) {
-                        nextSuggested = new WorkoutSessionDTO(
-                                template.getTitle(),
-                                template.getContent(),
-                                relativeDayInCycle
-                        );
-                        foundNextSuggested = true;
-                    }
-
-                } else {
-                    WorkoutState workoutState = switch (sessionStatus) {
-                        case SKIPPED -> WorkoutState.SKIPPED;
-                        case COMPLETED -> WorkoutState.DONE;
-                        case INTERRUPTED -> WorkoutState.IN_PROGRESS;
-                    };
-
-                    states.add(workoutState);
-
-                    if (workoutState == WorkoutState.IN_PROGRESS && !foundNextSuggested) {
-                        nextSuggested = new WorkoutSessionDTO(
-                                template.getTitle(),
-                                template.getContent(),
-                                absoluteDay
-                        );
-                        foundNextSuggested = true;
-                    }
-
-                }
-
-            }
-
-            schedule.setWorkoutStates(states);
-            schedule.setNextSuggestedSession(nextSuggested);
+            buildCycleStates(schedule, activePlan, cycleLogs, today);
 
             return schedule;
 
@@ -135,6 +74,56 @@ public class WorkoutScheduleController {
             throw new SystemException("Errore nel recuperare lo schedule corrente", e);
         }
 
+    }
+
+    // Popola gli stati di ogni giorno del ciclo corrente e individua la prossima sessione suggerita
+    private void buildCycleStates(WorkoutScheduleDTO schedule, WorkoutPlan activePlan, List<SessionLog> cycleLogs, LocalDate today) {
+        int absoluteCycleStartDay = activePlan.calculateAbsoluteCycleStartDay(today);
+        int absoluteCycleEndDay = activePlan.calculateAbsoluteCycleEndDay(today);
+
+        List<WorkoutState> states = new ArrayList<>();
+        WorkoutSessionDTO nextSuggested = null;
+
+        for (int absoluteDay = absoluteCycleStartDay; absoluteDay <= absoluteCycleEndDay; absoluteDay++) {
+            int relativeDayInCycle = absoluteDay % activePlan.getCycleLength();
+            WorkoutSession template = activePlan.getSession(relativeDayInCycle);
+
+            if (template == null) {
+                states.add(WorkoutState.REST);
+                continue;
+            }
+
+            SessionLog.SessionStatus sessionStatus = findSessionStateForDay(cycleLogs, absoluteDay);
+            WorkoutState workoutState = toWorkoutState(sessionStatus);
+            states.add(workoutState);
+
+            if (nextSuggested == null) {
+                if (workoutState == WorkoutState.TO_DO || workoutState == WorkoutState.IN_PROGRESS) {
+                    nextSuggested = new WorkoutSessionDTO(template.getTitle(), template.getContent(), absoluteDay);
+                }
+            }
+        }
+
+        schedule.setWorkoutStates(states);
+        schedule.setNextSuggestedSession(nextSuggested);
+    }
+
+    // Traduce lo stato di una sessione nello stato esposto al client;
+    // l'assenza di log indica una sessione ancora da svolgere
+    private WorkoutState toWorkoutState(SessionLog.SessionStatus sessionStatus) {
+        if (sessionStatus == null) {
+            return WorkoutState.TO_DO;
+        }
+
+        return switch (sessionStatus) {
+            case SKIPPED -> WorkoutState.SKIPPED;
+            case COMPLETED -> WorkoutState.DONE;
+            case INTERRUPTED -> WorkoutState.IN_PROGRESS;
+        };
+    }
+
+    private long toEpochMilli(LocalDate date) {
+        return date.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli();
     }
 
     private SessionLog.SessionStatus findSessionStateForDay(List<SessionLog> logs, int absoluteDay) {
