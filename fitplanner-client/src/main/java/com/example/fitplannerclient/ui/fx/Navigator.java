@@ -50,13 +50,13 @@ public class Navigator {
     private void handleLoginSuccess(Runnable onSuccess) {
         if (appControllerFactory.createProfileRepository().didUserChange()) {
             appControllerFactory.resetDataManagers();
-            HomeViewController homeController = new HomeViewController(appControllerFactory.createProfileManager(), appControllerFactory.createWorkoutPlanManager());
+            HomeViewController homeController = new HomeViewController(appControllerFactory.createProfileManager(), appControllerFactory.createWorkoutPlanManager(), guiManager);
             navigateTo(homeController);
         } else {
             if (onSuccess != null) {
                 onSuccess.run();
             } else {
-                HomeViewController homeController = new HomeViewController(appControllerFactory.createProfileManager(), appControllerFactory.createWorkoutPlanManager());
+                HomeViewController homeController = new HomeViewController(appControllerFactory.createProfileManager(), appControllerFactory.createWorkoutPlanManager(), guiManager);
                 navigateTo(homeController);
             }
         }
@@ -123,7 +123,7 @@ public class Navigator {
             appControllerFactory.createProfileManager().getProfileInfoAsync()
                 .thenAccept(profile -> {
                     Platform.runLater(() -> {
-                        HomeViewController homeController = new HomeViewController(appControllerFactory.createProfileManager(), appControllerFactory.createWorkoutPlanManager());
+                        HomeViewController homeController = new HomeViewController(appControllerFactory.createProfileManager(), appControllerFactory.createWorkoutPlanManager(), guiManager);
                         navigateTo(homeController);
                     });
                 })
@@ -139,7 +139,7 @@ public class Navigator {
             goHome();
             return;
         }
-        ProfileViewController profileController = new ProfileViewController(appControllerFactory.createProfileManager());
+        ProfileViewController profileController = new ProfileViewController(appControllerFactory.createProfileManager(), guiManager);
         Platform.runLater(() -> navigateTo(profileController));
     }
 
@@ -154,12 +154,12 @@ public class Navigator {
     }
 
     public void goToWorkoutPlanEditor(String planIdToEdit, boolean copyOfExisting) {
-        WorkoutPlanEditorViewController controller = new WorkoutPlanEditorViewController(planIdToEdit, copyOfExisting, appControllerFactory.createEditWorkoutPlanManager(), appControllerFactory.createExerciseLibraryManager());
+        WorkoutPlanEditorViewController controller = new WorkoutPlanEditorViewController(planIdToEdit, copyOfExisting, appControllerFactory.createEditWorkoutPlanManager(), appControllerFactory.createExerciseLibraryManager(), guiManager);
         Platform.runLater(() -> navigateTo(controller));
     }
 
     public void goToWorkoutExecution(String planId, int sessionDay) {
-        WorkoutExecutionViewController controller = new WorkoutExecutionViewController(planId, sessionDay, appControllerFactory.createWorkoutExecutionManager(), appControllerFactory.createExerciseLibraryManager());
+        WorkoutExecutionViewController controller = new WorkoutExecutionViewController(planId, sessionDay, appControllerFactory.createWorkoutExecutionManager(), appControllerFactory.createExerciseLibraryManager(), guiManager);
         Platform.runLater(() -> navigateTo(controller));
     }
 

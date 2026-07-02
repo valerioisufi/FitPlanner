@@ -31,12 +31,14 @@ public class WorkoutPlanEditorViewController implements GuiController {
     private WorkoutSessionBean activeSession;
     private final EditWorkoutPlanManager editWorkoutPlanManager;
     private final ExerciseLibraryManager exerciseManager;
+    private final GuiManager guiManager;
 
     private final WorkoutPlanObserver observer;
 
-    public WorkoutPlanEditorViewController(String planIdToEdit, boolean copyOfExisting, EditWorkoutPlanManager editWorkoutPlanManager, ExerciseLibraryManager exerciseManager) {
+    public WorkoutPlanEditorViewController(String planIdToEdit, boolean copyOfExisting, EditWorkoutPlanManager editWorkoutPlanManager, ExerciseLibraryManager exerciseManager, GuiManager guiManager) {
         this.editWorkoutPlanManager = editWorkoutPlanManager;
         this.exerciseManager = exerciseManager;
+        this.guiManager = guiManager;
 
         this.view = new WorkoutPlanEditorView();
         this.mainPane = new BorderPane();
@@ -53,14 +55,14 @@ public class WorkoutPlanEditorViewController implements GuiController {
         if (planIdToEdit == null) {
             this.editWorkoutPlanManager.createNewPlan()
                     .exceptionally(ex -> {
-                    Navigator.getInstance().getGuiManager().showExceptionError(
+                    guiManager.showExceptionError(
                                 "Errore nella creazione del piano:", ex);
                         return null;
                     });
         } else {
             this.editWorkoutPlanManager.editExistingPlan(planIdToEdit, copyOfExisting)
                     .exceptionally(ex -> {
-                    Navigator.getInstance().getGuiManager().showExceptionError(
+                    guiManager.showExceptionError(
                                 "Errore nel caricamento del piano:", ex);
                         return null;
                     });
@@ -87,8 +89,8 @@ public class WorkoutPlanEditorViewController implements GuiController {
         this.view.setOnSavePlanClicked(this::savePlan);
         this.view.setOnCancelClicked(() -> Navigator.getInstance().goToPlanManagement());
 
-        this.view.setOnShowModalRequested(modalContent -> Navigator.getInstance().getGuiManager().showModal(modalContent));
-        this.view.setOnHideModalRequested(() -> Navigator.getInstance().getGuiManager().hideModal());
+        this.view.setOnShowModalRequested(modalContent -> guiManager.showModal(modalContent));
+        this.view.setOnHideModalRequested(() -> guiManager.hideModal());
 
         setupPlanNodeEventHandlers();
 
@@ -157,17 +159,16 @@ public class WorkoutPlanEditorViewController implements GuiController {
     }
 
     private void handleEditNameClicked(PlanNodeEvent event) {
-        PlanNodeBean node = activePlan.findNodeById(event.getNodeId());
+        String name = editWorkoutPlanManager.getNodeName(event.getNodeId());
 
-        if (node != null) {
-            this.view.getEditNodeModal().setInitialName(node.getName());
+        if (name != null) {
+            this.view.getEditNodeModal().setInitialName(name);
             this.view.getEditNodeModal().setOnSaveAction(newName -> {
                 editWorkoutPlanManager.renameNode(event.getNodeId(), newName);
-                Navigator.getInstance().getGuiManager().hideModal();
+                guiManager.hideModal();
             });
-            Navigator.getInstance().getGuiManager().showModal(this.view.getEditNodeModal());
+            guiManager.showModal(this.view.getEditNodeModal());
         }
-
     }
 
     private void handleEditBadgeClicked(PlanNodeEvent event) {
@@ -182,29 +183,30 @@ public class WorkoutPlanEditorViewController implements GuiController {
             } else {
                 editWorkoutPlanManager.updateDecorator(badge.getBadgeId(), newValue);
             }
-            Navigator.getInstance().getGuiManager().hideModal();
+            guiManager.hideModal();
         });
-        Navigator.getInstance().getGuiManager().showModal(this.view.getEditBadgeModal());
+        guiManager.showModal(this.view.getEditBadgeModal());
     }
 
     private void handleChangeExerciseRequested(PlanNodeEvent event) {
         this.view.getSelectExerciseModal().setOnSaveAction(ex -> {
             editWorkoutPlanManager.changeExerciseResource(event.getNodeId(), ex.getExerciseId());
-            Navigator.getInstance().getGuiManager().hideModal();
+            guiManager.hideModal();
         });
-        Navigator.getInstance().getGuiManager().showModal(this.view.getSelectExerciseModal());
+        guiManager.showModal(this.view.getSelectExerciseModal());
     }
 
     private void handleEditProtocolParameters(PlanNodeEvent event) {
-        PlanNodeBean node = activePlan.findNodeById(event.getNodeId());
+        Map<String, String> params = editWorkoutPlanManager.getProtocolParameters(event.getNodeId());
 
-        if (node != null && node.getParameters() != null) {
-            this.view.getEditProtocolModal().setInitialData(node.getName(), node.getParameters());
-            this.view.getEditProtocolModal().setOnSaveAction(params -> {
-                editWorkoutPlanManager.updateProtocolParameters(event.getNodeId(), params);
-                Navigator.getInstance().getGuiManager().hideModal();
+        if (params != null) {
+            String name = editWorkoutPlanManager.getNodeName(event.getNodeId());
+            this.view.getEditProtocolModal().setInitialData(name, params);
+            this.view.getEditProtocolModal().setOnSaveAction(newParams -> {
+                editWorkoutPlanManager.updateProtocolParameters(event.getNodeId(), newParams);
+                guiManager.hideModal();
             });
-            Navigator.getInstance().getGuiManager().showModal(this.view.getEditProtocolModal());
+            guiManager.showModal(this.view.getEditProtocolModal());
         }
     }
 
@@ -216,9 +218,9 @@ public class WorkoutPlanEditorViewController implements GuiController {
         if (payload.equals("EXERCISE")) {
             this.view.getSelectExerciseModal().setOnSaveAction(ex -> {
                 editWorkoutPlanManager.addExerciseFromToolbox(ex.getExerciseId(), targetParentId, targetIndex);
-                Navigator.getInstance().getGuiManager().hideModal();
+                guiManager.hideModal();
             });
-            Navigator.getInstance().getGuiManager().showModal(this.view.getSelectExerciseModal());
+            guiManager.showModal(this.view.getSelectExerciseModal());
 
         } else if (payload.equals("BLOCK")) {
             editWorkoutPlanManager.addBlockFromToolbox("Nuovo Blocco", targetParentId, targetIndex);
@@ -230,14 +232,13 @@ public class WorkoutPlanEditorViewController implements GuiController {
             this.view.getEditProtocolModal().setInitialData(protocolName, initialParams);
             this.view.getEditProtocolModal().setOnSaveAction(params -> {
                 editWorkoutPlanManager.addProtocolBlockFromToolbox(protocolName, params, targetParentId, targetIndex);
-                Navigator.getInstance().getGuiManager().hideModal();
+                guiManager.hideModal();
             });
-            Navigator.getInstance().getGuiManager().showModal(this.view.getEditProtocolModal());
+            guiManager.showModal(this.view.getEditProtocolModal());
 
         } else if (payload.startsWith("MODIFIER:")) {
-            PlanNodeBean targetNode = activePlan.findNodeById(targetParentId);
-            if (targetNode == null || targetNode.getType() != NodeType.EXERCISE) {
-                Navigator.getInstance().getGuiManager().showNotification(GuiManager.NotificationType.ERROR, "I Modifier possono essere aggiunti solo agli Esercizi.");
+            if (!editWorkoutPlanManager.isExerciseNode(targetParentId)) {
+                guiManager.showNotification(GuiManager.NotificationType.ERROR, "I Modifier possono essere aggiunti solo agli Esercizi.");
                 return;
             }
 
@@ -246,9 +247,9 @@ public class WorkoutPlanEditorViewController implements GuiController {
             this.view.getEditBadgeModal().setInitialData(BadgeComponent.BadgeType.MODIFIER, type, "", vars);
             this.view.getEditBadgeModal().setOnSaveAction(val -> {
                 editWorkoutPlanManager.addModifierFromToolbox(type.toUpperCase(), val, targetParentId);
-                Navigator.getInstance().getGuiManager().hideModal();
+                guiManager.hideModal();
             });
-            Navigator.getInstance().getGuiManager().showModal(this.view.getEditBadgeModal());
+            guiManager.showModal(this.view.getEditBadgeModal());
 
         } else if (payload.startsWith("DECORATOR:")) {
             String type = payload.substring("DECORATOR:".length());
@@ -256,9 +257,9 @@ public class WorkoutPlanEditorViewController implements GuiController {
             this.view.getEditBadgeModal().setInitialData(BadgeComponent.BadgeType.DECORATOR, type, "", vars);
             this.view.getEditBadgeModal().setOnSaveAction(val -> {
                 editWorkoutPlanManager.addDecoratorFromToolbox(type, val, targetParentId);
-                Navigator.getInstance().getGuiManager().hideModal();
+                guiManager.hideModal();
             });
-            Navigator.getInstance().getGuiManager().showModal(this.view.getEditBadgeModal());
+            guiManager.showModal(this.view.getEditBadgeModal());
         }
     }
 
@@ -285,11 +286,11 @@ public class WorkoutPlanEditorViewController implements GuiController {
 
         editWorkoutPlanManager.savePlan()
                 .thenRun(() -> {
-                    Navigator.getInstance().getGuiManager().showNotification(GuiManager.NotificationType.SUCCESS, "Piano salvato con successo.");
+                    guiManager.showNotification(GuiManager.NotificationType.SUCCESS, "Piano salvato con successo.");
                     Navigator.getInstance().goToPlanManagement();
                 })
                 .exceptionally(ex -> {
-                    Navigator.getInstance().getGuiManager().showExceptionError("Errore nel salvataggio del piano:", ex);
+                    guiManager.showExceptionError("Errore nel salvataggio del piano:", ex);
                     return null;
                 });
 
@@ -314,7 +315,7 @@ public class WorkoutPlanEditorViewController implements GuiController {
     @Override
     public void stop() {
         editWorkoutPlanManager.removeObserver(observer);
-        Navigator.getInstance().getGuiManager().hideModal();
+        guiManager.hideModal();
     }
 
 }

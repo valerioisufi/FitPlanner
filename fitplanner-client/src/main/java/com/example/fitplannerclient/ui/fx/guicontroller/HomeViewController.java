@@ -16,10 +16,12 @@ public class HomeViewController implements GuiController {
     private final HeaderViewController headerViewController;
     private final ProfileManager profileManager;
     private final WorkoutPlanManager planManager;
+    private final GuiManager guiManager;
 
-    public HomeViewController(ProfileManager profileManager, WorkoutPlanManager planManager) {
+    public HomeViewController(ProfileManager profileManager, WorkoutPlanManager planManager, GuiManager guiManager) {
         this.profileManager = profileManager;
         this.planManager = planManager;
+        this.guiManager = guiManager;
         this.headerViewController = new HeaderViewController(0, profileManager); // Active Index 0 is Home
         
         ProfileBean profile = profileManager.getCacheProfileInfo();
@@ -59,7 +61,7 @@ public class HomeViewController implements GuiController {
             profileManager.getInvitationCodeAsync()
                     .thenAccept(code -> Platform.runLater(() -> trainerView.setInviteCode(code)))
                     .exceptionally(ex -> {
-                        Navigator.getInstance().getGuiManager().showExceptionError("Errore nel recupero del codice di invito:", ex);
+                        guiManager.showExceptionError("Errore nel recupero del codice di invito:", ex);
                         return null;
                     });
 
@@ -69,7 +71,7 @@ public class HomeViewController implements GuiController {
                             trainerView.showAthleteList(athletes, athlete -> Navigator.getInstance().goToAthleteDashboard(athlete))
                     ))
                     .exceptionally(ex -> {
-                        Navigator.getInstance().getGuiManager().showExceptionError(
+                        guiManager.showExceptionError(
                             "Errore nel caricamento degli atleti:", ex);
                         return null;
                     });
@@ -106,17 +108,17 @@ public class HomeViewController implements GuiController {
                 Platform.runLater(() -> athleteView.showTrainerInviteCard(code -> {
                     profileManager.linkTrainerAsync(code).thenRun(() -> {
                         Platform.runLater(() -> {
-                            Navigator.getInstance().getGuiManager().showNotification(GuiManager.NotificationType.SUCCESS, "Trainer collegato con successo!");
+                            guiManager.showNotification(GuiManager.NotificationType.SUCCESS, "Trainer collegato con successo!");
                             start(); // Refresh home view
                         });
                     }).exceptionally(e -> {
-                        Navigator.getInstance().getGuiManager().showExceptionError("Errore:", e);
+                        guiManager.showExceptionError("Errore:", e);
                         return null;
                     });
                 }));
             }
         }).exceptionally(e -> {
-            Platform.runLater(() -> Navigator.getInstance().getGuiManager().showExceptionError("Errore durante il controllo del trainer:", e));
+            Platform.runLater(() -> guiManager.showExceptionError("Errore durante il controllo del trainer:", e));
             return null;
         });
     }

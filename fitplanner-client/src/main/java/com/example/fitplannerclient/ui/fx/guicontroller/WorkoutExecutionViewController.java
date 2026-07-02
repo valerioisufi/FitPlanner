@@ -42,15 +42,17 @@ public class WorkoutExecutionViewController implements GuiController, WorkoutExe
 
     private final WorkoutExecutionManager executionManager;
     private final ExerciseLibraryManager exerciseLibraryManager;
+    private final GuiManager guiManager;
 
     private Timeline restTimeline;
     private int remainingRestSeconds;
 
-    public WorkoutExecutionViewController(String planId, int sessionDay, WorkoutExecutionManager executionManager, ExerciseLibraryManager exerciseLibraryManager) {
+    public WorkoutExecutionViewController(String planId, int sessionDay, WorkoutExecutionManager executionManager, ExerciseLibraryManager exerciseLibraryManager, GuiManager guiManager) {
         this.planId = planId;
         this.sessionDay = sessionDay;
         this.executionManager = executionManager;
         this.exerciseLibraryManager = exerciseLibraryManager;
+        this.guiManager = guiManager;
 
         this.view = new WorkoutExecutionView(null);
 
@@ -91,7 +93,7 @@ public class WorkoutExecutionViewController implements GuiController, WorkoutExe
             })
             .exceptionally(ex -> {
                 Platform.runLater(() -> {
-                    Navigator.getInstance().getGuiManager().showExceptionError("Errore caricamento sessione", ex);
+                    guiManager.showExceptionError("Errore caricamento sessione", ex);
                     Navigator.getInstance().goHome();
                 });
                 return null;
@@ -172,11 +174,11 @@ public class WorkoutExecutionViewController implements GuiController, WorkoutExe
         
         executionManager.finishAndSaveSession()
                 .thenRun(() -> Platform.runLater(() -> {
-                    Navigator.getInstance().getGuiManager().showNotification(GuiManager.NotificationType.SUCCESS, "Allenamento salvato con successo!");
+                    guiManager.showNotification(GuiManager.NotificationType.SUCCESS, "Allenamento salvato con successo!");
                     Navigator.getInstance().goHome();
                 }))
                 .exceptionally(ex -> {
-                    Navigator.getInstance().getGuiManager().showExceptionError("Errore nel salvataggio del log:", ex);
+                    guiManager.showExceptionError("Errore nel salvataggio del log:", ex);
                     return null;
                 });
     }

@@ -16,9 +16,11 @@ public class ProfileViewController implements GuiController {
     private final ProfileView profileView;
     private final HeaderViewController headerViewController;
     private final ProfileManager profileManager;
+    private final GuiManager guiManager;
 
-    public ProfileViewController(ProfileManager profileManager) {
+    public ProfileViewController(ProfileManager profileManager, GuiManager guiManager) {
         this.profileManager = profileManager;
+        this.guiManager = guiManager;
         this.headerViewController = new HeaderViewController(-1, profileManager);
         this.profileView = new ProfileView();
 
@@ -42,9 +44,9 @@ public class ProfileViewController implements GuiController {
             profileView.showTrainerLinkSection(true);
             profileView.setLinkTrainerAction(code -> {
                 profileManager.linkTrainerAsync(code).thenRun(() -> {
-                    Platform.runLater(() -> Navigator.getInstance().getGuiManager().showNotification(GuiManager.NotificationType.SUCCESS, "Trainer collegato con successo!"));
+                    Platform.runLater(() -> guiManager.showNotification(GuiManager.NotificationType.SUCCESS, "Trainer collegato con successo!"));
                 }).exceptionally(ex -> {
-                    Navigator.getInstance().getGuiManager().showExceptionError("Codice invito non valido:", ex);
+                    guiManager.showExceptionError("Codice invito non valido:", ex);
                     return null;
                 });
             });
@@ -64,10 +66,10 @@ public class ProfileViewController implements GuiController {
         profileManager.updateProfileInfoAsync(profile)
                 .thenAccept(v -> Platform.runLater(() -> {
                     profileView.finishEditing();
-                    Navigator.getInstance().getGuiManager().showNotification(GuiManager.NotificationType.SUCCESS, "Profilo aggiornato con successo.");
+                    guiManager.showNotification(GuiManager.NotificationType.SUCCESS, "Profilo aggiornato con successo.");
                 }))
                 .exceptionally(ex -> {
-                    Navigator.getInstance().getGuiManager().showExceptionError(
+                    guiManager.showExceptionError(
                             "Errore nell'aggiornamento del profilo:", ex);
                     return null;
                 });
