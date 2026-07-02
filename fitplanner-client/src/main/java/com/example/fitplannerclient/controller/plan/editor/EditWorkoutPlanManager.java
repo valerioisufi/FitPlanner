@@ -4,7 +4,7 @@ import com.example.fitplannerclient.bean.plan.PlanNodeBean;
 import com.example.fitplannerclient.bean.plan.WorkoutPlanBean;
 import com.example.fitplannerclient.repository.WorkoutPlanRepository;
 import com.example.fitplannerclient.controller.plan.core.library.ProtocolLibraryManager;
-import com.example.fitplannerclient.controller.plan.core.visitor.NodeFinderVisitor;
+import com.example.fitplannerclient.entity.plan.visitor.NodeFinderVisitor;
 import com.example.fitplannerclient.controller.plan.editor.command.EditorHistoryManager;
 import com.example.fitplannerclient.controller.plan.editor.observer.WorkoutPlanObserver;
 import com.example.fitplannerclient.controller.plan.editor.observer.WorkoutPlanSubject;

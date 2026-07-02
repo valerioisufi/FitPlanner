@@ -1,6 +1,6 @@
 package com.example.fitplannerclient.entity.plan;
 
-import com.example.fitplannerclient.controller.plan.core.visitor.AcceptWorkoutPlanVisitor;
+import com.example.fitplannerclient.entity.plan.visitor.AcceptWorkoutPlanVisitor;
 import com.example.fitplannerclient.entity.plan.context.ExecutionContext;
 import com.example.fitplannerclient.entity.plan.context.ExecutionResult;
 import com.example.fitplannerclient.entity.plan.context.PlanNodeState;
