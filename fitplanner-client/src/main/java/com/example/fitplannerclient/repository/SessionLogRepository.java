@@ -1,7 +1,11 @@
 package com.example.fitplannerclient.repository;
 
+import com.example.fitplannerclient.entity.log.ExerciseLog;
+import com.example.fitplannerclient.entity.log.ExerciseSet;
 import com.example.fitplannerclient.entity.log.SessionLog;
 import com.example.fitplannerclient.service.api.SessionLogApi;
+import com.example.fitplannercommon.ExerciseLogDTO;
+import com.example.fitplannercommon.ExerciseSetDTO;
 import com.example.fitplannercommon.SessionLogDTO;
 
 import java.util.ArrayList;
@@ -48,15 +52,66 @@ public class SessionLogRepository {
                 });
     }
 
+    public CompletableFuture<Void> saveSessionLogAsync(SessionLog log) {
+        return logApi.saveSessionLogAsync(entityToDto(log))
+                // il nuovo log rende stale la cache dell'utente: verrà ricaricata alla prossima query
+                .thenRun(() -> cache.remove(log.getUserId()));
+    }
+
+    public CompletableFuture<ExerciseLog> getLastWeightUsedAsync(String exerciseId) {
+        return logApi.getLastWeightUsedAsync(exerciseId)
+                .thenApply(this::exerciseLogDtoToEntity);
+    }
+
+    // mapper
+
+    private SessionLogDTO entityToDto(SessionLog entity) {
+        List<ExerciseLogDTO> exerciseLogs = entity.getExerciseLogs().stream()
+                .map(this::exerciseLogEntityToDto)
+                .toList();
+
+        return new SessionLogDTO(
+                entity.getUserId(),
+                entity.getNotes(),
+                entity.getStatus() != null ? SessionLogDTO.SessionStatus.valueOf(entity.getStatus()) : null,
+                entity.getDate(),
+                entity.getPlanId(),
+                entity.getWorkoutSessionDay(),
+                exerciseLogs
+        );
+    }
+
+    private ExerciseLogDTO exerciseLogEntityToDto(ExerciseLog entity) {
+        List<ExerciseSetDTO> sets = entity.getSets().stream()
+                .map(set -> new ExerciseSetDTO(set.reps(), set.load()))
+                .toList();
+
+        int rpe = entity.calculateRPE();
+
+        return new ExerciseLogDTO(entity.getName(), entity.getExerciseId(), sets, rpe, entity.getNotes());
+    }
+
+    private ExerciseLog exerciseLogDtoToEntity(ExerciseLogDTO dto) {
+        if (dto == null) return null;
+
+        List<ExerciseSet> sets = new ArrayList<>();
+        if (dto.getSets() != null) {
+            dto.getSets().forEach(set -> sets.add(new ExerciseSet(set.getReps(), set.getLoad(), dto.getRpe())));
+        }
+        return new ExerciseLog(dto.getName(), dto.getExerciseId(), sets, dto.getNotes());
+    }
+
     private SessionLog mapToEntity(SessionLogDTO dto) {
         SessionLog entity = new SessionLog(dto.getDate());
         entity.setUserId(dto.getUserId());
         entity.updateNotes(dto.getNotes());
         entity.setWorkoutSessionDay(dto.getWorkoutSessionDay());
         entity.setPlanId(dto.getPlanIdReference());
+
         if (dto.getStatus() != null) {
             entity.setStatus(dto.getStatus().name());
         }
+
         return entity;
     }
 

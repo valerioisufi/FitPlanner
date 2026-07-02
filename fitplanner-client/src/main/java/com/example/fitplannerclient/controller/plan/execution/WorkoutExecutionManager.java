@@ -1,7 +1,11 @@
 package com.example.fitplannerclient.controller.plan.execution;
 
 import com.example.fitplannerclient.bean.exercise.ExerciseDescriptionBean;
+import com.example.fitplannerclient.bean.log.ExerciseLogBean;
+import com.example.fitplannerclient.bean.log.ExerciseSetBean;
 import com.example.fitplannerclient.bean.plan.PlanNodeBean;
+import com.example.fitplannerclient.entity.log.ExerciseLog;
+import com.example.fitplannerclient.entity.log.SessionLog;
 import com.example.fitplannerclient.repository.WorkoutPlanRepository;
 import com.example.fitplannerclient.controller.plan.execution.engine.WorkoutEngine;
 import com.example.fitplannerclient.controller.plan.execution.engine.WorkoutEngineImpl;
@@ -11,18 +15,15 @@ import com.example.fitplannerclient.entity.plan.WorkoutPlan;
 import com.example.fitplannerclient.entity.plan.WorkoutSession;
 import com.example.fitplannerclient.entity.plan.context.WorkoutStatus;
 import com.example.fitplannerclient.repository.ExerciseRepository;
+import com.example.fitplannerclient.repository.SessionLogRepository;
 import com.example.fitplannerclient.serializer.PlanToBeanVisitor;
-import com.example.fitplannerclient.service.api.SessionLogApi;
-import com.example.fitplannercommon.ExerciseLogDTO;
-import com.example.fitplannercommon.SessionLogDTO;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public class WorkoutExecutionManager {
 
-    private final SessionLogApi logApi;
+    private final SessionLogRepository logRepository;
     private final WorkoutPlanRepository planRepository;
     private final ExerciseRepository exerciseRepository;
 
@@ -37,9 +38,9 @@ public class WorkoutExecutionManager {
     private String lastActiveNodeId = null;
     private int currentAbsoluteSessionDay;
 
-    public WorkoutExecutionManager(WorkoutPlanRepository planRepository, SessionLogApi logApi, ExerciseRepository exerciseRepository) {
+    public WorkoutExecutionManager(WorkoutPlanRepository planRepository, SessionLogRepository logRepository, ExerciseRepository exerciseRepository) {
         this.planRepository = planRepository;
-        this.logApi = logApi;
+        this.logRepository = logRepository;
         this.exerciseRepository = exerciseRepository;
     }
 
@@ -162,8 +163,9 @@ public class WorkoutExecutionManager {
         if (engine != null) engine.done();
     }
 
-    public CompletableFuture<ExerciseLogDTO> getLastWeightUsedAsync(String exerciseId) {
-        return logApi.getLastWeightUsedAsync(exerciseId);
+    public CompletableFuture<ExerciseLogBean> getLastWeightUsedAsync(String exerciseId) {
+        return logRepository.getLastWeightUsedAsync(exerciseId)
+                .thenApply(this::exerciseLogEntityToBean);
     }
 
     public CompletableFuture<Void> finishAndSaveSession() {
@@ -171,21 +173,27 @@ public class WorkoutExecutionManager {
             engine.stop();
         }
 
-        SessionLogDTO.SessionStatus status = SessionLogDTO.SessionStatus.COMPLETED;
+        String status = "COMPLETED";
         if (engine != null && engine.getState() != null && engine.getState().getStatus() != WorkoutStatus.STOPPED) {
-            status = SessionLogDTO.SessionStatus.INTERRUPTED;
+            status = "INTERRUPTED";
         }
 
-        SessionLogDTO logDTO = new SessionLogDTO(
-                "current-user-id", // TODO: recuperare da AuthManager/ProfileManager
-                "Sessione completata tramite App",
-                status,
-                System.currentTimeMillis(),
-                currentPlanId,
-                currentAbsoluteSessionDay,
-                new ArrayList<>() // TODO: mappare i risultati dall'ExecutionContext
-        );
+        SessionLog log = new SessionLog(System.currentTimeMillis());
+        log.updateNotes("Sessione completata tramite App");
+        log.setStatus(status);
+        log.setPlanId(currentPlanId);
+        log.setWorkoutSessionDay(currentAbsoluteSessionDay);
+        // TODO: aggiungere i risultati dall'ExecutionContext tramite log.addLog(...)
 
-        return logApi.saveSessionLogAsync(logDTO);
+        return logRepository.saveSessionLogAsync(log);
+    }
+
+    private ExerciseLogBean exerciseLogEntityToBean(ExerciseLog entity) {
+        if (entity == null) return null;
+        List<ExerciseSetBean> sets = entity.getSets().stream()
+                .map(set -> new ExerciseSetBean(set.reps(), set.load(), set.rpe()))
+                .toList();
+
+        return new ExerciseLogBean(entity.getName(), entity.getExerciseId(), sets, entity.getNotes());
     }
 }

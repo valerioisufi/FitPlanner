@@ -20,6 +20,13 @@ public class ExerciseLog {
         return sets.stream().mapToDouble(ExerciseSet::calculateVolume).sum();
     }
 
+    public int calculateRPE() {
+        return (int) Math.round(sets.stream()
+                .mapToInt(ExerciseSet::rpe)
+                .average()
+                .orElse(0));
+    }
+
     public String getExerciseId() { return exerciseId; }
     public String getName() { return name; }
     public List<ExerciseSet> getSets() { return sets; }

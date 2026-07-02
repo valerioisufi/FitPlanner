@@ -18,7 +18,7 @@ public class ProfileCli implements CliView {
         printer = engine.getPrinter();
         reader = engine.getInput();
 
-        profileManager = engine.getControllerFactory().createProfileManager();
+        profileManager = engine.getSessionContext().createProfileManager();
 
         ProfileBean.ProfileType type = profileManager.getProfileInfoAsync().join().getProfileType();
         String msg = "";
@@ -46,7 +46,7 @@ public class ProfileCli implements CliView {
                 printInvitationCode();
             }
         } else if (scelta == 5) {
-            engine.getSessionManager().logout();
+            engine.getSessionController().logout();
             return new AuthenticationCli();
         }
 

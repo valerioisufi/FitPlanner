@@ -1,34 +1,19 @@
 package com.example.fitplannerclient;
 
+import com.example.fitplannerclient.config.ConfigurationManager;
+import com.example.fitplannerclient.context.ApplicationContext;
 import com.example.fitplannerclient.exception.ConfigException;
-import com.example.fitplannerclient.service.SessionManager;
 import com.example.fitplannerclient.ui.fx.GuiManager;
 import com.example.fitplannerclient.ui.fx.Navigator;
 import javafx.application.Application;
-import javafx.application.Platform;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
 import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class JavaFxApp extends Application {
-
-    private static AppControllerFactory factory;
-    private static SessionManager sessionManager;
-    private static Consumer<CompletableFuture<Boolean>> onUnauthorized;
-
-    public static void setFactory(AppControllerFactory f) { factory = f; }
-    public static void setSessionManager(SessionManager s) { sessionManager = s; }
-    public static void setOnUnauthorized(Consumer<CompletableFuture<Boolean>> onU) { onUnauthorized = onU; }
-    public static Consumer<CompletableFuture<Boolean>> getOnUnauthorized() { return onUnauthorized; }
-    public static AppControllerFactory getFactory() { return factory; }
-    public static SessionManager getSessionManager() { return sessionManager; }
-
-    private Navigator navigator;
 
     @Override
     public void start(Stage stage) {
@@ -36,18 +21,14 @@ public class JavaFxApp extends Application {
         stage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/app_icon.png"))));
 
         try {
-            // Set the 401 Unauthorized callback
-            JavaFxApp.setOnUnauthorized((future) -> {
-                Platform.runLater(() -> {
-                    this.navigator.requireAuthenticationOverlay(() -> future.complete(true));
-                });
-            });
+            ConfigurationManager configManager = new ConfigurationManager();
+            ApplicationContext applicationContext = new ApplicationContext(configManager.getApiUrl());
 
             GuiManager guiManager = new GuiManager(stage);
-            this.navigator = new Navigator(guiManager, factory, sessionManager);
+            Navigator navigator = new Navigator(guiManager, applicationContext.getSessionController());
 
             // Start the flow
-            this.navigator.goHome();
+            navigator.goHome();
 
             stage.show();
         } catch (ConfigException configException) {

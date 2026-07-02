@@ -1,31 +1,32 @@
 package com.example.fitplannerclient.ui.fx;
 
-import com.example.fitplannerclient.AppControllerFactory;
 import com.example.fitplannerclient.bean.profile.ProfileBean;
-import com.example.fitplannerclient.controller.AuthManager;
-import com.example.fitplannerclient.service.SessionManager;
+import com.example.fitplannerclient.context.UserSessionContext;
+import com.example.fitplannerclient.controller.SessionController;
+import com.example.fitplannerclient.controller.SessionController.LoginOutcome;
 import com.example.fitplannerclient.ui.fx.guicontroller.*;
 import javafx.application.Platform;
 
+import java.util.concurrent.CompletableFuture;
+
+/**
+ * Classe che si occupa della navigazione tra le viste
+ */
 public class Navigator {
 
-    private static Navigator instance;
-
     private final GuiManager guiManager;
-    private final AppControllerFactory appControllerFactory;
-    private final SessionManager sessionManager;
+    private final SessionController sessionController;
 
     private GuiController currentGuiController;
 
-    public Navigator(GuiManager guiManager, AppControllerFactory factory, SessionManager sessionManager) {
+    public Navigator(GuiManager guiManager, SessionController sessionController) {
         this.guiManager = guiManager;
-        this.appControllerFactory = factory;
-        this.sessionManager = sessionManager;
-        instance = this;
+        this.sessionController = sessionController;
+        sessionController.setReauthenticationHandler(this::promptReauthentication);
     }
 
-    public static Navigator getInstance() {
-        return instance;
+    private UserSessionContext session() {
+        return sessionController.getSession();
     }
 
     private void navigateTo(GuiController nextController) {
@@ -39,128 +40,110 @@ public class Navigator {
         nextController.start();
     }
 
-    private void handleLoginSuccess(Runnable onSuccess) {
-        if (appControllerFactory.createProfileRepository().didUserChange()) {
-            appControllerFactory.resetDataManagers();
-            HomeViewController homeController = new HomeViewController(appControllerFactory.createProfileManager(), appControllerFactory.createWorkoutPlanManager(), guiManager);
-            navigateTo(homeController);
-        } else {
-            if (onSuccess != null) {
-                onSuccess.run();
-            } else {
-                HomeViewController homeController = new HomeViewController(appControllerFactory.createProfileManager(), appControllerFactory.createWorkoutPlanManager(), guiManager);
-                navigateTo(homeController);
-            }
-        }
+    private HomeViewController createHomeController() {
+        return new HomeViewController(this, session().createProfileManager(), session().createWorkoutPlanManager(), guiManager);
     }
 
     public void requireAuthentication(Runnable onSuccess) {
-        AuthManager authAppController = appControllerFactory.createAuthManager();
-
-        Runnable finalSuccessAction = () -> {
-            appControllerFactory.createProfileManager().getProfileInfoAsync()
-                .thenAccept(profile -> {
-                    Platform.runLater(() -> handleLoginSuccess(onSuccess));
-                })
-                .exceptionally(ex -> {
-                    Platform.runLater(() -> requireAuthentication(onSuccess));
-                    return null;
-                });
-        };
-
         AuthenticationViewController authGuiController = new AuthenticationViewController(
                 guiManager,
-                authAppController,
-                finalSuccessAction
+                sessionController,
+                outcome -> Platform.runLater(() -> {
+                    if (outcome == LoginOutcome.SAME_USER && onSuccess != null) {
+                        onSuccess.run();
+                    } else {
+                        navigateTo(createHomeController());
+                    }
+                })
         );
 
         Platform.runLater(() -> navigateTo(authGuiController));
     }
 
-    public void requireAuthenticationOverlay(Runnable onSuccess) {
-        AuthManager authAppController = appControllerFactory.createAuthManager();
+    /**
+     * Handler di ri-autenticazione per il SessionController: mostra il login in overlay
+     * e completa il future con l'esito. Se l'identità è cambiata, la vista corrente
+     * (che apparteneva al vecchio utente) viene abbandonata per la home
+     */
+    private CompletableFuture<LoginOutcome> promptReauthentication() {
+        CompletableFuture<LoginOutcome> result = new CompletableFuture<>();
 
-        Runnable onLoginSuccess = () -> {
-            appControllerFactory.createProfileManager().getProfileInfoAsync()
-                .thenAccept(profile -> {
-                    Platform.runLater(() -> {
+        Platform.runLater(() -> {
+            AuthenticationViewController authGuiController = new AuthenticationViewController(
+                    guiManager,
+                    sessionController,
+                    outcome -> Platform.runLater(() -> {
                         guiManager.hideOverlay();
-                        handleLoginSuccess(onSuccess);
-                    });
-                })
-                .exceptionally(ex -> {
-                    Platform.runLater(() -> requireAuthenticationOverlay(onSuccess));
-                    return null;
-                });
-        };
+                        if (outcome == LoginOutcome.NEW_USER) {
+                            navigateTo(createHomeController());
+                        }
+                        result.complete(outcome);
+                    })
+            );
 
-        AuthenticationViewController authGuiController = new AuthenticationViewController(
-                guiManager, authAppController, onLoginSuccess
-        );
+            guiManager.showOverlay(authGuiController.getView());
+            authGuiController.start();
+        });
 
-        guiManager.showOverlay(authGuiController.getView());
-        authGuiController.start();
+        return result;
     }
 
     public void logout() {
-        sessionManager.logout();
-        appControllerFactory.resetManagers();
+        sessionController.logout();
         requireAuthentication(null);
     }
 
     public void goHome() {
-        if (!sessionManager.isLoggedIn()) {
-            requireAuthentication(null);
-        } else {
-            appControllerFactory.createProfileManager().getProfileInfoAsync()
-                .thenAccept(profile -> {
-                    Platform.runLater(() -> {
-                        HomeViewController homeController = new HomeViewController(appControllerFactory.createProfileManager(), appControllerFactory.createWorkoutPlanManager(), guiManager);
-                        navigateTo(homeController);
+        if (sessionController.isAuthenticated()) {
+            Platform.runLater(() -> navigateTo(createHomeController()));
+        } else if (sessionController.hasPersistedTokens()) {
+            sessionController.resumeSessionAsync()
+                    .thenAccept(outcome -> Platform.runLater(() -> navigateTo(createHomeController())))
+                    .exceptionally(ex -> {
+                        requireAuthentication(null);
+                        return null;
                     });
-                })
-                .exceptionally(ex -> {
-                    Platform.runLater(() -> requireAuthentication(null));
-                    return null;
-                });
+        } else {
+            requireAuthentication(null);
         }
     }
 
     public void goToProfile() {
-        if (appControllerFactory.createProfileRepository().getCachedProfile() == null) {
+        if (!sessionController.isAuthenticated()) {
             goHome();
             return;
         }
-        ProfileViewController profileController = new ProfileViewController(appControllerFactory.createProfileManager(), guiManager);
+        ProfileViewController profileController = new ProfileViewController(this, session().createProfileManager(), guiManager);
         Platform.runLater(() -> navigateTo(profileController));
     }
 
     public void goToExerciseLibrary() {
-        ExerciseLibraryViewController controller = new ExerciseLibraryViewController(guiManager, appControllerFactory.createExerciseLibraryManager(), appControllerFactory.createProfileManager());
+        ExerciseLibraryViewController controller = new ExerciseLibraryViewController(this, guiManager, session().createExerciseLibraryManager(), session().createProfileManager());
         Platform.runLater(() -> navigateTo(controller));
     }
 
     public void goToPlanManagement() {
-        PlanManagementViewController controller = new PlanManagementViewController(appControllerFactory.createWorkoutPlanManager(), appControllerFactory.createProfileManager(), guiManager);
+        PlanManagementViewController controller = new PlanManagementViewController(this, session().createWorkoutPlanManager(), session().createProfileManager(), guiManager);
         Platform.runLater(() -> navigateTo(controller));
     }
 
     public void goToWorkoutPlanEditor(String planIdToEdit, boolean copyOfExisting) {
-        WorkoutPlanEditorViewController controller = new WorkoutPlanEditorViewController(planIdToEdit, copyOfExisting, appControllerFactory.createEditWorkoutPlanManager(), appControllerFactory.createExerciseLibraryManager(), guiManager);
+        WorkoutPlanEditorViewController controller = new WorkoutPlanEditorViewController(this, planIdToEdit, copyOfExisting, session().createEditWorkoutPlanManager(), session().createExerciseLibraryManager(), guiManager);
         Platform.runLater(() -> navigateTo(controller));
     }
 
     public void goToWorkoutExecution(String planId, int sessionDay) {
-        WorkoutExecutionViewController controller = new WorkoutExecutionViewController(planId, sessionDay, appControllerFactory.createWorkoutExecutionManager(), appControllerFactory.createExerciseLibraryManager(), guiManager);
+        WorkoutExecutionViewController controller = new WorkoutExecutionViewController(this, planId, sessionDay, session().createWorkoutExecutionManager(), session().createExerciseLibraryManager(), guiManager);
         Platform.runLater(() -> navigateTo(controller));
     }
 
     public void goToAthleteDashboard(ProfileBean athlete) {
         AthleteDashboardViewController controller = new AthleteDashboardViewController(
-                athlete, 
-                appControllerFactory.createProfileManager(), 
-                appControllerFactory.createWorkoutPlanManager(), 
-                appControllerFactory.createWorkoutHistoryManager(),
+                this,
+                athlete,
+                session().createProfileManager(),
+                session().createWorkoutPlanManager(),
+                session().createWorkoutHistoryManager(),
                 guiManager);
         Platform.runLater(() -> navigateTo(controller));
     }

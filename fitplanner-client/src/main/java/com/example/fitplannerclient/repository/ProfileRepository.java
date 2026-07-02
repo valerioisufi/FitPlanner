@@ -3,6 +3,7 @@ package com.example.fitplannerclient.repository;
 import com.example.fitplannerclient.entity.profile.Profile;
 import com.example.fitplannerclient.exception.RequestException;
 import com.example.fitplannerclient.service.api.ProfileApi;
+import com.example.fitplannercommon.InvitationCodeDTO;
 import com.example.fitplannercommon.ProfileDTO;
 
 import java.util.List;
@@ -11,9 +12,8 @@ import java.util.concurrent.CompletionException;
 
 public class ProfileRepository {
 
-    private ProfileApi profileApi;
+    private final ProfileApi profileApi;
     private Profile cachedProfile;
-    private String previousUserId;
 
     public ProfileRepository(ProfileApi profileApi) {
         this.profileApi = profileApi;
@@ -24,28 +24,27 @@ public class ProfileRepository {
         return profileApi.getProfileInfoAsync()
                 .thenApply(this::dtoToEntity)
                 .thenApply(profile -> {
-                    this.previousUserId = (this.cachedProfile != null) ? this.cachedProfile.getUserId() : this.previousUserId;
                     this.cachedProfile = profile;
                     return profile;
                 });
-    }
-
-    public boolean didUserChange() {
-        if (cachedProfile == null) return false;
-        return previousUserId != null && !previousUserId.equals(cachedProfile.getUserId());
     }
 
     public Profile getCachedProfile() {
         return cachedProfile;
     }
 
-    public void clearCachedProfile() {
-        this.previousUserId = (this.cachedProfile != null) ? this.cachedProfile.getUserId() : this.previousUserId;
-        this.cachedProfile = null;
+    public CompletableFuture<Void> updateProfileInfoAsync(Profile entity) {
+        return profileApi.updateProfileInfoAsync(entityToDto(entity))
+                .thenRun(() -> this.cachedProfile = entity);
     }
 
-    public CompletableFuture<Void> updateProfileInfoAsync(Profile entity) {
-        return profileApi.updateProfileInfoAsync(entityToDto(entity));
+    public CompletableFuture<String> getInvitationCodeAsync() {
+        return profileApi.getInvitationCodeAsync()
+                .thenApply(InvitationCodeDTO::getInvitationCode);
+    }
+
+    public CompletableFuture<Void> linkTrainerAsync(String invitationCode) {
+        return profileApi.linkTrainerAsync(new InvitationCodeDTO(invitationCode));
     }
 
     public CompletableFuture<Profile> getMyTrainerAsync() {

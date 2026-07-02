@@ -1,6 +1,5 @@
 package com.example.fitplannerclient.bean.plan;
 
-import com.example.fitplannercommon.WorkoutState;
 import java.util.List;
 
 public class WorkoutScheduleBean {

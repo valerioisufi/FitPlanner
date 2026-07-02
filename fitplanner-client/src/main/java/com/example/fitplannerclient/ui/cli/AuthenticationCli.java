@@ -3,7 +3,7 @@ package com.example.fitplannerclient.ui.cli;
 import com.example.fitplannerclient.bean.auth.LoginBean;
 import com.example.fitplannerclient.bean.auth.RegisterBean;
 import com.example.fitplannerclient.bean.profile.ProfileBean;
-import com.example.fitplannerclient.controller.AuthManager;
+import com.example.fitplannerclient.controller.SessionController;
 import com.example.fitplannerclient.util.ValidationUtils;
 
 import java.util.List;
@@ -14,7 +14,7 @@ public class AuthenticationCli implements CliView {
     OutputPrinter printer;
     InputReader reader;
 
-    AuthManager authManager;
+    SessionController sessionController;
 
     @Override
     public CliView execute(CliEngine engine) {
@@ -22,7 +22,7 @@ public class AuthenticationCli implements CliView {
         printer = engine.getPrinter();
         reader = engine.getInput();
 
-        authManager = engine.getControllerFactory().createAuthManager();
+        sessionController = engine.getSessionController();
 
         printer.printHeader("AUTENTICAZIONE");
         printer.printMenu(null, List.of("Accedi", "Registrati", "Esci"));
@@ -47,7 +47,7 @@ public class AuthenticationCli implements CliView {
         LoginBean loginBean = new LoginBean(email, password);
 
         try {
-            authManager.loginAsync(loginBean).join();
+            sessionController.loginAsync(loginBean).join();
             printer.printSuccess("Login effettuato con successo!");
             return new DashboardCli();
         } catch (Exception ex) {
@@ -91,7 +91,7 @@ public class AuthenticationCli implements CliView {
         registerBean.setProfile(profile);
 
         try {
-            authManager.registerAsync(registerBean).join();
+            sessionController.registerAsync(registerBean).join();
             printer.printSuccess("Registrazione effettuata con successo!");
             return new DashboardCli();
         } catch (Exception ex) {

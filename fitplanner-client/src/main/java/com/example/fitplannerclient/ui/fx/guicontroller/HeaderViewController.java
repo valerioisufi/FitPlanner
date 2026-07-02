@@ -18,11 +18,13 @@ import java.util.List;
 
 public class HeaderViewController {
     private final HeaderView headerView;
+    private final Navigator navigator;
 
     private ContextMenu notificationMenu;
     private ContextMenu accountMenu;
 
-    public HeaderViewController(int activeIndex, ProfileManager profileManager) {
+    public HeaderViewController(Navigator navigator, int activeIndex, ProfileManager profileManager) {
+        this.navigator = navigator;
         ProfileBean profile = profileManager.getCacheProfileInfo();
         boolean isTrainer = profile != null && profile.getProfileType() == ProfileBean.ProfileType.TRAINER;
 
@@ -34,16 +36,16 @@ public class HeaderViewController {
 
     private List<HeaderView.MenuConfig> getAthleteHeaderItems() {
         return List.of(
-                new HeaderView.MenuConfig("Home", null, node -> Navigator.getInstance().goHome()),
+                new HeaderView.MenuConfig("Home", null, node -> navigator.goHome()),
                 new HeaderView.MenuConfig("Il Mio Piano", null, node -> {})
         );
     }
 
     private List<HeaderView.MenuConfig> getTrainerHeaderItems() {
         return List.of(
-                new HeaderView.MenuConfig("Home", null, node -> Navigator.getInstance().goHome()),
-                new HeaderView.MenuConfig("Libreria Esercizi", null, node -> Navigator.getInstance().goToExerciseLibrary()),
-                new HeaderView.MenuConfig("Gestione Piani", null, node -> Navigator.getInstance().goToPlanManagement())
+                new HeaderView.MenuConfig("Home", null, node -> navigator.goHome()),
+                new HeaderView.MenuConfig("Libreria Esercizi", null, node -> navigator.goToExerciseLibrary()),
+                new HeaderView.MenuConfig("Gestione Piani", null, node -> navigator.goToPlanManagement())
         );
     }
 
@@ -102,10 +104,10 @@ public class HeaderViewController {
             accountMenu.setAutoHide(true);
 
             MenuItem profileItem = new MenuItem("Profilo");
-            profileItem.setOnAction(e -> Navigator.getInstance().goToProfile());
+            profileItem.setOnAction(e -> navigator.goToProfile());
 
             MenuItem logoutItem = new MenuItem("Logout");
-            logoutItem.setOnAction(e -> Navigator.getInstance().logout());
+            logoutItem.setOnAction(e -> navigator.logout());
 
             accountMenu.getItems().addAll(profileItem, logoutItem);
         }

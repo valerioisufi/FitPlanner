@@ -2,7 +2,7 @@ package com.example.fitplannerclient.service.api;
 
 import com.example.fitplannerclient.exception.NotAuthenticatedException;
 import com.example.fitplannerclient.service.HttpService;
-import com.example.fitplannerclient.service.SessionManager;
+import com.example.fitplannerclient.service.TokenStore;
 import com.example.fitplannercommon.LoginDTO;
 import com.example.fitplannercommon.RegisterDTO;
 import com.example.fitplannercommon.TokenDTO;
@@ -13,11 +13,11 @@ import java.util.concurrent.CompletionException;
 public class HttpAuthApi implements AuthApi {
 
     private final HttpService httpService;
-    private final SessionManager sessionManager;
+    private final TokenStore tokenStore;
 
-    public HttpAuthApi(HttpService httpService, SessionManager sessionManager) {
+    public HttpAuthApi(HttpService httpService, TokenStore tokenStore) {
         this.httpService = httpService;
-        this.sessionManager = sessionManager;
+        this.tokenStore = tokenStore;
     }
 
     @Override
@@ -26,8 +26,8 @@ public class HttpAuthApi implements AuthApi {
         return httpService.postAsync("/auth/login", loginDTO, TokenDTO.class)
                 .thenAccept(tokenBean -> {
                     // Successfully logged in
-                    sessionManager.setAccessToken(tokenBean.getAccessToken());
-                    sessionManager.setRefreshToken(tokenBean.getRefreshToken());
+                    tokenStore.setAccessToken(tokenBean.getAccessToken());
+                    tokenStore.setRefreshToken(tokenBean.getRefreshToken());
                 })
                 .exceptionally(throwable -> {
                     String msg = HttpService.extractErrorMessage(throwable);
@@ -42,8 +42,8 @@ public class HttpAuthApi implements AuthApi {
         return httpService.postAsync("/auth/register", registerDTO, TokenDTO.class)
                 .thenAccept(tokenBean -> {
                     // Successfully registered
-                    sessionManager.setAccessToken(tokenBean.getAccessToken());
-                    sessionManager.setRefreshToken(tokenBean.getRefreshToken());
+                    tokenStore.setAccessToken(tokenBean.getAccessToken());
+                    tokenStore.setRefreshToken(tokenBean.getRefreshToken());
                 })
                 .exceptionally(throwable -> {
                     String msg = HttpService.extractErrorMessage(throwable);

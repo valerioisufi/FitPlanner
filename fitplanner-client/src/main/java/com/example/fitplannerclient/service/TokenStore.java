@@ -2,15 +2,20 @@ package com.example.fitplannerclient.service;
 
 import java.util.prefs.Preferences;
 
-public class SessionManager {
+/**
+ * Custodisce i token di autenticazione (access + refresh)
+ */
+public class TokenStore {
     private static final String PREF_REFRESH_TOKEN = "refresh_token";
 
     private String accessToken;
     private String refreshToken;
     private final Preferences preferences;
 
-    public SessionManager() {
-        preferences = Preferences.userNodeForPackage(SessionManager.class);
+    public TokenStore() {
+        // il refresh token viene salvato nelle Preferences;
+        // in un contesto reale andrebbe memorizzato tramite il keystore del SO
+        preferences = Preferences.userNodeForPackage(TokenStore.class);
 
         this.refreshToken = preferences.get(PREF_REFRESH_TOKEN, null);
     }
@@ -35,12 +40,11 @@ public class SessionManager {
         return refreshToken;
     }
 
-
-    public synchronized boolean isLoggedIn() {
+    public synchronized boolean hasTokens() {
         return accessToken != null || refreshToken != null;
     }
 
-    public synchronized void logout() {
+    public synchronized void clear() {
         setAccessToken(null);
         setRefreshToken(null);
     }

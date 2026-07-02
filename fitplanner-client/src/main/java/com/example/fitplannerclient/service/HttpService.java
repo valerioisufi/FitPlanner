@@ -23,14 +23,14 @@ public class HttpService {
     private static final String CONTENT_TYPE = "application/json";
 
     private final String baseUrl;
-    private final SessionManager sessionManager;
+    private final TokenStore tokenStore;
     private final HttpClient httpClient;
     private final ObjectMapper objectMapper;
     private final Supplier<CompletableFuture<Boolean>> onSessionExpired;
 
-    public HttpService(String baseUrl, SessionManager sessionManager, Supplier<CompletableFuture<Boolean>> onSessionExpired) {
+    public HttpService(String baseUrl, TokenStore tokenStore, Supplier<CompletableFuture<Boolean>> onSessionExpired) {
         this.baseUrl = baseUrl;
-        this.sessionManager = sessionManager;
+        this.tokenStore = tokenStore;
         this.onSessionExpired = onSessionExpired;
         this.httpClient = HttpClient.newHttpClient();
         this.objectMapper = new ObjectMapper();
@@ -175,7 +175,7 @@ public class HttpService {
     }
 
     private CompletableFuture<Boolean> handleRefreshToken() {
-        String refreshToken = sessionManager.getRefreshToken();
+        String refreshToken = tokenStore.getRefreshToken();
         if (refreshToken == null) return CompletableFuture.completedFuture(false);
 
         try {
@@ -192,16 +192,16 @@ public class HttpService {
                         if (res.statusCode() == 200) {
                             try {
                                 TokenDTO newToken = objectMapper.readValue(res.body(), TokenDTO.class);
-                                sessionManager.setAccessToken(newToken.getAccessToken());
+                                tokenStore.setAccessToken(newToken.getAccessToken());
                                 if (newToken.getRefreshToken() != null) {
-                                    sessionManager.setRefreshToken(newToken.getRefreshToken());
+                                    tokenStore.setRefreshToken(newToken.getRefreshToken());
                                 }
                                 return true;
                             } catch (JacksonException ignored) {
                                 // Ignore json parsing error, will logout
                             }
                         }
-                        sessionManager.logout();
+                        tokenStore.clear();
                         return false;
                     });
         } catch (JacksonException e) {
@@ -219,7 +219,7 @@ public class HttpService {
     }
 
     private void applyAuthHeader(HttpRequest.Builder builder) {
-        String token = sessionManager.getAccessToken();
+        String token = tokenStore.getAccessToken();
         if (token != null && !token.isBlank()) {
             builder.setHeader("Authorization", "Bearer " + token);
         }

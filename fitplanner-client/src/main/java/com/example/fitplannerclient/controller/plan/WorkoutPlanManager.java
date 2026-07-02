@@ -1,49 +1,43 @@
 package com.example.fitplannerclient.controller.plan;
 
 import com.example.fitplannerclient.bean.plan.*;
-import com.example.fitplannerclient.entity.plan.PlanNode;
 import com.example.fitplannerclient.entity.plan.WorkoutPlan;
+import com.example.fitplannerclient.entity.plan.WorkoutPlanSummary;
+import com.example.fitplannerclient.entity.plan.WorkoutSession;
 import com.example.fitplannerclient.repository.ExerciseRepository;
 import com.example.fitplannerclient.repository.WorkoutPlanRepository;
-import com.example.fitplannerclient.serializer.PlanDeserializer;
 import com.example.fitplannerclient.serializer.PlanToBeanVisitor;
-import com.example.fitplannerclient.service.api.WorkoutPlanApi;
-import com.example.fitplannercommon.WorkoutPlanSummaryDTO;
-import com.example.fitplannercommon.WorkoutSessionDTO;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 
 public class WorkoutPlanManager {
 
     private final WorkoutPlanRepository planRepository;
-    private final WorkoutPlanApi planApi;
     private final ExerciseRepository exerciseRepository;
 
-    public WorkoutPlanManager(WorkoutPlanRepository planRepository, WorkoutPlanApi planApi, ExerciseRepository exerciseRepository) {
+    public WorkoutPlanManager(WorkoutPlanRepository planRepository, ExerciseRepository exerciseRepository) {
         this.planRepository = planRepository;
-        this.planApi = planApi;
         this.exerciseRepository = exerciseRepository;
     }
 
     public CompletableFuture<List<WorkoutPlanSummaryBean>> getMyCreatedPlansSummaryAsync() {
-        return planApi.getMyCreatedPlansSummaryAsync()
+        return planRepository.getMyCreatedPlansSummaryAsync()
                 .thenApply(list -> list
                         .stream()
-                        .map(dto -> {
+                        .map(summary -> {
                             WorkoutPlanSummaryBean bean = new WorkoutPlanSummaryBean();
-                            bean.setPlanId(dto.getPlanId());
-                            bean.setPlanTitle(dto.getPlanTitle());
-                            bean.setAssignedTo(dto.getAssignedTo());
+                            bean.setPlanId(summary.planId());
+                            bean.setPlanTitle(summary.planTitle());
+                            bean.setAssignedTo(summary.assignedTo());
                             return bean;
                         })
                         .toList());
     }
 
     public CompletableFuture<Void> assignPlanToAthleteAsync(String planId, String athleteEmail) {
-        return planApi.assignPlanToAsync(planId, athleteEmail);
+        return planRepository.assignPlanToAthleteAsync(planId, athleteEmail);
     }
 
     public CompletableFuture<WorkoutPlanBean> getAssignedPlanAsync() {
@@ -52,76 +46,65 @@ public class WorkoutPlanManager {
     }
 
     public CompletableFuture<WorkoutPlanBean> getAssignedPlanOfAthleteAsync(String athleteId) {
-        return planApi.getMyCreatedPlansSummaryAsync()
+        return planRepository.getMyCreatedPlansSummaryAsync()
                 .thenCompose(list -> {
                     Optional<String> planId = list.stream()
-                            .filter(dto -> dto.getAssignedTo() != null && dto.getAssignedTo().equals(athleteId))
+                            .filter(summary -> summary.assignedTo() != null && summary.assignedTo().equals(athleteId))
                             .findFirst()
-                            .map(WorkoutPlanSummaryDTO::getPlanId);
+                            .map(WorkoutPlanSummary::planId);
 
-                    return planId.map(s -> planApi.getPlanDetailsByIdAsync(s)
-                                    .thenApply(dto -> {
-                                        if (dto == null) return null;
-                                        PlanDeserializer deserializer = new PlanDeserializer();
-                                        WorkoutPlan entity = deserializer.toEntity(dto);
-                                        return entityToBean(entity);
-                                    })
+                    return planId.map(s -> planRepository.getPlanByIdAsync(s)
+                                    .thenApply(this::entityToBean)
                             ).orElseGet(() -> CompletableFuture.completedFuture(null));
                 });
     }
 
     public CompletableFuture<Void> deletePlanAsync(String planId) {
-        return planApi.deletePlanAsync(planId);
+        return planRepository.deletePlanAsync(planId);
     }
 
     public CompletableFuture<WorkoutScheduleBean> getCurrentCycleScheduleAsync() {
-        return planApi.getCurrentCycleScheduleAsync().thenApply(dto -> {
-            if (dto == null) return null;
+        return planRepository.getCurrentCycleScheduleAsync().thenApply(schedule -> {
+            if (schedule == null) return null;
             WorkoutScheduleBean bean = new WorkoutScheduleBean();
-            bean.setPlanId(dto.getPlanId());
-            bean.setPlanTitle(dto.getPlanTitle());
-            bean.setCycleStartDate(dto.getCycleStartDate());
-            bean.setCycleEndDate(dto.getCycleEndDate());
-            bean.setCurrentCycleDay(dto.getCurrentCycleDay());
-            bean.setWorkoutStates(dto.getWorkoutStates());
-            bean.setNextSuggestedSession(mapSessionDtoToBean(dto.getNextSuggestedSession()));
+            bean.setPlanId(schedule.planId());
+            bean.setPlanTitle(schedule.planTitle());
+            bean.setCycleStartDate(schedule.cycleStartDate());
+            bean.setCycleEndDate(schedule.cycleEndDate());
+            bean.setCurrentCycleDay(schedule.currentCycleDay());
+            bean.setWorkoutStates(schedule.workoutStates().stream()
+                    .map(state -> WorkoutState.valueOf(state.name()))
+                    .toList());
+            bean.setNextSuggestedSession(mapSessionEntityToBean(schedule.nextSuggestedSession()));
             return bean;
         });
     }
 
     public CompletableFuture<WorkoutSessionBean> getNextSuggestedSessionAsync() {
-        return planApi.getCurrentCycleScheduleAsync()
+        return planRepository.getCurrentCycleScheduleAsync()
                 .thenApply(schedule -> {
-                    if (schedule == null || schedule.getNextSuggestedSession() == null) {
+                    if (schedule == null || schedule.nextSuggestedSession() == null) {
                         return null;
                     }
-                    return mapSessionDtoToBean(schedule.getNextSuggestedSession());
+                    return mapSessionEntityToBean(schedule.nextSuggestedSession());
                 });
     }
 
     // --- MAPPING HELPERS ---
 
-    public WorkoutSessionBean mapSessionDtoToBean(WorkoutSessionDTO sDto) {
-        if (sDto == null) return null;
+    public WorkoutSessionBean mapSessionEntityToBean(WorkoutSession session) {
+        if (session == null) return null;
         PlanNodeBean rootNode = null;
-        if (sDto.getContent() != null && !sDto.getContent().isBlank()) {
-            try {
-                PlanDeserializer deserializer = new PlanDeserializer();
-                PlanNode root = deserializer.deserialize(sDto.getContent());
-                if (root != null) {
-                    PlanToBeanVisitor visitor = new PlanToBeanVisitor(this::resolveExerciseName);
-                    visitor.getAccumulatedDecorators().clear();
-                    root.accept(visitor);
-                    rootNode = visitor.getCurrentPlanNodeBean();
-                }
-            } catch (Exception e) {
-                throw new CompletionException("Failed to deserialize workout session content", e);
-            }
+        if (session.getRoot() != null) {
+            PlanToBeanVisitor visitor = new PlanToBeanVisitor(this::resolveExerciseName);
+            visitor.getAccumulatedDecorators().clear();
+            session.getRoot().accept(visitor);
+            rootNode = visitor.getCurrentPlanNodeBean();
         }
         if (rootNode == null) {
-            rootNode = new PlanNodeBean("root-" + sDto.getDay(), sDto.getName(), NodeType.BLOCK);
+            rootNode = new PlanNodeBean("root-" + session.getDay(), session.getName(), NodeType.BLOCK);
         }
-        return new WorkoutSessionBean(sDto.getName(), sDto.getDay(), rootNode);
+        return new WorkoutSessionBean(session.getName(), session.getDay(), rootNode);
     }
 
     public WorkoutPlanBean entityToBean(WorkoutPlan plan) {

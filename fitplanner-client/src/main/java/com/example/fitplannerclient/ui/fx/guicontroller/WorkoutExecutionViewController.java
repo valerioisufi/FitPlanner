@@ -11,8 +11,8 @@ import com.example.fitplannerclient.ui.fx.GuiManager;
 import com.example.fitplannerclient.ui.fx.Navigator;
 import com.example.fitplannerclient.ui.fx.components.Icon;
 import com.example.fitplannerclient.ui.fx.view.plan.execution.WorkoutExecutionView;
-import com.example.fitplannercommon.ExerciseLogDTO;
-import com.example.fitplannercommon.ExerciseSetDTO;
+import com.example.fitplannerclient.bean.log.ExerciseLogBean;
+import com.example.fitplannerclient.bean.log.ExerciseSetBean;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
@@ -31,8 +31,8 @@ public class WorkoutExecutionViewController implements GuiController, WorkoutExe
     private final String planId;
     private final int sessionDay;
     private final List<PlanNodeBean> exerciseNodes = new ArrayList<>();
-    private final List<ExerciseLogDTO> exerciseLogs = new ArrayList<>();
-    private final List<ExerciseSetDTO> currentExerciseSets = new ArrayList<>();
+    private final List<ExerciseLogBean> exerciseLogs = new ArrayList<>();
+    private final List<ExerciseSetBean> currentExerciseSets = new ArrayList<>();
 
     private int currentExerciseIndex = 0;
     private int currentSetNum = 1;
@@ -40,6 +40,7 @@ public class WorkoutExecutionViewController implements GuiController, WorkoutExe
     private int targetRepsForExercise = 10;
     private boolean isPlaying = true;
 
+    private final Navigator navigator;
     private final WorkoutExecutionManager executionManager;
     private final ExerciseLibraryManager exerciseLibraryManager;
     private final GuiManager guiManager;
@@ -47,7 +48,8 @@ public class WorkoutExecutionViewController implements GuiController, WorkoutExe
     private Timeline restTimeline;
     private int remainingRestSeconds;
 
-    public WorkoutExecutionViewController(String planId, int sessionDay, WorkoutExecutionManager executionManager, ExerciseLibraryManager exerciseLibraryManager, GuiManager guiManager) {
+    public WorkoutExecutionViewController(Navigator navigator, String planId, int sessionDay, WorkoutExecutionManager executionManager, ExerciseLibraryManager exerciseLibraryManager, GuiManager guiManager) {
+        this.navigator = navigator;
         this.planId = planId;
         this.sessionDay = sessionDay;
         this.executionManager = executionManager;
@@ -85,7 +87,7 @@ public class WorkoutExecutionViewController implements GuiController, WorkoutExe
                     collectExerciseNodes(rootBean);
             
                     if (exerciseNodes.isEmpty()) {
-                        Navigator.getInstance().goHome();
+                        navigator.goHome();
                     } else {
                         // Il motore provvederà a fare tick e aggiornare la UI via observer
                     }
@@ -94,7 +96,7 @@ public class WorkoutExecutionViewController implements GuiController, WorkoutExe
             .exceptionally(ex -> {
                 Platform.runLater(() -> {
                     guiManager.showExceptionError("Errore caricamento sessione", ex);
-                    Navigator.getInstance().goHome();
+                    navigator.goHome();
                 });
                 return null;
             });
@@ -146,11 +148,13 @@ public class WorkoutExecutionViewController implements GuiController, WorkoutExe
         
         double weight = 0.0;
         int reps = 0;
+        int rpe = 0;
         try { weight = Double.parseDouble(weightStr); } catch (NumberFormatException ignored) { /* ignored */ }
         try { reps = Integer.parseInt(repsStr); } catch (NumberFormatException ignored) { /* ignored */ }
-        
+        try { rpe = Integer.parseInt(rpeStr); } catch (NumberFormatException ignored) { /* ignored */ }
+
         // Save logic
-        currentExerciseSets.add(new ExerciseSetDTO(reps, weight));
+        currentExerciseSets.add(new ExerciseSetBean(reps, weight, rpe));
         
         // Add row to view
         view.addLoggedSetRow(currentSetNum, weightStr, repsStr, rpeStr);
@@ -164,7 +168,7 @@ public class WorkoutExecutionViewController implements GuiController, WorkoutExe
         if (currentExerciseSets.isEmpty()) return;
 
         PlanNodeBean exNode = exerciseNodes.get(currentExerciseIndex);
-        ExerciseLogDTO exLog = new ExerciseLogDTO(exNode.getName(), exNode.getId(), new ArrayList<>(currentExerciseSets), 8, "Log");
+        ExerciseLogBean exLog = new ExerciseLogBean(exNode.getName(), exNode.getId(), new ArrayList<>(currentExerciseSets), "Log");
         exerciseLogs.add(exLog);
         currentExerciseSets.clear();
     }
@@ -175,7 +179,7 @@ public class WorkoutExecutionViewController implements GuiController, WorkoutExe
         executionManager.finishAndSaveSession()
                 .thenRun(() -> Platform.runLater(() -> {
                     guiManager.showNotification(GuiManager.NotificationType.SUCCESS, "Allenamento salvato con successo!");
-                    Navigator.getInstance().goHome();
+                    navigator.goHome();
                 }))
                 .exceptionally(ex -> {
                     guiManager.showExceptionError("Errore nel salvataggio del log:", ex);

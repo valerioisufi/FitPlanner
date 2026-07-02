@@ -29,13 +29,15 @@ public class WorkoutPlanEditorViewController implements GuiController {
 
     private WorkoutPlanBean activePlan;
     private WorkoutSessionBean activeSession;
+    private final Navigator navigator;
     private final EditWorkoutPlanManager editWorkoutPlanManager;
     private final ExerciseLibraryManager exerciseManager;
     private final GuiManager guiManager;
 
     private final WorkoutPlanObserver observer;
 
-    public WorkoutPlanEditorViewController(String planIdToEdit, boolean copyOfExisting, EditWorkoutPlanManager editWorkoutPlanManager, ExerciseLibraryManager exerciseManager, GuiManager guiManager) {
+    public WorkoutPlanEditorViewController(Navigator navigator, String planIdToEdit, boolean copyOfExisting, EditWorkoutPlanManager editWorkoutPlanManager, ExerciseLibraryManager exerciseManager, GuiManager guiManager) {
+        this.navigator = navigator;
         this.editWorkoutPlanManager = editWorkoutPlanManager;
         this.exerciseManager = exerciseManager;
         this.guiManager = guiManager;
@@ -87,7 +89,7 @@ public class WorkoutPlanEditorViewController implements GuiController {
         this.view.setOnSessionRemoved(this.editWorkoutPlanManager::removeSession);
 
         this.view.setOnSavePlanClicked(this::savePlan);
-        this.view.setOnCancelClicked(() -> Navigator.getInstance().goToPlanManagement());
+        this.view.setOnCancelClicked(navigator::goToPlanManagement);
 
         this.view.setOnShowModalRequested(modalContent -> guiManager.showModal(modalContent));
         this.view.setOnHideModalRequested(() -> guiManager.hideModal());
@@ -287,7 +289,7 @@ public class WorkoutPlanEditorViewController implements GuiController {
         editWorkoutPlanManager.savePlan()
                 .thenRun(() -> {
                     guiManager.showNotification(GuiManager.NotificationType.SUCCESS, "Piano salvato con successo.");
-                    Navigator.getInstance().goToPlanManagement();
+                    navigator.goToPlanManagement();
                 })
                 .exceptionally(ex -> {
                     guiManager.showExceptionError("Errore nel salvataggio del piano:", ex);

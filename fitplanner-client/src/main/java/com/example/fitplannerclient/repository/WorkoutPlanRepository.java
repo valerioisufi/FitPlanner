@@ -2,13 +2,19 @@ package com.example.fitplannerclient.repository;
 
 import com.example.fitplannerclient.entity.plan.PlanNode;
 import com.example.fitplannerclient.entity.plan.WorkoutPlan;
+import com.example.fitplannerclient.entity.plan.WorkoutPlanSummary;
+import com.example.fitplannerclient.entity.plan.WorkoutSchedule;
 import com.example.fitplannerclient.entity.plan.WorkoutSession;
 import com.example.fitplannerclient.entity.plan.block.Block;
 import com.example.fitplannerclient.serializer.PlanDeserializer;
 import com.example.fitplannerclient.serializer.PlanToDtoVisitor;
 import com.example.fitplannerclient.service.api.WorkoutPlanApi;
+import com.example.fitplannercommon.WorkoutScheduleDTO;
+import com.example.fitplannercommon.WorkoutSessionDTO;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 
 public class WorkoutPlanRepository {
 
@@ -96,4 +102,67 @@ public class WorkoutPlanRepository {
     public WorkoutPlan getCachedAssignedPlan() {
         return cachedAssignedPlan;
     }
+
+    public CompletableFuture<WorkoutPlan> getPlanByIdAsync(String planId) {
+        return planApi.getPlanDetailsByIdAsync(planId)
+                .thenApply(dto -> dto == null ? null : deserializer.toEntity(dto));
+    }
+
+    public CompletableFuture<List<WorkoutPlanSummary>> getMyCreatedPlansSummaryAsync() {
+        return planApi.getMyCreatedPlansSummaryAsync()
+                .thenApply(list -> list.stream()
+                        .map(dto -> new WorkoutPlanSummary(dto.getPlanId(), dto.getPlanTitle(), dto.getAssignedTo()))
+                        .toList());
+    }
+
+    public CompletableFuture<WorkoutSchedule> getCurrentCycleScheduleAsync() {
+        return planApi.getCurrentCycleScheduleAsync()
+                .thenApply(this::scheduleDtoToEntity);
+    }
+
+    public CompletableFuture<Void> assignPlanToAthleteAsync(String planId, String athleteId) {
+        return planApi.assignPlanToAsync(planId, athleteId);
+    }
+
+    public CompletableFuture<Void> deletePlanAsync(String planId) {
+        return planApi.deletePlanAsync(planId);
+    }
+
+
+    // mapper DTO -> entity
+    private WorkoutSchedule scheduleDtoToEntity(WorkoutScheduleDTO dto) {
+        if (dto == null) return null;
+
+        List<WorkoutSchedule.WorkoutState> states = dto.getWorkoutStates() == null
+                ? List.of()
+                : dto.getWorkoutStates().stream()
+                        .map(state -> WorkoutSchedule.WorkoutState.valueOf(state.name()))
+                        .toList();
+
+        return new WorkoutSchedule(
+                dto.getPlanId(),
+                dto.getPlanTitle(),
+                dto.getCycleStartDate(),
+                dto.getCycleEndDate(),
+                dto.getCurrentCycleDay(),
+                states,
+                sessionDtoToEntity(dto.getNextSuggestedSession())
+        );
+    }
+
+    private WorkoutSession sessionDtoToEntity(WorkoutSessionDTO dto) {
+        if (dto == null) return null;
+
+        PlanNode root = null;
+        if (dto.getContent() != null && !dto.getContent().isBlank()) {
+            try {
+                root = deserializer.deserialize(dto.getContent());
+            } catch (Exception e) {
+                throw new CompletionException("Failed to deserialize workout session content", e);
+            }
+        }
+
+        return new WorkoutSession(dto.getName(), dto.getDay(), root);
+    }
+
 }

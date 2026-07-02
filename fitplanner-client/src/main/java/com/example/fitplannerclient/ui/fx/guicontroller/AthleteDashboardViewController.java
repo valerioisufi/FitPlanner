@@ -6,6 +6,7 @@ import com.example.fitplannerclient.controller.plan.WorkoutPlanManager;
 import com.example.fitplannerclient.controller.profile.ProfileManager;
 import com.example.fitplannerclient.ui.fx.GuiController;
 import com.example.fitplannerclient.ui.fx.GuiManager;
+import com.example.fitplannerclient.ui.fx.Navigator;
 import com.example.fitplannerclient.ui.fx.view.dashboard.AthleteDashboardView;
 import javafx.application.Platform;
 import javafx.scene.layout.Pane;
@@ -21,14 +22,14 @@ public class AthleteDashboardViewController implements GuiController {
     private final WorkoutHistoryManager historyManager;
     private final GuiManager guiManager;
 
-    public AthleteDashboardViewController(ProfileBean athlete, ProfileManager profileManager, WorkoutPlanManager planManager, WorkoutHistoryManager historyManager, GuiManager guiManager) {
+    public AthleteDashboardViewController(Navigator navigator, ProfileBean athlete, ProfileManager profileManager, WorkoutPlanManager planManager, WorkoutHistoryManager historyManager, GuiManager guiManager) {
         this.athlete = athlete;
         this.planManager = planManager;
         this.historyManager = historyManager;
         this.guiManager = guiManager;
 
         // Header view using index -1 (nessuna tab evidenziata) o index 0 (Home)
-        this.headerViewController = new HeaderViewController(0, profileManager);
+        this.headerViewController = new HeaderViewController(navigator, 0, profileManager);
         this.view = new AthleteDashboardView();
         this.view.setHeaderView(this.headerViewController.getView());
     }

@@ -18,10 +18,10 @@ public class ProfileViewController implements GuiController {
     private final ProfileManager profileManager;
     private final GuiManager guiManager;
 
-    public ProfileViewController(ProfileManager profileManager, GuiManager guiManager) {
+    public ProfileViewController(Navigator navigator, ProfileManager profileManager, GuiManager guiManager) {
         this.profileManager = profileManager;
         this.guiManager = guiManager;
-        this.headerViewController = new HeaderViewController(-1, profileManager);
+        this.headerViewController = new HeaderViewController(navigator, -1, profileManager);
         this.profileView = new ProfileView();
 
         this.mainPane = new BorderPane();

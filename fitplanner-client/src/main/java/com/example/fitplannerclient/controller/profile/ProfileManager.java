@@ -3,18 +3,14 @@ package com.example.fitplannerclient.controller.profile;
 import com.example.fitplannerclient.bean.profile.ProfileBean;
 import com.example.fitplannerclient.entity.profile.Profile;
 import com.example.fitplannerclient.repository.ProfileRepository;
-import com.example.fitplannerclient.service.api.ProfileApi;
-import com.example.fitplannercommon.InvitationCodeDTO;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public class ProfileManager {
-    private final ProfileApi profileApi;
     private final ProfileRepository profileRepository;
 
-    public ProfileManager(ProfileApi profileApi, ProfileRepository profileRepository) {
-        this.profileApi = profileApi;
+    public ProfileManager(ProfileRepository profileRepository) {
         this.profileRepository = profileRepository;
     }
 
@@ -49,11 +45,11 @@ public class ProfileManager {
     }
 
     public CompletableFuture<String> getInvitationCodeAsync(){
-        return profileApi.getInvitationCodeAsync().thenApply(InvitationCodeDTO::getInvitationCode);
+        return profileRepository.getInvitationCodeAsync();
     }
 
     public CompletableFuture<Void> linkTrainerAsync(String invitationCode){
-        return profileApi.linkTrainerAsync(new InvitationCodeDTO(invitationCode));
+        return profileRepository.linkTrainerAsync(invitationCode);
     }
 
 

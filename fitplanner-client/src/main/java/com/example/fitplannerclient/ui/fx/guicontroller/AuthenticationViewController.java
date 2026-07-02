@@ -3,23 +3,25 @@ package com.example.fitplannerclient.ui.fx.guicontroller;
 import com.example.fitplannerclient.bean.auth.LoginBean;
 import com.example.fitplannerclient.bean.auth.RegisterBean;
 import com.example.fitplannerclient.bean.profile.ProfileBean;
-import com.example.fitplannerclient.controller.AuthManager;
+import com.example.fitplannerclient.controller.SessionController;
 import com.example.fitplannerclient.ui.fx.GuiController;
 import com.example.fitplannerclient.ui.fx.GuiManager;
 import com.example.fitplannerclient.ui.fx.view.auth.AuthenticationView;
 import com.example.fitplannerclient.util.ValidationUtils;
 import javafx.scene.layout.Pane;
 
+import java.util.function.Consumer;
+
 public class AuthenticationViewController implements GuiController {
     private final GuiManager guiManager;
-    private final AuthManager authManager;
+    private final SessionController sessionController;
     private final AuthenticationView view;
-    private final Runnable onLoginSuccess;
+    private final Consumer<SessionController.LoginOutcome> onAuthenticated;
 
-    public AuthenticationViewController(GuiManager guiManager, AuthManager authManager, Runnable onLoginSuccess) {
+    public AuthenticationViewController(GuiManager guiManager, SessionController sessionController, Consumer<SessionController.LoginOutcome> onAuthenticated) {
         this.guiManager = guiManager;
-        this.authManager = authManager;
-        this.onLoginSuccess = onLoginSuccess;
+        this.sessionController = sessionController;
+        this.onAuthenticated = onAuthenticated;
         this.view = new AuthenticationView();
 
         bindValidators();
@@ -58,8 +60,8 @@ public class AuthenticationViewController implements GuiController {
 
         LoginBean loginBean = new LoginBean(this.view.getLoginEmail(), this.view.getLoginPassword());
 
-        authManager.loginAsync(loginBean)
-                .thenRun(onLoginSuccess)
+        sessionController.loginAsync(loginBean)
+                .thenAccept(onAuthenticated)
                 .exceptionally(ex -> {
                     this.guiManager.showExceptionError("Errore nel login:", ex);
                     return null;
@@ -105,8 +107,8 @@ public class AuthenticationViewController implements GuiController {
         profileBean.setProfileType(profileType);
         registerBean.setProfile(profileBean);
 
-        authManager.registerAsync(registerBean)
-                .thenRun(onLoginSuccess)
+        sessionController.registerAsync(registerBean)
+                .thenAccept(onAuthenticated)
                 .exceptionally(ex -> {
                     this.guiManager.showExceptionError("Errore durante la registrazione:", ex);
                     return null;

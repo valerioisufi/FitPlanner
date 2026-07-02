@@ -14,15 +14,17 @@ import javafx.scene.layout.Pane;
 public class HomeViewController implements GuiController {
     private Pane view;
     private final HeaderViewController headerViewController;
+    private final Navigator navigator;
     private final ProfileManager profileManager;
     private final WorkoutPlanManager planManager;
     private final GuiManager guiManager;
 
-    public HomeViewController(ProfileManager profileManager, WorkoutPlanManager planManager, GuiManager guiManager) {
+    public HomeViewController(Navigator navigator, ProfileManager profileManager, WorkoutPlanManager planManager, GuiManager guiManager) {
+        this.navigator = navigator;
         this.profileManager = profileManager;
         this.planManager = planManager;
         this.guiManager = guiManager;
-        this.headerViewController = new HeaderViewController(0, profileManager); // Active Index 0 is Home
+        this.headerViewController = new HeaderViewController(navigator, 0, profileManager); // Active Index 0 is Home
         
         ProfileBean profile = profileManager.getCacheProfileInfo();
         boolean isTrainer = profile != null && profile.getProfileType() == ProfileBean.ProfileType.TRAINER;
@@ -53,8 +55,8 @@ public class HomeViewController implements GuiController {
             TrainerHomeView trainerView = (TrainerHomeView) this.view;
             trainerView.setWelcomeMessage(welcomeTitle, welcomeSubtitle);
             trainerView.showTrainerDashboard(
-                    () -> Navigator.getInstance().goToExerciseLibrary(),
-                    () -> Navigator.getInstance().goToPlanManagement()
+                    navigator::goToExerciseLibrary,
+                    navigator::goToPlanManagement
             );
 
             // Fetch and set invite code
@@ -68,7 +70,7 @@ public class HomeViewController implements GuiController {
             // Fetch and set athletes
             profileManager.getMyAthletesAsync()
                     .thenAccept(athletes -> Platform.runLater(() ->
-                            trainerView.showAthleteList(athletes, athlete -> Navigator.getInstance().goToAthleteDashboard(athlete))
+                            trainerView.showAthleteList(athletes, navigator::goToAthleteDashboard)
                     ))
                     .exceptionally(ex -> {
                         guiManager.showExceptionError(
@@ -85,7 +87,7 @@ public class HomeViewController implements GuiController {
                         Platform.runLater(() -> {
                             athleteView.showAthleteDashboard(plan, schedule, (selectedRelativeDay) -> {
                                 if (schedule != null) {
-                                    Navigator.getInstance().goToWorkoutExecution(schedule.getPlanId(), selectedRelativeDay);
+                                    navigator.goToWorkoutExecution(schedule.getPlanId(), selectedRelativeDay);
                                 }
                             });
                             checkAndShowTrainerInvite(athleteView);

@@ -19,18 +19,20 @@ public class PlanManagementViewController implements GuiController {
     private final PlanManagementView view;
     private final HeaderViewController headerViewController;
 
+    private final Navigator navigator;
     private final WorkoutPlanManager planManager;
     private final ProfileManager profileManager;
     private final GuiManager guiManager;
 
     private List<ProfileBean> athletesCache = new ArrayList<>();
 
-    public PlanManagementViewController(WorkoutPlanManager planManager, ProfileManager profileManager, GuiManager guiManager) {
+    public PlanManagementViewController(Navigator navigator, WorkoutPlanManager planManager, ProfileManager profileManager, GuiManager guiManager) {
+        this.navigator = navigator;
         this.planManager = planManager;
         this.profileManager = profileManager;
         this.guiManager = guiManager;
 
-        this.headerViewController = new HeaderViewController(2, profileManager);
+        this.headerViewController = new HeaderViewController(navigator, 2, profileManager);
         this.view = new PlanManagementView();
         this.view.setHeaderView(this.headerViewController.getView());
 
@@ -39,11 +41,11 @@ public class PlanManagementViewController implements GuiController {
 
     private void bindActions() {
         view.setOnNewPlanAction(() -> {
-            Navigator.getInstance().goToWorkoutPlanEditor(null, false);
+            navigator.goToWorkoutPlanEditor(null, false);
         });
 
         view.setOnEditAction(plan -> {
-            Navigator.getInstance().goToWorkoutPlanEditor(plan.getPlanId(), false);
+            navigator.goToWorkoutPlanEditor(plan.getPlanId(), false);
         });
 
         view.setOnDeleteAction(plan -> {
@@ -61,7 +63,7 @@ public class PlanManagementViewController implements GuiController {
         });
 
         view.setOnCloneAction(plan -> {
-            Navigator.getInstance().goToWorkoutPlanEditor(plan.getPlanId(), true);
+            navigator.goToWorkoutPlanEditor(plan.getPlanId(), true);
         });
 
         // Assign Button logic

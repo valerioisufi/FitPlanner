@@ -1,25 +1,21 @@
 package com.example.fitplannerclient.bean.log;
 
-import com.example.fitplannercommon.ExerciseSetDTO;
-
 import java.util.List;
 
 public class ExerciseLogBean {
     private String name;
     private String exerciseId;
 
-    private List<ExerciseSetDTO> sets;
-    private int rpe;
+    private List<ExerciseSetBean> sets;
 
     private String notes;
 
     public ExerciseLogBean() {}
 
-    public ExerciseLogBean(String name, String exerciseId, List<ExerciseSetDTO> sets, int rpe, String notes) {
+    public ExerciseLogBean(String name, String exerciseId, List<ExerciseSetBean> sets, String notes) {
         this.name = name;
         this.exerciseId = exerciseId;
         this.sets = sets;
-        this.rpe = rpe;
         this.notes = notes;
     }
 
@@ -39,20 +35,12 @@ public class ExerciseLogBean {
         this.exerciseId = exerciseId;
     }
 
-    public List<ExerciseSetDTO> getSets() {
+    public List<ExerciseSetBean> getSets() {
         return sets;
     }
 
-    public void setSets(List<ExerciseSetDTO> sets) {
+    public void setSets(List<ExerciseSetBean> sets) {
         this.sets = sets;
-    }
-
-    public int getRpe() {
-        return rpe;
-    }
-
-    public void setRpe(int rpe) {
-        this.rpe = rpe;
     }
 
     public String getNotes() {

@@ -5,6 +5,7 @@ import com.example.fitplannerclient.controller.exercise.ExerciseLibraryManager;
 import com.example.fitplannerclient.controller.profile.ProfileManager;
 import com.example.fitplannerclient.ui.fx.GuiController;
 import com.example.fitplannerclient.ui.fx.GuiManager;
+import com.example.fitplannerclient.ui.fx.Navigator;
 import com.example.fitplannerclient.ui.fx.view.library.ExerciseLibraryView;
 import com.example.fitplannerclient.util.ValidationUtils;
 import javafx.application.Platform;
@@ -18,11 +19,11 @@ public class ExerciseLibraryViewController implements GuiController {
     private final ExerciseLibraryManager manager;
     private final ProfileManager profileManager;
 
-    public ExerciseLibraryViewController(GuiManager guiManager, ExerciseLibraryManager manager, ProfileManager profileManager) {
+    public ExerciseLibraryViewController(Navigator navigator, GuiManager guiManager, ExerciseLibraryManager manager, ProfileManager profileManager) {
         this.guiManager = guiManager;
         this.manager = manager;
         this.profileManager = profileManager;
-        this.headerViewController = new HeaderViewController(1, profileManager);
+        this.headerViewController = new HeaderViewController(navigator, 1, profileManager);
         this.view = new ExerciseLibraryView();
 
         this.view.setHeaderView(this.headerViewController.getView());

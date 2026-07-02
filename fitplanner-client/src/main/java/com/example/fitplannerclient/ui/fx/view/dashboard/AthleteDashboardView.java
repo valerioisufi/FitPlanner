@@ -114,16 +114,16 @@ public class AthleteDashboardView extends BorderPane {
             row.setStyle("-fx-padding: 15px;");
 
             VBox infoBox = new VBox(4);
-            Label planName = new Label("Giorno Sessione: " + log.getWorkoutSessionDay());
+            Label planName = new Label("Giorno Sessione: " + log.workoutSessionDay());
             planName.setStyle("-fx-font-family: 'Space Grotesk Bold'; -fx-font-size: 14px; -fx-text-fill: -fx-color-text-body;");
-            Label sessionName = new Label("Data: " + sdf.format(new Date(log.getDate())));
+            Label sessionName = new Label("Data: " + sdf.format(new Date(log.date())));
             sessionName.setStyle("-fx-text-fill: -fx-color-text-light; -fx-font-size: 13px;");
             infoBox.getChildren().addAll(planName, sessionName);
 
             Region spacer = new Region();
             HBox.setHgrow(spacer, Priority.ALWAYS);
 
-            Label durationLabel = new Label(log.getStatus() != null ? log.getStatus() : "Sconosciuto");
+            Label durationLabel = new Label(log.status() != null ? log.status() : "Sconosciuto");
             durationLabel.setStyle("-fx-font-family: 'Space Grotesk Medium'; -fx-font-size: 12px; -fx-text-fill: -fx-radix-blue-11; -fx-background-color: -fx-radix-blue-3; -fx-padding: 4px 12px; -fx-background-radius: 6px;");
 
             row.getChildren().addAll(infoBox, spacer, durationLabel);
