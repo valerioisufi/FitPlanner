@@ -88,24 +88,21 @@ public class AthleteHomeView extends BorderPane {
         leftPanel.setPadding(new Insets(25));
         // Initialize left panel with next suggested session
         WorkoutSessionBean suggested = schedule.getNextSuggestedSession();
-        int suggestedRelativeDay = suggested.getDay();
+        int suggestedAbsoluteDay = suggested.getDay();
         
         Instant startInst = Instant.ofEpochMilli(schedule.getCycleStartDate());
         LocalDate startDate = LocalDate.ofInstant(startInst, ZoneOffset.UTC);
         int cycleLength = plan.getCycleLength();
-        int absoluteStartDay = (schedule.getCurrentCycleDay() / cycleLength) * cycleLength;
-        int suggestedAbsoluteDay = absoluteStartDay + suggestedRelativeDay;
-        // Se la sessione suggerita è in un ciclo precedente o successivo, non ci preoccupiamo troppo dell'esattezza qui
-        // ma di solito è nel ciclo corrente o prossimo. Facciamo un calcolo approssimativo.
-        if (suggestedAbsoluteDay < schedule.getCurrentCycleDay()) {
-            suggestedAbsoluteDay += cycleLength;
-        }
-        LocalDate suggestedDate = startDate.plusDays(suggestedAbsoluteDay);
+        int currentAbsoluteDay = schedule.getCurrentCycleDay();
+        int absoluteStartDay = (currentAbsoluteDay / cycleLength) * cycleLength;
+
+        int daysDifference = suggestedAbsoluteDay - absoluteStartDay;
+        LocalDate suggestedDate = startDate.plusDays(daysDifference);
         String suggestedTitleDate = suggestedDate.getDayOfMonth() + " " + suggestedDate.getMonth().name().substring(0,3) + " " + suggestedDate.getDayOfWeek().name().substring(0,3);
 
-        boolean isSuggestedToday = (suggestedAbsoluteDay == schedule.getCurrentCycleDay());
+        boolean isSuggestedToday = (suggestedAbsoluteDay == currentAbsoluteDay);
 
-        updateLeftPanel(leftPanel, suggested, suggestedRelativeDay, isSuggestedToday, suggestedTitleDate, plan, onStartSession);
+        updateLeftPanel(leftPanel, suggested, suggestedAbsoluteDay, isSuggestedToday, suggestedTitleDate, plan, onStartSession);
 
         // --- Right Panel: THIS WEEK ---
         VBox rightPanel = buildRightPanel(schedule, startDate, absoluteStartDay, cycleLength, plan, session, leftPanel, onStartSession);
@@ -144,7 +141,7 @@ public class AthleteHomeView extends BorderPane {
             WorkoutState state = states.get(i);
             int absoluteDay = absoluteStartDay + i;
             int relativeDay = absoluteDay % cycleLength;
-            LocalDate dayDate = startDate.plusDays(absoluteDay);
+            LocalDate dayDate = startDate.plusDays(i);
             
             String dayOfWeekStr = dayDate.getDayOfWeek().name().substring(0,3);
             String dayOfMonthStr = String.valueOf(dayDate.getDayOfMonth());
@@ -205,7 +202,7 @@ public class AthleteHomeView extends BorderPane {
 
             if (session != null && !sessionName.equals("Rest")) {
                 String titleDate = dayOfMonthStr + " " + dayDate.getMonth().name().substring(0,3) + " " + dayOfWeekStr;
-                dayRow.setOnMouseClicked(e -> updateLeftPanel(leftPanel, session, relativeDay, isToday, titleDate, plan, onStartSession));
+                dayRow.setOnMouseClicked(e -> updateLeftPanel(leftPanel, session, absoluteDay, isToday, titleDate, plan, onStartSession));
                 dayRow.setStyle("-fx-cursor: hand;");
             }
 
@@ -216,7 +213,7 @@ public class AthleteHomeView extends BorderPane {
         return rightPanel;
     }
 
-    private void updateLeftPanel(VBox leftPanel, WorkoutSessionBean session, int relativeDay, boolean isToday, String titleDate, WorkoutPlanBean plan, IntConsumer onStartSession) {
+    private void updateLeftPanel(VBox leftPanel, WorkoutSessionBean session, int absoluteDay, boolean isToday, String titleDate, WorkoutPlanBean plan, IntConsumer onStartSession) {
         leftPanel.getChildren().clear();
 
         BorderPane cardHeader = new BorderPane();
@@ -248,7 +245,7 @@ public class AthleteHomeView extends BorderPane {
         btnStart.getStyleClass().add("button-primary");
         btnStart.setMaxWidth(Double.MAX_VALUE);
         HBox.setHgrow(btnStart, Priority.ALWAYS);
-        btnStart.setOnAction(e -> onStartSession.accept(relativeDay));
+        btnStart.setOnAction(e -> onStartSession.accept(absoluteDay));
 
         footer.getChildren().add(btnStart);
 

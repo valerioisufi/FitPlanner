@@ -35,6 +35,7 @@ public class WorkoutExecutionManager {
 
     private WorkoutExecutionSubject workoutExecutionSubject = new WorkoutExecutionSubject();
     private String lastActiveNodeId = null;
+    private int currentAbsoluteSessionDay;
 
     public WorkoutExecutionManager(WorkoutPlanRepository planRepository, SessionLogApi logApi, ExerciseRepository exerciseRepository) {
         this.planRepository = planRepository;
@@ -50,8 +51,9 @@ public class WorkoutExecutionManager {
         workoutExecutionSubject.detach(observer);
     }
 
-    public CompletableFuture<Void> startSessionAsync(String planId, int workoutSessionDay) {
+    public CompletableFuture<Void> startSessionAsync(String planId, int absoluteSessionDay) {
         this.currentPlanId = planId;
+        this.currentAbsoluteSessionDay = absoluteSessionDay;
 
         // Recupera il piano direttamente tramite il repository (sfrutta la cache se possibile)
         return planRepository.getAssignedPlanAsync()
@@ -59,7 +61,8 @@ public class WorkoutExecutionManager {
                     if (plan == null) throw new IllegalStateException("Nessun piano assegnato");
                     this.currentPlan = plan;
 
-                    WorkoutSession targetSession = findTargetSession(plan, workoutSessionDay);
+                    int relativeDay = absoluteSessionDay % plan.getCycleLength();
+                    WorkoutSession targetSession = findTargetSession(plan, relativeDay);
                     if (targetSession == null) {
                         throw new IllegalArgumentException("Sessione non trovata per il giorno specificato");
                     }
@@ -179,7 +182,7 @@ public class WorkoutExecutionManager {
                 status,
                 System.currentTimeMillis(),
                 currentPlanId,
-                currentSession != null ? currentSession.getDay() : 0,
+                currentAbsoluteSessionDay,
                 new ArrayList<>() // TODO: mappare i risultati dall'ExecutionContext
         );
 

@@ -21,14 +21,12 @@ public class AppControllerFactory {
     private final WorkoutPlanApi workoutPlanApi;
     private final SessionLogApi sessionLogApi;
 
+    // i Repository sono cachati (possiedono lo stato condiviso);
+    // i Manager vengono creati a ogni richiesta (façade stateless)
     private AuthManager authManager;
     private ProfileRepository profileRepository;
-    private ProfileManager profileManager;
     private ExerciseRepository exerciseRepository;
-    private ExerciseLibraryManager exerciseLibraryManager;
-    private WorkoutPlanManager workoutPlanManager;
     private WorkoutPlanRepository workoutPlanRepository;
-    private EditWorkoutPlanManager editWorkoutPlanManager;
     private SessionLogRepository sessionLogRepository;
 
     public AppControllerFactory(
@@ -59,15 +57,29 @@ public class AppControllerFactory {
         return profileRepository;
     }
 
-    public ProfileManager createProfileManager() {
-        return new ProfileManager(profileApi, createProfileRepository());
-    }
-
     public ExerciseRepository createExerciseRepository() {
         if (exerciseRepository == null) {
             exerciseRepository = new ExerciseRepository(exerciseLibraryApi);
         }
         return exerciseRepository;
+    }
+
+    public WorkoutPlanRepository createWorkoutPlanRepository() {
+        if (workoutPlanRepository == null) {
+            workoutPlanRepository = new WorkoutPlanRepository(workoutPlanApi);
+        }
+        return workoutPlanRepository;
+    }
+
+    public SessionLogRepository createSessionLogRepository() {
+        if (sessionLogRepository == null) {
+            sessionLogRepository = new SessionLogRepository(sessionLogApi);
+        }
+        return sessionLogRepository;
+    }
+
+    public ProfileManager createProfileManager() {
+        return new ProfileManager(profileApi, createProfileRepository());
     }
 
     public ExerciseLibraryManager createExerciseLibraryManager() {
@@ -78,47 +90,36 @@ public class AppControllerFactory {
         return new WorkoutPlanManager(createWorkoutPlanRepository(), workoutPlanApi, createExerciseRepository());
     }
 
-    public WorkoutPlanRepository createWorkoutPlanRepository() {
-        if (workoutPlanRepository == null) {
-            workoutPlanRepository = new WorkoutPlanRepository(workoutPlanApi);
-        }
-        return workoutPlanRepository;
-    }
-
     public EditWorkoutPlanManager createEditWorkoutPlanManager() {
-        editWorkoutPlanManager = new EditWorkoutPlanManager(createWorkoutPlanRepository(), createExerciseRepository());
-        return editWorkoutPlanManager;
+        return new EditWorkoutPlanManager(createWorkoutPlanRepository(), createExerciseRepository());
     }
 
-    public SessionLogApi createSessionLogApi() {
-        return sessionLogApi;
+    public WorkoutHistoryManager createWorkoutHistoryManager() {
+        return new WorkoutHistoryManager(createSessionLogRepository());
     }
 
     public WorkoutExecutionManager createWorkoutExecutionManager() {
         return new WorkoutExecutionManager(createWorkoutPlanRepository(), sessionLogApi, createExerciseRepository());
     }
 
+    /**
+     * Logout: invalida la sessione e tutte le cache dati per-utente.
+     * profileRepository è tenuto di proposito: mantiene l'identità corrente e alimenta didUserChange().
+     */
     public void resetManagers() {
         this.authManager = null;
-        this.profileManager = null;
-        this.exerciseLibraryManager = null;
-        this.workoutPlanManager = null;
-    }
-
-    public void resetDataManagers() {
-        this.exerciseLibraryManager = null;
-        this.workoutPlanManager = null;
+        this.exerciseRepository = null;
         this.workoutPlanRepository = null;
+        this.sessionLogRepository = null;
     }
 
-    public SessionLogRepository createSessionLogRepository() {
-        if (sessionLogRepository == null) {
-            sessionLogRepository = new SessionLogRepository(sessionLogApi);
-        }
-        return sessionLogRepository;
-    }
-
-    public WorkoutHistoryManager createWorkoutHistoryManager() {
-        return new WorkoutHistoryManager(createSessionLogRepository());
+    /**
+     * Cambio utente: scarta le cache dati del precedente
+     * (profileRepository resta: contiene la nuova identità appena caricata).
+     */
+    public void resetDataManagers() {
+        this.exerciseRepository = null;
+        this.workoutPlanRepository = null;
+        this.sessionLogRepository = null;
     }
 }
