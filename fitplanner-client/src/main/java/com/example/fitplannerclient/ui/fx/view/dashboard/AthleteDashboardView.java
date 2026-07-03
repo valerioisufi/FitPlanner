@@ -21,6 +21,7 @@ public class AthleteDashboardView extends BorderPane {
     private final Label athleteNameLabel;
     private final Label athleteEmailLabel;
     private final VBox planSection;
+    private final VBox progressSection;
     private final VBox logsSection;
 
     public AthleteDashboardView() {
@@ -43,6 +44,13 @@ public class AthleteDashboardView extends BorderPane {
         planTitle.getStyleClass().add("heading-h2");
         planSection.getChildren().add(planTitle);
         contentBox.getChildren().add(planSection);
+
+        // Progress Section
+        progressSection = new VBox(15);
+        Label progressTitle = new Label("Progressi");
+        progressTitle.getStyleClass().add("heading-h2");
+        progressSection.getChildren().add(progressTitle);
+        contentBox.getChildren().add(progressSection);
 
         // Logs Section
         logsSection = new VBox(15);
@@ -91,6 +99,10 @@ public class AthleteDashboardView extends BorderPane {
 
         card.getChildren().addAll(title, sessionsLabel);
         planSection.getChildren().add(card);
+    }
+
+    public void setProgressSection(Node progressContent) {
+        progressSection.getChildren().add(progressContent);
     }
 
     public void setSessionLogs(List<SessionLogBean> logs) {

@@ -17,7 +17,7 @@ import java.util.Set;
 public class ProgressViewController implements GuiController {
 
     private final ProgressView view;
-    private final HeaderViewController headerViewController;
+    private HeaderViewController headerViewController;
 
     private final WorkoutHistoryManager historyManager;
     private final GuiManager guiManager;
@@ -26,14 +26,22 @@ public class ProgressViewController implements GuiController {
     private FilterBean availableFilters;
     private Set<String> selectedExerciseIds = Set.of();
 
-    public ProgressViewController(Navigator navigator, WorkoutHistoryManager historyManager, ProfileManager profileManager, GuiManager guiManager) {
+    public ProgressViewController(
+            Navigator navigator, WorkoutHistoryManager historyManager, ProfileManager profileManager, GuiManager guiManager
+    ) {
+        this(historyManager, guiManager, false);
+        this.headerViewController = new HeaderViewController(navigator, 2, profileManager);
+        this.view.setHeaderView(headerViewController.getView());
+    }
+
+    public ProgressViewController(WorkoutHistoryManager historyManager, GuiManager guiManager) {
+        this(historyManager, guiManager, true);
+    }
+
+    private ProgressViewController(WorkoutHistoryManager historyManager, GuiManager guiManager, boolean embedded) {
         this.historyManager = historyManager;
         this.guiManager = guiManager;
-
-        this.headerViewController = new HeaderViewController(navigator, 2, profileManager);
-        this.view = new ProgressView();
-        this.view.setHeaderView(this.headerViewController.getView());
-
+        this.view = new ProgressView(embedded);
         bindActions();
     }
 
@@ -44,7 +52,6 @@ public class ProgressViewController implements GuiController {
 
     @Override
     public void start() {
-        // innesca il primo loadData attraverso il callback del periodo
         view.selectDefaultPeriod();
     }
 
@@ -54,12 +61,12 @@ public class ProgressViewController implements GuiController {
                     Platform.runLater(() -> {
                         this.availableFilters = filters;
                         view.setAvailableExercises(filters.exercises());
-                        // la vista preserva la selezione senza notificarla: il grafico va riallineato qui
+
                         refreshChart();
                     })
                 )
                 .exceptionally(ex -> {
-                    Platform.runLater(() -> guiManager.showExceptionError("Errore nel caricamento dei dati:", ex));
+                    guiManager.showExceptionError("Errore nel caricamento dei dati:", ex);
                     return null;
                 });
     }
@@ -81,11 +88,13 @@ public class ProgressViewController implements GuiController {
 
         FilterBean statisticsFilter = new FilterBean(availableFilters.startDate(), availableFilters.endDate(), selectedExercises);
         historyManager.getStatisticsAsync(statisticsFilter)
-                .thenAccept(statistics -> Platform.runLater(() -> view.setStatistics(statistics)))
-                .exceptionally(ex -> {
-                    Platform.runLater(() -> guiManager.showExceptionError("Errore nel caricamento delle statistiche:", ex));
+                .thenAccept(statistics ->
+                        Platform.runLater(() -> view.setStatistics(statistics))
+                ).exceptionally(ex -> {
+                    guiManager.showExceptionError("Errore nel caricamento delle statistiche:", ex);
                     return null;
                 });
+
     }
 
     @Override

@@ -17,6 +17,7 @@ public class AthleteDashboardViewController implements GuiController {
 
     private final AthleteDashboardView view;
     private final HeaderViewController headerViewController;
+    private final ProgressViewController progressController;
     private final ProfileBean athlete;
     private final WorkoutPlanManager planManager;
     private final WorkoutHistoryManager historyManager;
@@ -32,11 +33,15 @@ public class AthleteDashboardViewController implements GuiController {
         this.headerViewController = new HeaderViewController(navigator, 0, profileManager);
         this.view = new AthleteDashboardView();
         this.view.setHeaderView(this.headerViewController.getView());
+
+        this.progressController = new ProgressViewController(historyManager, guiManager);
+        this.view.setProgressSection(progressController.getView());
     }
 
     @Override
     public void start() {
         view.setAthleteProfile(athlete);
+        progressController.start();
 
         // Fetch the assigned plan
         planManager.getAssignedPlanOfAthleteAsync(athlete.getUserId())

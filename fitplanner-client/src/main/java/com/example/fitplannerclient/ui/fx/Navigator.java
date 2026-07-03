@@ -152,7 +152,7 @@ public class Navigator {
                 athlete,
                 session().createProfileManager(),
                 session().createWorkoutPlanManager(),
-                session().createWorkoutHistoryManager(),
+                session().createWorkoutHistoryManagerFor(athlete.getUserId()),
                 guiManager);
         Platform.runLater(() -> navigateTo(controller));
     }

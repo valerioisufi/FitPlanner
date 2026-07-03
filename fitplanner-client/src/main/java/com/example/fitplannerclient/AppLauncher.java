@@ -24,8 +24,7 @@ public class AppLauncher {
                     cliEngine.start();
                 }
                 case JAVAFX ->
-                    // JavaFxApp costruisce da sé il proprio ApplicationContext in start():
-                    // nessuno stato statico da passare attraverso il launch riflessivo di JavaFX
+                    // JavaFxApp costruisce da sé il proprio ApplicationContext in start()
                     Application.launch(JavaFxApp.class, args);
             }
         } catch (ConfigException e) {

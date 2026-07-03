@@ -34,18 +34,26 @@ public class ProgressView extends BorderPane {
     private BiConsumer<Long, Long> onPeriodSelectionChange;
 
     public ProgressView() {
+        this(false);
+    }
+
+    public ProgressView(boolean embedded) {
         VBox contentBox = new VBox(24);
-        contentBox.setPadding(new Insets(32));
+        contentBox.setPadding(embedded ? Insets.EMPTY : new Insets(32));
 
         HBox mainArea = new HBox(24);
         mainArea.getChildren().addAll(buildExercisePanel(), buildChartPanel());
 
-        contentBox.getChildren().addAll(buildHeader(), mainArea);
+        contentBox.getChildren().addAll(buildHeader(embedded), mainArea);
 
-        ScrollPane mainScroll = new ScrollPane(contentBox);
-        mainScroll.setFitToWidth(true);
-        this.setCenter(mainScroll);
-
+        // se embedded == true, non viene aggiunto lo scroll pane
+        if (embedded) {
+            this.setCenter(contentBox);
+        } else {
+            ScrollPane mainScroll = new ScrollPane(contentBox);
+            mainScroll.setFitToWidth(true);
+            this.setCenter(mainScroll);
+        }
     }
 
     public void setHeaderView(Node headerView) {
@@ -88,12 +96,9 @@ public class ProgressView extends BorderPane {
         }
     }
 
-    private Node buildHeader() {
+    private Node buildHeader(boolean embedded) {
         HBox header = new HBox();
         header.setAlignment(Pos.CENTER_LEFT);
-
-        Label subtitle = new Label("Visualizza l'andamento dei tuoi allenamenti");
-        subtitle.getStyleClass().addAll(BODY_BASE_CLASS, "text-color-light");
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
@@ -103,7 +108,13 @@ public class ProgressView extends BorderPane {
         periodCombo.setMinWidth(Region.USE_PREF_SIZE);
         periodCombo.valueProperty().addListener((obs, old, period) -> notifyPeriodChange(period));
 
-        header.getChildren().addAll(subtitle, spacer, periodCombo);
+        if (!embedded) {
+            Label subtitle = new Label("Visualizza l'andamento dei tuoi allenamenti");
+            subtitle.getStyleClass().addAll(BODY_BASE_CLASS, "text-color-light");
+            header.getChildren().add(subtitle);
+        }
+
+        header.getChildren().addAll(spacer, periodCombo);
         return header;
     }
 
