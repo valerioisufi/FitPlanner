@@ -73,7 +73,11 @@ public class UserSessionContext {
     }
 
     public WorkoutHistoryManager createWorkoutHistoryManager() {
-        return new WorkoutHistoryManager(sessionLogRepository);
+        return createWorkoutHistoryManagerFor(getUserId());
+    }
+
+    public WorkoutHistoryManager createWorkoutHistoryManagerFor(String athleteId) {
+        return new WorkoutHistoryManager(sessionLogRepository, athleteId);
     }
 
     public WorkoutExecutionManager createWorkoutExecutionManager() {

@@ -137,6 +137,15 @@ public class Navigator {
         Platform.runLater(() -> navigateTo(controller));
     }
 
+    public void goToStatistics() {
+        ProgressViewController controller = new ProgressViewController(
+                this,
+                session().createWorkoutHistoryManager(),
+                session().createProfileManager(),
+                guiManager);
+        Platform.runLater(() -> navigateTo(controller));
+    }
+
     public void goToAthleteDashboard(ProfileBean athlete) {
         AthleteDashboardViewController controller = new AthleteDashboardViewController(
                 this,

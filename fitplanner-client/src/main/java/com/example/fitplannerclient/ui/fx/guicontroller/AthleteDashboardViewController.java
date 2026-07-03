@@ -50,7 +50,7 @@ public class AthleteDashboardViewController implements GuiController {
         long endTimestamp = Instant.now().toEpochMilli();
         long startTimestamp = Instant.now().minus(30, ChronoUnit.DAYS).toEpochMilli();
 
-        historyManager.getFilteredSessionLogsAsync(athlete.getUserId(), startTimestamp, endTimestamp)
+        historyManager.getFilteredSessionLogsAsync(startTimestamp, endTimestamp)
                 .thenAccept(logs -> Platform.runLater(() -> view.setSessionLogs(logs)))
                 .exceptionally(ex -> {
                     guiManager.showExceptionError("Errore nel caricamento dei log:", ex);

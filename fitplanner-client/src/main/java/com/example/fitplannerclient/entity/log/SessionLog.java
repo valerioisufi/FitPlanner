@@ -57,7 +57,10 @@ public class SessionLog {
                 currentExerciseLog.updateNotes(log.getNotes());
             }
         }
+    }
 
+    public ExerciseLog getExerciseLog(String exerciseId) {
+        return exerciseLogs.get(exerciseId);
     }
 
     public List<ExerciseLog> getExerciseLogs() {

@@ -26,7 +26,7 @@ public class PlanManagementView extends BorderPane {
     private static final String TEXT_COLOR_LIGHT = "text-color-light";
 
     private final CardListView<WorkoutPlanSummaryBean> cardListView;
-    private List<ProfileBean> athletesCache;
+    private List<ProfileBean> athletesCache; // todo da spostare al livello controller
     
     private final AssignPlanModal assignModal;
 

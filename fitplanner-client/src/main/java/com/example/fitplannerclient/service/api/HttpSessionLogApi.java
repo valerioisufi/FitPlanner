@@ -28,7 +28,8 @@ public class HttpSessionLogApi implements SessionLogApi {
      */
     @Override
     public CompletableFuture<List<SessionLogDTO>> getFilteredSessionLogsAsync(
-            String athleteId, long startTimestamp, long endTimestamp) {
+            String athleteId, long startTimestamp, long endTimestamp
+    ) {
         
         String url = "/logs/session?startTimestamp=" + startTimestamp + "&endTimestamp=" + endTimestamp;
         if (athleteId != null && !athleteId.isBlank()) {

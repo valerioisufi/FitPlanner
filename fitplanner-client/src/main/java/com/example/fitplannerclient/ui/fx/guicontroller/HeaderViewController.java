@@ -37,7 +37,8 @@ public class HeaderViewController {
     private List<HeaderView.MenuConfig> getAthleteHeaderItems() {
         return List.of(
                 new HeaderView.MenuConfig("Home", null, node -> navigator.goHome()),
-                new HeaderView.MenuConfig("Il Mio Piano", null, node -> {})
+                new HeaderView.MenuConfig("Il Mio Piano", null, node -> {}),
+                new HeaderView.MenuConfig("Statistiche", null, node -> navigator.goToStatistics())
         );
     }
 
