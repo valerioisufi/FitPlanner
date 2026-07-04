@@ -37,7 +37,7 @@ public class DatabaseSessionLogDao implements SessionLogDao {
             safeRollback(conn, ex);
             throw ex;
         } finally {
-            safeRestoreAndRelease(conn);
+            DbConnection.getInstance().releaseConnection(conn);
         }
     }
 
@@ -252,19 +252,6 @@ public class DatabaseSessionLogDao implements SessionLogDao {
             }
         }
     }
-
-    private void safeRestoreAndRelease(Connection conn){
-        if (conn!= null) {
-            try {
-                conn.setAutoCommit(true);
-            } catch (SQLException e) {
-                e.printStackTrace();
-            } finally {
-                DbConnection.getInstance().releaseConnection(conn);
-            }
-        }
-    }
-
 
 
 }

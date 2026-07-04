@@ -43,10 +43,7 @@ public class DatabaseAccountDao implements AccountDao {
             }
             throw new DaoException("Errore durante la creazione dell'account o di rete", sqlException);
         } finally {
-            if (conn != null) {
-                DbConnection.getInstance().releaseConnection(conn);
-            }
-
+            DbConnection.getInstance().releaseConnection(conn);
         }
     }
 
@@ -74,9 +71,7 @@ public class DatabaseAccountDao implements AccountDao {
         } catch (SQLException e) {
             throw new DaoException("Errore critico durante l'aggiornamento dell'account nel database.", e);
         } finally {
-            if (conn != null) {
-                DbConnection.getInstance().releaseConnection(conn);
-            }
+            DbConnection.getInstance().releaseConnection(conn);
         }
     }
 
@@ -107,9 +102,7 @@ public class DatabaseAccountDao implements AccountDao {
         } catch (SQLException e) {
             throw new DaoException("Errore critico durante la ricerca dell'account nel database", e);
         } finally {
-            if (conn != null) {
-                DbConnection.getInstance().releaseConnection(conn);
-            }
+            DbConnection.getInstance().releaseConnection(conn);
         }
         return Optional.empty();
     }
@@ -143,9 +136,7 @@ public class DatabaseAccountDao implements AccountDao {
         } catch (SQLException e) {
             throw new DaoException("Errore critico durante la ricerca dell'account nel database", e);
         } finally {
-            if (conn != null) {
-                DbConnection.getInstance().releaseConnection(conn);
-            }
+            DbConnection.getInstance().releaseConnection(conn);
         }
         return Optional.empty();
     }
@@ -167,9 +158,7 @@ public class DatabaseAccountDao implements AccountDao {
         } catch (SQLException e) {
             throw new DaoException("Errore critico durante la cancellazione dell'account nel database.", e);
         } finally {
-            if (conn != null) {
-                DbConnection.getInstance().releaseConnection(conn);
-            }
+            DbConnection.getInstance().releaseConnection(conn);
         }
     }
 

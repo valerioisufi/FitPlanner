@@ -3,13 +3,14 @@ package com.example.fitplannerserver.dao.filesystem;
 import com.example.fitplannerserver.dao.DaoFactory;
 import com.example.fitplannerserver.dao.DataInitializer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.nio.file.Path;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class FileSystemDaoFactory extends DaoFactory {
 
-    private static final Logger LOGGER = Logger.getLogger(FileSystemDaoFactory.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(FileSystemDaoFactory.class);
     private static final String BASE_DIR = "filesystem_db";
 
     private final FileSystemAccountDao accountDao;
@@ -48,8 +49,7 @@ public class FileSystemDaoFactory extends DaoFactory {
             );
             initializer.initialize();
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Impossibile generare gli utenti di default sul File System", e);
-
+            logger.error("Impossibile generare gli utenti di default sul File System", e);
         }
     }
 

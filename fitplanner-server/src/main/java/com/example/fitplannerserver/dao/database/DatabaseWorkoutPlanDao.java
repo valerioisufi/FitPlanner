@@ -9,15 +9,12 @@ import com.example.fitplannerserver.model.plan.WorkoutSession;
 import java.sql.*;
 import java.time.LocalDate;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class DatabaseWorkoutPlanDao implements WorkoutPlanDao {
 
     private static final String NULL_ATHLETE_ID_MSG = "athleteId cannot be null";
     private static final String NULL_PLAN_ID_MSG="planId cannot be null";
     private static final String NULL_TRAINER_ID_MSG="trainerId cannot be null";
-    private static final Logger logger = Logger.getLogger(DatabaseWorkoutPlanDao.class.getName());
 
 
     @Override
@@ -44,7 +41,7 @@ public class DatabaseWorkoutPlanDao implements WorkoutPlanDao {
             safeRollback(conn, ex);
             throw ex;
         } finally {
-            safeRestoreAndRelease(conn);
+            DbConnection.getInstance().releaseConnection(conn);
         }
     }
 
@@ -199,18 +196,6 @@ public class DatabaseWorkoutPlanDao implements WorkoutPlanDao {
                 conn.rollback();
             } catch (SQLException e) {
                 ex.addSuppressed(new DaoException("Impossibile eseguire il rollback", e));
-            }
-        }
-    }
-
-    private void safeRestoreAndRelease(Connection conn){
-        if (conn!= null) {
-            try {
-                conn.setAutoCommit(true);
-            } catch (SQLException e) {
-                logger.log(Level.SEVERE, "Impossibile ripristinare l'auto-commit", e);
-            } finally {
-                DbConnection.getInstance().releaseConnection(conn);
             }
         }
     }

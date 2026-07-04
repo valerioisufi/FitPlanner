@@ -50,9 +50,7 @@ public class DatabaseExerciseLibraryDao implements ExerciseLibraryDao {
         } catch (SQLException e) {
             throw new DaoException("Errore critico durante l'aggiornamento dell'esercizio nel database.", e);
         } finally {
-            if (conn != null) {
-                DbConnection.getInstance().releaseConnection(conn);
-            }
+            DbConnection.getInstance().releaseConnection(conn);
         }
     }
 

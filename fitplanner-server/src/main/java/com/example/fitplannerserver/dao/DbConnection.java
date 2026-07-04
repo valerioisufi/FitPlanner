@@ -144,23 +144,53 @@ public class DbConnection {
     }
 
     public void releaseConnection(Connection conn) {
-        if (conn != null) {
-            try {
-                // se la connessione è chiusa, non rimetterla nel pool
-                if (conn.isClosed()) {
-                    currentPoolSize.decrementAndGet();
-                } else {
-                    // rimetto la connessione nel pool
-                    boolean inserted = pool.offer(conn);
-                    if (!inserted) {
-                        // se il pool è pieno, chiudo la connessione
-                        conn.close();
-                        currentPoolSize.decrementAndGet();
-                    }
-                }
-            } catch (SQLException e) {
-                logger.error("Errore durante il rilascio della connessione", e);
+        if (conn == null) {
+            return;
+        }
+        try {
+            // se la connessione è chiusa, non rimetterla nel pool
+            if (conn.isClosed()) {
+                currentPoolSize.decrementAndGet();
+                return;
             }
+
+            // il pool deve contenere solo connessioni con auto-commit attivo:
+            // se il ripristino fallisce la connessione viene scartata
+            if (!restoreAutoCommit(conn)) {
+                discardConnection(conn);
+                return;
+            }
+
+            // rimetto la connessione nel pool
+            boolean inserted = pool.offer(conn);
+            if (!inserted) {
+                // se il pool è pieno, chiudo la connessione
+                discardConnection(conn);
+            }
+        } catch (SQLException e) {
+            logger.error("Errore durante il rilascio della connessione", e);
+        }
+    }
+
+    private boolean restoreAutoCommit(Connection conn) {
+        try {
+            if (!conn.getAutoCommit()) {
+                conn.rollback();
+                conn.setAutoCommit(true);
+            }
+            return true;
+        } catch (SQLException e) {
+            logger.warn("Impossibile ripristinare l'auto-commit sulla connessione: {}", e.getMessage());
+            return false;
+        }
+    }
+
+    private void discardConnection(Connection conn) {
+        currentPoolSize.decrementAndGet();
+        try {
+            conn.close();
+        } catch (Exception e) {
+            logger.warn("Impossibile chiudere la connessione scartata: {}", e.getMessage());
         }
     }
 }

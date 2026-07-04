@@ -44,9 +44,7 @@ public class DatabaseProfileDao implements ProfileDao {
         } catch (SQLException e) {
             throw new DaoException("Errore critico durante la ricerca dell'utente nel database", e);
         } finally {
-            if (conn != null) {
-                DbConnection.getInstance().releaseConnection(conn);
-            }
+            DbConnection.getInstance().releaseConnection(conn);
         }
         return Optional.empty();
     }
@@ -81,9 +79,7 @@ public class DatabaseProfileDao implements ProfileDao {
         } catch (SQLException e) {
             throw new DaoException("Errore critico durante l'aggiornamento (save) dell'utente nel database.", e);
         } finally {
-            if (conn != null) {
-                DbConnection.getInstance().releaseConnection(conn);
-            }
+            DbConnection.getInstance().releaseConnection(conn);
         }
     }
 
@@ -117,9 +113,7 @@ public class DatabaseProfileDao implements ProfileDao {
         } catch (SQLException e) {
             throw new DaoException("Errore critico durante la ricerca dell'utente nel database", e);
         } finally {
-            if (conn != null) {
-                DbConnection.getInstance().releaseConnection(conn);
-            }
+            DbConnection.getInstance().releaseConnection(conn);
         }
         return Optional.empty();
     }
@@ -146,9 +140,7 @@ public class DatabaseProfileDao implements ProfileDao {
         } catch (SQLException e) {
             throw new DaoException("Errore critico durante la ricerca dell'utente nel database", e);
         } finally {
-            if (conn != null) {
-                DbConnection.getInstance().releaseConnection(conn);
-            }
+            DbConnection.getInstance().releaseConnection(conn);
         }
         return Optional.empty();
     }

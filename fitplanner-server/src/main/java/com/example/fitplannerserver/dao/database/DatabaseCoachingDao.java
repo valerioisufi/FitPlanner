@@ -33,9 +33,7 @@ public class DatabaseCoachingDao implements CoachingDao {
         } catch (SQLException e) {
             throw new DaoException("Errore critico durante l'aggiunta dell'atleta al proprio trainer nel database", e);
         } finally {
-            if (conn != null) {
-                DbConnection.getInstance().releaseConnection(conn);
-            }
+            DbConnection.getInstance().releaseConnection(conn);
         }
     }
 
@@ -59,9 +57,7 @@ public class DatabaseCoachingDao implements CoachingDao {
         } catch (SQLException e) {
             throw new DaoException("Errore critico durante la rimozione dell'atleta dal proprio trainer nel database", e);
         } finally {
-            if (conn != null) {
-                DbConnection.getInstance().releaseConnection(conn);
-            }
+            DbConnection.getInstance().releaseConnection(conn);
         }
     }
 
@@ -85,9 +81,7 @@ public class DatabaseCoachingDao implements CoachingDao {
         } catch (SQLException e) {
             throw new DaoException("Errore critico durante la ricerca dell'atleta e/o del trainer nel database", e);
         } finally {
-            if (conn != null) {
-                DbConnection.getInstance().releaseConnection(conn);
-            }
+            DbConnection.getInstance().releaseConnection(conn);
         }
     }
 
@@ -114,9 +108,7 @@ public class DatabaseCoachingDao implements CoachingDao {
         } catch (SQLException e) {
             throw new DaoException("Errore critico durante la ricerca dell'atleta nel database", e);
         } finally {
-            if (conn != null) {
-                DbConnection.getInstance().releaseConnection(conn);
-            }
+            DbConnection.getInstance().releaseConnection(conn);
         }
     }
 
@@ -141,9 +133,7 @@ public class DatabaseCoachingDao implements CoachingDao {
         } catch (SQLException e) {
             throw new DaoException("Errore critico durante la ricerca dell'trainer nel database", e);
         } finally {
-            if (conn != null) {
-                DbConnection.getInstance().releaseConnection(conn);
-            }
+            DbConnection.getInstance().releaseConnection(conn);
         }
         return Optional.empty();
     }
