@@ -82,12 +82,6 @@ public class FileSystemProfileDao implements ProfileDao {
         }
     }
 
-    @Override
-    public Optional<String> getInvitationCode(String userId) throws DaoException {
-        Objects.requireNonNull(userId, USER_ID_CANNOT_BE_NULL);
-
-        return findById(userId).map(User::getInvitationCode);
-    }
 
     private String toCsvRow(User profile) {
 

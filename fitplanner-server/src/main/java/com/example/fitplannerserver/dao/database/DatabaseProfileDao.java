@@ -118,30 +118,4 @@ public class DatabaseProfileDao implements ProfileDao {
         return Optional.empty();
     }
 
-    @Override
-    public Optional<String> getInvitationCode(String userId) throws DaoException {
-        Objects.requireNonNull(userId, "userId cannot be null");
-
-        String sql = """
-                SELECT invitation_code FROM profiles WHERE user_id=?;
-                """;
-        Connection conn = null;
-
-        try {
-            conn = DbConnection.getInstance().getConnection();
-            try (PreparedStatement stm = conn.prepareStatement(sql)) {
-                stm.setString(1, userId);
-                try (ResultSet rs = stm.executeQuery()) {
-                    if (rs.next()) {
-                        return Optional.ofNullable(rs.getString(INVITATION_CODE));
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            throw new DaoException("Errore critico durante la ricerca dell'utente nel database", e);
-        } finally {
-            DbConnection.getInstance().releaseConnection(conn);
-        }
-        return Optional.empty();
-    }
 }

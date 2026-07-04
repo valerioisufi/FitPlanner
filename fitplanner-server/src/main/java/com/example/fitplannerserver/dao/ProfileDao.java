@@ -14,6 +14,4 @@ public interface ProfileDao {
 
     // Find a trainer using their unique invitation code
     Optional<User> findByInvitationCode(String invitationCode) throws DaoException;
-
-    Optional<String> getInvitationCode(String userId) throws DaoException;
 }

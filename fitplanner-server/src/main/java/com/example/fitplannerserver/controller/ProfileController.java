@@ -155,7 +155,8 @@ public class ProfileController {
         identityProvider.checkUserRole(Account.Role.TRAINER);
 
         try {
-            String invitationCode = profileDao.getInvitationCode(identityProvider.getUserId())
+            String invitationCode = profileDao.findById(identityProvider.getUserId())
+                    .map(User::getInvitationCode)
                     .orElseThrow(() -> new ResourceNotFoundException("Codice di invito non trovato"));
 
             return new InvitationCodeDTO(invitationCode);
