@@ -1,7 +1,7 @@
 package com.example.fitplannerserver.mock;
 
 import com.example.fitplannerserver.exception.ForbiddenException;
-import com.example.fitplannerserver.model.Account;
+import com.example.fitplannerserver.model.user.Account;
 import com.example.fitplannerserver.security.IdentityProvider;
 
 public class MockIdentityProvider implements IdentityProvider {

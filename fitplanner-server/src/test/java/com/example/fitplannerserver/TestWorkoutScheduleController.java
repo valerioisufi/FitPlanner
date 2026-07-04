@@ -9,7 +9,7 @@ import com.example.fitplannerserver.dao.inmemory.InMemorySessionLogDao;
 import com.example.fitplannerserver.dao.inmemory.InMemoryWorkoutPlanDao;
 import com.example.fitplannerserver.exception.ResourceNotFoundException;
 import com.example.fitplannerserver.mock.MockIdentityProvider;
-import com.example.fitplannerserver.model.Account;
+import com.example.fitplannerserver.model.user.Account;
 import com.example.fitplannerserver.model.log.SessionLog;
 import com.example.fitplannerserver.model.plan.WorkoutPlan;
 import com.example.fitplannerserver.model.plan.WorkoutSession;

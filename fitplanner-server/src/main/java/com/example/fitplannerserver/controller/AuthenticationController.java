@@ -10,8 +10,10 @@ import com.example.fitplannerserver.dao.ProfileDao;
 import com.example.fitplannerserver.exception.DaoException;
 import com.example.fitplannerserver.exception.InvalidCredentialsException;
 import com.example.fitplannerserver.exception.SystemException;
-import com.example.fitplannerserver.model.Account;
-import com.example.fitplannerserver.model.User;
+import com.example.fitplannerserver.model.user.Account;
+import com.example.fitplannerserver.model.user.AthleteUser;
+import com.example.fitplannerserver.model.user.TrainerUser;
+import com.example.fitplannerserver.model.user.User;
 import com.example.fitplannerserver.security.JwtUtil;
 import com.example.fitplannerserver.util.InvitationCodeGenerator;
 import com.github.f4b6a3.uuid.UuidCreator;
@@ -88,17 +90,17 @@ public class AuthenticationController {
             if (accountDao.create(account)) {
                 // l'account dell'utente è stato creato correttamente
                 ProfileDTO profileDTO = registerDTO.getProfile();
+                User user = switch (role) {
+                    case TRAINER -> new TrainerUser(newUserId, InvitationCodeGenerator.generateCode());
+                    case ATHLETE -> new AthleteUser(newUserId);
+                };
 
-                User user = new User(newUserId);
                 user.setUserProfileInfo(
                         profileDTO.getFirstName(),
                         profileDTO.getLastName(),
                         profileDTO.getContactEmail(),
                         profileDTO.getPhoneNumber()
                 );
-                if(role == Account.Role.TRAINER)
-                    user.setInvitationCode(InvitationCodeGenerator.generateCode());
-
                 profileDao.save(user);
 
                 // genero i token jwt per l'utente

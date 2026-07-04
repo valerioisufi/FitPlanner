@@ -3,7 +3,6 @@ package com.example.fitplannerserver.controller;
 import com.example.fitplannercommon.InvitationCodeDTO;
 import com.example.fitplannercommon.ProfileDTO;
 import com.example.fitplannerserver.beanvalidator.ProfileValidator;
-import com.example.fitplannerserver.dao.CoachingDao;
 import com.example.fitplannerserver.dao.ProfileDao;
 import com.example.fitplannerserver.dao.WorkoutPlanDao;
 import com.example.fitplannerserver.exception.DaoException;
@@ -11,42 +10,38 @@ import com.example.fitplannerserver.exception.ResourceNotFoundException;
 import com.example.fitplannerserver.exception.SystemException;
 import com.example.fitplannerserver.exception.WrongArgumentsException;
 import com.example.fitplannerserver.mapper.ProfileMapper;
-import com.example.fitplannerserver.model.Account;
-import com.example.fitplannerserver.model.User;
-import com.example.fitplannerserver.model.plan.WorkoutPlan;
+import com.example.fitplannerserver.model.user.Account;
+import com.example.fitplannerserver.model.user.AthleteUser;
+import com.example.fitplannerserver.model.user.TrainerUser;
+import com.example.fitplannerserver.model.user.User;
+
 import com.example.fitplannerserver.security.IdentityProvider;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 public class ProfileController {
     private final IdentityProvider identityProvider;
 
     private final ProfileDao profileDao;
-    private final CoachingDao coachingDao;
     private final WorkoutPlanDao workoutPlanDao;
 
     public ProfileController(
             IdentityProvider identityProvider,
             ProfileDao profileDao,
-            CoachingDao coachingDao,
             WorkoutPlanDao workoutPlanDao
     ) {
         this.identityProvider = identityProvider;
 
         this.profileDao = profileDao;
-        this.coachingDao = coachingDao;
         this.workoutPlanDao = workoutPlanDao;
     }
 
     public ProfileDTO getProfileInfo() {
-
         try {
             User user = profileDao.findById(identityProvider.getUserId())
                     .orElseThrow(() -> new ResourceNotFoundException("Profilo non trovato"));
 
-            return ProfileMapper.toBean(user, identityProvider.getUserRole());
+            return ProfileMapper.toBean(user);
 
         } catch (DaoException e) {
             throw new SystemException("Errore durante il recupero delle informazioni del profilo", e);
@@ -57,36 +52,35 @@ public class ProfileController {
         ProfileValidator.validateProfileBean(profileDTO);
 
         try {
-            User oldUser = profileDao.findById(identityProvider.getUserId())
+            User user = profileDao.findById(identityProvider.getUserId())
                     .orElseThrow(() -> new ResourceNotFoundException("Errore durante l'aggiornamento delle informazioni del profilo. Profilo non trovato"));
 
-            User newUser = new User(oldUser);
-            newUser.setUserProfileInfo(
+            user.setUserProfileInfo(
                     profileDTO.getFirstName().trim(),
                     profileDTO.getLastName().trim(),
                     profileDTO.getContactEmail().trim(),
                     profileDTO.getPhoneNumber().trim()
             );
 
-            profileDao.save(newUser);
+            profileDao.save(user);
 
         } catch (DaoException e) {
             throw new SystemException("Errore durante l'aggiornamento delle informazioni del profilo", e);
         }
-
     }
 
     public ProfileDTO getMyTrainer() {
         identityProvider.checkUserRole(Account.Role.ATHLETE);
 
         try {
-            String trainerId = coachingDao.findTrainerIdByAthleteId(identityProvider.getUserId())
+            String trainerId = profileDao.findAthleteById(identityProvider.getUserId())
+                    .map(AthleteUser::getTrainerId)
                     .orElseThrow(() -> new ResourceNotFoundException("Non hai un trainer assegnato"));
 
-            User trainer = profileDao.findById(trainerId)
-                    .orElseThrow(() -> new ResourceNotFoundException("Trainer non trovato"));
+            return profileDao.findTrainerById(trainerId)
+                    .map(ProfileMapper::toBean)
+                    .orElseThrow(() -> new SystemException("Errore nel recuperare il profilo del trainer"));
 
-            return ProfileMapper.toBean(trainer, Account.Role.TRAINER);
         } catch (DaoException e){
             throw new SystemException("Errore nel recuperare il profilo del trainer", e);
         }
@@ -96,20 +90,13 @@ public class ProfileController {
         identityProvider.checkUserRole(Account.Role.TRAINER);
 
         try {
-            List<String> athleteIds = coachingDao.findAthleteIdsByTrainerId(identityProvider.getUserId());
-
-            List<ProfileDTO> athletes = new ArrayList<>();
-            for(String athleteId : athleteIds) {
-                User athlete = profileDao.findById(athleteId)
-                        .orElseThrow(() -> new ResourceNotFoundException("Atleta non trovato"));
-
-                athletes.add(ProfileMapper.toBean(athlete, Account.Role.ATHLETE));
-            }
-
-            return athletes;
+            return profileDao.findAthletesByTrainerId(identityProvider.getUserId())
+                    .stream()
+                    .map(ProfileMapper::toBean)
+                    .toList();
 
         } catch (DaoException e){
-            throw new SystemException("Errore nel recuperare il profilo del trainer", e);
+            throw new SystemException("Errore nel recuperare gli atleti del trainer", e);
         }
     }
 
@@ -121,30 +108,37 @@ public class ProfileController {
         }
 
         try {
-            User trainer = profileDao.findByInvitationCode(invitationCodeDTO.getInvitationCode())
+            TrainerUser trainer = profileDao.findByInvitationCode(invitationCodeDTO.getInvitationCode())
                     .orElseThrow(() -> new ResourceNotFoundException("Codice di invito non valido"));
 
             String athleteId = identityProvider.getUserId();
             if(trainer.getId().equals(athleteId)){
-                // un atleta non può possedere un codice di invito per cui questa eventualità non dovrebbe avvenire
+                // un atleta non può possedere un codice di invito, quindi non dovrebbe accadere
                 throw new WrongArgumentsException("Non puoi collegarti a te stesso");
             }
 
-            Optional<String> currentTrainerId = coachingDao.findTrainerIdByAthleteId(athleteId);
-            if (currentTrainerId.isPresent()) {
-                if (currentTrainerId.get().equals(trainer.getId())) {
-                    // già collegato a questo trainer
-                    return;
-                }
-                // cambio trainer: scollega dal precedente ed elimina il piano che aveva assegnato
-                coachingDao.unlink(athleteId, currentTrainerId.get());
-                Optional<WorkoutPlan> assignedPlan = workoutPlanDao.findAssignedPlanByAthleteId(athleteId);
-                if (assignedPlan.isPresent()) {
-                    workoutPlanDao.deletePlan(assignedPlan.get().getPlanId());
-                }
+            AthleteUser athlete = profileDao.findAthleteById(athleteId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Profilo atleta non trovato"));
+
+            if (trainer.getId().equals(athlete.getTrainerId())) {
+                // già collegato a questo trainer
+                return;
             }
 
-            coachingDao.linkAthleteToTrainer(athleteId, trainer.getId());
+            if (athlete.getTrainerId() != null) {
+                // cambio trainer: elimino il piano assegnato dal precedente
+                workoutPlanDao.findAssignedPlanByAthleteId(athleteId)
+                        .ifPresent(plan -> {
+                            try {
+                                workoutPlanDao.deletePlan(plan.getPlanId());
+                            } catch (DaoException e) {
+                                throw new SystemException("Errore durante la rimozione del piano precedente", e);
+                            }
+                        });
+            }
+
+            athlete.linkTo(trainer);
+            profileDao.save(athlete);
 
         } catch (DaoException e){
             throw new SystemException("Errore durante il collegamento al trainer", e);
@@ -155,12 +149,12 @@ public class ProfileController {
         identityProvider.checkUserRole(Account.Role.TRAINER);
 
         try {
-            String invitationCode = profileDao.findById(identityProvider.getUserId())
-                    .map(User::getInvitationCode)
+            String invitationCode = profileDao.findTrainerById(identityProvider.getUserId())
+                    .map(TrainerUser::getInvitationCode)
                     .orElseThrow(() -> new ResourceNotFoundException("Codice di invito non trovato"));
 
             return new InvitationCodeDTO(invitationCode);
-        } catch (Exception e) {
+        } catch (DaoException e) {
             throw new SystemException("Errore durante il recupero del codice di invito", e);
         }
     }

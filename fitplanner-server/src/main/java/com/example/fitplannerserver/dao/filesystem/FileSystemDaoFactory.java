@@ -18,7 +18,6 @@ public class FileSystemDaoFactory extends DaoFactory {
     private final FileSystemSessionLogDao sessionLogDao;
     private final FileSystemExerciseLibraryDao exerciseLibraryDao;
     private final FileSystemWorkoutPlanDao workoutPlanDao;
-    private final FileSystemCoachingDao coachingDao;
 
     public FileSystemDaoFactory() {
         Path accountsPath = Path.of(BASE_DIR, "accounts.csv");
@@ -28,14 +27,12 @@ public class FileSystemDaoFactory extends DaoFactory {
         Path exerciseLibraryPath = Path.of(BASE_DIR, "exercise_library.csv");
         Path workoutPlansPath = Path.of(BASE_DIR, "workout_plans.csv");
         Path workoutSessionsPath = Path.of(BASE_DIR, "workout_sessions.csv");
-        Path coachingPath = Path.of(BASE_DIR, "coaching.csv");
 
         accountDao = new FileSystemAccountDao(accountsPath);
         profileDao = new FileSystemProfileDao(profilesPath);
         sessionLogDao = new FileSystemSessionLogDao(sessionLogsPath, exerciseLogsPath);
         exerciseLibraryDao = new FileSystemExerciseLibraryDao(exerciseLibraryPath);
         workoutPlanDao = new FileSystemWorkoutPlanDao(workoutPlansPath, workoutSessionsPath);
-        coachingDao = new FileSystemCoachingDao(coachingPath);
 
         defaultData();
 
@@ -46,7 +43,6 @@ public class FileSystemDaoFactory extends DaoFactory {
             DataInitializer initializer = new DataInitializer(
                     this.accountDao,
                     this.profileDao,
-                    this.coachingDao,
                     this.exerciseLibraryDao
             );
             initializer.initialize();
@@ -80,11 +76,5 @@ public class FileSystemDaoFactory extends DaoFactory {
     public FileSystemWorkoutPlanDao getWorkoutPlanDao() {
         return this.workoutPlanDao;
     }
-
-    @Override
-    public FileSystemCoachingDao getCoachingDao() {
-        return this.coachingDao;
-    }
-
 
 }

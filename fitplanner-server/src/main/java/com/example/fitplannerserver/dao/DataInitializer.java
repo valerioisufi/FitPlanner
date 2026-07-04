@@ -2,8 +2,9 @@ package com.example.fitplannerserver.dao;
 
 import com.example.fitplannerserver.exception.DaoException;
 import com.example.fitplannerserver.exception.SystemException;
-import com.example.fitplannerserver.model.Account;
-import com.example.fitplannerserver.model.User;
+import com.example.fitplannerserver.model.user.Account;
+import com.example.fitplannerserver.model.user.AthleteUser;
+import com.example.fitplannerserver.model.user.TrainerUser;
 import com.example.fitplannerserver.model.plan.ExerciseDescription;
 import com.example.fitplannerserver.util.InvitationCodeGenerator;
 import com.github.f4b6a3.uuid.UuidCreator;
@@ -18,14 +19,12 @@ public class DataInitializer {
 
     private final AccountDao accountDao;
     private final ProfileDao profileDao;
-    private final CoachingDao coachingDao;
     private final ExerciseLibraryDao exerciseLibraryDao;
 
     public DataInitializer(AccountDao accountDao, ProfileDao profileDao,
-                           CoachingDao coachingDao, ExerciseLibraryDao exerciseLibraryDao) {
+                           ExerciseLibraryDao exerciseLibraryDao) {
         this.accountDao = accountDao;
         this.profileDao = profileDao;
-        this.coachingDao = coachingDao;
         this.exerciseLibraryDao = exerciseLibraryDao;
     }
 
@@ -47,20 +46,19 @@ public class DataInitializer {
             );
             this.accountDao.create(trainerAccount);
 
-            User trainerProfile = new User(
+            TrainerUser trainerProfile = new TrainerUser(
                     trainerId,
                     "Super",
                     "Trainer",
                     DEFAULT_TRAINER_EMAIL,
                     "1234567890",
-                    null
+                    InvitationCodeGenerator.generateCode()
             );
-            trainerProfile.setInvitationCode(InvitationCodeGenerator.generateCode());
             this.profileDao.save(trainerProfile);
 
             // Default Athlete
             String athleteId = UuidCreator.getTimeOrderedEpoch().toString();
-            createAthlete(athleteId, "John", "Doe", "athlete@fitplanner.com", defaultPasswordHash, trainerId);
+            createAthlete(athleteId, "John", "Doe", "athlete@fitplanner.com", defaultPasswordHash, trainerProfile);
 
             // Altri atleti
             String[] otherAthletes = {
@@ -74,7 +72,7 @@ public class DataInitializer {
                 String[] parts = athleteInfo.split(",");
                 String[] nameParts = parts[0].split(" ");
                 String id = UuidCreator.getTimeOrderedEpoch().toString();
-                createAthlete(id, nameParts[0], nameParts[1], parts[1], defaultPasswordHash, trainerId);
+                createAthlete(id, nameParts[0], nameParts[1], parts[1], defaultPasswordHash, trainerProfile);
             }
 
             // Crea esercizi per il trainer
@@ -90,7 +88,7 @@ public class DataInitializer {
         }
     }
 
-    private void createAthlete(String athleteId, String firstName, String lastName, String email, String passwordHash, String trainerId) throws DaoException {
+    private void createAthlete(String athleteId, String firstName, String lastName, String email, String passwordHash, TrainerUser trainer) throws DaoException {
         Account athleteAccount = new Account(
                 athleteId,
                 email,
@@ -100,18 +98,11 @@ public class DataInitializer {
         );
         this.accountDao.create(athleteAccount);
 
-        User athleteProfile = new User(
-                athleteId,
-                firstName,
-                lastName,
-                email,
-                "0000000000",
-                null
-        );
-        this.profileDao.save(athleteProfile);
+        AthleteUser athleteProfile = new AthleteUser(athleteId);
+        athleteProfile.setUserProfileInfo(firstName, lastName, email, "0000000000");
+        athleteProfile.linkTo(trainer);
 
-        // Link athlete and trainer
-        this.coachingDao.linkAthleteToTrainer(athleteId, trainerId);
+        this.profileDao.save(athleteProfile);
     }
 
     private void createExercise(String trainerId, String name, String execution, List<String> muscleGroups) throws DaoException {

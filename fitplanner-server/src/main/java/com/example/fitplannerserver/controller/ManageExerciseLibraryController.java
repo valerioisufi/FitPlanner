@@ -2,13 +2,14 @@ package com.example.fitplannerserver.controller;
 
 import com.example.fitplannercommon.ExerciseDescriptionDTO;
 import com.example.fitplannerserver.beanvalidator.PlanValidator;
-import com.example.fitplannerserver.dao.CoachingDao;
 import com.example.fitplannerserver.dao.ExerciseLibraryDao;
+import com.example.fitplannerserver.dao.ProfileDao;
 import com.example.fitplannerserver.exception.DaoException;
 import com.example.fitplannerserver.exception.ForbiddenException;
 import com.example.fitplannerserver.exception.SystemException;
 import com.example.fitplannerserver.exception.WrongArgumentsException;
-import com.example.fitplannerserver.model.Account;
+import com.example.fitplannerserver.model.user.Account;
+import com.example.fitplannerserver.model.user.AthleteUser;
 import com.example.fitplannerserver.model.plan.ExerciseDescription;
 import com.example.fitplannerserver.security.IdentityProvider;
 import com.example.fitplannerserver.util.ValidationUtils;
@@ -20,17 +21,17 @@ public class ManageExerciseLibraryController {
     private final IdentityProvider identityProvider;
 
     private final ExerciseLibraryDao exerciseLibraryDao;
-    private final CoachingDao coachingDao;
+    private final ProfileDao profileDao;
 
     public ManageExerciseLibraryController(
             IdentityProvider identityProvider,
             ExerciseLibraryDao exerciseLibraryDao,
-            CoachingDao coachingDao
+            ProfileDao profileDao
     ) {
         this.identityProvider = identityProvider;
 
         this.exerciseLibraryDao = exerciseLibraryDao;
-        this.coachingDao = coachingDao;
+        this.profileDao = profileDao;
     }
 
     public String addExercise(ExerciseDescriptionDTO exerciseBean) {
@@ -155,7 +156,8 @@ public class ManageExerciseLibraryController {
     private String resolveTrainerId() throws DaoException {
         return switch (identityProvider.getUserRole()) {
             case TRAINER -> identityProvider.getUserId();
-            case ATHLETE -> coachingDao.findTrainerIdByAthleteId(identityProvider.getUserId())
+            case ATHLETE -> profileDao.findAthleteById(identityProvider.getUserId())
+                    .map(AthleteUser::getTrainerId)
                     .orElseThrow(() -> new ForbiddenException("Atleta non associato a nessun trainer"));
         };
     }

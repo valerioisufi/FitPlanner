@@ -35,8 +35,4 @@ public abstract class DaoFactory {
 
     public abstract WorkoutPlanDao getWorkoutPlanDao();
 
-    public abstract CoachingDao getCoachingDao();
-
-
-
 }

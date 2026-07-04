@@ -3,11 +3,11 @@ package com.example.fitplannerserver.controller;
 import com.example.fitplannercommon.WorkoutPlanDTO;
 import com.example.fitplannercommon.WorkoutPlanSummaryDTO;
 import com.example.fitplannerserver.beanvalidator.PlanValidator;
-import com.example.fitplannerserver.dao.CoachingDao;
+import com.example.fitplannerserver.dao.ProfileDao;
 import com.example.fitplannerserver.dao.WorkoutPlanDao;
 import com.example.fitplannerserver.exception.*;
 import com.example.fitplannerserver.mapper.PlanMapper;
-import com.example.fitplannerserver.model.Account;
+import com.example.fitplannerserver.model.user.Account;
 import com.example.fitplannerserver.model.plan.WorkoutPlan;
 import com.example.fitplannerserver.security.IdentityProvider;
 import com.example.fitplannerserver.util.ValidationUtils;
@@ -24,17 +24,17 @@ public class WorkoutPlanManagementController {
     private final IdentityProvider identityProvider;
 
     private final WorkoutPlanDao workoutPlanDao;
-    private final CoachingDao coachingDao;
+    private final ProfileDao profileDao;
 
     public WorkoutPlanManagementController(
             IdentityProvider identityProvider,
             WorkoutPlanDao workoutPlanDao,
-            CoachingDao coachingDao
+            ProfileDao profileDao
     ) {
         this.identityProvider = identityProvider;
 
         this.workoutPlanDao = workoutPlanDao;
-        this.coachingDao = coachingDao;
+        this.profileDao = profileDao;
     }
 
     public List<WorkoutPlanSummaryDTO> getMyPlansSummary() {
@@ -114,7 +114,10 @@ public class WorkoutPlanManagementController {
         String trainerId = identityProvider.getUserId();
 
         try {
-            if(!coachingDao.isClientOf(trainerId, athleteId))
+            boolean isClient = profileDao.findAthleteById(athleteId)
+                    .map(a -> trainerId.equals(a.getTrainerId()))
+                    .orElse(false);
+            if(!isClient)
                 throw new ForbiddenException("L'utente non è tuo cliente");
 
             WorkoutPlan templatePlan = workoutPlanDao.findPlanById(planId)

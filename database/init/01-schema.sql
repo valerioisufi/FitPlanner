@@ -14,17 +14,11 @@ CREATE TABLE IF NOT EXISTS profiles(
     last_name VARCHAR(255) NOT NULL,
     contact_email VARCHAR(320),
     phone_number VARCHAR(20),
+    profile_type VARCHAR(50) NOT NULL,
     invitation_code VARCHAR(255),
-    FOREIGN KEY (user_id) REFERENCES accounts(user_id) ON DELETE CASCADE
-);
-
--- 3. Tabella coaching
-CREATE TABLE IF NOT EXISTS coaching(
-    trainer VARCHAR(36) NOT NULL,
-    athlete VARCHAR(36) NOT NULL,
-    PRIMARY KEY (athlete), -- un atleta può avere al massimo un trainer
-    FOREIGN KEY (trainer) REFERENCES accounts(user_id) ON DELETE CASCADE,
-    FOREIGN KEY (athlete) REFERENCES accounts(user_id) ON DELETE CASCADE
+    trainer_id VARCHAR(36),
+    FOREIGN KEY (user_id) REFERENCES accounts(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (trainer_id) REFERENCES accounts(user_id) ON DELETE SET NULL
 );
 
 -- 4. Tabella exercise_library

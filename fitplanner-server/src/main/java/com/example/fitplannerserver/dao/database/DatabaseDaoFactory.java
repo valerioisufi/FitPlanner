@@ -9,7 +9,6 @@ public class DatabaseDaoFactory extends DaoFactory {
     private final DatabaseSessionLogDao sessionLogDao;
     private final DatabaseExerciseLibraryDao exerciseLibraryDao;
     private final DatabaseWorkoutPlanDao workoutPlanDao;
-    private final DatabaseCoachingDao coachingDao;
 
     public DatabaseDaoFactory(){
         this.accountDao = new DatabaseAccountDao();
@@ -17,7 +16,6 @@ public class DatabaseDaoFactory extends DaoFactory {
         this.sessionLogDao = new DatabaseSessionLogDao();
         this.exerciseLibraryDao = new DatabaseExerciseLibraryDao();
         this.workoutPlanDao = new DatabaseWorkoutPlanDao();
-        this.coachingDao = new DatabaseCoachingDao();
     }
 
     @Override
@@ -43,11 +41,6 @@ public class DatabaseDaoFactory extends DaoFactory {
     @Override
     public DatabaseWorkoutPlanDao getWorkoutPlanDao() {
         return this.workoutPlanDao;
-    }
-
-    @Override
-    public DatabaseCoachingDao getCoachingDao() {
-        return this.coachingDao;
     }
 
 }

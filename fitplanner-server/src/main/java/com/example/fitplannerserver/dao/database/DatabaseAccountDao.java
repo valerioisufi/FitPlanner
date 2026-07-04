@@ -3,7 +3,7 @@ package com.example.fitplannerserver.dao.database;
 import com.example.fitplannerserver.dao.AccountDao;
 import com.example.fitplannerserver.dao.DbConnection;
 import com.example.fitplannerserver.exception.DaoException;
-import com.example.fitplannerserver.model.Account;
+import com.example.fitplannerserver.model.user.Account;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

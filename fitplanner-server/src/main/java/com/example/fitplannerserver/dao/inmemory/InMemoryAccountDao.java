@@ -1,7 +1,7 @@
 package com.example.fitplannerserver.dao.inmemory;
 
 import com.example.fitplannerserver.dao.AccountDao;
-import com.example.fitplannerserver.model.Account;
+import com.example.fitplannerserver.model.user.Account;
 
 import java.util.Map;
 import java.util.Objects;

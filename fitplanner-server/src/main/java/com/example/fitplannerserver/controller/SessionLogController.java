@@ -3,11 +3,11 @@ package com.example.fitplannerserver.controller;
 import com.example.fitplannercommon.ExerciseLogDTO;
 import com.example.fitplannercommon.SessionLogDTO;
 import com.example.fitplannerserver.beanvalidator.LogValidator;
-import com.example.fitplannerserver.dao.CoachingDao;
+import com.example.fitplannerserver.dao.ProfileDao;
 import com.example.fitplannerserver.dao.SessionLogDao;
 import com.example.fitplannerserver.exception.*;
 import com.example.fitplannerserver.mapper.LogMapper;
-import com.example.fitplannerserver.model.Account;
+import com.example.fitplannerserver.model.user.Account;
 import com.example.fitplannerserver.model.log.ExerciseLog;
 import com.example.fitplannerserver.model.log.SessionLog;
 import com.example.fitplannerserver.security.IdentityProvider;
@@ -25,17 +25,17 @@ public class SessionLogController {
     private final IdentityProvider identityProvider;
 
     private final SessionLogDao sessionLogDao;
-    private final CoachingDao coachingDao;
+    private final ProfileDao profileDao;
 
     public SessionLogController(
             IdentityProvider identityProvider,
             SessionLogDao sessionLogDao,
-            CoachingDao coachingDao
+            ProfileDao profileDao
     ) {
         this.identityProvider = identityProvider;
 
         this.sessionLogDao = sessionLogDao;
-        this.coachingDao = coachingDao;
+        this.profileDao = profileDao;
     }
 
     public List<SessionLogDTO> getFilteredSessionLog(String athleteId, long startDate, long endDate) {
@@ -51,7 +51,9 @@ public class SessionLogController {
 
         if(identityProvider.getUserRole() == Account.Role.TRAINER){
             try {
-                boolean isTrainerOfAthlete = coachingDao.isClientOf(identityProvider.getUserId(), userId);
+                boolean isTrainerOfAthlete = profileDao.findAthleteById(userId)
+                        .map(a -> identityProvider.getUserId().equals(a.getTrainerId()))
+                        .orElse(false);
                 if (!isTrainerOfAthlete) {
                     throw new ForbiddenException("I trainer possono accedere solo ai session logs dei propri atleti");
                 }

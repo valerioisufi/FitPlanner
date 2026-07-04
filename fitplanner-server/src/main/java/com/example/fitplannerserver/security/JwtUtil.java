@@ -1,6 +1,6 @@
 package com.example.fitplannerserver.security;
 
-import com.example.fitplannerserver.model.Account;
+import com.example.fitplannerserver.model.user.Account;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;

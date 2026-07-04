@@ -8,7 +8,7 @@ import com.example.fitplannerserver.dao.WorkoutPlanDao;
 import com.example.fitplannerserver.exception.DaoException;
 import com.example.fitplannerserver.exception.ResourceNotFoundException;
 import com.example.fitplannerserver.exception.SystemException;
-import com.example.fitplannerserver.model.Account;
+import com.example.fitplannerserver.model.user.Account;
 import com.example.fitplannerserver.model.log.SessionLog;
 import com.example.fitplannerserver.model.plan.WorkoutPlan;
 import com.example.fitplannerserver.model.plan.WorkoutSession;

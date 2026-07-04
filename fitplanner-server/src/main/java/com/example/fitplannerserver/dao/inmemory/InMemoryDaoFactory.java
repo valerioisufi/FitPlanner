@@ -10,7 +10,6 @@ public class InMemoryDaoFactory extends DaoFactory {
     private final InMemorySessionLogDao sessionLogDao;
     private final InMemoryExerciseLibraryDao exerciseLibraryDao;
     private final InMemoryWorkoutPlanDao workoutPlanDao;
-    private final InMemoryCoachingDao coachingDao;
 
     public InMemoryDaoFactory() {
         this.accountDao = new InMemoryAccountDao();
@@ -18,12 +17,10 @@ public class InMemoryDaoFactory extends DaoFactory {
         this.sessionLogDao = new InMemorySessionLogDao();
         this.exerciseLibraryDao = new InMemoryExerciseLibraryDao();
         this.workoutPlanDao = new InMemoryWorkoutPlanDao();
-        this.coachingDao = new InMemoryCoachingDao();
 
         DataInitializer initializer = new DataInitializer(
                 this.accountDao,
                 this.profileDao,
-                this.coachingDao,
                 this.exerciseLibraryDao
         );
         initializer.initialize();
@@ -52,11 +49,6 @@ public class InMemoryDaoFactory extends DaoFactory {
     @Override
     public InMemoryWorkoutPlanDao getWorkoutPlanDao() {
         return this.workoutPlanDao;
-    }
-
-    @Override
-    public InMemoryCoachingDao getCoachingDao() {
-        return this.coachingDao;
     }
 
 }

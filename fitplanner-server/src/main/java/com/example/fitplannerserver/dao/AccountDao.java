@@ -1,7 +1,7 @@
 package com.example.fitplannerserver.dao;
 
 import com.example.fitplannerserver.exception.DaoException;
-import com.example.fitplannerserver.model.Account;
+import com.example.fitplannerserver.model.user.Account;
 
 import java.util.Optional;
 

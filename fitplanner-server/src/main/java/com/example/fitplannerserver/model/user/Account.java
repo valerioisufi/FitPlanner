@@ -1,4 +1,4 @@
-package com.example.fitplannerserver.model;
+package com.example.fitplannerserver.model.user;
 
 public class Account {
     private final String userId;

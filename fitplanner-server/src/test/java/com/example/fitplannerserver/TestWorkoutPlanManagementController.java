@@ -4,13 +4,15 @@ import com.example.fitplannercommon.WorkoutPlanDTO;
 import com.example.fitplannercommon.WorkoutPlanSummaryDTO;
 import com.example.fitplannercommon.WorkoutSessionDTO;
 import com.example.fitplannerserver.controller.WorkoutPlanManagementController;
-import com.example.fitplannerserver.dao.CoachingDao;
+import com.example.fitplannerserver.dao.ProfileDao;
 import com.example.fitplannerserver.dao.WorkoutPlanDao;
-import com.example.fitplannerserver.dao.inmemory.InMemoryCoachingDao;
+import com.example.fitplannerserver.dao.inmemory.InMemoryProfileDao;
 import com.example.fitplannerserver.dao.inmemory.InMemoryWorkoutPlanDao;
 import com.example.fitplannerserver.exception.ForbiddenException;
 import com.example.fitplannerserver.mock.MockIdentityProvider;
-import com.example.fitplannerserver.model.Account;
+import com.example.fitplannerserver.model.user.Account;
+import com.example.fitplannerserver.model.user.AthleteUser;
+import com.example.fitplannerserver.model.user.TrainerUser;
 import com.example.fitplannerserver.model.plan.WorkoutPlan;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -32,19 +34,19 @@ class TestWorkoutPlanManagementController {
 
     private WorkoutPlanManagementController controller;
     private WorkoutPlanDao workoutPlanDao;
-    private CoachingDao coachingDao;
+    private ProfileDao profileDao;
 
     private final MockIdentityProvider mockIdentityProvider = new MockIdentityProvider();
 
     @BeforeEach
     void setup() {
         workoutPlanDao = new InMemoryWorkoutPlanDao();
-        coachingDao = new InMemoryCoachingDao();
+        profileDao = new InMemoryProfileDao();
 
         controller = new WorkoutPlanManagementController(
                 mockIdentityProvider,
                 workoutPlanDao,
-                coachingDao
+                profileDao
         );
 
         // Impostiamo un trainer di default per i test
@@ -162,7 +164,9 @@ class TestWorkoutPlanManagementController {
 
         String athleteId = UUID.randomUUID().toString();
         // L'atleta è cliente di questo trainer
-        coachingDao.linkAthleteToTrainer(athleteId, mockIdentityProvider.getUserId());
+        AthleteUser athlete = new AthleteUser(athleteId);
+        athlete.linkTo(new TrainerUser(mockIdentityProvider.getUserId(), "TRAINER-CODE"));
+        profileDao.save(athlete);
 
         // Act
         controller.assignPlanTo(planId, athleteId);

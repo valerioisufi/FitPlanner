@@ -1,7 +1,7 @@
 package com.example.fitplannerserver.security;
 
 import com.example.fitplannerserver.exception.ForbiddenException;
-import com.example.fitplannerserver.model.Account;
+import com.example.fitplannerserver.model.user.Account;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;

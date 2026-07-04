@@ -32,7 +32,6 @@ public class ControllerConfig {
         return new ProfileController(
                 identityProvider,
                 DaoFactory.getInstance().getProfileDao(),
-                DaoFactory.getInstance().getCoachingDao(),
                 DaoFactory.getInstance().getWorkoutPlanDao()
         );
     }
@@ -42,7 +41,7 @@ public class ControllerConfig {
         return new WorkoutPlanManagementController(
                 identityProvider,
                 DaoFactory.getInstance().getWorkoutPlanDao(),
-                DaoFactory.getInstance().getCoachingDao()
+                DaoFactory.getInstance().getProfileDao()
         );
     }
 
@@ -60,7 +59,7 @@ public class ControllerConfig {
         return new ManageExerciseLibraryController(
                 identityProvider,
                 DaoFactory.getInstance().getExerciseLibraryDao(),
-                DaoFactory.getInstance().getCoachingDao()
+                DaoFactory.getInstance().getProfileDao()
         );
     }
 
@@ -69,7 +68,7 @@ public class ControllerConfig {
         return new SessionLogController(
                 identityProvider,
                 DaoFactory.getInstance().getSessionLogDao(),
-                DaoFactory.getInstance().getCoachingDao()
+                DaoFactory.getInstance().getProfileDao()
         );
     }
 
