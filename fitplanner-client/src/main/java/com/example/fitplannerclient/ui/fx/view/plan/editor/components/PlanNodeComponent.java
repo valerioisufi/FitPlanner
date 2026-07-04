@@ -27,6 +27,7 @@ public class PlanNodeComponent extends VBox {
     private static final String BUTTON_HEADER_ICON = "button-header-icon";
     private static final String BUTTON_HEADER_DANGER_ICON = "button-header-danger-icon";
     private static final String BUTTON_DANGER_STYLE = "-fx-text-fill: #ef4444;";
+    private static final String DELETE_ICON = "delete-icon";
 
     private final String planNodeId;
     private final PlanNodeBean originalBean;
@@ -64,23 +65,7 @@ public class PlanNodeComponent extends VBox {
         nameLabel.getStyleClass().add("heading-h3");
         nameLabel.setStyle("-fx-cursor: text;");
 
-        if (isEditable) {
-            if(bean.getType() == NodeType.BLOCK) {
-                nameLabel.setOnMouseClicked(e -> {
-                    if (e.getClickCount() == 1) {
-                        this.fireEvent(new PlanNodeEvent(PlanNodeEvent.EDIT_NAME_CLICKED, this.planNodeId));
-                        e.consume();
-                    }
-                });
-            } else if(bean.getType() == NodeType.EXERCISE) {
-                nameLabel.setOnMouseClicked(e -> {
-                    if (e.getClickCount() == 1) {
-                        this.fireEvent(new PlanNodeEvent(PlanNodeEvent.CHANGE_EXERCISE_REQUESTED, this.planNodeId));
-                        e.consume();
-                    }
-                });
-            }
-        }
+        setupNameLabelEditing(bean);
 
         inlineDecoratorsBox = new HBox(8);
         inlineDecoratorsBox.setAlignment(Pos.CENTER_LEFT);
@@ -92,25 +77,7 @@ public class PlanNodeComponent extends VBox {
         optionsBtn.getStyleClass().add("button-header");
         optionsBtn.setGraphic(new Icon("dots-vertical-icon", List.of(BUTTON_HEADER_ICON)));
         
-        if (isEditable) {
-            optionsBtn.setOnMousePressed(e -> {
-                ContextMenu existingMenu = (ContextMenu) optionsBtn.getProperties().get("activeMenu");
-                if (existingMenu != null && existingMenu.isShowing()) {
-                    existingMenu.hide();
-                    return;
-                }
-                
-                ContextMenu menu = new ContextMenu();
-                menu.setAutoHide(true);
-                optionsBtn.getProperties().put("activeMenu", menu);
-                
-                buildContextMenu(bean, menu);
-
-                
-                menu.show(optionsBtn, Side.BOTTOM, 0, 5);
-                e.consume();
-            });
-        }
+        setupOptionsMenu(bean, optionsBtn);
 
         childrenContainer = new VBox();
 
@@ -139,12 +106,7 @@ public class PlanNodeComponent extends VBox {
         VBox nodeContent = new VBox(8, headerBox);
         nodeContent.getChildren().add(childrenContainer);
         
-        nodeContent.getStyleClass().add("plan-node");
-        switch(bean.getType()) {
-            case EXERCISE -> nodeContent.getStyleClass().add("node-exercise");
-            case BLOCK -> nodeContent.getStyleClass().add("node-block");
-            case PROTOCOL_BLOCK -> nodeContent.getStyleClass().add("node-protocol");
-        }
+        applyNodeStyle(bean, nodeContent);
         this.getChildren().addAll(nodeContent);
 
         // Render Initial Data
@@ -160,6 +122,56 @@ public class PlanNodeComponent extends VBox {
         }
     }
 
+    private void setupNameLabelEditing(PlanNodeBean bean) {
+        if (!isEditable) return;
+
+        if (bean.getType() == NodeType.BLOCK) {
+            nameLabel.setOnMouseClicked(e -> {
+                if (e.getClickCount() == 1) {
+                    this.fireEvent(new PlanNodeEvent(PlanNodeEvent.EDIT_NAME_CLICKED, this.planNodeId));
+                    e.consume();
+                }
+            });
+        } else if (bean.getType() == NodeType.EXERCISE) {
+            nameLabel.setOnMouseClicked(e -> {
+                if (e.getClickCount() == 1) {
+                    this.fireEvent(new PlanNodeEvent(PlanNodeEvent.CHANGE_EXERCISE_REQUESTED, this.planNodeId));
+                    e.consume();
+                }
+            });
+        }
+    }
+
+    private void setupOptionsMenu(PlanNodeBean bean, Button optionsBtn) {
+        if (!isEditable) return;
+        
+        optionsBtn.setOnMousePressed(e -> {
+            ContextMenu existingMenu = (ContextMenu) optionsBtn.getProperties().get("activeMenu");
+            if (existingMenu != null && existingMenu.isShowing()) {
+                existingMenu.hide();
+                return;
+            }
+            
+            ContextMenu menu = new ContextMenu();
+            menu.setAutoHide(true);
+            optionsBtn.getProperties().put("activeMenu", menu);
+            
+            buildContextMenu(bean, menu);
+            
+            menu.show(optionsBtn, Side.BOTTOM, 0, 5);
+            e.consume();
+        });
+    }
+
+    private void applyNodeStyle(PlanNodeBean bean, VBox nodeContent) {
+        nodeContent.getStyleClass().add("plan-node");
+        switch (bean.getType()) {
+            case EXERCISE -> nodeContent.getStyleClass().add("node-exercise");
+            case BLOCK -> nodeContent.getStyleClass().add("node-block");
+            case PROTOCOL_BLOCK -> nodeContent.getStyleClass().add("node-protocol");
+        }
+    }
+
     private void buildContextMenu(PlanNodeBean bean, ContextMenu menu) {
         switch (bean.getType()) {
             case EXERCISE -> 
@@ -170,7 +182,7 @@ public class PlanNodeComponent extends VBox {
                     MenuUtils.createCustomMenuItem("Duplica", "copy-icon", BUTTON_HEADER_ICON, null, () ->
                         this.fireEvent(new PlanNodeEvent(PlanNodeEvent.DUPLICATE_NODE_REQUESTED, this.planNodeId))
                     ),
-                    MenuUtils.createCustomMenuItem("Elimina", "delete-icon", BUTTON_HEADER_DANGER_ICON, BUTTON_DANGER_STYLE, () ->
+                    MenuUtils.createCustomMenuItem("Elimina", DELETE_ICON, BUTTON_HEADER_DANGER_ICON, BUTTON_DANGER_STYLE, () ->
                         this.fireEvent(new PlanNodeEvent(PlanNodeEvent.DELETE_NODE_REQUESTED, this.planNodeId))
                     )
                 );
@@ -185,7 +197,7 @@ public class PlanNodeComponent extends VBox {
                     MenuUtils.createCustomMenuItem("Svuota Blocco", "eraser-icon", BUTTON_HEADER_ICON, null, () ->
                         this.fireEvent(new PlanNodeEvent(PlanNodeEvent.EMPTY_NODE_REQUESTED, this.planNodeId))
                     ),
-                    MenuUtils.createCustomMenuItem("Elimina Blocco", "delete-icon", BUTTON_HEADER_DANGER_ICON, BUTTON_DANGER_STYLE, () ->
+                    MenuUtils.createCustomMenuItem("Elimina Blocco", DELETE_ICON, BUTTON_HEADER_DANGER_ICON, BUTTON_DANGER_STYLE, () ->
                         this.fireEvent(new PlanNodeEvent(PlanNodeEvent.DELETE_NODE_REQUESTED, this.planNodeId))
                     )
                 );
@@ -197,7 +209,7 @@ public class PlanNodeComponent extends VBox {
                     MenuUtils.createCustomMenuItem("Svuota Protocollo", "eraser-icon", BUTTON_HEADER_ICON, null, () ->
                         this.fireEvent(new PlanNodeEvent(PlanNodeEvent.EMPTY_NODE_REQUESTED, this.planNodeId))
                     ),
-                    MenuUtils.createCustomMenuItem("Elimina Protocollo", "delete-icon", BUTTON_HEADER_DANGER_ICON, BUTTON_DANGER_STYLE, () ->
+                    MenuUtils.createCustomMenuItem("Elimina Protocollo", DELETE_ICON, BUTTON_HEADER_DANGER_ICON, BUTTON_DANGER_STYLE, () ->
                         this.fireEvent(new PlanNodeEvent(PlanNodeEvent.DELETE_NODE_REQUESTED, this.planNodeId))
                     )
                 );

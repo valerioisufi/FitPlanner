@@ -5,6 +5,7 @@ import com.example.fitplannerclient.ui.fx.event.PlanNodeEvent;
 import com.example.fitplannerclient.ui.fx.view.plan.editor.components.PlanNodeComponent;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.VBox;
@@ -68,30 +69,29 @@ public class NodeDragHandler {
             }
 
             if (isToolboxNode || isToolboxBadge || isNode) {
-                if (currentDropTarget != null && currentDropTarget != component) {
-                    currentDropTarget.getStyleClass().removeAll(DROP_ABOVE, DROP_BELOW, DROP_INSIDE);
-                }
-                currentDropTarget = component;
-
-                component.getStyleClass().removeAll(DROP_ABOVE, DROP_BELOW, DROP_INSIDE);
-                DropPosition pos;
-                if (isToolboxBadge) {
-                    pos = DropPosition.INSIDE;
-                } else {
-                    pos = getDropPosition(component, event.getY());
-                }
-
-                switch (pos) {
-                    case DropPosition.ABOVE ->
-                        component.getStyleClass().add(DROP_ABOVE);
-                    case DropPosition.BELOW ->
-                        component.getStyleClass().add(DROP_BELOW);
-                    default ->
-                        component.getStyleClass().add(DROP_INSIDE);
-                }
+                updateDropTargetStyle(component, event.getY(), isToolboxBadge);
             }
             event.consume();
         });
+    }
+
+    private static void updateDropTargetStyle(PlanNodeComponent component, double eventY, boolean isToolboxBadge) {
+        if (currentDropTarget != null && currentDropTarget != component) {
+            currentDropTarget.getStyleClass().removeAll(DROP_ABOVE, DROP_BELOW, DROP_INSIDE);
+        }
+        currentDropTarget = component;
+
+        component.getStyleClass().removeAll(DROP_ABOVE, DROP_BELOW, DROP_INSIDE);
+        DropPosition pos = isToolboxBadge ? DropPosition.INSIDE : getDropPosition(component, eventY);
+
+        switch (pos) {
+            case DropPosition.ABOVE ->
+                component.getStyleClass().add(DROP_ABOVE);
+            case DropPosition.BELOW ->
+                component.getStyleClass().add(DROP_BELOW);
+            default ->
+                component.getStyleClass().add(DROP_INSIDE);
+        }
     }
 
     private static void setupDragExited(PlanNodeComponent component) {
@@ -105,61 +105,66 @@ public class NodeDragHandler {
     }
 
     private static void setupDragDropped(PlanNodeComponent component) {
-        component.setOnDragDropped(event -> {
-            boolean success = false;
-            Dragboard db = event.getDragboard();
-            
-            boolean hasFitData = db.hasContent(DragConstants.FITPLANNER_FORMAT);
-            String payload = hasFitData ? (String) db.getContent(DragConstants.FITPLANNER_FORMAT) : "";
-            boolean isToolboxBadge = payload.startsWith(TOOLBOX_PREFIX + "MODIFIER") || payload.startsWith(TOOLBOX_PREFIX + "DECORATOR");
+        component.setOnDragDropped(event -> handleDragDropped(event, component));
+    }
 
-            if (isToolboxBadge && component.getParentWrapper() == null) {
-                return;
-            }
+    private static void handleDragDropped(DragEvent event, PlanNodeComponent component) {
+        boolean success = false;
+        Dragboard db = event.getDragboard();
+        
+        boolean hasFitData = db.hasContent(DragConstants.FITPLANNER_FORMAT);
+        String payload = hasFitData ? (String) db.getContent(DragConstants.FITPLANNER_FORMAT) : "";
+        boolean isToolboxBadge = payload.startsWith(TOOLBOX_PREFIX + "MODIFIER") || payload.startsWith(TOOLBOX_PREFIX + "DECORATOR");
 
-            DropPosition pos = isToolboxBadge ? DropPosition.INSIDE : getDropPosition(component, event.getY());
+        if (isToolboxBadge && component.getParentWrapper() == null) {
+            return;
+        }
 
-            String targetParentId = null;
-            int targetIndex = -1;
+        DropPosition pos = isToolboxBadge ? DropPosition.INSIDE : getDropPosition(component, event.getY());
 
-            if (isToolboxBadge) {
-                targetParentId = component.getPlanNodeId();
-            } else if (pos == DropPosition.INSIDE) {
-                targetParentId = component.getPlanNodeId();
-                targetIndex = component.getChildrenContainer().getChildren().size();
+        String targetParentId = null;
+        int targetIndex = -1;
 
-            } else if (component.getParentWrapper() != null) {
-                targetParentId = component.getParentWrapper().getPlanNodeId();
-                targetIndex = component.getParentWrapper().getChildrenContainer().getChildren().indexOf(component);
-                if (pos == DropPosition.BELOW) targetIndex++;
-            }
+        if (isToolboxBadge) {
+            targetParentId = component.getPlanNodeId();
+        } else if (pos == DropPosition.INSIDE) {
+            targetParentId = component.getPlanNodeId();
+            targetIndex = component.getChildrenContainer().getChildren().size();
+        } else if (component.getParentWrapper() != null) {
+            targetParentId = component.getParentWrapper().getPlanNodeId();
+            targetIndex = component.getParentWrapper().getChildrenContainer().getChildren().indexOf(component);
+            if (pos == DropPosition.BELOW) targetIndex++;
+        }
 
-            if (targetParentId != null) {
-                if (payload.startsWith(NODE_PREFIX) && currentDraggedNodeId != null) {
-                    boolean isCopy = event.getTransferMode() != TransferMode.COPY;
-                    component.fireEvent(
-                        new PlanNodeEvent(PlanNodeEvent.NODE_REORDERED, currentDraggedNodeId)
-                            .setTargetParentId(targetParentId)
-                            .setTargetIndex(targetIndex)
-                            .setIsCopy(isCopy)
-                    );
-                    success = true;
+        if (targetParentId != null) {
+            success = processDropAction(event, component, payload, targetParentId, targetIndex);
+        }
 
-                } else if (payload.startsWith(TOOLBOX_PREFIX)) {
-                    String toolboxPayload = payload.substring(TOOLBOX_PREFIX.length());
-                    component.fireEvent(
-                        new PlanNodeEvent(PlanNodeEvent.TOOLBOX_ITEM_DROPPED, component.getPlanNodeId())
-                            .setPayload(toolboxPayload)
-                            .setTargetParentId(targetParentId)
-                            .setTargetIndex(targetIndex)
-                    );
-                    success = true;
-                }
-            }
+        event.setDropCompleted(success);
+        event.consume();
+    }
 
-            event.setDropCompleted(success);
-            event.consume();
-        });
+    private static boolean processDropAction(DragEvent event, PlanNodeComponent component, String payload, String targetParentId, int targetIndex) {
+        if (payload.startsWith(NODE_PREFIX) && currentDraggedNodeId != null) {
+            boolean isCopy = event.getTransferMode() != TransferMode.COPY;
+            component.fireEvent(
+                new PlanNodeEvent(PlanNodeEvent.NODE_REORDERED, currentDraggedNodeId)
+                    .setTargetParentId(targetParentId)
+                    .setTargetIndex(targetIndex)
+                    .setIsCopy(isCopy)
+            );
+            return true;
+        } else if (payload.startsWith(TOOLBOX_PREFIX)) {
+            String toolboxPayload = payload.substring(TOOLBOX_PREFIX.length());
+            component.fireEvent(
+                new PlanNodeEvent(PlanNodeEvent.TOOLBOX_ITEM_DROPPED, component.getPlanNodeId())
+                    .setPayload(toolboxPayload)
+                    .setTargetParentId(targetParentId)
+                    .setTargetIndex(targetIndex)
+            );
+            return true;
+        }
+        return false;
     }
 
     private static void setupDragDone(PlanNodeComponent component, VBox dragHandle) {

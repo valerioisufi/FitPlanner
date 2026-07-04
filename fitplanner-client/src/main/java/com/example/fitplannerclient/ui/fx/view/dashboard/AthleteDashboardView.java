@@ -17,6 +17,8 @@ import java.util.List;
 
 public class AthleteDashboardView extends BorderPane {
 
+    private static final String HEADING_H2_CLASS = "heading-h2";
+
     private final VBox contentBox;
     private final Label athleteNameLabel;
     private final Label athleteEmailLabel;
@@ -41,21 +43,21 @@ public class AthleteDashboardView extends BorderPane {
         // Plan Section
         planSection = new VBox(15);
         Label planTitle = new Label("Piano Assegnato");
-        planTitle.getStyleClass().add("heading-h2");
+        planTitle.getStyleClass().add(HEADING_H2_CLASS);
         planSection.getChildren().add(planTitle);
         contentBox.getChildren().add(planSection);
 
         // Progress Section
         progressSection = new VBox(15);
         Label progressTitle = new Label("Progressi");
-        progressTitle.getStyleClass().add("heading-h2");
+        progressTitle.getStyleClass().add(HEADING_H2_CLASS);
         progressSection.getChildren().add(progressTitle);
         contentBox.getChildren().add(progressSection);
 
         // Logs Section
         logsSection = new VBox(15);
         Label logsTitle = new Label("Ultimi Allenamenti");
-        logsTitle.getStyleClass().add("heading-h2");
+        logsTitle.getStyleClass().add(HEADING_H2_CLASS);
         logsSection.getChildren().add(logsTitle);
         contentBox.getChildren().add(logsSection);
 

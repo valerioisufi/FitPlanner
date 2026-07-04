@@ -23,7 +23,7 @@ public class PlanNodeEvent extends Event {
     private int targetIndex;
     
     // For Badge specific events
-    private Object badgeData;
+    private transient Object badgeData;
     private String badgeType; // e.g. "MODIFIER", "DECORATOR"
     private int sourceIndex;
     private String sourceNodeId;

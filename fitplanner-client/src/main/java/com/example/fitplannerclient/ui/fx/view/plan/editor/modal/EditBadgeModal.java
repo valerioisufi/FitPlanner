@@ -53,9 +53,7 @@ public class EditBadgeModal extends VBox {
         Button closeBtn = new Button();
         closeBtn.getStyleClass().add("button-header");
         closeBtn.setGraphic(new Icon("x-icon", List.of("button-header-icon")));
-        closeBtn.setOnAction(e -> {
-            if (onCloseAction != null) onCloseAction.run();
-        });
+        closeBtn.setOnAction(e -> handleClose());
 
         header.getChildren().addAll(titleBox, spacer, closeBtn);
 
@@ -114,31 +112,35 @@ public class EditBadgeModal extends VBox {
 
         Button cancelBtn = new Button("Annulla");
         cancelBtn.getStyleClass().add("button-secondary");
-        cancelBtn.setOnAction(e -> {
-            if (onCloseAction != null) onCloseAction.run();
-        });
+        cancelBtn.setOnAction(e -> handleClose());
 
         Button saveBtn = new Button("Salva");
         saveBtn.setDefaultButton(true);
         saveBtn.getStyleClass().add("button-primary");
-        saveBtn.setOnAction(e -> {
-            if (onSaveAction != null) {
-                String resultValue = "";
-                if (!toggleBox.isVisible() || fixedValueRadio.isSelected()) {
-                    resultValue = valueField.getText().trim();
-                } else {
-                    resultValue = variableComboBox.getValue() != null ? variableComboBox.getValue() : "";
-                }
-                
-                if (!resultValue.isEmpty()) {
-                    onSaveAction.accept(resultValue);
-                }
-            }
-        });
+        saveBtn.setOnAction(e -> handleSave());
 
         footer.getChildren().addAll(cancelBtn, saveBtn);
 
         this.getChildren().addAll(header, nameFieldBox, toggleBox, inputContainer, footer);
+    }
+
+    private void handleClose() {
+        if (onCloseAction != null) onCloseAction.run();
+    }
+
+    private void handleSave() {
+        if (onSaveAction != null) {
+            String resultValue = "";
+            if (!toggleBox.isVisible() || fixedValueRadio.isSelected()) {
+                resultValue = valueField.getText().trim();
+            } else {
+                resultValue = variableComboBox.getValue() != null ? variableComboBox.getValue() : "";
+            }
+            
+            if (!resultValue.isEmpty()) {
+                onSaveAction.accept(resultValue);
+            }
+        }
     }
 
     private void setupToggleListener() {
@@ -167,7 +169,7 @@ public class EditBadgeModal extends VBox {
                 if (!newVal.matches("[\\d/\\-]*") && toggleBox.isVisible() && fixedValueRadio.isSelected()) {
                     valueField.setText(oldVal);
                 }
-            } else if (!newVal.matches("\\d*\\.?\\d*") && toggleBox.isVisible() && fixedValueRadio.isSelected()) {
+            } else if (!newVal.matches("\\d*(\\.\\d*)?") && toggleBox.isVisible() && fixedValueRadio.isSelected()) {
                 valueField.setText(oldVal);
             }
         });
@@ -182,48 +184,56 @@ public class EditBadgeModal extends VBox {
         }
         
         if (name.equalsIgnoreCase("PROGRESSION")) {
-            toggleBox.setVisible(false);
-            toggleBox.setManaged(false);
-            
-            valueLabelDesc.setText("Regole di Progressione *");
+            setupProgressionData(value);
+        } else {
+            setupStandardData(name, value);
+        }
+    }
+
+    private void setupProgressionData(String value) {
+        toggleBox.setVisible(false);
+        toggleBox.setManaged(false);
+        
+        valueLabelDesc.setText("Regole di Progressione *");
+        valueField.setText(value);
+        valueField.setPromptText("Es. WEIGHT: 50, 52.5, 55; REPS: 10, 8, 6");
+        
+        hintLabel.setText("Formato: CHIAVE1: val1, val2; CHIAVE2: val1, val2");
+        hintLabel.setVisible(true);
+        hintLabel.setManaged(true);
+        
+        fixedValueRadio.setSelected(true);
+        
+        // Remove text formatter restriction for progression
+        valueField.textProperty().set(value);
+    }
+
+    private void setupStandardData(String name, String value) {
+        toggleBox.setVisible(true);
+        toggleBox.setManaged(true);
+        hintLabel.setVisible(false);
+        hintLabel.setManaged(false);
+        
+        // Setup label based on unit
+        String unit = getUnitForType(name);
+        valueLabelDesc.setText(unit.isEmpty() ? "Valore *" : "Valore (" + unit + ") *");
+        valueField.setPromptText(unit.isEmpty() ? "Inserisci valore..." : "Inserisci solo il numero...");
+        
+        if (value != null && value.startsWith("${") && value.endsWith("}")) {
+            variableRadio.setSelected(true);
+            variableComboBox.setValue(value);
+            valueField.setText("");
+        } else {
+            fixedValueRadio.setSelected(true);
             valueField.setText(value);
-            valueField.setPromptText("Es. WEIGHT: 50, 52.5, 55; REPS: 10, 8, 6");
-            
-            hintLabel.setText("Formato: CHIAVE1: val1, val2; CHIAVE2: val1, val2");
+            variableComboBox.setValue(null);
+        }
+        
+        if (name.equalsIgnoreCase("TUT")) {
+            valueField.setPromptText("Es. 3/1/1/0");
+            hintLabel.setText("Formato: eccentrica/isometria in allungamento/concentrica/isometria in accorciamento");
             hintLabel.setVisible(true);
             hintLabel.setManaged(true);
-            
-            fixedValueRadio.setSelected(true);
-            
-            // Remove text formatter restriction for progression
-            valueField.textProperty().set(value);
-        } else {
-            toggleBox.setVisible(true);
-            toggleBox.setManaged(true);
-            hintLabel.setVisible(false);
-            hintLabel.setManaged(false);
-            
-            // Setup label based on unit
-            String unit = getUnitForType(name);
-            valueLabelDesc.setText(unit.isEmpty() ? "Valore *" : "Valore (" + unit + ") *");
-            valueField.setPromptText(unit.isEmpty() ? "Inserisci valore..." : "Inserisci solo il numero...");
-            
-            if (value != null && value.startsWith("${") && value.endsWith("}")) {
-                variableRadio.setSelected(true);
-                variableComboBox.setValue(value);
-                valueField.setText("");
-            } else {
-                fixedValueRadio.setSelected(true);
-                valueField.setText(value);
-                variableComboBox.setValue(null);
-            }
-            
-            if (name.equalsIgnoreCase("TUT")) {
-                valueField.setPromptText("Es. 3/1/1/0");
-                hintLabel.setText("Formato: eccentrica/isometria in allungamento/concentrica/isometria in accorciamento");
-                hintLabel.setVisible(true);
-                hintLabel.setManaged(true);
-            }
         }
     }
 
