@@ -15,9 +15,9 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class FileSystemAccountDao implements AccountDao {
 
-    private static final String CSV_DELIMITER = ";";
-    private static final String CSV_HEADER = "userId;email;passwordHash;refreshToken;profileType";
+    private static final String CSV_HEADER = "userId,email,passwordHash,refreshToken,profileType";
     private static final int EXPECTED_COLUMNS = 5;
+
     private static final String ACCOUNT_CANNOT_BE_NULL = "account cannot be null";
     private static final String EMAIL_CANNOT_BE_NULL = "email cannot be null";
     private static final String USER_ID_CANNOT_BE_NULL = "userId cannot be null";
@@ -86,10 +86,11 @@ public class FileSystemAccountDao implements AccountDao {
 
         lock.readLock().lock();
         try {
-            return CsvUtils.search(file, EXPECTED_COLUMNS, parts -> parts[1].equalsIgnoreCase(targetEmail), 1)
-                    .stream()
-                    .findFirst()
-                    .map(this::fromCsvRow);
+            CsvUtils.CsvResultSet rs = CsvUtils.search(file, EXPECTED_COLUMNS, parts -> parts[1].equalsIgnoreCase(targetEmail), 1);
+            if(rs.next()){
+                return Optional.of(fromCsvRS(rs));
+            }
+            return Optional.empty();
 
         } catch (IOException e){
             throw new DaoException("Errore durante la ricerca dell'account", e);
@@ -108,10 +109,11 @@ public class FileSystemAccountDao implements AccountDao {
         lock.readLock().lock();
 
         try  {
-            return CsvUtils.search(file, EXPECTED_COLUMNS, parts -> parts[3].equals(refreshToken), 1)
-                    .stream()
-                    .findFirst()
-                    .map(this::fromCsvRow);
+            CsvUtils.CsvResultSet rs = CsvUtils.search(file, EXPECTED_COLUMNS, parts -> parts[3].equals(refreshToken), 1);
+            if(rs.next()){
+                return Optional.of(fromCsvRS(rs));
+            }
+            return Optional.empty();
 
         } catch (IOException e) {
             throw new DaoException("Errore durante la ricerca del refresh token", e);
@@ -142,32 +144,28 @@ public class FileSystemAccountDao implements AccountDao {
     //METODI HELPER
 
     private String toCsvRow(Account account) {
-        String token = account.getRefreshToken() != null ? account.getRefreshToken() : "";
-
-        return String.join(CSV_DELIMITER,
-                account.getUserId(),
-                account.getEmail(),
-                account.getPasswordHash(),
-                token,
-                account.getProfileType().name()
-        );
+        return new CsvUtils.CsvRowBuilder()
+                .add(account.getUserId())
+                .add(account.getEmail())
+                .add(account.getPasswordHash())
+                .add(account.getRefreshToken())
+                .add(account.getProfileType().name())
+                .build();
     }
 
-    private Account fromCsvRow(String[] parts) {
+    private Account fromCsvRS(CsvUtils.CsvResultSet rs) {
 
         try {
-            String token = parts[3].isEmpty() ? null : parts[3];
-
             return new Account(
-                    parts[0], // userId
-                    parts[1], // email
-                    parts[2], // password
-                    token,
-                    Account.Role.valueOf(parts[4])
+                    rs.getString(0),
+                    rs.getString(1),
+                    rs.getString(2),
+                    rs.getString(3),
+                    Account.Role.valueOf(rs.getString(4))
             );
 
         } catch (IllegalArgumentException e) {
-            throw new SystemException("Dati corrotti o ruolo non valido nel CSV per l'utente: " + parts[0]);
+            throw new SystemException("Dati corrotti o ruolo non valido nel CSV per l'utente: " + rs.getString(0));
         }
     }
 }

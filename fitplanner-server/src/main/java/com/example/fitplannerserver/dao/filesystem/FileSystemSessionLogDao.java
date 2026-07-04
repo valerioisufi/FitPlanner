@@ -18,15 +18,21 @@ import static com.example.fitplannerserver.dao.filesystem.CsvUtils.*;
 
 public class FileSystemSessionLogDao implements SessionLogDao {
 
-    private static final String CSV_SESSION_LOG_HEADER = "userId;notes;status;date;planId;workoutSessionDay;exerciseLogs";
-    private static final int EXPECTED_SESSION_LOG_COLUMNS = 7;
+    private static final String CSV_SESSION_LOG_HEADER = "userId,notes,status,date,planId,workoutSessionDay";
+    private static final int EXPECTED_SESSION_LOG_COLUMNS = 6;
 
-    private final Path path;
+    private static final String CSV_EXERCISE_LOG_HEADER = "userId,sessionDate,name,exerciseId,sets,rpe,notes";
+    private static final int EXPECTED_EXERCISE_LOG_COLUMNS = 7;
+
+    private final Path sessionLogsPath;
+    private final Path exerciseLogsPath;
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
-    public FileSystemSessionLogDao(Path path){
-        this.path = Objects.requireNonNull(path, "path cannot be null");
-        initializeFile(this.path, CSV_SESSION_LOG_HEADER);
+    public FileSystemSessionLogDao(Path sessionLogsPath, Path exerciseLogsPath){
+        this.sessionLogsPath = Objects.requireNonNull(sessionLogsPath, "sessionLogsPath cannot be null");
+        this.exerciseLogsPath = Objects.requireNonNull(exerciseLogsPath, "exerciseLogsPath cannot be null");
+        initializeFile(this.sessionLogsPath, CSV_SESSION_LOG_HEADER);
+        initializeFile(this.exerciseLogsPath, CSV_EXERCISE_LOG_HEADER);
     }
 
     @Override
@@ -37,13 +43,18 @@ public class FileSystemSessionLogDao implements SessionLogDao {
 
         lock.writeLock().lock();
         try{
-            boolean exists = !CsvUtils.search(path, EXPECTED_SESSION_LOG_COLUMNS,
+            boolean exists = !CsvUtils.search(sessionLogsPath, EXPECTED_SESSION_LOG_COLUMNS,
                     parts -> parts[0].equals(log.getUserId()) && parts[3].equals(log.getDate().toString()), 1).isEmpty();
             if (exists) {
                 throw new DaoException("Esiste già un log per questo utente in questa data");
             }
-            CsvUtils.append(path, sessionLogToCsvRow(log));
-            }catch (IOException e) {
+
+            CsvUtils.append(sessionLogsPath, sessionLogToCsvRow(log));
+            for (ExerciseLog exerciseLog : log.getExerciseLogs()) { // non viene garantita l'atomicità dell'operazione
+                CsvUtils.append(exerciseLogsPath, exerciseLogToCsvRow(log.getUserId(), log.getDate().toString(), exerciseLog));
+            }
+
+        } catch (IOException e) {
             throw new DaoException("Errore durante il salvataggio della sessione", e);
         }finally {
             lock.writeLock().unlock();
@@ -63,15 +74,36 @@ public class FileSystemSessionLogDao implements SessionLogDao {
         lock.readLock().lock();
         try {
             List<SessionLog> results = new ArrayList<>();
-            List<String[]> rows = CsvUtils.search(path, EXPECTED_SESSION_LOG_COLUMNS, parts -> parts[0].equals(athleteId), -1);
+            Map<String, SessionLog> sessionMap = new HashMap<>(); // key: sessionDate, value: SessionLog
 
-            for (String[] row : rows) {
-                SessionLog log = sessionLogFromCsvRow(row);
-                // Filtriamo per range di date
+            CsvResultSet rs = CsvUtils.search(sessionLogsPath, EXPECTED_SESSION_LOG_COLUMNS, parts -> parts[0].equals(athleteId), -1);
+            while (rs.next()) {
+                SessionLog log = sessionLogFromCsvRS(rs);
                 if (!log.getDate().isBefore(start) && !log.getDate().isAfter(end)) {
                     results.add(log);
+
+                    sessionMap.put(log.getDate().toString(), log);
                 }
             }
+
+            if (results.isEmpty()) {
+                return results;
+            }
+
+            // filtriamo cercando tutti gli esercizi dell'atleta in cui la data è presente tra quelle trovate sopra
+            CsvResultSet exerciseRS = CsvUtils.search(
+                    exerciseLogsPath, EXPECTED_EXERCISE_LOG_COLUMNS,
+                    parts -> parts[0].equals(athleteId) && sessionMap.containsKey(parts[1]), -1
+            );
+            while (exerciseRS.next()) {
+                String sessionDate = exerciseRS.getString(1); // recuperiamo la data dell'exerciseLog
+                SessionLog targetSession = sessionMap.get(sessionDate); // prendiamo la sessione corrispondente
+
+                if (targetSession != null) {
+                    targetSession.addExerciseLog(exerciseLogFromCsvRS(exerciseRS)); // aggiungiamo l'exerciseLog al sessionLog
+                }
+            }
+
             return results;
 
         } catch (IOException e) {
@@ -82,24 +114,48 @@ public class FileSystemSessionLogDao implements SessionLogDao {
     }
 
     @Override
-    public Optional<SessionLog> findMostRecentSessionContainingExercise(String athleteId, String exerciseUuid) throws DaoException {
+    public Optional<SessionLog> findMostRecentSessionContainingExercise(String athleteId, String exerciseId) throws DaoException {
         Objects.requireNonNull(athleteId, "athleteId cannot be null");
-        Objects.requireNonNull(exerciseUuid, "exerciseUuid cannot be null");
+        Objects.requireNonNull(exerciseId, "exerciseUuid cannot be null");
 
         lock.readLock().lock();
         try {
-            List<SessionLog> allAthleteLogs = new ArrayList<>();
-            List<String[]> rows = CsvUtils.search(path, EXPECTED_SESSION_LOG_COLUMNS, parts -> parts[0].equals(athleteId), -1);
+            CsvResultSet rs = CsvUtils.search(exerciseLogsPath, EXPECTED_EXERCISE_LOG_COLUMNS, parts -> parts[0].equals(athleteId) && parts[3].equals(exerciseId), -1);
 
-            for (String[] row : rows) {
-                allAthleteLogs.add(sessionLogFromCsvRow(row));
+            List<String> matchingDates = new ArrayList<>();
+            while (rs.next()) {
+                matchingDates.add(rs.getString(1)); // raccogliamo le date delle sessioni
             }
 
-            return allAthleteLogs.stream()
-                    // Teniamo solo le sessioni che contengono quell'esercizio specifico
-                    .filter(log -> log.getExerciseLogs().stream().anyMatch(ex -> exerciseUuid.equals(ex.getExerciseId())))
-                    // Ordiniamo per data inversa (il più recente per primo)
-                    .max(Comparator.comparing(SessionLog::getDate));
+            // troviamo la data più recente
+            String mostRecentDateStr = matchingDates.stream()
+                    .max(Comparator.comparing(LocalDateTime::parse))
+                    .orElse(null);
+
+            if (mostRecentDateStr == null) {
+                return Optional.empty();
+            }
+
+            CsvResultSet sessionLogRs = CsvUtils.search(sessionLogsPath, EXPECTED_SESSION_LOG_COLUMNS, parts -> parts[0].equals(athleteId) && parts[3].equals(mostRecentDateStr), -1);
+            SessionLog sessionLog;
+            if (sessionLogRs.next()) {
+                sessionLog = sessionLogFromCsvRS(sessionLogRs);
+
+                // recuperiamo anche gli exerciseLogs
+                CsvResultSet exerciseRS = CsvUtils.search(
+                        exerciseLogsPath, EXPECTED_EXERCISE_LOG_COLUMNS,
+                        parts -> parts[0].equals(athleteId) && parts[1].equals(sessionLog.getDate().toString()), -1
+                );
+
+                while (exerciseRS.next()){
+                    sessionLog.addExerciseLog(exerciseLogFromCsvRS(exerciseRS));
+                }
+
+            } else {
+                sessionLog = null;
+            }
+
+            return Optional.ofNullable(sessionLog);
 
         } catch (IOException e) {
             throw new DaoException("Errore durante la ricerca della sessione più recente", e);
@@ -110,73 +166,51 @@ public class FileSystemSessionLogDao implements SessionLogDao {
 
     //HELPER
     private String sessionLogToCsvRow(SessionLog sessionLog) {
-        // L2: Uniamo gli esercizi con il Pipe "|"
-        List<String> exerciseLogs = sessionLog.getExerciseLogs().stream().map(this::exerciseLogToCsvRow).toList();
-        String exerciseLogsString = String.join("|", exerciseLogs);
+        return new CsvUtils.CsvRowBuilder()
+                .add(sessionLog.getUserId())
+                .add(sessionLog.getNotes())
+                .add(sessionLog.getStatus() != null ? sessionLog.getStatus().name() : "")
+                .add(sessionLog.getDate() != null ? sessionLog.getDate().toString() : "")
+                .add(sessionLog.getPlanId())
+                .add(sessionLog.getWorkoutSessionDay())
+                .build();
 
-        // L1: Uniamo la sessione con il classico punto e virgola
-        return String.join(CSV_DELIMITER,
-                convertNullToEmptyString(sessionLog.getUserId()),
-                convertNullToEmptyString(sessionLog.getNotes()),
-                sessionLog.getStatus() != null ? sessionLog.getStatus().name() : "",
-                sessionLog.getDate() != null ? sessionLog.getDate().toString() : "",
-                convertNullToEmptyString(sessionLog.getPlanId()),
-                String.valueOf(sessionLog.getWorkoutSessionDay()),
-                exerciseLogsString
-        );
     }
 
-    private String exerciseLogToCsvRow(ExerciseLog exerciseLog) {
-        // L4 & L5: Uniamo reps e load con i due punti ":", e i set con la virgola ","
+    private String exerciseLogToCsvRow(String userId, String sessionDate, ExerciseLog exerciseLog) {
+        // uniamo reps e load con i due punti ":", e i set con ";"
         List<String> sets = exerciseLog.getSets().stream().map(set -> set.reps() + ":" + set.load()).toList();
-        String setsString = String.join(",", sets);
+        String setsString = String.join(";", sets);
 
-        // L3: Uniamo i campi interni dell'esercizio con la tilde "~"
-        return String.join("~",
-                convertNullToEmptyString(exerciseLog.getName()),
-                convertNullToEmptyString(exerciseLog.getExerciseId()),
-                setsString,
-                String.valueOf(exerciseLog.getRpe()),
-                convertNullToEmptyString(exerciseLog.getNotes())
-        );
+        return new CsvUtils.CsvRowBuilder()
+                .add(userId)
+                .add(sessionDate)
+                .add(exerciseLog.getName())
+                .add(exerciseLog.getExerciseId())
+                .add(setsString)
+                .add(exerciseLog.getRpe())
+                .add(exerciseLog.getNotes())
+                .build();
     }
 
-    private SessionLog sessionLogFromCsvRow(String[] parts) throws DaoException {
-        // Parsing dei campi standard
-        String userId = convertEmptyStringToNull(parts[0]);
-        String notes = convertEmptyStringToNull(parts[1]);
-        SessionLog.SessionStatus status = (parts[2] != null && !parts[2].isEmpty()) ? SessionLog.SessionStatus.valueOf(parts[2]) : null;
-        LocalDateTime date = (parts[3] != null && !parts[3].isEmpty()) ? LocalDateTime.parse(parts[3]) : null;
-        String planId = convertEmptyStringToNull(parts[4]);
-        int day = (parts[5] != null && !parts[5].isEmpty()) ? Integer.parseInt(parts[5]) : 0;
 
-        // Attenzione: Il tuo costruttore accetta solo 6 parametri, non la lista di esercizi!
-        SessionLog sessionLog = new SessionLog(userId, notes, status, date, planId, day);
+    private SessionLog sessionLogFromCsvRS(CsvResultSet rs) {
+        String userId = rs.getString(0);
+        String notes = rs.getString(1);
+        SessionLog.SessionStatus status = (rs.getString(2) != null) ? SessionLog.SessionStatus.valueOf(rs.getString(2)) : null;
+        LocalDateTime date = (rs.getString(3) != null) ? LocalDateTime.parse(rs.getString(3)) : null;
+        String planId = rs.getString(4);
+        int day = rs.getInt(5);
 
-        // Splittiamo la colonna 6 in base al Pipe "|"
-        String exerciseLogsString = convertEmptyStringToNull(parts[6]);
-        if (exerciseLogsString != null && !exerciseLogsString.isBlank()) {
-            // Essendo il pipe un carattere speciale nelle Regex, va "escapato" con \\
-            String[] exerciseLogArray = exerciseLogsString.split("\\|");
-            for (String exLogStr : exerciseLogArray) {
-                // Aggiungiamo ogni esercizio alla sessione tramite il metodo add
-                sessionLog.addExerciseLog(exerciseLogFromString(exLogStr));
-            }
-        }
-
-        return sessionLog;
+        return new SessionLog(userId, notes, status, date, planId, day);
     }
 
-    private ExerciseLog exerciseLogFromString(String exLogStr) throws DaoException {
-        // Splittiamo la stringa dell'esercizio in base alla tilde "~"
-        // Passiamo -1 a split per non perdere le note vuote alla fine della stringa
-        String[] parts = exLogStr.split("~", -1);
-
-        String name = convertEmptyStringToNull(parts[0]);
-        String exId = convertEmptyStringToNull(parts[1]);
-        List<ExerciseLog.ExerciseSet> sets = parseExerciseSets(convertEmptyStringToNull(parts[2]));
-        int rpe = (parts[3] != null && !parts[3].isEmpty()) ? Integer.parseInt(parts[3]) : 0;
-        String notes = convertEmptyStringToNull(parts[4]);
+    private ExerciseLog exerciseLogFromCsvRS(CsvResultSet rs) throws DaoException {
+        String name = rs.getString(2);
+        String exId = rs.getString(3);
+        List<ExerciseLog.ExerciseSet> sets = parseExerciseSets(rs.getString(4));
+        int rpe = rs.getInt(5);
+        String notes = rs.getString(6);
 
         return new ExerciseLog(name, exId, sets, rpe, notes);
     }
@@ -185,7 +219,7 @@ public class FileSystemSessionLogDao implements SessionLogDao {
         List<ExerciseLog.ExerciseSet> setsList = new ArrayList<>();
         if (exerciseSetsString == null || exerciseSetsString.isBlank()) return setsList;
 
-        String[] setsArray = exerciseSetsString.split(",");
+        String[] setsArray = exerciseSetsString.split(";");
         for (String setStr : setsArray) {
             String[] setParts = setStr.split(":");
             if (setParts.length == 2) {

@@ -16,7 +16,7 @@ import static com.example.fitplannerserver.dao.filesystem.CsvUtils.*;
 
 public class FileSystemProfileDao implements ProfileDao {
 
-    private static final String CSV_HEADER = "userId;firstName;lastName;contactEmail;phoneNumber;invitationCode";
+    private static final String CSV_HEADER = "userId,firstName,lastName,contactEmail,phoneNumber,invitationCode";
     private static final int EXPECTED_COLUMNS = 6;
     private static final String USER_ID_CANNOT_BE_NULL = "userId cannot be null";
 
@@ -35,10 +35,11 @@ public class FileSystemProfileDao implements ProfileDao {
         lock.readLock().lock();
 
         try {
-            return search(path, EXPECTED_COLUMNS, parts -> parts[0].equals(userId), 1)
-                    .stream()
-                    .findFirst()
-                    .map(this::fromCsvRow);
+            CsvResultSet rs = search(path, EXPECTED_COLUMNS, parts -> parts[0].equals(userId), 1);
+            if(rs.next()){
+                return Optional.of(fromCsvRS(rs));
+            }
+            return Optional.empty();
 
         } catch (IOException e){
             throw new DaoException("Errore durante la ricerca del profilo", e);
@@ -74,7 +75,11 @@ public class FileSystemProfileDao implements ProfileDao {
         lock.readLock().lock();
 
         try {
-            return search(path, EXPECTED_COLUMNS, parts -> parts[5].equals(invitationCode),1).stream().findFirst().map(this::fromCsvRow);
+            CsvResultSet rs = search(path, EXPECTED_COLUMNS, parts -> parts[5].equals(invitationCode),1);
+            if(rs.next()){
+                return Optional.of(fromCsvRS(rs));
+            }
+            return Optional.empty();
         } catch (IOException e) {
             throw new DaoException("Errore durante la ricerca per invitation code", e);
         }finally {
@@ -85,25 +90,26 @@ public class FileSystemProfileDao implements ProfileDao {
 
     private String toCsvRow(User profile) {
 
-        return String.join(CSV_DELIMITER,
-                convertNullToEmptyString(profile.getId()),
-                convertNullToEmptyString(profile.getFirstName()),
-                convertNullToEmptyString(profile.getLastName()),
-                convertNullToEmptyString(profile.getContactEmail()),
-                convertNullToEmptyString(profile.getPhoneNumber()),
-                convertNullToEmptyString(profile.getInvitationCode())
-        );
+        return new CsvUtils.CsvRowBuilder()
+                .add(profile.getId())
+                .add(profile.getFirstName())
+                .add(profile.getLastName())
+                .add(profile.getContactEmail())
+                .add(profile.getPhoneNumber())
+                .add(profile.getInvitationCode())
+                .build();
+
     }
 
-    private User fromCsvRow(String[] parts) {
+    private User fromCsvRS(CsvResultSet rs) {
 
         return new User(
-                convertEmptyStringToNull(parts[0]),
-                convertEmptyStringToNull(parts[1]),
-                convertEmptyStringToNull(parts[2]),
-                convertEmptyStringToNull(parts[3]),
-                convertEmptyStringToNull(parts[4]),
-                convertEmptyStringToNull(parts[5])
+                rs.getString(0),
+                rs.getString(1),
+                rs.getString(2),
+                rs.getString(3),
+                rs.getString(4),
+                rs.getString(5)
         );
 
     }

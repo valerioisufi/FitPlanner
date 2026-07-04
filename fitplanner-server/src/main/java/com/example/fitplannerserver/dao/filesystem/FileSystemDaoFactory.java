@@ -24,15 +24,17 @@ public class FileSystemDaoFactory extends DaoFactory {
         Path accountsPath = Path.of(BASE_DIR, "accounts.csv");
         Path profilesPath = Path.of(BASE_DIR, "profiles.csv");
         Path sessionLogsPath = Path.of(BASE_DIR, "session_logs.csv");
+        Path exerciseLogsPath = Path.of(BASE_DIR, "exercise_logs.csv");
         Path exerciseLibraryPath = Path.of(BASE_DIR, "exercise_library.csv");
         Path workoutPlansPath = Path.of(BASE_DIR, "workout_plans.csv");
+        Path workoutSessionsPath = Path.of(BASE_DIR, "workout_sessions.csv");
         Path coachingPath = Path.of(BASE_DIR, "coaching.csv");
 
         accountDao = new FileSystemAccountDao(accountsPath);
         profileDao = new FileSystemProfileDao(profilesPath);
-        sessionLogDao = new FileSystemSessionLogDao(sessionLogsPath);
+        sessionLogDao = new FileSystemSessionLogDao(sessionLogsPath, exerciseLogsPath);
         exerciseLibraryDao = new FileSystemExerciseLibraryDao(exerciseLibraryPath);
-        workoutPlanDao = new FileSystemWorkoutPlanDao(workoutPlansPath);
+        workoutPlanDao = new FileSystemWorkoutPlanDao(workoutPlansPath, workoutSessionsPath);
         coachingDao = new FileSystemCoachingDao(coachingPath);
 
         defaultData();

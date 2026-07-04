@@ -17,7 +17,7 @@ import java.util.function.Predicate;
 
 public class CsvUtils {
 
-    public static final String CSV_DELIMITER = ";";
+    public static final String CSV_DELIMITER = ",";
 
     private CsvUtils() {}
 
@@ -44,29 +44,13 @@ public class CsvUtils {
         }
     }
 
-    public static String convertNullToEmptyString(String value) {
-        return value == null ? "" : value;
-    }
-
-    public static String convertEmptyStringToNull(String value) {
-        return Objects.equals(value, "") ? null : value;
-    }
-
-    public static String[] csvSplit(String line, int expectedColumns) {
-        String[] parts = line.split(CSV_DELIMITER, -1);
-        if (parts.length != expectedColumns) {
-            throw new IllegalArgumentException("Attese " + expectedColumns + " colonne, ma trovate " + parts.length);
-        }
-        return parts;
-    }
-
-    public static List<String[]> search(Path file, int expectedColumns, Predicate<String[]> filter, int limit) throws IOException {
+    public static CsvResultSet search(Path file, int expectedColumns, Predicate<String[]> filter, int limit) throws IOException {
         try (BufferedReader in = Files.newBufferedReader(file)) {
             List<String[]> results = new ArrayList<>();
 
-            String header = in.readLine();
+            String header = in.readLine(); // scarto l'intestazione
             if (header == null) {
-                return results; // scarto l'intestazione
+                return new CsvResultSet(results);
             }
 
             String line;
@@ -80,7 +64,7 @@ public class CsvUtils {
                 }
             }
 
-            return results;
+            return new CsvResultSet(results);
         }
     }
 
@@ -171,4 +155,122 @@ public class CsvUtils {
 
         return isDeleted;
     }
+
+
+    public static String convertNullToEmptyString(String value) {
+        return value == null ? "" : value;
+    }
+
+    public static String convertEmptyStringToNull(String value) {
+        return Objects.equals(value, "") ? null : value;
+    }
+
+
+    public static class CsvRowBuilder {
+        private final List<String> elements = new ArrayList<>();
+
+        public CsvRowBuilder add(String element) {
+            if (element != null) {
+                // escape del ritorno a capo
+                element = element.replace("\n", "\\n").replace("\r", "");
+            }
+            elements.add(escape(convertNullToEmptyString(element)));
+            return this;
+        }
+
+        public CsvRowBuilder add(int element) {
+            elements.add(escape(String.valueOf(element)));
+            return this;
+        }
+
+        public String build() {
+            return String.join(CSV_DELIMITER, elements);
+        }
+
+        private String escape(String value) {
+            return "\"" + value.replace("\"", "\"\"") + "\"";
+        }
+    }
+
+    public static class CsvResultSet {
+        private final List<String[]> rows;
+        private int index = -1;
+
+        public CsvResultSet(List<String[]> rows) {
+            this.rows = rows;
+        }
+
+        public boolean isEmpty() {
+            return rows.isEmpty();
+        }
+
+        public boolean next() {
+            index++;
+            return index < rows.size();
+        }
+
+        public String getString(int columnIndex) {
+            String val = convertEmptyStringToNull(rows.get(index)[columnIndex]);
+            if (val != null) {
+                // ripristina il ritorno a capo
+                return val.replace("\\n", "\n");
+            }
+            return null;
+        }
+
+        public int getInt(int columnIndex) {
+            String val = convertEmptyStringToNull(rows.get(index)[columnIndex]);
+            if (val == null) {
+                return 0; // valore di default
+            }
+            return Integer.parseInt(val);
+        }
+
+    }
+
+    private static String[] csvSplit(String line, int expectedColumns) {
+        List<String> fields = new ArrayList<>();
+        StringBuilder cur = new StringBuilder();
+
+        boolean inQuotes = false;
+        char delimiter = CSV_DELIMITER.charAt(0);
+
+        int i = 0;
+        while (i < line.length()) {
+            char c = line.charAt(i);
+
+            if (inQuotes) {
+                // controlla se è un apice escapato (due apici di fila "")
+                if (c == '"' && i + 1 < line.length() && line.charAt(i + 1) == '"') {
+                    cur.append('"');
+                    i++; // salta il prossimo apice perché è stato già processato
+                } else if (c == '"') {
+                    // se non è doppio significa che le virgolette sono chiuse
+                    inQuotes = false;
+                } else {
+                    cur.append(c);
+                }
+            } else if (c == '"') {
+                // iniziano le virgolette
+                inQuotes = true;
+            } else if (c == delimiter) {
+                // fine del campo
+                fields.add(cur.toString());
+                cur.setLength(0); // resetta il builder per il prossimo campo
+            } else {
+                cur.append(c);
+            }
+
+            i++;
+        }
+
+        fields.add(cur.toString());
+
+        if (fields.size() != expectedColumns) {
+            throw new IllegalArgumentException("Attese " + expectedColumns + " colonne, ma trovate " + fields.size());
+        }
+
+        return fields.toArray(new String[0]);
+    }
+
 }

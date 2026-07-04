@@ -8,14 +8,16 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.ArrayList;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import static com.example.fitplannerserver.dao.filesystem.CsvUtils.CSV_DELIMITER;
+import static com.example.fitplannerserver.dao.filesystem.CsvUtils.CsvResultSet;
+import static com.example.fitplannerserver.dao.filesystem.CsvUtils.CsvRowBuilder;
 import static com.example.fitplannerserver.dao.filesystem.CsvUtils.initializeFile;
 
 public class FileSystemCoachingDao implements CoachingDao {
-    private static final String CSV_HEADER = "ATHLETE;TRAINER";
+    private static final String CSV_HEADER = "athlete,trainer";
     private static final String NULL_ATHLETE_ID_MSG ="athlete id cannot be null";
     private static final String NULL_TRAINER_ID_MSG ="trainer id cannot be null";
     private static final int EXPECTED_COLUMNS = 2;
@@ -39,7 +41,7 @@ public class FileSystemCoachingDao implements CoachingDao {
             if(linked){
                 throw new DaoException("L'atleta è già collegato a un trainer");
             }
-            CsvUtils.append(path, String.join(CSV_DELIMITER, athleteUuid, trainerUuid));
+            CsvUtils.append(path, new CsvRowBuilder().add(athleteUuid).add(trainerUuid).build());
         }catch (IOException e){
             throw new DaoException("Errore durante il collegamento tra il trainer e l'atleta", e);
         }finally{
@@ -80,7 +82,12 @@ public class FileSystemCoachingDao implements CoachingDao {
         Objects.requireNonNull(trainerId, NULL_TRAINER_ID_MSG);
         lock.readLock().lock();
         try{
-            return CsvUtils.search(path, EXPECTED_COLUMNS, parts -> parts[1].equals(trainerId), -1).stream().map(parts -> parts[0]).toList();
+            List<String> athleteIds = new ArrayList<>();
+            CsvResultSet rs = CsvUtils.search(path, EXPECTED_COLUMNS, parts -> parts[1].equals(trainerId), -1);
+            while (rs.next()) {
+                athleteIds.add(rs.getString(0));
+            }
+            return athleteIds;
         }catch (IOException e){
             throw new DaoException("Errore durante la ricerca degli atleti associati al trainer", e);
         }finally {
@@ -93,7 +100,8 @@ public class FileSystemCoachingDao implements CoachingDao {
         Objects.requireNonNull(athleteId, NULL_ATHLETE_ID_MSG);
         lock.readLock().lock();
         try{
-            return CsvUtils.search(path, EXPECTED_COLUMNS, parts -> parts[0].equals(athleteId), 1).stream().findFirst().map(parts -> parts[1]);
+            CsvResultSet rs = CsvUtils.search(path, EXPECTED_COLUMNS, parts -> parts[0].equals(athleteId), 1);
+            return rs.next() ? Optional.of(rs.getString(1)) : Optional.empty();
         }catch (IOException e){
             throw new DaoException("Errore durante la ricerca del trainer associato all'atleta", e);
         }finally {

@@ -64,7 +64,7 @@ CREATE TABLE IF NOT EXISTS exercise_log(
     FOREIGN KEY (session_id) REFERENCES session_log(session_id) ON DELETE CASCADE,
     FOREIGN KEY (exercise_id) REFERENCES exercise_library(exercise_id) ON DELETE SET NULL,
     UNIQUE (session_id, order_index)
-    );
+);
 
 
 CREATE TABLE IF NOT EXISTS workout_plan(
@@ -78,7 +78,7 @@ CREATE TABLE IF NOT EXISTS workout_plan(
     UNIQUE (athlete_id),
     FOREIGN KEY (athlete_id) REFERENCES accounts(user_id) ON DELETE SET NULL,
     FOREIGN KEY (trainer_id) REFERENCES accounts(user_id) ON DELETE SET NULL
-    );
+);
 
 
  CREATE TABLE IF NOT EXISTS workout_session(
@@ -90,5 +90,5 @@ CREATE TABLE IF NOT EXISTS workout_plan(
     UNIQUE (plan_id, day),
     FOREIGN KEY (plan_id) REFERENCES workout_plan(plan_id) ON DELETE CASCADE
 
-    );
+);
 
