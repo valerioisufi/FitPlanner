@@ -80,13 +80,6 @@ public class InMemoryExerciseLibraryDao implements ExerciseLibraryDao {
         return getExerciseDescriptions(exerciseIds);
     }
 
-    @Override
-    public List<ExerciseDescription> findByIds(List<String> exerciseIds) {
-        Objects.requireNonNull(exerciseIds, "exerciseIds cannot be null");
-
-        return getExerciseDescriptions(exerciseIds);
-    }
-
     private List<ExerciseDescription> getExerciseDescriptions(List<String> exerciseIds) {
         List<ExerciseDescription> result = new ArrayList<>();
         for (String exerciseId : exerciseIds) {

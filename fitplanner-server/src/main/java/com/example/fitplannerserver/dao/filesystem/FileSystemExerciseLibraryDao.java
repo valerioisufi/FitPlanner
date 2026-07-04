@@ -6,7 +6,6 @@ import com.example.fitplannerserver.model.plan.ExerciseDescription;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -80,35 +79,6 @@ public class FileSystemExerciseLibraryDao implements ExerciseLibraryDao {
         } catch (IOException e) {
             throw new DaoException("Errore durante la ricerca degli esercizi del trainer", e);
         } finally {
-            lock.readLock().unlock();
-        }
-    }
-
-    @Override
-    public List<ExerciseDescription> findByIds(List<String> exerciseIds) throws DaoException {
-        if(exerciseIds == null || exerciseIds.isEmpty()){
-            return List.of();
-        }
-        lock.readLock().lock();
-        try{
-            List<ExerciseDescription> foundExercises = CsvUtils.search(path, EXPECTED_COLUMNS, parts -> exerciseIds.contains(parts[1]), -1)
-                    .stream()
-                    .map(this::fromCsvRow)
-                    .toList();
-
-            if (foundExercises.size() < exerciseIds.size()) {
-                List<String> foundIds = foundExercises.stream()
-                        .map(ExerciseDescription::getExerciseId)
-                        .toList();
-                List<String> missingIds = new ArrayList<>(exerciseIds);
-                missingIds.removeAll(foundIds);
-                throw new DaoException("I seguenti esercizi non sono stati trovati nel database: " + missingIds);
-            }
-
-            return foundExercises;
-        }catch (IOException e){
-            throw new DaoException("Errore durante la ricerca degli esercizi", e);
-        }finally {
             lock.readLock().unlock();
         }
     }

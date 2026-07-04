@@ -18,7 +18,4 @@ public interface ExerciseLibraryDao {
 
     // Retrieves all exercises belonging to a specific trainer
     List<ExerciseDescription> findAllByTrainerId(String trainerId) throws DaoException;
-
-    // Retrieves a list of exercises matching the provided UUIDs.
-    List<ExerciseDescription> findByIds(List<String> exerciseIds) throws DaoException;
 }

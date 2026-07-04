@@ -143,39 +143,5 @@ public class DatabaseExerciseLibraryDao implements ExerciseLibraryDao {
         }
     }
 
-    @Override
-    public List<ExerciseDescription> findByIds(List<String> exerciseIds) throws DaoException {
-        Objects.requireNonNull(exerciseIds, "exerciseIds cannot be null");
-
-        List<ExerciseDescription> exercises = new ArrayList<>();
-        String sql = """
-                SELECT exercise_id, trainer_id, name, execution, muscle_groups FROM exercise_library WHERE exercise_id IN (?);
-                """;
-        Connection conn = null;
-
-        try {
-            conn = DbConnection.getInstance().getConnection();
-            try (PreparedStatement stm = conn.prepareStatement(sql)) {
-                stm.setString(1, String.join(",", exerciseIds));
-                try (ResultSet rs = stm.executeQuery()) {
-                    while (rs.next()) {
-                        ExerciseDescription exercise = new ExerciseDescription(
-                                rs.getString(EXERCISE_ID),
-                                rs.getString(TRAINER_ID),
-                                rs.getString("name"),
-                                rs.getString(EXECUTION),
-                                List.of(rs.getString(MUSCLE_GROUPS).split(",")));
-                        exercises.add(exercise);
-                    }
-                    return exercises;
-                }
-            }
-        } catch (SQLException e) {
-            throw new DaoException("Errore critico durante la ricerca dell'esercizio nel database.", e);
-        } finally {
-            DbConnection.getInstance().releaseConnection(conn);
-        }
-    }
-
 
 }

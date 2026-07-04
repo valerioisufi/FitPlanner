@@ -114,9 +114,9 @@ public class ManageExerciseLibraryController {
         try{
             String trainerId = resolveTrainerId();
 
-            return exerciseLibraryDao.findByIds(exerciseIds)
+            return exerciseLibraryDao.findAllByTrainerId(trainerId)
                     .stream()
-                    .filter(e -> e.belongsTo(trainerId))
+                    .filter(e -> exerciseIds.contains(e.getExerciseId()))
                     .map(e -> new ExerciseDescriptionDTO(
                             e.getExerciseId(),
                             e.getName(),

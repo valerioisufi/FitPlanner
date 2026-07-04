@@ -48,7 +48,7 @@ public class DatabaseSessionLogDao implements SessionLogDao {
         Objects.requireNonNull(athleteId, NULL_ATHLETE_ID_MSG);
 
         String sql= """
-                SELECT SL.session_id, SL.user_id, SL.plan_referenced, SL.status, SL.notes, SL.date, EL.exercise_id, EL.order_index, EL.exercise_set, EL.rpe, EL.name, EL.note
+                SELECT SL.session_id, SL.user_id, SL.plan_referenced, SL.workout_session_day, SL.status, SL.notes, SL.date, EL.exercise_id, EL.order_index, EL.exercise_set, EL.rpe, EL.name, EL.note
                 FROM session_log SL LEFT JOIN exercise_log EL ON SL.session_id=EL.session_id
                 WHERE SL.user_id=? AND SL.date BETWEEN ? AND ?
                 ORDER BY SL.date DESC, EL.order_index ASC
