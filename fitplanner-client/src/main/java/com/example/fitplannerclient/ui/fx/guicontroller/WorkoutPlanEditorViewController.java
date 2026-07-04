@@ -11,7 +11,6 @@ import com.example.fitplannerclient.ui.fx.event.PlanNodeEvent;
 import com.example.fitplannerclient.ui.fx.view.plan.editor.WorkoutPlanEditorView;
 import com.example.fitplannerclient.ui.fx.view.plan.editor.components.BadgeComponent;
 import javafx.application.Platform;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +23,6 @@ public class WorkoutPlanEditorViewController implements GuiController {
     private static final Logger logger = LoggerFactory.getLogger(WorkoutPlanEditorViewController.class);
     private static final String MODIFIER_BADGE_TYPE = "MODIFIER";
 
-    private final BorderPane mainPane;
     private final WorkoutPlanEditorView view;
 
     private WorkoutPlanBean activePlan;
@@ -43,8 +41,6 @@ public class WorkoutPlanEditorViewController implements GuiController {
         this.guiManager = guiManager;
 
         this.view = new WorkoutPlanEditorView();
-        this.mainPane = new BorderPane();
-        this.mainPane.setCenter(this.view);
 
         observer = () -> editWorkoutPlanManager.getPlanAsync().thenAccept(planBean ->
             Platform.runLater(() -> {
@@ -300,7 +296,7 @@ public class WorkoutPlanEditorViewController implements GuiController {
 
     @Override
     public Pane getView() {
-        return this.mainPane;
+        return this.view;
     }
 
     @Override

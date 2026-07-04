@@ -196,7 +196,6 @@ public class WorkoutPlanBadgeEditor {
         if (plan == null) return;
 
         FlowDecorator newDecorator = getFlowDecorator(decoratorType, value);
-        if (newDecorator == null) return;
 
         NodeFinderVisitor finder = new NodeFinderVisitor(targetNodeId);
         plan.accept(finder);
@@ -212,7 +211,7 @@ public class WorkoutPlanBadgeEditor {
     }
 
     private static FlowDecorator getFlowDecorator(String decoratorType, String value) {
-        FlowDecorator newDecorator = null;
+        FlowDecorator newDecorator;
         switch (decoratorType.toUpperCase().replace(" ", "_")) {
             case "REST" -> newDecorator = new RestDecorator(null, value);
             case "LOOP" -> newDecorator = new LoopDecorator(null, value);
