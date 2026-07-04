@@ -40,15 +40,9 @@ public class PlanNodeComponent extends VBox {
     private final HBox inlineDecoratorsBox;
     private final VBox childrenContainer;
 
-    private PlanNodeComponent parentWrapper;
-    private boolean isExpanded;
-    private boolean isEditable;
-
-    private record BadgeDragContext(
-            PlanNodeComponent sourceNode,
-            Object badgeData,
-            BadgeComponent.BadgeType badgeType
-    ) {}
+    private final PlanNodeComponent parentWrapper;
+    private final boolean isExpanded;
+    private final boolean isEditable;
 
     public PlanNodeComponent(PlanNodeBean bean, Boolean startExpanded, PlanNodeComponent parentWrapper, boolean isEditable) {
         this.originalBean = bean;
@@ -169,6 +163,11 @@ public class PlanNodeComponent extends VBox {
             case EXERCISE -> nodeContent.getStyleClass().add("node-exercise");
             case BLOCK -> nodeContent.getStyleClass().add("node-block");
             case PROTOCOL_BLOCK -> nodeContent.getStyleClass().add("node-protocol");
+        }
+
+        // evidenzia il nodo come non valido
+        if (bean.getValidationErrorMsg() != null) {
+            nodeContent.getStyleClass().add("node-invalid");
         }
     }
 
@@ -318,13 +317,6 @@ public class PlanNodeComponent extends VBox {
                 inlineDecoratorsBox.getChildren().add(chevron);
             }
         }
-    }
-
-
-
-    public void updateName(String newName) {
-        this.originalBean.setName(newName);
-        this.nameLabel.setText(newName);
     }
 
     private String formatValueWithUnit(String type, String value) {

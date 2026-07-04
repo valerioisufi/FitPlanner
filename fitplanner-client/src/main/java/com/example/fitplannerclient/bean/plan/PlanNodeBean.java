@@ -17,6 +17,8 @@ public class PlanNodeBean {
     private List<PlanNodeBean> children;
     private Map<String, String> parameters;
 
+    private String validationErrorMsg; // se null allora nessun errore
+
     public PlanNodeBean() {
         this.modifiers = new ArrayList<>();
         this.flowDecorators = new ArrayList<>();
@@ -114,5 +116,13 @@ public class PlanNodeBean {
 
     public void setParameters(Map<String, String> parameters) {
         this.parameters = parameters;
+    }
+
+    public String getValidationErrorMsg() {
+        return validationErrorMsg;
+    }
+
+    public void setValidationErrorMsg(String validationErrorMsg) {
+        this.validationErrorMsg = validationErrorMsg;
     }
 }

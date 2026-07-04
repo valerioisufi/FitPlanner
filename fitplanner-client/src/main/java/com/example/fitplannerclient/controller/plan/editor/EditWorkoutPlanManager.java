@@ -2,9 +2,12 @@ package com.example.fitplannerclient.controller.plan.editor;
 
 import com.example.fitplannerclient.bean.plan.PlanNodeBean;
 import com.example.fitplannerclient.bean.plan.WorkoutPlanBean;
+import com.example.fitplannerclient.exception.WorkoutValidationException;
 import com.example.fitplannerclient.repository.WorkoutPlanRepository;
 import com.example.fitplannerclient.controller.plan.ProtocolLibraryManager;
 import com.example.fitplannerclient.entity.plan.visitor.NodeFinderVisitor;
+import com.example.fitplannerclient.entity.plan.visitor.ProtocolValidationVisitor;
+import com.example.fitplannerclient.entity.plan.block.strategy.validation.ValidationResult;
 import com.example.fitplannerclient.controller.plan.editor.command.EditorHistoryManager;
 import com.example.fitplannerclient.controller.plan.editor.observer.WorkoutPlanObserver;
 import com.example.fitplannerclient.controller.plan.editor.observer.WorkoutPlanSubject;
@@ -51,7 +54,9 @@ public class EditWorkoutPlanManager {
 
     public CompletableFuture<WorkoutPlanBean> getPlanAsync() {
         if (this.plan == null) return CompletableFuture.completedFuture(null);
-        
+
+        ValidationResult validationResult = validatePlan();
+
         PlanToBeanVisitor visitor = new PlanToBeanVisitor(
                 uuid -> {
                     if (exerciseRepository != null) {
@@ -59,7 +64,8 @@ public class EditWorkoutPlanManager {
                         if (exercise != null) return exercise.getName();
                     }
                     return "Esercizio Sconosciuto";
-                }
+                },
+                validationResult
         );
         this.plan.accept(visitor);
         return CompletableFuture.completedFuture(visitor.getPlanBean());
@@ -176,7 +182,24 @@ public class EditWorkoutPlanManager {
     }
 
     public CompletableFuture<Void> savePlan() {
+        ValidationResult result = validatePlan();
+        if (!result.isValid()) {
+            return CompletableFuture.failedFuture(new WorkoutValidationException(result.getErrors().stream()
+                    .map(error -> new WorkoutValidationException.WorkoutValidationError(error.message(), error.nodeId()))
+                    .toList())
+            );
+        }
+
         return repository.savePlan(this.plan).thenRun(workoutPlanSubject::notifyObservers);
+    }
+
+    private ValidationResult validatePlan() {
+        // valida tutti i ProtocolBlock del piano applicando le loro regole di validazione
+        ProtocolValidationVisitor visitor = new ProtocolValidationVisitor();
+        if (this.plan != null) {
+            this.plan.accept(visitor);
+        }
+        return visitor.getResult();
     }
 
     public void addExerciseFromToolbox(String exerciseId, String targetParentId, int targetIndex) {

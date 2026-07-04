@@ -597,6 +597,14 @@
     -fx-padding: 2px 6px;
     -fx-background-radius: 4px;
 }
+
+.node-invalid {
+    -fx-background-color: #FEF2F2;
+    -fx-border-color: #EF4444;
+    -fx-border-width: 2px;
+    -fx-border-style: solid;
+    -fx-effect: dropshadow(gaussian, #EF444455, 8, 0.1, 0, 0);
+}
 /* ==========================================
  * WORKOUT SCHEDULE ROWS
  * ========================================== */

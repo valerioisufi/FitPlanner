@@ -1,6 +1,7 @@
 package com.example.fitplannerclient.controller.plan.mapper;
 
 import com.example.fitplannerclient.bean.plan.*;
+import com.example.fitplannerclient.entity.plan.block.strategy.validation.ValidationResult;
 import com.example.fitplannerclient.entity.plan.visitor.WorkoutPlanVisitor;
 import com.example.fitplannerclient.entity.plan.PlanNode;
 import com.example.fitplannerclient.entity.plan.WorkoutPlan;
@@ -25,6 +26,7 @@ public class PlanToBeanVisitor implements WorkoutPlanVisitor {
     private final List<FlowDecoratorBean> accumulatedDecorators = new ArrayList<>();
 
     private final UnaryOperator<String> nameResolver;
+    private ValidationResult validationResult;
 
     public PlanToBeanVisitor() {
         this.nameResolver = id -> "Esercizio Sconosciuto";
@@ -32,6 +34,11 @@ public class PlanToBeanVisitor implements WorkoutPlanVisitor {
 
     public PlanToBeanVisitor(UnaryOperator<String> nameResolver) {
         this.nameResolver = nameResolver;
+    }
+
+    public PlanToBeanVisitor(UnaryOperator<String> nameResolver, ValidationResult validationResult) {
+        this(nameResolver);
+        this.validationResult = validationResult;
     }
 
     public WorkoutPlanBean getPlanBean() {
@@ -122,6 +129,8 @@ public class PlanToBeanVisitor implements WorkoutPlanVisitor {
         PlanNodeBean nodeBean = new PlanNodeBean(protocolBlock.getId(), protocolBlock.getSemanticType(), NodeType.PROTOCOL_BLOCK);
         nodeBean.setFlowDecorators(new ArrayList<>(accumulatedDecorators));
         nodeBean.setParameters(protocolBlock.getParameters() != null ? new HashMap<>(protocolBlock.getParameters()) : new HashMap<>());
+        nodeBean.setValidationErrorMsg(getErrorMessage(protocolBlock.getId()));
+
         accumulatedDecorators.clear();
 
         for (int i = 0; i < protocolBlock.getChildrenCount(); i++) {
@@ -185,5 +194,15 @@ public class PlanToBeanVisitor implements WorkoutPlanVisitor {
                 intervalDecorator.getIntervalDuration()
         ));
         intervalDecorator.getWrappedNode().accept(this);
+    }
+
+    private String getErrorMessage(String nodeId) {
+        if (validationResult == null) return null;
+
+        StringBuilder errorMsg = new StringBuilder();
+        for(ValidationResult.ValidationError error : validationResult.getErrorsByNodeId(nodeId)) {
+            errorMsg.append(error.message()).append("\n");
+        }
+        return errorMsg.toString();
     }
 }
