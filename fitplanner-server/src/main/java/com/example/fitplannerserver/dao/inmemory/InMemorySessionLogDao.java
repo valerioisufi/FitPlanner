@@ -7,7 +7,6 @@ import com.example.fitplannerserver.model.log.SessionLog;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -18,32 +17,23 @@ public class InMemorySessionLogDao implements SessionLogDao {
     private final Map<String, List<SessionLog>> sessionLogs = new ConcurrentHashMap<>();
 
     @Override
-    public void saveSessionLog(SessionLog log) throws DaoException {
+    public synchronized void saveSessionLog(SessionLog log) throws DaoException {
         Objects.requireNonNull(log, "sessionLog cannot be null");
         Objects.requireNonNull(log.getUserId(), "userId cannot be null");
         Objects.requireNonNull(log.getDate(), "session date cannot be null");
 
-        String athleteId = log.getUserId();
-
-        LocalDateTime truncatedDate = log.getDate().truncatedTo(ChronoUnit.SECONDS);
-        log.setDate(truncatedDate);
-
-        // Deep copy before storing into the database
         SessionLog copyOfLog = new SessionLog(log);
 
-        sessionLogs.compute(athleteId, (key, logs) -> {
-            if (logs == null) {
-                logs = new CopyOnWriteArrayList<>();
-            } else {
-                // If a log with the exact same Date (down to the second) exists, remove it.
-                logs.removeIf(existingLog ->
-                        existingLog.getDate() != null &&
-                                existingLog.getDate().truncatedTo(ChronoUnit.SECONDS).isEqual(truncatedDate)
-                );
-            }
-            logs.add(copyOfLog);
-            return logs;
-        });
+        List<SessionLog> logs = sessionLogs.computeIfAbsent(copyOfLog.getUserId(), k -> new CopyOnWriteArrayList<>());
+        boolean exists = logs.stream().anyMatch(existingLog ->
+                existingLog.getDate() != null && existingLog.getDate().isEqual(copyOfLog.getDate())
+        );
+
+        if (exists) {
+            throw new DaoException("Esiste già un log per questo utente in questa data");
+        }
+
+        logs.add(copyOfLog);
     }
 
     @Override

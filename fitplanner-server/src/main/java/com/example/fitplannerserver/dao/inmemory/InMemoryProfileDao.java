@@ -51,10 +51,9 @@ public class InMemoryProfileDao implements ProfileDao {
     @Override
     public Optional<String> getInvitationCode(String userId) {
         Objects.requireNonNull(userId, USER_ID_CANNOT_BE_NULL);
-        Objects.requireNonNull(profiles.get(userId), "User profile not found for userId: " + userId);
 
-        User user = profiles.get(userId);
-        return Optional.ofNullable(user).map(User::getInvitationCode);
+        return Optional.ofNullable(profiles.get(userId))
+                .map(User::getInvitationCode);
     }
 
 

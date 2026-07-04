@@ -8,10 +8,10 @@ import java.util.Optional;
 
 public interface SessionLogDao {
 
-    // Saves or updates a full session log (exercises, reps, weights)
+    // Saves a new session log (exercises, reps, weights)
     void saveSessionLog(SessionLog log) throws DaoException;
 
-    // Retrieves logs for a specific athlete within a time range
+    // Retrieves logs for a specific athlete within a time range; no ordering is guaranteed
     List<SessionLog> findLogsByAthleteIdAndDateRange(String athleteId, long startTimestamp, long endTimestamp) throws DaoException;
 
     Optional<SessionLog> findMostRecentSessionContainingExercise(

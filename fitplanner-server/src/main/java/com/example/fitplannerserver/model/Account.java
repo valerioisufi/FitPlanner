@@ -9,7 +9,8 @@ public class Account {
 
     public Account(String userId, String email, String passwordHash, String refreshToken, Role profileType) {
         this.userId = userId;
-        this.email = email;
+        // l'email è case-insensitive
+        this.email = email != null ? email.toLowerCase() : null;
         this.passwordHash = passwordHash;
         this.refreshToken = refreshToken;
         this.profileType = profileType;

@@ -1,6 +1,7 @@
 package com.example.fitplannerserver.dao.inmemory;
 
 import com.example.fitplannerserver.dao.CoachingDao;
+import com.example.fitplannerserver.exception.DaoException;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -18,14 +19,12 @@ public class InMemoryCoachingDao implements CoachingDao {
     private final Map<String, String> athleteToTrainer = new ConcurrentHashMap<>();
 
     @Override
-    public synchronized void linkAthleteToTrainer(String athleteId, String trainerId) {
+    public synchronized void linkAthleteToTrainer(String athleteId, String trainerId) throws DaoException {
         Objects.requireNonNull(athleteId, ATHLETE_ID_CANNOT_BE_NULL);
         Objects.requireNonNull(trainerId, TRAINER_ID_CANNOT_BE_NULL);
 
-        // If the athlete already has a different trainer
-        String oldTrainerId = athleteToTrainer.get(athleteId);
-        if (oldTrainerId != null && !oldTrainerId.equals(trainerId)) {
-            unlink(athleteId, oldTrainerId);
+        if (athleteToTrainer.containsKey(athleteId)) {
+            throw new DaoException("L'atleta è già collegato a un trainer");
         }
 
         trainerToAthletes.computeIfAbsent(trainerId, k -> new CopyOnWriteArrayList<>()).add(athleteId);

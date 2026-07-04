@@ -5,6 +5,7 @@ import com.example.fitplannercommon.ProfileDTO;
 import com.example.fitplannerserver.beanvalidator.ProfileValidator;
 import com.example.fitplannerserver.dao.CoachingDao;
 import com.example.fitplannerserver.dao.ProfileDao;
+import com.example.fitplannerserver.dao.WorkoutPlanDao;
 import com.example.fitplannerserver.exception.DaoException;
 import com.example.fitplannerserver.exception.ResourceNotFoundException;
 import com.example.fitplannerserver.exception.SystemException;
@@ -12,26 +13,31 @@ import com.example.fitplannerserver.exception.WrongArgumentsException;
 import com.example.fitplannerserver.mapper.ProfileMapper;
 import com.example.fitplannerserver.model.Account;
 import com.example.fitplannerserver.model.User;
+import com.example.fitplannerserver.model.plan.WorkoutPlan;
 import com.example.fitplannerserver.security.IdentityProvider;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class ProfileController {
     private final IdentityProvider identityProvider;
 
     private final ProfileDao profileDao;
     private final CoachingDao coachingDao;
+    private final WorkoutPlanDao workoutPlanDao;
 
     public ProfileController(
             IdentityProvider identityProvider,
             ProfileDao profileDao,
-            CoachingDao coachingDao
+            CoachingDao coachingDao,
+            WorkoutPlanDao workoutPlanDao
     ) {
         this.identityProvider = identityProvider;
 
         this.profileDao = profileDao;
         this.coachingDao = coachingDao;
+        this.workoutPlanDao = workoutPlanDao;
     }
 
     public ProfileDTO getProfileInfo() {
@@ -118,12 +124,27 @@ public class ProfileController {
             User trainer = profileDao.findByInvitationCode(invitationCodeDTO.getInvitationCode())
                     .orElseThrow(() -> new ResourceNotFoundException("Codice di invito non valido"));
 
-            if(trainer.getId().equals(identityProvider.getUserId())){
+            String athleteId = identityProvider.getUserId();
+            if(trainer.getId().equals(athleteId)){
                 // un atleta non può possedere un codice di invito per cui questa eventualità non dovrebbe avvenire
                 throw new WrongArgumentsException("Non puoi collegarti a te stesso");
-            } else {
-                coachingDao.linkAthleteToTrainer(identityProvider.getUserId(), trainer.getId());
             }
+
+            Optional<String> currentTrainerId = coachingDao.findTrainerIdByAthleteId(athleteId);
+            if (currentTrainerId.isPresent()) {
+                if (currentTrainerId.get().equals(trainer.getId())) {
+                    // già collegato a questo trainer
+                    return;
+                }
+                // cambio trainer: scollega dal precedente ed elimina il piano che aveva assegnato
+                coachingDao.unlink(athleteId, currentTrainerId.get());
+                Optional<WorkoutPlan> assignedPlan = workoutPlanDao.findAssignedPlanByAthleteId(athleteId);
+                if (assignedPlan.isPresent()) {
+                    workoutPlanDao.deletePlan(assignedPlan.get().getPlanId());
+                }
+            }
+
+            coachingDao.linkAthleteToTrainer(athleteId, trainer.getId());
 
         } catch (DaoException e){
             throw new SystemException("Errore durante il collegamento al trainer", e);

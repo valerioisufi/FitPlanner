@@ -32,7 +32,8 @@ public class ControllerConfig {
         return new ProfileController(
                 identityProvider,
                 DaoFactory.getInstance().getProfileDao(),
-                DaoFactory.getInstance().getCoachingDao()
+                DaoFactory.getInstance().getCoachingDao(),
+                DaoFactory.getInstance().getWorkoutPlanDao()
         );
     }
 

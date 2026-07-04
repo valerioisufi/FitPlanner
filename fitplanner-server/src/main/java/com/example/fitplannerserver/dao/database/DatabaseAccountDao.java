@@ -30,7 +30,7 @@ public class DatabaseAccountDao implements AccountDao {
             conn = DbConnection.getInstance().getConnection();
             try (PreparedStatement stm = conn.prepareStatement(sql)) {
                 stm.setString(1, account.getUserId());
-                stm.setString(2, account.getEmail().toLowerCase());
+                stm.setString(2, account.getEmail());
                 stm.setString(3, account.getPasswordHash());
                 stm.setString(4, account.getRefreshToken());
                 stm.setString(5, account.getProfileType().name());
@@ -61,7 +61,7 @@ public class DatabaseAccountDao implements AccountDao {
         try {
             conn = DbConnection.getInstance().getConnection();
             try (PreparedStatement stm = conn.prepareStatement(sql)) {
-                stm.setString(1, account.getEmail().toLowerCase());
+                stm.setString(1, account.getEmail());
                 stm.setString(2, account.getPasswordHash());
                 stm.setString(3, account.getRefreshToken());
                 stm.setString(4, account.getProfileType().name());
@@ -143,7 +143,7 @@ public class DatabaseAccountDao implements AccountDao {
 
     @Override
     public void delete(Account account) throws DaoException {
-        Objects.requireNonNull(account, NULL_EMAIL_MSG);
+        Objects.requireNonNull(account, NULL_ACC_MSG);
         Objects.requireNonNull(account.getUserId(), NULL_ID_MSG);
 
         String sql = "DELETE FROM accounts WHERE user_id=?";

@@ -31,6 +31,9 @@ public class DatabaseCoachingDao implements CoachingDao {
                 stm.executeUpdate();
             }
         } catch (SQLException e) {
+            if (e.getSQLState() != null && e.getSQLState().startsWith("23")) {
+                throw new DaoException("L'atleta è già collegato a un trainer", e);
+            }
             throw new DaoException("Errore critico durante l'aggiunta dell'atleta al proprio trainer nel database", e);
         } finally {
             DbConnection.getInstance().releaseConnection(conn);

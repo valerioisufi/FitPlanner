@@ -37,8 +37,12 @@ public class FileSystemSessionLogDao implements SessionLogDao {
 
         lock.writeLock().lock();
         try{
-            CsvUtils.update(path, EXPECTED_SESSION_LOG_COLUMNS, parts -> parts[0].equals(log.getUserId()) && parts[3].equals(log.getDate().toString()),
-                    sessionLogToCsvRow(log));
+            boolean exists = !CsvUtils.search(path, EXPECTED_SESSION_LOG_COLUMNS,
+                    parts -> parts[0].equals(log.getUserId()) && parts[3].equals(log.getDate().toString()), 1).isEmpty();
+            if (exists) {
+                throw new DaoException("Esiste già un log per questo utente in questa data");
+            }
+            CsvUtils.append(path, sessionLogToCsvRow(log));
             }catch (IOException e) {
             throw new DaoException("Errore durante il salvataggio della sessione", e);
         }finally {

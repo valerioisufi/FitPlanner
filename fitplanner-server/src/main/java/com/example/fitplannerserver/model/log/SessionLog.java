@@ -1,6 +1,7 @@
 package com.example.fitplannerserver.model.log;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,7 +20,7 @@ public class SessionLog {
         this.userId = userId;
         this.notes = notes;
         this.status = status;
-        this.date = date;
+        this.date = date.truncatedTo(ChronoUnit.SECONDS);
         this.planReference = new PlanReference(planId, workoutSessionDay);
 
         this.exerciseLogs = new ArrayList<>();

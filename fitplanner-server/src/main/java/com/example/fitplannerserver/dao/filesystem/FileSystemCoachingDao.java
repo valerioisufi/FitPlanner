@@ -37,7 +37,7 @@ public class FileSystemCoachingDao implements CoachingDao {
         try{
             boolean linked= !CsvUtils.search(path, EXPECTED_COLUMNS, parts -> parts[0].equals(athleteUuid), 1).isEmpty();
             if(linked){
-                return;
+                throw new DaoException("L'atleta è già collegato a un trainer");
             }
             CsvUtils.append(path, String.join(CSV_DELIMITER, athleteUuid, trainerUuid));
         }catch (IOException e){

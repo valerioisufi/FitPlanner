@@ -14,6 +14,7 @@ import com.example.fitplannerserver.security.IdentityProvider;
 import com.example.fitplannerserver.util.ValidationUtils;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -61,7 +62,9 @@ public class SessionLogController {
         }
 
         try {
-            List<SessionLog> sessionLog = sessionLogDao.findLogsByAthleteIdAndDateRange(userId, startDate, endDate);
+            // i log più recenti prima
+            List<SessionLog> sessionLog = new ArrayList<>(sessionLogDao.findLogsByAthleteIdAndDateRange(userId, startDate, endDate));
+            sessionLog.sort(Comparator.comparing(SessionLog::getDate, Comparator.nullsLast(Comparator.reverseOrder())));
 
             List<SessionLogDTO> sessionLogDTOS = new ArrayList<>();
             for (SessionLog log : sessionLog) {

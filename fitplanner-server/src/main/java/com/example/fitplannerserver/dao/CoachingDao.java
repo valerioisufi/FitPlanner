@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface CoachingDao {
-    // Links an athlete to a trainer
+    // Links an athlete to a trainer; an athlete can have at most one trainer
     void linkAthleteToTrainer(String athleteUuid, String trainerUuid) throws DaoException;
 
     // Unlinks them

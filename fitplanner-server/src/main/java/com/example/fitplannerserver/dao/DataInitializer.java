@@ -14,6 +14,7 @@ import java.util.List;
 public class DataInitializer {
 
     private static final String GAMBE = "Gambe";
+    private static final String DEFAULT_TRAINER_EMAIL = "trainer@fitplanner.com";
 
     private final AccountDao accountDao;
     private final ProfileDao profileDao;
@@ -30,6 +31,10 @@ public class DataInitializer {
 
     public void initialize() {
         try {
+            if (accountDao.findByEmail(DEFAULT_TRAINER_EMAIL).isPresent()) {
+                return;
+            }
+
             BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
             String defaultPasswordHash = encoder.encode("password");
 
@@ -37,7 +42,7 @@ public class DataInitializer {
             String trainerId = UuidCreator.getTimeOrderedEpoch().toString();
             Account trainerAccount = new Account(
                     trainerId,
-                    "trainer@fitplanner.com", defaultPasswordHash, null,
+                    DEFAULT_TRAINER_EMAIL, defaultPasswordHash, null,
                     Account.Role.TRAINER
             );
             this.accountDao.create(trainerAccount);
@@ -46,7 +51,7 @@ public class DataInitializer {
                     trainerId,
                     "Super",
                     "Trainer",
-                    "trainer@fitplanner.com",
+                    DEFAULT_TRAINER_EMAIL,
                     "1234567890",
                     null
             );

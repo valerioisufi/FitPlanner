@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS profiles(
 CREATE TABLE IF NOT EXISTS coaching(
     trainer VARCHAR(36) NOT NULL,
     athlete VARCHAR(36) NOT NULL,
-    PRIMARY KEY (trainer, athlete),
+    PRIMARY KEY (athlete), -- un atleta può avere al massimo un trainer
     FOREIGN KEY (trainer) REFERENCES accounts(user_id) ON DELETE CASCADE,
     FOREIGN KEY (athlete) REFERENCES accounts(user_id) ON DELETE CASCADE
 );
@@ -74,6 +74,8 @@ CREATE TABLE IF NOT EXISTS workout_plan(
     start_date DATE,
     athlete_id VARCHAR(36) ,
     trainer_id VARCHAR(36) ,
+    -- un atleta può avere al massimo un piano assegnato
+    UNIQUE (athlete_id),
     FOREIGN KEY (athlete_id) REFERENCES accounts(user_id) ON DELETE SET NULL,
     FOREIGN KEY (trainer_id) REFERENCES accounts(user_id) ON DELETE SET NULL
     );

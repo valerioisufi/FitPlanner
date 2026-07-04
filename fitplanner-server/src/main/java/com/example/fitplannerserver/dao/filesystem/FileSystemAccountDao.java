@@ -20,6 +20,7 @@ public class FileSystemAccountDao implements AccountDao {
     private static final int EXPECTED_COLUMNS = 5;
     private static final String ACCOUNT_CANNOT_BE_NULL = "account cannot be null";
     private static final String EMAIL_CANNOT_BE_NULL = "email cannot be null";
+    private static final String USER_ID_CANNOT_BE_NULL = "userId cannot be null";
 
     private final Path file;
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
@@ -60,6 +61,7 @@ public class FileSystemAccountDao implements AccountDao {
     @Override
     public void save(Account account) throws DaoException {
         Objects.requireNonNull(account, ACCOUNT_CANNOT_BE_NULL);
+        Objects.requireNonNull(account.getUserId(), USER_ID_CANNOT_BE_NULL);
         Objects.requireNonNull(account.getEmail(), EMAIL_CANNOT_BE_NULL);
 
         Account copyOfAccount = new Account(account);
@@ -67,7 +69,7 @@ public class FileSystemAccountDao implements AccountDao {
 
         lock.writeLock().lock();
         try {
-            CsvUtils.update(file, EXPECTED_COLUMNS, parts -> parts[1].equalsIgnoreCase(copyOfAccount.getEmail()), newRow);
+            CsvUtils.update(file, EXPECTED_COLUMNS, parts -> parts[0].equals(copyOfAccount.getUserId()), newRow);
 
         } catch (IOException e) {
             throw new DaoException("Errore durante la modifica delle informazioni dell'account", e);
@@ -122,13 +124,11 @@ public class FileSystemAccountDao implements AccountDao {
     @Override
     public void delete(Account account) throws DaoException {
         Objects.requireNonNull(account, ACCOUNT_CANNOT_BE_NULL);
-        Objects.requireNonNull(account.getEmail(), EMAIL_CANNOT_BE_NULL);
-
-        Account copyOfAccount= new Account(account);
+        Objects.requireNonNull(account.getUserId(), USER_ID_CANNOT_BE_NULL);
 
         lock.writeLock().lock();
         try {
-            CsvUtils.delete(file, EXPECTED_COLUMNS, parts -> parts[1].equalsIgnoreCase(copyOfAccount.getEmail()));
+            CsvUtils.delete(file, EXPECTED_COLUMNS, parts -> parts[0].equals(account.getUserId()));
 
         } catch (IOException e) {
             throw new DaoException("Errore durante la rimozione dell'account", e);

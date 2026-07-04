@@ -10,40 +10,41 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class InMemoryAccountDao implements AccountDao {
 
-    // Map Key: email (Account.email)
+    // Map Key: userId
     private final Map<String, Account> accounts = new ConcurrentHashMap<>();
     private static final String ACCOUNT_CANNOT_BE_NULL = "Account cannot be null";
     private static final String ACCOUNT_EMAIL_CANNOT_BE_NULL = "Account email cannot be null";
+    private static final String ACCOUNT_USER_ID_CANNOT_BE_NULL = "Account userId cannot be null";
 
     @Override
-    public boolean create(Account account) {
+    public synchronized boolean create(Account account) {
         Objects.requireNonNull(account, ACCOUNT_CANNOT_BE_NULL);
+        Objects.requireNonNull(account.getUserId(), ACCOUNT_USER_ID_CANNOT_BE_NULL);
         Objects.requireNonNull(account.getEmail(), ACCOUNT_EMAIL_CANNOT_BE_NULL);
 
-        Account copyOfAccount = new Account(account);
+        if (findByEmailInternal(account.getEmail()).isPresent()) {
+            return false;
+        }
 
-        return accounts.putIfAbsent(copyOfAccount.getEmail().toLowerCase(), copyOfAccount) == null;
+        Account copyOfAccount = new Account(account);
+        return accounts.putIfAbsent(copyOfAccount.getUserId(), copyOfAccount) == null;
     }
 
     @Override
     public void save(Account account) {
         Objects.requireNonNull(account, ACCOUNT_CANNOT_BE_NULL);
-        Objects.requireNonNull(account.getEmail(), ACCOUNT_EMAIL_CANNOT_BE_NULL);
+        Objects.requireNonNull(account.getUserId(), ACCOUNT_USER_ID_CANNOT_BE_NULL);
 
         Account copyOfAccount = new Account(account);
 
-        accounts.put(copyOfAccount.getEmail(), copyOfAccount);
+        accounts.put(copyOfAccount.getUserId(), copyOfAccount);
     }
 
     @Override
     public Optional<Account> findByEmail(String email) {
         Objects.requireNonNull(email, "email cannot be null");
 
-        Account account = accounts.get(email.toLowerCase());
-        if (account != null) {
-            return Optional.of(new Account(account));
-        }
-        return Optional.empty();
+        return findByEmailInternal(email).map(Account::new);
     }
 
     @Override
@@ -63,8 +64,17 @@ public class InMemoryAccountDao implements AccountDao {
     @Override
     public void delete(Account account) {
         Objects.requireNonNull(account, ACCOUNT_CANNOT_BE_NULL);
-        Objects.requireNonNull(account.getEmail(), ACCOUNT_EMAIL_CANNOT_BE_NULL);
+        Objects.requireNonNull(account.getUserId(), ACCOUNT_USER_ID_CANNOT_BE_NULL);
 
-        accounts.remove(account.getEmail());
+        accounts.remove(account.getUserId());
+    }
+
+    private Optional<Account> findByEmailInternal(String email) {
+        for (Account account : accounts.values()) {
+            if (account.getEmail().equalsIgnoreCase(email)) {
+                return Optional.of(account);
+            }
+        }
+        return Optional.empty();
     }
 }

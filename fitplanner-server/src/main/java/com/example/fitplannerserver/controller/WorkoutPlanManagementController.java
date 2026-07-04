@@ -15,6 +15,7 @@ import com.github.f4b6a3.uuid.UuidCreator;
 
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -42,6 +43,7 @@ public class WorkoutPlanManagementController {
         try {
             return workoutPlanDao.findPlansByTrainerId(identityProvider.getUserId())
                     .stream()
+                    .sorted(Comparator.comparing(WorkoutPlan::getStartDate, Comparator.nullsLast(Comparator.reverseOrder())))
                     .map(PlanMapper::toSummaryDto)
                     .toList();
 
