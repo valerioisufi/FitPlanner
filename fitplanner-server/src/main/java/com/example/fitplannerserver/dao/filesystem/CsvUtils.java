@@ -70,17 +70,13 @@ public class CsvUtils {
             }
 
             String line;
-            while ((line = in.readLine()) != null) {
-                if (line.trim().isEmpty()) continue;
+            while ((limit == -1 || results.size() < limit) && (line = in.readLine()) != null) {
 
-                if (limit != -1 && results.size() >= limit) {
-                    break;
-                }
-
-                String[] parts = csvSplit(line, expectedColumns);
-
-                if (filter.test(parts)) {
-                    results.add(parts);
+                if (!line.trim().isEmpty()) {
+                    String[] parts = csvSplit(line, expectedColumns);
+                    if (filter.test(parts)) {
+                        results.add(parts);
+                    }
                 }
             }
 

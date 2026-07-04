@@ -118,7 +118,8 @@ public class HttpService {
             Class<T> resType,
             boolean isRetry
     ) {
-        logger.info("Response: {} for {}\nBody: {}", res.statusCode(), req.uri(), res.body());
+        if (logger.isDebugEnabled())
+            logger.debug("Response: {} for {}\nBody: {}", res.statusCode(), req.uri(), res.body());
 
         if (res.statusCode() == 401 && !isRetry && !req.uri().getPath().contains("/auth")) {
             return executeWithRetry(
