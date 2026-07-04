@@ -10,11 +10,9 @@ import com.example.fitplannerclient.serializer.PlanDeserializer;
 import com.example.fitplannerclient.serializer.PlanToDtoVisitor;
 import com.example.fitplannerclient.service.api.WorkoutPlanApi;
 import com.example.fitplannercommon.WorkoutScheduleDTO;
-import com.example.fitplannercommon.WorkoutSessionDTO;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 
 public class WorkoutPlanRepository {
 
@@ -133,36 +131,23 @@ public class WorkoutPlanRepository {
     private WorkoutSchedule scheduleDtoToEntity(WorkoutScheduleDTO dto) {
         if (dto == null) return null;
 
-        List<WorkoutSchedule.WorkoutState> states = dto.getWorkoutStates() == null
+        List<WorkoutSchedule.ScheduleDay> days = dto.getDays() == null
                 ? List.of()
-                : dto.getWorkoutStates().stream()
-                        .map(state -> WorkoutSchedule.WorkoutState.valueOf(state.name()))
-                        .toList();
+                : dto.getDays().stream()
+                        .map(day -> new WorkoutSchedule.ScheduleDay(
+                                day.getAbsoluteDay(),
+                                WorkoutSchedule.WorkoutState.valueOf(day.getState().name()))
+                        ).toList();
 
         return new WorkoutSchedule(
                 dto.getPlanId(),
                 dto.getPlanTitle(),
                 dto.getCycleStartDate(),
                 dto.getCycleEndDate(),
-                dto.getCurrentCycleDay(),
-                states,
-                sessionDtoToEntity(dto.getNextSuggestedSession())
+                dto.getTodayAbsoluteDay(),
+                days,
+                dto.getSuggestedAbsoluteDay()
         );
-    }
-
-    private WorkoutSession sessionDtoToEntity(WorkoutSessionDTO dto) {
-        if (dto == null) return null;
-
-        PlanNode root = null;
-        if (dto.getContent() != null && !dto.getContent().isBlank()) {
-            try {
-                root = deserializer.deserialize(dto.getContent());
-            } catch (Exception e) {
-                throw new CompletionException("Failed to deserialize workout session content", e);
-            }
-        }
-
-        return new WorkoutSession(dto.getName(), dto.getDay(), root);
     }
 
 }

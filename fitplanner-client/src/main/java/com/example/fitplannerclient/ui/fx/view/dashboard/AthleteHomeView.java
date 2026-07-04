@@ -1,8 +1,7 @@
 package com.example.fitplannerclient.ui.fx.view.dashboard;
 
-import com.example.fitplannerclient.bean.plan.WorkoutPlanBean;
+import com.example.fitplannerclient.bean.plan.ScheduleDayBean;
 import com.example.fitplannerclient.bean.plan.WorkoutScheduleBean;
-import com.example.fitplannerclient.bean.plan.WorkoutSessionBean;
 import com.example.fitplannerclient.bean.plan.WorkoutState;
 import com.example.fitplannerclient.ui.fx.view.plan.editor.PlanViewer;
 import javafx.geometry.Insets;
@@ -17,7 +16,6 @@ import javafx.scene.layout.*;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
-import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.IntConsumer;
 
@@ -25,6 +23,7 @@ public class AthleteHomeView extends BorderPane {
 
     private static final String BODY_BASE_CLASS = "body-base";
     private static final String HEADING_H2_CLASS = "heading-h2";
+    private static final String REST_LABEL = "Rest";
 
     private final VBox contentBox;
     private final Label welcomeTitle;
@@ -41,7 +40,7 @@ public class AthleteHomeView extends BorderPane {
 
         // --- Welcome Section ---
         BorderPane welcomeSection = new BorderPane();
-        
+
         VBox titles = new VBox(8);
         welcomeTitle = new Label("Benvenuto in FitPlanner!");
         welcomeTitle.getStyleClass().add("heading-h1");
@@ -64,18 +63,11 @@ public class AthleteHomeView extends BorderPane {
         welcomeSubtitle.setText(subtitle);
     }
 
-    public void showAthleteDashboard(WorkoutPlanBean plan, WorkoutScheduleBean schedule, IntConsumer onStartSession) {
+    public void showAthleteDashboard(WorkoutScheduleBean schedule, IntConsumer onStartSession) {
         // Clear old dashboard cards (keep welcome section)
         while (contentBox.getChildren().size() > 1) {
             contentBox.getChildren().remove(1);
         }
-
-        if (plan == null || schedule == null || schedule.getNextSuggestedSession() == null) {
-            showNoPlanAssigned();
-            return;
-        }
-
-        WorkoutSessionBean session = schedule.getNextSuggestedSession();
 
         HBox splitLayout = new HBox(30);
         splitLayout.setAlignment(Pos.TOP_LEFT);
@@ -86,33 +78,19 @@ public class AthleteHomeView extends BorderPane {
         HBox.setHgrow(leftPanel, Priority.ALWAYS);
         leftPanel.getStyleClass().add("card");
         leftPanel.setPadding(new Insets(25));
-        // Initialize left panel with next suggested session
-        WorkoutSessionBean suggested = schedule.getNextSuggestedSession();
-        int suggestedAbsoluteDay = suggested.getDay();
-        
-        Instant startInst = Instant.ofEpochMilli(schedule.getCycleStartDate());
-        LocalDate startDate = LocalDate.ofInstant(startInst, ZoneOffset.UTC);
-        int cycleLength = plan.getCycleLength();
-        int currentAbsoluteDay = schedule.getCurrentCycleDay();
-        int absoluteStartDay = (currentAbsoluteDay / cycleLength) * cycleLength;
 
-        int daysDifference = suggestedAbsoluteDay - absoluteStartDay;
-        LocalDate suggestedDate = startDate.plusDays(daysDifference);
-        String suggestedTitleDate = suggestedDate.getDayOfMonth() + " " + suggestedDate.getMonth().name().substring(0,3) + " " + suggestedDate.getDayOfWeek().name().substring(0,3);
-
-        boolean isSuggestedToday = (suggestedAbsoluteDay == currentAbsoluteDay);
-
-        updateLeftPanel(leftPanel, suggested, suggestedAbsoluteDay, isSuggestedToday, suggestedTitleDate, plan, onStartSession);
+        ScheduleDayBean suggestedDay = schedule.getDays().get(schedule.getSuggestedDayIndex());
+        updateLeftPanel(leftPanel, schedule.getPlanTitle(), suggestedDay, onStartSession);
 
         // --- Right Panel: THIS WEEK ---
-        VBox rightPanel = buildRightPanel(schedule, startDate, absoluteStartDay, cycleLength, plan, session, leftPanel, onStartSession);
+        VBox rightPanel = buildRightPanel(schedule, leftPanel, onStartSession);
 
         splitLayout.getChildren().addAll(leftPanel, rightPanel);
 
         contentBox.getChildren().add(splitLayout);
     }
 
-    private VBox buildRightPanel(WorkoutScheduleBean schedule, LocalDate startDate, int absoluteStartDay, int cycleLength, WorkoutPlanBean plan, WorkoutSessionBean session, VBox leftPanel, IntConsumer onStartSession) {
+    private VBox buildRightPanel(WorkoutScheduleBean schedule, VBox leftPanel, IntConsumer onStartSession) {
         VBox rightPanel = new VBox(20);
         rightPanel.setPrefWidth(350);
         rightPanel.setMinWidth(300);
@@ -121,12 +99,12 @@ public class AthleteHomeView extends BorderPane {
 
         Label weekTitle = new Label("THIS WEEK");
         weekTitle.getStyleClass().add(HEADING_H2_CLASS);
-        
-        // Calcola l'inizio e la fine della settimana (approssimata al ciclo o ai prossimi 7 giorni)
-        LocalDate endDate = LocalDate.ofInstant(Instant.ofEpochMilli(schedule.getCycleEndDate()), ZoneOffset.UTC);
-        
-        String dateRange = startDate.getMonth().name().substring(0,3) + " " + startDate.getDayOfMonth() + " - " +
-                           endDate.getMonth().name().substring(0,3) + " " + endDate.getDayOfMonth();
+
+        LocalDate startDate = toLocalDate(schedule.getCycleStartDate());
+        LocalDate endDate = toLocalDate(schedule.getCycleEndDate());
+
+        String dateRange = monthAbbrev(startDate) + " " + startDate.getDayOfMonth() + " - " +
+                           monthAbbrev(endDate) + " " + endDate.getDayOfMonth();
         Label dateRangeLabel = new Label(dateRange);
         dateRangeLabel.getStyleClass().add("dashboard-date-range");
         dateRangeLabel.setMaxWidth(Double.MAX_VALUE);
@@ -134,98 +112,87 @@ public class AthleteHomeView extends BorderPane {
         rightPanel.getChildren().addAll(weekTitle, dateRangeLabel);
 
         VBox daysList = new VBox(10);
-        
-        List<WorkoutState> states = schedule.getWorkoutStates();
-
-        for (int i = 0; i < states.size(); i++) {
-            WorkoutState state = states.get(i);
-            int absoluteDay = absoluteStartDay + i;
-            int relativeDay = absoluteDay % cycleLength;
-            LocalDate dayDate = startDate.plusDays(i);
-            
-            String dayOfWeekStr = dayDate.getDayOfWeek().name().substring(0,3);
-            String dayOfMonthStr = String.valueOf(dayDate.getDayOfMonth());
-            
-            String sessionName = "Rest";
-            if (plan.getSession(relativeDay) != null) {
-                sessionName = plan.getSession(relativeDay).getName();
-            }
-
-            boolean isToday = (absoluteDay == schedule.getCurrentCycleDay());
-
-            HBox dayRow = new HBox(15);
-            dayRow.setAlignment(Pos.CENTER_LEFT);
-            dayRow.setPadding(new Insets(15));
-            dayRow.getStyleClass().add("workout-row");
-
-            VBox dateBox = new VBox(2);
-            dateBox.setAlignment(Pos.CENTER);
-            Label dowLbl = new Label(dayOfWeekStr);
-            dowLbl.getStyleClass().add("dow-label");
-            Label domLbl = new Label(dayOfMonthStr);
-            domLbl.getStyleClass().add("dom-label");
-            dateBox.getChildren().addAll(dowLbl, domLbl);
-
-            VBox infoBox = new VBox(2);
-            Label sessionNameLbl = new Label(sessionName);
-            sessionNameLbl.getStyleClass().add("session-label");
-            
-            Label statusLbl = new Label();
-            statusLbl.getStyleClass().add("status-label");
-            infoBox.getChildren().addAll(sessionNameLbl, statusLbl);
-            
-            Region spacer = new Region();
-            HBox.setHgrow(spacer, Priority.ALWAYS);
-
-            Label iconLbl = new Label();
-            iconLbl.getStyleClass().add("icon-label");
-
-            if (state == WorkoutState.DONE) {
-                dayRow.getStyleClass().add("workout-row-done");
-                statusLbl.setText("Completed");
-                iconLbl.setText("✔");
-                dayRow.getChildren().addAll(dateBox, infoBox, spacer, iconLbl);
-            } else if (isToday) {
-                dayRow.getStyleClass().add("workout-row-today");
-                statusLbl.setText("Today");
-                iconLbl.setText("•");
-                dayRow.getChildren().addAll(dateBox, infoBox, spacer, iconLbl);
-            } else if (state == WorkoutState.REST || sessionName.equals("Rest")) {
-                dayRow.getStyleClass().add("workout-row-rest");
-                statusLbl.setManaged(false);
-                dayRow.getChildren().addAll(dateBox, infoBox);
-            } else {
-                dayRow.getStyleClass().add("workout-row-upcoming");
-                statusLbl.setManaged(false);
-                dayRow.getChildren().addAll(dateBox, infoBox);
-            }
-
-            if (session != null && !sessionName.equals("Rest")) {
-                String titleDate = dayOfMonthStr + " " + dayDate.getMonth().name().substring(0,3) + " " + dayOfWeekStr;
-                dayRow.setOnMouseClicked(e -> updateLeftPanel(leftPanel, session, absoluteDay, isToday, titleDate, plan, onStartSession));
-                dayRow.setStyle("-fx-cursor: hand;");
-            }
-
-            daysList.getChildren().add(dayRow);
+        for (ScheduleDayBean day : schedule.getDays()) {
+            daysList.getChildren().add(buildDayRow(day, schedule.getPlanTitle(), leftPanel, onStartSession));
         }
 
         rightPanel.getChildren().add(daysList);
         return rightPanel;
     }
 
-    private void updateLeftPanel(VBox leftPanel, WorkoutSessionBean session, int absoluteDay, boolean isToday, String titleDate, WorkoutPlanBean plan, IntConsumer onStartSession) {
+    private HBox buildDayRow(ScheduleDayBean day, String planTitle, VBox leftPanel, IntConsumer onStartSession) {
+        LocalDate dayDate = toLocalDate(day.getDate());
+        boolean isRest = day.getState() == WorkoutState.REST || day.getSession() == null;
+        String sessionName = isRest ? REST_LABEL : day.getSession().getName();
+
+        HBox dayRow = new HBox(15);
+        dayRow.setAlignment(Pos.CENTER_LEFT);
+        dayRow.setPadding(new Insets(15));
+        dayRow.getStyleClass().add("workout-row");
+
+        VBox dateBox = new VBox(2);
+        dateBox.setAlignment(Pos.CENTER);
+        Label dowLbl = new Label(dowAbbrev(dayDate));
+        dowLbl.getStyleClass().add("dow-label");
+        Label domLbl = new Label(String.valueOf(dayDate.getDayOfMonth()));
+        domLbl.getStyleClass().add("dom-label");
+        dateBox.getChildren().addAll(dowLbl, domLbl);
+
+        VBox infoBox = new VBox(2);
+        Label sessionNameLbl = new Label(sessionName);
+        sessionNameLbl.getStyleClass().add("session-label");
+
+        Label statusLbl = new Label();
+        statusLbl.getStyleClass().add("status-label");
+        infoBox.getChildren().addAll(sessionNameLbl, statusLbl);
+
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        Label iconLbl = new Label();
+        iconLbl.getStyleClass().add("icon-label");
+
+        if (day.getState() == WorkoutState.DONE) {
+            dayRow.getStyleClass().add("workout-row-done");
+            statusLbl.setText("Completed");
+            iconLbl.setText("✔");
+            dayRow.getChildren().addAll(dateBox, infoBox, spacer, iconLbl);
+        } else if (day.isToday()) {
+            dayRow.getStyleClass().add("workout-row-today");
+            statusLbl.setText("Today");
+            iconLbl.setText("•");
+            dayRow.getChildren().addAll(dateBox, infoBox, spacer, iconLbl);
+        } else if (isRest) {
+            dayRow.getStyleClass().add("workout-row-rest");
+            statusLbl.setManaged(false);
+            dayRow.getChildren().addAll(dateBox, infoBox);
+        } else {
+            dayRow.getStyleClass().add("workout-row-upcoming");
+            statusLbl.setManaged(false);
+            dayRow.getChildren().addAll(dateBox, infoBox);
+        }
+
+        if (!isRest) {
+            dayRow.setOnMouseClicked(e -> updateLeftPanel(leftPanel, planTitle, day, onStartSession));
+            dayRow.setStyle("-fx-cursor: hand;");
+        }
+
+        return dayRow;
+    }
+
+    private void updateLeftPanel(VBox leftPanel, String planTitle, ScheduleDayBean day, IntConsumer onStartSession) {
         leftPanel.getChildren().clear();
 
         BorderPane cardHeader = new BorderPane();
 
-        Label tag = new Label(session.getName());
+        Label tag = new Label(day.getSession().getName());
         tag.getStyleClass().addAll("badge", "dashboard-tag");
 
         VBox titleBox = new VBox(4);
         titleBox.setAlignment(Pos.CENTER);
-        Label mainTitle = new Label(isToday ? "IL PIANO DI OGGI" : titleDate.toUpperCase());
+        Label mainTitle = new Label(day.isToday() ? "IL PIANO DI OGGI" : titleDate(day.getDate()));
         mainTitle.getStyleClass().add(HEADING_H2_CLASS);
-        Label subTitle = new Label(plan.getName());
+        Label subTitle = new Label(planTitle);
         subTitle.getStyleClass().add("body-small");
         titleBox.getChildren().addAll(mainTitle, subTitle);
 
@@ -234,10 +201,10 @@ public class AthleteHomeView extends BorderPane {
 
         PlanViewer planViewer = new PlanViewer();
         planViewer.setEditable(false);
-        planViewer.setRootNode(session.getPlanRoot());
+        planViewer.setRootNode(day.getSession().getPlanRoot());
         planViewer.getStyleClass().add("dashboard-plan-viewer");
         VBox.setVgrow(planViewer, Priority.ALWAYS);
-        
+
         HBox footer = new HBox(15);
         footer.setAlignment(Pos.CENTER_RIGHT);
 
@@ -245,7 +212,7 @@ public class AthleteHomeView extends BorderPane {
         btnStart.getStyleClass().add("button-primary");
         btnStart.setMaxWidth(Double.MAX_VALUE);
         HBox.setHgrow(btnStart, Priority.ALWAYS);
-        btnStart.setOnAction(e -> onStartSession.accept(absoluteDay));
+        btnStart.setOnAction(e -> onStartSession.accept(day.getAbsoluteDay()));
 
         footer.getChildren().add(btnStart);
 
@@ -285,7 +252,7 @@ public class AthleteHomeView extends BorderPane {
 
         HBox inputBox = new HBox(10);
         TextField codeInput = new TextField();
-        codeInput.setPromptText("Es. ABC123XYZ");
+        codeInput.setPromptText("Es. ABC1-XY2Z");
         codeInput.getStyleClass().add("text-field");
         HBox.setHgrow(codeInput, Priority.ALWAYS);
 
@@ -293,7 +260,7 @@ public class AthleteHomeView extends BorderPane {
         submitBtn.getStyleClass().add("button-primary");
         submitBtn.setOnAction(e -> {
             if (onSubmit != null && !codeInput.getText().isBlank()) {
-                onSubmit.accept(codeInput.getText().trim());
+                onSubmit.accept(codeInput.getText().trim()); // todo utilizzare ValidationUtils
             }
         });
 
@@ -301,5 +268,24 @@ public class AthleteHomeView extends BorderPane {
 
         card.getChildren().addAll(title, subtitle, inputBox);
         contentBox.getChildren().add(card);
+    }
+
+    // --- formattazione date ---
+
+    private static LocalDate toLocalDate(long epochMillis) {
+        return LocalDate.ofInstant(Instant.ofEpochMilli(epochMillis), ZoneOffset.UTC);
+    }
+
+    private static String monthAbbrev(LocalDate date) {
+        return date.getMonth().name().substring(0, 3);
+    }
+
+    private static String dowAbbrev(LocalDate date) {
+        return date.getDayOfWeek().name().substring(0, 3);
+    }
+
+    private static String titleDate(long epochMillis) {
+        LocalDate date = toLocalDate(epochMillis);
+        return (date.getDayOfMonth() + " " + monthAbbrev(date) + " " + dowAbbrev(date)).toUpperCase();
     }
 }

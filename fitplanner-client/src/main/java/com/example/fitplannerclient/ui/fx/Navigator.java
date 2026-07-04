@@ -2,6 +2,7 @@ package com.example.fitplannerclient.ui.fx;
 
 import com.example.fitplannerclient.bean.profile.ProfileBean;
 import com.example.fitplannerclient.context.UserSessionContext;
+import com.example.fitplannerclient.controller.profile.ProfileManager;
 import com.example.fitplannerclient.controller.session.SessionManager;
 import com.example.fitplannerclient.controller.session.SessionManager.LoginOutcome;
 import com.example.fitplannerclient.ui.fx.guicontroller.*;
@@ -40,8 +41,15 @@ public class Navigator {
         nextController.start();
     }
 
-    private HomeViewController createHomeController() {
-        return new HomeViewController(this, session().createProfileManager(), session().createWorkoutPlanManager(), guiManager);
+    private GuiController createHomeController() {
+        ProfileManager profileManager = session().createProfileManager();
+        ProfileBean profile = profileManager.getCacheProfileInfo();
+
+        // la home dipende dal tipo di profilo dell'utente
+        if (profile.getProfileType() == ProfileBean.ProfileType.TRAINER) {
+            return new TrainerHomeViewController(this, profileManager, guiManager);
+        }
+        return new AthleteHomeViewController(this, profileManager, session().createWorkoutPlanManager(), guiManager);
     }
 
     public void requireAuthentication(Runnable onSuccess) {

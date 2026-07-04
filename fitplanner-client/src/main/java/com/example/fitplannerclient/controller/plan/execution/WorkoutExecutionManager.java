@@ -62,8 +62,8 @@ public class WorkoutExecutionManager {
                     if (plan == null) throw new IllegalStateException("Nessun piano assegnato");
                     this.currentPlan = plan;
 
-                    int relativeDay = absoluteSessionDay % plan.getCycleLength();
-                    WorkoutSession targetSession = findTargetSession(plan, relativeDay);
+                    int cycleDay = absoluteSessionDay % plan.getCycleLength();
+                    WorkoutSession targetSession = findTargetSession(plan, cycleDay);
                     if (targetSession == null) {
                         throw new IllegalArgumentException("Sessione non trovata per il giorno specificato");
                     }
@@ -77,9 +77,9 @@ public class WorkoutExecutionManager {
                 });
     }
 
-    private WorkoutSession findTargetSession(WorkoutPlan plan, int workoutSessionDay) {
+    private WorkoutSession findTargetSession(WorkoutPlan plan, int cycleDay) {
         return plan.getSessions().stream()
-                .filter(s -> s.getDay() == workoutSessionDay)
+                .filter(s -> s.getDay() == cycleDay)
                 .findFirst()
                 .orElse(null);
     }

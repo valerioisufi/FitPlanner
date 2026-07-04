@@ -9,21 +9,24 @@ public class WorkoutScheduleDTO {
     private long cycleStartDate;
     private long cycleEndDate;
 
-    private int currentCycleDay;
+    /** Giorno assoluto (dall'inizio del piano) corrispondente a oggi */
+    private int todayAbsoluteDay;
 
-    private List<WorkoutState> workoutStates;
+    /** Un elemento per ogni giorno del ciclo corrente, in ordine */
+    private List<ScheduleDayDTO> days;
 
-    private WorkoutSessionDTO nextSuggestedSession;
+    /** Giorno assoluto della prossima sessione da svolgere, -1 se nessuna */
+    private int suggestedAbsoluteDay = -1;
 
     public WorkoutScheduleDTO() {}
 
-    public WorkoutScheduleDTO(String planId, String planTitle, long cycleStartDate, long cycleEndDate, int currentCycleDay) {
+    public WorkoutScheduleDTO(String planId, String planTitle, long cycleStartDate, long cycleEndDate, int todayAbsoluteDay) {
         this.planId = planId;
         this.planTitle = planTitle;
 
         this.cycleStartDate = cycleStartDate;
         this.cycleEndDate = cycleEndDate;
-        this.currentCycleDay = currentCycleDay;
+        this.todayAbsoluteDay = todayAbsoluteDay;
     }
 
     public String getPlanId() {
@@ -58,28 +61,27 @@ public class WorkoutScheduleDTO {
         this.cycleEndDate = cycleEndDate;
     }
 
-    public int getCurrentCycleDay() {
-        return currentCycleDay;
+    public int getTodayAbsoluteDay() {
+        return todayAbsoluteDay;
     }
 
-    public void setCurrentCycleDay(int currentCycleDay) {
-        this.currentCycleDay = currentCycleDay;
+    public void setTodayAbsoluteDay(int todayAbsoluteDay) {
+        this.todayAbsoluteDay = todayAbsoluteDay;
     }
 
-    public List<WorkoutState> getWorkoutStates() {
-        return workoutStates;
+    public List<ScheduleDayDTO> getDays() {
+        return days;
     }
 
-    public void setWorkoutStates(List<WorkoutState> workoutStates) {
-        this.workoutStates = workoutStates;
+    public void setDays(List<ScheduleDayDTO> days) {
+        this.days = days;
     }
 
-    public WorkoutSessionDTO getNextSuggestedSession() {
-        return nextSuggestedSession;
+    public int getSuggestedAbsoluteDay() {
+        return suggestedAbsoluteDay;
     }
 
-    public void setNextSuggestedSession(WorkoutSessionDTO nextSuggestedSession) {
-        this.nextSuggestedSession = nextSuggestedSession;
+    public void setSuggestedAbsoluteDay(int suggestedAbsoluteDay) {
+        this.suggestedAbsoluteDay = suggestedAbsoluteDay;
     }
-
 }

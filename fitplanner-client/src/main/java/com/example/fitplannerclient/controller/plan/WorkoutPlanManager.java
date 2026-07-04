@@ -3,11 +3,16 @@ package com.example.fitplannerclient.controller.plan;
 import com.example.fitplannerclient.bean.plan.*;
 import com.example.fitplannerclient.entity.plan.WorkoutPlan;
 import com.example.fitplannerclient.entity.plan.WorkoutPlanSummary;
+import com.example.fitplannerclient.entity.plan.WorkoutSchedule;
 import com.example.fitplannerclient.entity.plan.WorkoutSession;
 import com.example.fitplannerclient.repository.ExerciseRepository;
 import com.example.fitplannerclient.repository.WorkoutPlanRepository;
 import com.example.fitplannerclient.controller.plan.mapper.PlanToBeanVisitor;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -63,31 +68,55 @@ public class WorkoutPlanManager {
         return planRepository.deletePlanAsync(planId);
     }
 
+    /**
+     * Calendario del ciclo corrente: ogni giorno
+     * porta data, stato, flag "oggi" e la sessione del piano che vi cade.
+     * Restituisce null se non c'è un piano assegnato
+     */
     public CompletableFuture<WorkoutScheduleBean> getCurrentCycleScheduleAsync() {
-        return planRepository.getCurrentCycleScheduleAsync().thenApply(schedule -> {
-            if (schedule == null) return null;
-            WorkoutScheduleBean bean = new WorkoutScheduleBean();
-            bean.setPlanId(schedule.planId());
-            bean.setPlanTitle(schedule.planTitle());
-            bean.setCycleStartDate(schedule.cycleStartDate());
-            bean.setCycleEndDate(schedule.cycleEndDate());
-            bean.setCurrentCycleDay(schedule.currentCycleDay());
-            bean.setWorkoutStates(schedule.workoutStates().stream()
-                    .map(state -> WorkoutState.valueOf(state.name()))
-                    .toList());
-            bean.setNextSuggestedSession(mapSessionEntityToBean(schedule.nextSuggestedSession()));
-            return bean;
-        });
+        return planRepository.getCurrentCycleScheduleAsync()
+                .thenCombine(planRepository.getAssignedPlanAsync(), this::buildScheduleBean);
     }
 
-    public CompletableFuture<WorkoutSessionBean> getNextSuggestedSessionAsync() {
-        return planRepository.getCurrentCycleScheduleAsync()
-                .thenApply(schedule -> {
-                    if (schedule == null || schedule.nextSuggestedSession() == null) {
-                        return null;
-                    }
-                    return mapSessionEntityToBean(schedule.nextSuggestedSession());
-                });
+    private WorkoutScheduleBean buildScheduleBean(WorkoutSchedule schedule, WorkoutPlan plan) {
+        if (schedule == null || plan == null) return null;
+
+        WorkoutScheduleBean bean = new WorkoutScheduleBean();
+        bean.setPlanId(schedule.planId());
+        bean.setPlanTitle(schedule.planTitle());
+        bean.setCycleStartDate(schedule.cycleStartDate());
+        bean.setCycleEndDate(schedule.cycleEndDate());
+
+        LocalDate cycleStart = LocalDate.ofInstant(Instant.ofEpochMilli(schedule.cycleStartDate()), ZoneOffset.UTC);
+
+        List<ScheduleDayBean> days = new ArrayList<>();
+        int suggestedDayIndex = -1;
+
+        for (int i = 0; i < schedule.days().size(); i++) {
+            WorkoutSchedule.ScheduleDay day = schedule.days().get(i);
+
+            ScheduleDayBean dayBean = new ScheduleDayBean();
+            dayBean.setAbsoluteDay(day.absoluteDay());
+            dayBean.setDate(cycleStart.plusDays(i).atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli());
+            dayBean.setState(WorkoutState.valueOf(day.state().name()));
+            dayBean.setToday(day.absoluteDay() == schedule.todayAbsoluteDay());
+
+            if (day.state() != WorkoutSchedule.WorkoutState.REST) {
+                // il contenuto della sessione viene recuperato dal piano
+                int cycleDay = day.absoluteDay() % plan.getCycleLength();
+                dayBean.setSession(mapSessionEntityToBean(plan.getSessionByDay(cycleDay)));
+            }
+
+            if (day.absoluteDay() == schedule.suggestedAbsoluteDay() && dayBean.getSession() != null) {
+                suggestedDayIndex = i;
+            }
+
+            days.add(dayBean);
+        }
+
+        bean.setDays(days);
+        bean.setSuggestedDayIndex(suggestedDayIndex);
+        return bean;
     }
 
     // --- MAPPING HELPERS ---

@@ -9,11 +9,11 @@ public class WorkoutScheduleBean {
     private long cycleStartDate;
     private long cycleEndDate;
 
-    private int currentCycleDay;
+    /** Un elemento per ogni giorno del ciclo corrente, in ordine */
+    private List<ScheduleDayBean> days;
 
-    private List<WorkoutState> workoutStates;
-
-    private WorkoutSessionBean nextSuggestedSession;
+    /** Indice in days della prossima sessione da svolgere, -1 se nessuna */
+    private int suggestedDayIndex = -1;
 
     public WorkoutScheduleBean() {
         // Default constructor for bean
@@ -51,27 +51,19 @@ public class WorkoutScheduleBean {
         this.cycleEndDate = cycleEndDate;
     }
 
-    public int getCurrentCycleDay() {
-        return currentCycleDay;
+    public List<ScheduleDayBean> getDays() {
+        return days;
     }
 
-    public void setCurrentCycleDay(int currentCycleDay) {
-        this.currentCycleDay = currentCycleDay;
+    public void setDays(List<ScheduleDayBean> days) {
+        this.days = days;
     }
 
-    public List<WorkoutState> getWorkoutStates() {
-        return workoutStates;
+    public int getSuggestedDayIndex() {
+        return suggestedDayIndex;
     }
 
-    public void setWorkoutStates(List<WorkoutState> workoutStates) {
-        this.workoutStates = workoutStates;
-    }
-
-    public WorkoutSessionBean getNextSuggestedSession() {
-        return nextSuggestedSession;
-    }
-
-    public void setNextSuggestedSession(WorkoutSessionBean nextSuggestedSession) {
-        this.nextSuggestedSession = nextSuggestedSession;
+    public void setSuggestedDayIndex(int suggestedDayIndex) {
+        this.suggestedDayIndex = suggestedDayIndex;
     }
 }

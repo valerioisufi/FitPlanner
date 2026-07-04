@@ -1,7 +1,7 @@
 package com.example.fitplannerserver.controller;
 
+import com.example.fitplannercommon.ScheduleDayDTO;
 import com.example.fitplannercommon.WorkoutScheduleDTO;
-import com.example.fitplannercommon.WorkoutSessionDTO;
 import com.example.fitplannercommon.WorkoutState;
 import com.example.fitplannerserver.dao.SessionLogDao;
 import com.example.fitplannerserver.dao.WorkoutPlanDao;
@@ -46,8 +46,8 @@ public class WorkoutScheduleController {
 
             LocalDate today = LocalDate.now(ZoneOffset.UTC);
 
-            int currentDay = activePlan.calculateAbsoluteDay(today);
-            if (currentDay == -1) {
+            int todayAbsoluteDay = activePlan.calculateAbsoluteDay(today);
+            if (todayAbsoluteDay == -1) {
                 throw new ResourceNotFoundException("Piano non ancora iniziato");
             }
 
@@ -63,10 +63,10 @@ public class WorkoutScheduleController {
                     activePlan.getTitle(),
                     startMillis,
                     endMillis,
-                    currentDay
+                    todayAbsoluteDay
             );
 
-            buildCycleStates(schedule, activePlan, cycleLogs, today);
+            buildCycleDays(schedule, activePlan, cycleLogs, today);
 
             return schedule;
 
@@ -76,35 +76,35 @@ public class WorkoutScheduleController {
 
     }
 
-    // Popola gli stati di ogni giorno del ciclo corrente e individua la prossima sessione suggerita
-    private void buildCycleStates(WorkoutScheduleDTO schedule, WorkoutPlan activePlan, List<SessionLog> cycleLogs, LocalDate today) {
+    // Popola un elemento per ogni giorno del ciclo corrente e individua il giorno suggerito
+    private void buildCycleDays(WorkoutScheduleDTO schedule, WorkoutPlan activePlan, List<SessionLog> cycleLogs, LocalDate today) {
         int absoluteCycleStartDay = activePlan.calculateAbsoluteCycleStartDay(today);
         int absoluteCycleEndDay = activePlan.calculateAbsoluteCycleEndDay(today);
 
-        List<WorkoutState> states = new ArrayList<>();
-        WorkoutSessionDTO nextSuggested = null;
+        List<ScheduleDayDTO> days = new ArrayList<>();
+        int suggestedAbsoluteDay = -1;
 
         for (int absoluteDay = absoluteCycleStartDay; absoluteDay <= absoluteCycleEndDay; absoluteDay++) {
-            int relativeDayInCycle = absoluteDay % activePlan.getCycleLength();
-            WorkoutSession template = activePlan.getSession(relativeDayInCycle);
+            int cycleDay = absoluteDay % activePlan.getCycleLength();
+            WorkoutSession template = activePlan.getSession(cycleDay);
 
             if (template == null) {
-                states.add(WorkoutState.REST);
+                days.add(new ScheduleDayDTO(absoluteDay, WorkoutState.REST));
                 continue;
             }
 
             SessionLog.SessionStatus sessionStatus = findSessionStateForDay(cycleLogs, absoluteDay);
             WorkoutState workoutState = toWorkoutState(sessionStatus);
-            states.add(workoutState);
+            days.add(new ScheduleDayDTO(absoluteDay, workoutState));
 
-            if (nextSuggested == null && (workoutState == WorkoutState.TO_DO || workoutState == WorkoutState.IN_PROGRESS)) {
-                    nextSuggested = new WorkoutSessionDTO(template.getTitle(), template.getContent(), absoluteDay);
-                }
+            if (suggestedAbsoluteDay == -1 && (workoutState == WorkoutState.TO_DO || workoutState == WorkoutState.IN_PROGRESS)) {
+                suggestedAbsoluteDay = absoluteDay;
+            }
 
         }
 
-        schedule.setWorkoutStates(states);
-        schedule.setNextSuggestedSession(nextSuggested);
+        schedule.setDays(days);
+        schedule.setSuggestedAbsoluteDay(suggestedAbsoluteDay);
     }
 
     // Traduce lo stato di una sessione nello stato esposto al client.

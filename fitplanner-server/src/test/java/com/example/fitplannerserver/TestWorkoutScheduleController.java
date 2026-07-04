@@ -113,26 +113,26 @@ class TestWorkoutScheduleController {
         assertNotNull(schedule, "Lo schedule non deve essere nullo");
         assertEquals("plan-2", schedule.getPlanId());
         assertEquals("Forza e Ipertrofia", schedule.getPlanTitle());
-        assertEquals(2, schedule.getCurrentCycleDay()); // Poiché è iniziato 2 giorni fa
+        assertEquals(2, schedule.getTodayAbsoluteDay()); // Poiché è iniziato 2 giorni fa
 
-        // Verifico gli stati restituiti per i 7 giorni del ciclo
-        assertEquals(7, schedule.getWorkoutStates().size());
+        // Verifico i giorni restituiti per i 7 giorni del ciclo (primo ciclo: giorni assoluti 0..6)
+        assertEquals(7, schedule.getDays().size());
+        assertEquals(0, schedule.getDays().get(0).getAbsoluteDay());
+        assertEquals(6, schedule.getDays().get(6).getAbsoluteDay());
 
         // Day 0: Completato -> DONE
-        assertEquals(WorkoutState.DONE, schedule.getWorkoutStates().get(0));
+        assertEquals(WorkoutState.DONE, schedule.getDays().get(0).getState());
         // Day 1: Nessuna sessione nel piano -> REST
-        assertEquals(WorkoutState.REST, schedule.getWorkoutStates().get(1));
+        assertEquals(WorkoutState.REST, schedule.getDays().get(1).getState());
         // Day 2: Sessione presente, nessun log -> TO_DO
-        assertEquals(WorkoutState.TO_DO, schedule.getWorkoutStates().get(2));
+        assertEquals(WorkoutState.TO_DO, schedule.getDays().get(2).getState());
         // Day 3: Nessuna sessione -> REST
-        assertEquals(WorkoutState.REST, schedule.getWorkoutStates().get(3));
+        assertEquals(WorkoutState.REST, schedule.getDays().get(3).getState());
         // Day 4: Sessione presente, nessun log -> TO_DO
-        assertEquals(WorkoutState.TO_DO, schedule.getWorkoutStates().get(4));
+        assertEquals(WorkoutState.TO_DO, schedule.getDays().get(4).getState());
 
         // Verifico quale sia il prossimo allenamento suggerito
-        assertNotNull(schedule.getNextSuggestedSession());
-        assertEquals("Giorno 2", schedule.getNextSuggestedSession().getName());
-        assertEquals(2, schedule.getNextSuggestedSession().getDay());
+        assertEquals(2, schedule.getSuggestedAbsoluteDay());
     }
 
     @Test
