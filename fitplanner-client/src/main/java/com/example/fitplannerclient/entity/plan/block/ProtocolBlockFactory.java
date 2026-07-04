@@ -69,7 +69,7 @@ public class ProtocolBlockFactory {
     public ProtocolBlock createGiantSet() {
         ProtocolBlock block = new ProtocolBlock(
                 ProtocolBlockTypes.GIANT_SET.getSemanticType(),
-                List.of(new OnlyExercisesAllowedRule(), new NodeCountRangeRule(3, Integer.MAX_VALUE)),
+                List.of(new OnlyExercisesAllowedRule(), new NodeCountRangeRule(3, -1)),
                 null,
                 List.of(new WrapWithDecoratorRule(new LoopDecorator(null, "${GIANT_SET_ROUNDS}")))
         );
