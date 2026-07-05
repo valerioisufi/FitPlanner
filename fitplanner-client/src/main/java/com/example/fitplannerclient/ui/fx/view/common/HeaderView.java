@@ -119,6 +119,12 @@ public class HeaderView extends HBox {
 
     public void updateNotifications(List<String> notifications) {
         notificationContent.getChildren().clear();
+
+        if (notifications.isEmpty()) {
+            notificationContent.getChildren().add(new Label("Non sono presenti notifiche."));
+            return;
+        }
+
         for (String notif : notifications) {
             notificationContent.getChildren().add(new Label(notif));
         }
