@@ -96,7 +96,6 @@ public class BadgeComponent extends HBox {
         return new BadgeComponent(planNodeId, badgeType, name, value, color);
     }
 
-
     public enum BadgeType{
         MODIFIER, DECORATOR
     }
@@ -119,12 +118,9 @@ public class BadgeComponent extends HBox {
     }
 
     private static BadgeColor resolveModifierColor(String lower) {
-        if (lower.contains("set")) return BadgeColor.BLUE;
-        if (lower.contains("rep")) return BadgeColor.VIOLET;
-        if (lower.contains("weight") || lower.contains("distance")) return BadgeColor.YELLOW;
+        if (lower.contains("reps")) return BadgeColor.VIOLET;
+        if (lower.contains("weight")) return BadgeColor.YELLOW;
         if (lower.contains("rpe")) return BadgeColor.ORANGE;
-        if (lower.contains("rest")) return BadgeColor.GREEN;
-        if (lower.contains("tempo")) return BadgeColor.TEAL;
         if (lower.contains("tut")) return BadgeColor.CYAN;
         return BadgeColor.GRAY;
     }
