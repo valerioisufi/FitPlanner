@@ -22,7 +22,7 @@ class TestIntervalDecorator {
         DummyPlanNode child = new DummyPlanNode();
         child.setNextResult(PlanNodeState.RUNNING);
 
-        IntervalDecorator interval = new IntervalDecorator(child, "60000"); // 60s
+        IntervalDecorator interval = new IntervalDecorator(child, "60"); // 60s
         ExecutionContext context = new ExecutionContext();
         context.setTickDelta(1000); // passa 1 secondo
 
@@ -42,7 +42,7 @@ class TestIntervalDecorator {
         DummyPlanNode child = new DummyPlanNode();
         child.setNextResult(PlanNodeState.COMPLETED);
         
-        IntervalDecorator interval = new IntervalDecorator(child, "60000");
+        IntervalDecorator interval = new IntervalDecorator(child, "60");
         ExecutionContext context = new ExecutionContext();
         context.setTickDelta(10000); // l'esercizio ha impiegato 10s per finire
 
@@ -61,10 +61,10 @@ class TestIntervalDecorator {
         DummyPlanNode child = new DummyPlanNode();
         child.setNextResult(PlanNodeState.RUNNING);
 
-        IntervalDecorator interval = new IntervalDecorator(child, "500");
+        IntervalDecorator interval = new IntervalDecorator(child, "1");
         ExecutionContext context = new ExecutionContext();
 
-        context.setTickDelta(1000); 
+        context.setTickDelta(1500);
 
         // Act
         ExecutionResult result = interval.execute(context);
@@ -81,7 +81,7 @@ class TestIntervalDecorator {
         DummyPlanNode child = new DummyPlanNode();
         child.setNextResult(PlanNodeState.COMPLETED);
         
-        IntervalDecorator interval = new IntervalDecorator(child, "60000");
+        IntervalDecorator interval = new IntervalDecorator(child, "60");
         ExecutionContext context = new ExecutionContext();
         
         // finisce l'esercizio
@@ -104,7 +104,7 @@ class TestIntervalDecorator {
         DummyPlanNode child = new DummyPlanNode();
         child.setNextResult(PlanNodeState.COMPLETED);
         
-        IntervalDecorator interval = new IntervalDecorator(child, "60000");
+        IntervalDecorator interval = new IntervalDecorator(child, "60");
         ExecutionContext context = new ExecutionContext();
         
         context.setTickDelta(10000);
@@ -125,7 +125,7 @@ class TestIntervalDecorator {
         DummyPlanNode child = new DummyPlanNode();
         child.setNextResult(PlanNodeState.COMPLETED);
         
-        IntervalDecorator interval = new IntervalDecorator(child, "60000");
+        IntervalDecorator interval = new IntervalDecorator(child, "60");
         ExecutionContext context = new ExecutionContext();
         
         context.setTickDelta(0);
@@ -147,7 +147,7 @@ class TestIntervalDecorator {
         DummyPlanNode child = new DummyPlanNode();
         child.setNextResult(PlanNodeState.COMPLETED);
         
-        IntervalDecorator interval = new IntervalDecorator(child, "60000");
+        IntervalDecorator interval = new IntervalDecorator(child, "60");
         ExecutionContext context = new ExecutionContext();
         
         context.setTickDelta(0);

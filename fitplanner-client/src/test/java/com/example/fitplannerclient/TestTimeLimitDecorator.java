@@ -21,7 +21,7 @@ class TestTimeLimitDecorator {
         DummyPlanNode child = new DummyPlanNode();
         child.setNextResult(PlanNodeState.RUNNING);
 
-        TimeLimitDecorator timeLimit = new TimeLimitDecorator(child, "60000"); // 60s
+        TimeLimitDecorator timeLimit = new TimeLimitDecorator(child, "60"); // 60s
         ExecutionContext context = new ExecutionContext();
         context.setTickDelta(1000); // passa 1 secondo
 
@@ -41,10 +41,10 @@ class TestTimeLimitDecorator {
         DummyPlanNode child = new DummyPlanNode();
         child.setNextResult(PlanNodeState.RUNNING);
         
-        TimeLimitDecorator timeLimit = new TimeLimitDecorator(child, "500");
+        TimeLimitDecorator timeLimit = new TimeLimitDecorator(child, "1");
         ExecutionContext context = new ExecutionContext();
 
-        context.setTickDelta(1000); 
+        context.setTickDelta(1500);
 
         // Act
         ExecutionResult result = timeLimit.execute(context);
@@ -61,7 +61,7 @@ class TestTimeLimitDecorator {
         DummyPlanNode child = new DummyPlanNode();
         child.setNextResult(PlanNodeState.COMPLETED);
         
-        TimeLimitDecorator timeLimit = new TimeLimitDecorator(child, "60000");
+        TimeLimitDecorator timeLimit = new TimeLimitDecorator(child, "60");
         ExecutionContext context = new ExecutionContext();
         context.setTickDelta(5000);
 
@@ -79,7 +79,7 @@ class TestTimeLimitDecorator {
         DummyPlanNode child = new DummyPlanNode();
         child.setNextResult(PlanNodeState.SKIPPED);
         
-        TimeLimitDecorator timeLimit = new TimeLimitDecorator(child, "60000");
+        TimeLimitDecorator timeLimit = new TimeLimitDecorator(child, "60");
         ExecutionContext context = new ExecutionContext();
 
         // Act
@@ -93,7 +93,7 @@ class TestTimeLimitDecorator {
     void TestExecuteChildReverts() {
         // Arrange
         DummyPlanNode child = new DummyPlanNode();
-        TimeLimitDecorator timeLimit = new TimeLimitDecorator(child, "60000");
+        TimeLimitDecorator timeLimit = new TimeLimitDecorator(child, "60");
         ExecutionContext context = new ExecutionContext();
 
         child.setNextResult(PlanNodeState.RUNNING);

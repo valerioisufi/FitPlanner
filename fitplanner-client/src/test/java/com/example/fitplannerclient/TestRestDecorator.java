@@ -22,7 +22,7 @@ class TestRestDecorator {
         DummyPlanNode child = new DummyPlanNode();
         child.setNextResult(PlanNodeState.RUNNING, 1000);
 
-        RestDecorator rest = new RestDecorator(child, "30000");
+        RestDecorator rest = new RestDecorator(child, "30");
 
         ExecutionContext context = new ExecutionContext();
         context.setTickDelta(100);
@@ -42,7 +42,7 @@ class TestRestDecorator {
         DummyPlanNode child = new DummyPlanNode();
         child.setNextResult(PlanNodeState.COMPLETED);
 
-        RestDecorator rest = new RestDecorator(child, "10000");
+        RestDecorator rest = new RestDecorator(child, "10");
 
         ExecutionContext context = new ExecutionContext();
         context.setTickDelta(2000);
@@ -79,7 +79,7 @@ class TestRestDecorator {
     void TestExecuteWaitingConsumesDelta() {
         // Arrange
         DummyPlanNode child = new DummyPlanNode();
-        RestDecorator rest = new RestDecorator(child, "5000");
+        RestDecorator rest = new RestDecorator(child, "5");
         ExecutionContext context = new ExecutionContext();
 
         child.setNextResult(PlanNodeState.COMPLETED);
@@ -100,7 +100,7 @@ class TestRestDecorator {
     void TestExecuteWaitingCompletesWhenDeltaIsEnough() {
         // Arrange
         DummyPlanNode child = new DummyPlanNode();
-        RestDecorator rest = new RestDecorator(child, "2000");
+        RestDecorator rest = new RestDecorator(child, "2");
         ExecutionContext context = new ExecutionContext();
 
         child.setNextResult(PlanNodeState.COMPLETED);
@@ -120,7 +120,7 @@ class TestRestDecorator {
     void TestExecuteWaitingSkipNextSignal() {
         // Arrange
         DummyPlanNode child = new DummyPlanNode();
-        RestDecorator rest = new RestDecorator(child, "5000");
+        RestDecorator rest = new RestDecorator(child, "5");
         ExecutionContext context = new ExecutionContext();
         
         child.setNextResult(PlanNodeState.COMPLETED);
@@ -142,7 +142,7 @@ class TestRestDecorator {
     void TestExecuteWaitingSkipPreviousSignal() {
         // Arrange
         DummyPlanNode child = new DummyPlanNode();
-        RestDecorator rest = new RestDecorator(child, "5000");
+        RestDecorator rest = new RestDecorator(child, "5");
         ExecutionContext context = new ExecutionContext();
         
         child.setNextResult(PlanNodeState.COMPLETED);
