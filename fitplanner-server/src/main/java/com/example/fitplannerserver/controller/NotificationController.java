@@ -73,7 +73,11 @@ public class NotificationController {
             }
 
             // Remove dead connections
-            userEmitters.removeAll(deadEmitters); // todo rimuovere anche lista da emitters se vuota
+            userEmitters.removeAll(deadEmitters);
+            if (userEmitters.isEmpty()) {
+                this.emitters.remove(userId);
+            }
         }
     }
+
 }

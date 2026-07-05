@@ -60,6 +60,8 @@ public class NotificationRepository {
     }
 
     private void processNotification(String type, String message) {
+        if ("INIT".equals(type)) return;
+
         notifications.add(message);
         for (NotificationObserver observer : observers) {
             observer.onNotificationReceived();

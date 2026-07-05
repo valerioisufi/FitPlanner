@@ -60,6 +60,7 @@ public class HeaderViewController implements GuiController {
             Platform.runLater(() -> headerView.updateNotifications(notificationManager.getNotifications()));
 
         notificationManager.attachObserver(notificationObserver);
+        notificationObserver.onNotificationReceived();
     }
 
     @Override
