@@ -3,7 +3,6 @@ package com.example.fitplannerclient.ui.fx.guicontroller;
 import com.example.fitplannerclient.bean.profile.ProfileBean;
 import com.example.fitplannerclient.controller.log.WorkoutHistoryManager;
 import com.example.fitplannerclient.controller.plan.WorkoutPlanManager;
-import com.example.fitplannerclient.controller.profile.ProfileManager;
 import com.example.fitplannerclient.ui.fx.GuiController;
 import com.example.fitplannerclient.ui.fx.GuiManager;
 import com.example.fitplannerclient.ui.fx.Navigator;
@@ -12,6 +11,8 @@ import javafx.application.Platform;
 import javafx.scene.layout.Pane;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+
+import com.example.fitplannerclient.controller.session.NotificationManager;
 
 public class AthleteDashboardViewController implements GuiController {
 
@@ -23,14 +24,14 @@ public class AthleteDashboardViewController implements GuiController {
     private final WorkoutHistoryManager historyManager;
     private final GuiManager guiManager;
 
-    public AthleteDashboardViewController(Navigator navigator, ProfileBean athlete, ProfileManager profileManager, WorkoutPlanManager planManager, WorkoutHistoryManager historyManager, GuiManager guiManager) {
+    public AthleteDashboardViewController(Navigator navigator, GuiManager guiManager, ProfileBean athlete, WorkoutPlanManager planManager, WorkoutHistoryManager historyManager, NotificationManager notificationManager) {
         this.athlete = athlete;
         this.planManager = planManager;
         this.historyManager = historyManager;
         this.guiManager = guiManager;
 
         // Header view using index -1 (nessuna tab evidenziata) o index 0 (Home)
-        this.headerViewController = new HeaderViewController(navigator, 0, profileManager);
+        this.headerViewController = new HeaderViewController(navigator, notificationManager, 0, HeaderViewController.Type.ATHLETE);
         this.view = new AthleteDashboardView();
         this.view.setHeaderView(this.headerViewController.getView());
 
@@ -40,6 +41,7 @@ public class AthleteDashboardViewController implements GuiController {
 
     @Override
     public void start() {
+        headerViewController.start();
         view.setAthleteProfile(athlete);
         progressController.start();
 
@@ -65,7 +67,8 @@ public class AthleteDashboardViewController implements GuiController {
 
     @Override
     public void stop() {
-        // Nessuna risorsa da rilasciare
+        headerViewController.stop();
+        progressController.stop();
     }
 
     @Override

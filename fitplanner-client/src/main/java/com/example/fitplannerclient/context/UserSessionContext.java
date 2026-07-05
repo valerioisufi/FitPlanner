@@ -6,12 +6,15 @@ import com.example.fitplannerclient.controller.plan.WorkoutPlanManager;
 import com.example.fitplannerclient.controller.plan.editor.EditWorkoutPlanManager;
 import com.example.fitplannerclient.controller.plan.execution.WorkoutExecutionManager;
 import com.example.fitplannerclient.controller.profile.ProfileManager;
+import com.example.fitplannerclient.controller.session.NotificationManager;
 import com.example.fitplannerclient.entity.profile.Profile;
 import com.example.fitplannerclient.repository.ExerciseRepository;
 import com.example.fitplannerclient.repository.ProfileRepository;
 import com.example.fitplannerclient.repository.SessionLogRepository;
 import com.example.fitplannerclient.repository.WorkoutPlanRepository;
+import com.example.fitplannerclient.repository.NotificationRepository;
 import com.example.fitplannerclient.service.api.ExerciseLibraryApi;
+import com.example.fitplannerclient.service.api.NotificationApi;
 import com.example.fitplannerclient.service.api.ProfileApi;
 import com.example.fitplannerclient.service.api.SessionLogApi;
 import com.example.fitplannerclient.service.api.WorkoutPlanApi;
@@ -30,17 +33,20 @@ public class UserSessionContext {
     private final ExerciseRepository exerciseRepository;
     private final WorkoutPlanRepository workoutPlanRepository;
     private final SessionLogRepository sessionLogRepository;
+    private final NotificationRepository notificationRepository;
 
     UserSessionContext(
             ProfileApi profileApi,
             ExerciseLibraryApi exerciseLibraryApi,
             WorkoutPlanApi workoutPlanApi,
-            SessionLogApi sessionLogApi
+            SessionLogApi sessionLogApi,
+            NotificationApi notificationApi
     ) {
         this.profileRepository = new ProfileRepository(profileApi);
         this.exerciseRepository = new ExerciseRepository(exerciseLibraryApi);
         this.workoutPlanRepository = new WorkoutPlanRepository(workoutPlanApi);
         this.sessionLogRepository = new SessionLogRepository(sessionLogApi);
+        this.notificationRepository = new NotificationRepository(notificationApi);
     }
 
     /**
@@ -82,5 +88,16 @@ public class UserSessionContext {
 
     public WorkoutExecutionManager createWorkoutExecutionManager() {
         return new WorkoutExecutionManager(workoutPlanRepository, sessionLogRepository, exerciseRepository);
+    }
+
+    public NotificationManager createNotificationManager() {
+        return new NotificationManager(notificationRepository);
+    }
+
+    /**
+     * Chiude la sessione e libera le risorse pendenti (connessioni in background).
+     */
+    public void terminate() {
+        notificationRepository.stopListening();
     }
 }

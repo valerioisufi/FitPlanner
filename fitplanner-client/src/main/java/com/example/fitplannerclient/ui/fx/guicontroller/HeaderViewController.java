@@ -1,37 +1,35 @@
 package com.example.fitplannerclient.ui.fx.guicontroller;
 
-import com.example.fitplannerclient.bean.profile.ProfileBean;
-import com.example.fitplannerclient.controller.profile.ProfileManager;
+import com.example.fitplannerclient.controller.session.NotificationManager;
+import com.example.fitplannerclient.controller.session.NotificationObserver;
+import com.example.fitplannerclient.ui.fx.GuiController;
 import com.example.fitplannerclient.ui.fx.Navigator;
 import com.example.fitplannerclient.ui.fx.view.common.HeaderView;
-import javafx.geometry.Side;
-import javafx.scene.Node;
-import javafx.scene.Parent;
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.CustomMenuItem;
-import javafx.scene.control.Label;
-import javafx.scene.control.MenuItem;
-import javafx.scene.layout.VBox;
+import javafx.application.Platform;
+import javafx.scene.layout.Pane;
 
-import java.util.ArrayList;
 import java.util.List;
 
-public class HeaderViewController {
+public class HeaderViewController implements GuiController {
     private final HeaderView headerView;
+
     private final Navigator navigator;
+    private final NotificationManager notificationManager;
 
-    private ContextMenu notificationMenu;
-    private ContextMenu accountMenu;
+    private NotificationObserver notificationObserver;
 
-    public HeaderViewController(Navigator navigator, int activeIndex, ProfileManager profileManager) {
+    public HeaderViewController(Navigator navigator, NotificationManager notificationManager, int activeIndex, Type type) {
         this.navigator = navigator;
-        ProfileBean profile = profileManager.getCacheProfileInfo();
-        boolean isTrainer = profile != null && profile.getProfileType() == ProfileBean.ProfileType.TRAINER;
+        this.notificationManager = notificationManager;
 
-        List<HeaderView.MenuConfig> navItems = isTrainer ? getTrainerHeaderItems() : getAthleteHeaderItems();
-        List<HeaderView.MenuConfig> menuItems = getMenuItems();
+        List<HeaderView.MenuConfig> navItems = type == Type.TRAINER ? getTrainerHeaderItems() : getAthleteHeaderItems();
 
-        headerView = new HeaderView(navItems, activeIndex, menuItems);
+        headerView = new HeaderView(navItems, activeIndex);
+
+        headerView.setupAccountMenu(
+                navigator::goToProfile,
+                navigator::logout
+        );
     }
 
     private List<HeaderView.MenuConfig> getAthleteHeaderItems() {
@@ -50,73 +48,26 @@ public class HeaderViewController {
         );
     }
 
-    private List<HeaderView.MenuConfig> getMenuItems() {
-        List<HeaderView.MenuConfig> menuItems = new ArrayList<>();
-
-        // Add notification menu config, pointing to our new method
-        menuItems.add(new HeaderView.MenuConfig(null, "notification-icon", this::showNotificationMenu));
-
-        menuItems.add(new HeaderView.MenuConfig(null, "profile-icon", this::showAccountMenu));
-
-        return menuItems;
-    }
-
-    private void showNotificationMenu(Node anchorNode) {
-        if (notificationMenu != null && notificationMenu.isShowing()) {
-            notificationMenu.hide();
-            return;
-        }
-
-        // lazy Initialization
-        if (notificationMenu == null) {
-            notificationMenu = new ContextMenu();
-
-            notificationMenu.setAutoFix(true);   // Prevents it from going off the physical screen
-            notificationMenu.setAutoHide(true);  // Closes automatically when clicking elsewhere
-
-            VBox content = new VBox(10);
-            content.setStyle("-fx-padding: 10; -fx-background-color: white;");
-
-            Label notif1 = new Label("Il tuo allenatore ha aggiornato la scheda");
-            Label notif2 = new Label("Nuovo messaggio da Marco");
-
-            content.getChildren().addAll(notif1, notif2);
-
-            CustomMenuItem customItem = new CustomMenuItem(content);
-            customItem.setHideOnClick(false);
-            notificationMenu.getItems().add(customItem);
-        }
-
-        // 4. Show the menu first so JavaFX calculates its layout bounds
-        notificationMenu.show(anchorNode, Side.BOTTOM, 0, 5);
-
-        // 5. Shift the menu to the left so it aligns with the right edge of the icon
-    }
-
-    private void showAccountMenu(Node anchorNode) {
-        if (accountMenu != null && accountMenu.isShowing()) {
-            accountMenu.hide();
-            return;
-        }
-
-        if (accountMenu == null) {
-            accountMenu = new ContextMenu();
-            accountMenu.setAutoFix(true);
-            accountMenu.setAutoHide(true);
-
-            MenuItem profileItem = new MenuItem("Profilo");
-            profileItem.setOnAction(e -> navigator.goToProfile());
-
-            MenuItem logoutItem = new MenuItem("Logout");
-            logoutItem.setOnAction(e -> navigator.logout());
-
-            accountMenu.getItems().addAll(profileItem, logoutItem);
-        }
-
-        accountMenu.show(anchorNode, Side.BOTTOM, 0, 5);
-    }
-
-    public Parent getView() {
+    @Override
+    public Pane getView() {
         return headerView;
+    }
+
+    @Override
+    public void start() {
+        notificationObserver = () ->
+            // Update the notification menu with the new message
+            Platform.runLater(() -> headerView.updateNotifications(notificationManager.getNotifications()));
+
+        notificationManager.attachObserver(notificationObserver);
+    }
+
+    @Override
+    public void stop() {
+        notificationManager.detachObserver(notificationObserver);
+    }
+
+    public enum Type {
+        ATHLETE, TRAINER
     }
 }

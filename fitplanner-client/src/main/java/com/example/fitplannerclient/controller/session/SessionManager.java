@@ -57,10 +57,15 @@ public class SessionManager {
         return candidate.loadProfileAsync()
                 .thenApply(profile -> {
                     if (session != null && session.getUserId().equals(profile.getUserId())) {
-                        // stessa identità: il contesto esistente e le sue cache restano validi
+                        // stessa identità: il contesto già esistente e le sue cache restano validi
+                        candidate.terminate(); // scarta il candidato
                         return LoginOutcome.SAME_USER;
                     }
 
+                    if (session != null) {
+                        session.terminate(); // chiudi la vecchia sessione se stiamo cambiando utente
+                    }
+                    
                     session = candidate;
                     return LoginOutcome.NEW_USER;
                 });
@@ -84,7 +89,10 @@ public class SessionManager {
 
     public void logout() {
         tokenStore.clear();
-        session = null; // tutte le cache specifiche dell'utente non devono essere mantenute
+        if (session != null) {
+            session.terminate();
+            session = null; // tutte le cache specifiche dell'utente non devono essere mantenute
+        }
     }
 
     /**

@@ -47,9 +47,9 @@ public class Navigator {
 
         // la home dipende dal tipo di profilo dell'utente
         if (profile.getProfileType() == ProfileBean.ProfileType.TRAINER) {
-            return new TrainerHomeViewController(this, profileManager, guiManager);
+            return new TrainerHomeViewController(this, guiManager, profileManager, session().createNotificationManager());
         }
-        return new AthleteHomeViewController(this, profileManager, session().createWorkoutPlanManager(), guiManager);
+        return new AthleteHomeViewController(this, guiManager, profileManager, session().createWorkoutPlanManager(), session().createNotificationManager());
     }
 
     public void requireAuthentication(Runnable onSuccess) {
@@ -102,66 +102,62 @@ public class Navigator {
     }
 
     public void goHome() {
-        if (sessionManager.isAuthenticated()) {
+        if (sessionManager.isAuthenticated()) { // l'utente è già autenticato
             Platform.runLater(() -> navigateTo(createHomeController()));
-        } else if (sessionManager.hasPersistedTokens()) {
+        } else if (sessionManager.hasPersistedTokens()) { // l'utente possiede dei token con cui provare ad autenticarsi
             sessionManager.resumeSessionAsync()
                     .thenAccept(outcome -> Platform.runLater(() -> navigateTo(createHomeController())))
                     .exceptionally(ex -> {
                         requireAuthentication(null);
                         return null;
                     });
-        } else {
+        } else { // l'utente deve fare il login o registrarsi
             requireAuthentication(null);
         }
     }
 
     public void goToProfile() {
-        if (!sessionManager.isAuthenticated()) {
-            goHome();
-            return;
-        }
-        ProfileViewController profileController = new ProfileViewController(this, session().createProfileManager(), guiManager);
+        ProfileViewController profileController = new ProfileViewController(this, guiManager, session().createProfileManager(), session().createNotificationManager());
         Platform.runLater(() -> navigateTo(profileController));
     }
 
     public void goToExerciseLibrary() {
-        ExerciseLibraryViewController controller = new ExerciseLibraryViewController(this, guiManager, session().createExerciseLibraryManager(), session().createProfileManager());
+        ExerciseLibraryViewController controller = new ExerciseLibraryViewController(this, guiManager, session().createExerciseLibraryManager(), session().createNotificationManager());
         Platform.runLater(() -> navigateTo(controller));
     }
 
     public void goToPlanManagement() {
-        PlanManagementViewController controller = new PlanManagementViewController(this, session().createWorkoutPlanManager(), session().createProfileManager(), guiManager);
+        PlanManagementViewController controller = new PlanManagementViewController(this, guiManager, session().createWorkoutPlanManager(), session().createProfileManager(), session().createNotificationManager());
         Platform.runLater(() -> navigateTo(controller));
     }
 
     public void goToWorkoutPlanEditor(String planIdToEdit, boolean copyOfExisting) {
-        WorkoutPlanEditorViewController controller = new WorkoutPlanEditorViewController(this, planIdToEdit, copyOfExisting, session().createEditWorkoutPlanManager(), session().createExerciseLibraryManager(), guiManager);
+        WorkoutPlanEditorViewController controller = new WorkoutPlanEditorViewController(this, guiManager, planIdToEdit, copyOfExisting, session().createEditWorkoutPlanManager(), session().createExerciseLibraryManager());
         Platform.runLater(() -> navigateTo(controller));
     }
 
     public void goToWorkoutExecution(String planId, int sessionDay) {
-        WorkoutExecutionViewController controller = new WorkoutExecutionViewController(this, planId, sessionDay, session().createWorkoutExecutionManager(), session().createExerciseLibraryManager(), guiManager);
+        WorkoutExecutionViewController controller = new WorkoutExecutionViewController(this, guiManager, planId, sessionDay, session().createWorkoutExecutionManager());
         Platform.runLater(() -> navigateTo(controller));
     }
 
     public void goToStatistics() {
         ProgressViewController controller = new ProgressViewController(
                 this,
+                guiManager,
                 session().createWorkoutHistoryManager(),
-                session().createProfileManager(),
-                guiManager);
+                session().createNotificationManager());
         Platform.runLater(() -> navigateTo(controller));
     }
 
     public void goToAthleteDashboard(ProfileBean athlete) {
         AthleteDashboardViewController controller = new AthleteDashboardViewController(
                 this,
+                guiManager,
                 athlete,
-                session().createProfileManager(),
                 session().createWorkoutPlanManager(),
                 session().createWorkoutHistoryManagerFor(athlete.getUserId()),
-                guiManager);
+                session().createNotificationManager());
         Platform.runLater(() -> navigateTo(controller));
     }
 }

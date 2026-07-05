@@ -2,7 +2,6 @@ package com.example.fitplannerclient.ui.fx.guicontroller;
 
 import com.example.fitplannerclient.bean.exercise.ExerciseDescriptionBean;
 import com.example.fitplannerclient.controller.exercise.ExerciseLibraryManager;
-import com.example.fitplannerclient.controller.profile.ProfileManager;
 import com.example.fitplannerclient.ui.fx.GuiController;
 import com.example.fitplannerclient.ui.fx.GuiManager;
 import com.example.fitplannerclient.ui.fx.Navigator;
@@ -11,6 +10,8 @@ import com.example.fitplannerclient.util.ValidationUtils;
 import javafx.application.Platform;
 import javafx.scene.layout.Pane;
 
+import com.example.fitplannerclient.controller.session.NotificationManager;
+
 public class ExerciseLibraryViewController implements GuiController {
 
     private final ExerciseLibraryView view;
@@ -18,10 +19,10 @@ public class ExerciseLibraryViewController implements GuiController {
     private final GuiManager guiManager;
     private final ExerciseLibraryManager manager;
 
-    public ExerciseLibraryViewController(Navigator navigator, GuiManager guiManager, ExerciseLibraryManager manager, ProfileManager profileManager) {
+    public ExerciseLibraryViewController(Navigator navigator, GuiManager guiManager, ExerciseLibraryManager manager, NotificationManager notificationManager) {
         this.guiManager = guiManager;
         this.manager = manager;
-        this.headerViewController = new HeaderViewController(navigator, 1, profileManager);
+        this.headerViewController = new HeaderViewController(navigator, notificationManager, 1, HeaderViewController.Type.TRAINER);
         this.view = new ExerciseLibraryView();
 
         this.view.setHeaderView(this.headerViewController.getView());
@@ -57,11 +58,13 @@ public class ExerciseLibraryViewController implements GuiController {
 
     @Override
     public void start() {
+        headerViewController.start();
         loadExercises();
     }
 
     @Override
     public void stop() {
+        headerViewController.stop();
         this.guiManager.hideModal();
     }
 

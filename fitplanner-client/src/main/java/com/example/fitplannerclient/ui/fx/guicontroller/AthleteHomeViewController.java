@@ -10,6 +10,8 @@ import com.example.fitplannerclient.ui.fx.view.dashboard.AthleteHomeView;
 import javafx.application.Platform;
 import javafx.scene.layout.Pane;
 
+import com.example.fitplannerclient.controller.session.NotificationManager;
+
 public class AthleteHomeViewController implements GuiController {
     private final AthleteHomeView view;
     private final HeaderViewController headerViewController;
@@ -18,12 +20,12 @@ public class AthleteHomeViewController implements GuiController {
     private final WorkoutPlanManager planManager;
     private final GuiManager guiManager;
 
-    public AthleteHomeViewController(Navigator navigator, ProfileManager profileManager, WorkoutPlanManager planManager, GuiManager guiManager) {
+    public AthleteHomeViewController(Navigator navigator, GuiManager guiManager, ProfileManager profileManager, WorkoutPlanManager planManager, NotificationManager notificationManager) {
         this.navigator = navigator;
         this.profileManager = profileManager;
         this.planManager = planManager;
         this.guiManager = guiManager;
-        this.headerViewController = new HeaderViewController(navigator, 0, profileManager); // Active Index 0 is Home
+        this.headerViewController = new HeaderViewController(navigator, notificationManager, 0, HeaderViewController.Type.ATHLETE); // Active Index 0 is Home
         this.view = new AthleteHomeView(headerViewController.getView());
     }
 
@@ -34,6 +36,7 @@ public class AthleteHomeViewController implements GuiController {
 
     @Override
     public void start() {
+        headerViewController.start();
         ProfileBean profile = profileManager.getCacheProfileInfo();
         view.setWelcomeMessage("Benvenuto, " + profile.getFirstName(), "Supera i tuoi limiti oggi!");
 
@@ -83,6 +86,6 @@ public class AthleteHomeViewController implements GuiController {
 
     @Override
     public void stop() {
-        // Metodo intenzionalmente vuoto
+        headerViewController.stop();
     }
 }

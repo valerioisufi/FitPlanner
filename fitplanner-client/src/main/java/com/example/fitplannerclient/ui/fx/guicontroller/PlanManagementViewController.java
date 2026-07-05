@@ -14,6 +14,8 @@ import javafx.scene.layout.Pane;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.example.fitplannerclient.controller.session.NotificationManager;
+
 public class PlanManagementViewController implements GuiController {
 
     private final PlanManagementView view;
@@ -26,13 +28,13 @@ public class PlanManagementViewController implements GuiController {
 
     private List<ProfileBean> athletesCache = new ArrayList<>();
 
-    public PlanManagementViewController(Navigator navigator, WorkoutPlanManager planManager, ProfileManager profileManager, GuiManager guiManager) {
+    public PlanManagementViewController(Navigator navigator, GuiManager guiManager, WorkoutPlanManager planManager, ProfileManager profileManager, NotificationManager notificationManager) {
         this.navigator = navigator;
         this.planManager = planManager;
         this.profileManager = profileManager;
         this.guiManager = guiManager;
 
-        this.headerViewController = new HeaderViewController(navigator, 2, profileManager);
+        this.headerViewController = new HeaderViewController(navigator, notificationManager, 2, HeaderViewController.Type.TRAINER);
         this.view = new PlanManagementView();
         this.view.setHeaderView(this.headerViewController.getView());
 
@@ -113,6 +115,7 @@ public class PlanManagementViewController implements GuiController {
 
     @Override
     public void start() {
+        headerViewController.start();
         loadPlans();
         
         // Pre-fetch athletes
@@ -133,6 +136,7 @@ public class PlanManagementViewController implements GuiController {
 
     @Override
     public void stop() {
+        headerViewController.stop();
         guiManager.hideModal();
     }
 

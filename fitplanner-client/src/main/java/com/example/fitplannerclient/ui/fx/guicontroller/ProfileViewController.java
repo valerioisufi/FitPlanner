@@ -10,6 +10,8 @@ import javafx.application.Platform;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 
+import com.example.fitplannerclient.controller.session.NotificationManager;
+
 public class ProfileViewController implements GuiController {
 
     private final BorderPane mainPane;
@@ -18,10 +20,15 @@ public class ProfileViewController implements GuiController {
     private final ProfileManager profileManager;
     private final GuiManager guiManager;
 
-    public ProfileViewController(Navigator navigator, ProfileManager profileManager, GuiManager guiManager) {
+    public ProfileViewController(Navigator navigator, GuiManager guiManager, ProfileManager profileManager, NotificationManager notificationManager) {
         this.profileManager = profileManager;
         this.guiManager = guiManager;
-        this.headerViewController = new HeaderViewController(navigator, -1, profileManager);
+
+        ProfileBean profile = profileManager.getCacheProfileInfo();
+        HeaderViewController.Type type = profile.getProfileType() == ProfileBean.ProfileType.TRAINER 
+            ? HeaderViewController.Type.TRAINER : HeaderViewController.Type.ATHLETE;
+
+        this.headerViewController = new HeaderViewController(navigator, notificationManager, -1, type);
         this.profileView = new ProfileView();
 
         this.mainPane = new BorderPane();
@@ -31,6 +38,7 @@ public class ProfileViewController implements GuiController {
 
     @Override
     public void start() {
+        headerViewController.start();
         ProfileBean profile = profileManager.getCacheProfileInfo();
         profileView.setProfileData(
                 profile.getFirstName(),
@@ -82,6 +90,6 @@ public class ProfileViewController implements GuiController {
 
     @Override
     public void stop() {
-        // Metodo intenzionalmente vuoto, nessuna risorsa da rilasciare
+        headerViewController.stop();
     }
 }

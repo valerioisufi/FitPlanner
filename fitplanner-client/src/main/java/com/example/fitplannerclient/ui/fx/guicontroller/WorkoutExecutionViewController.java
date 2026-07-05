@@ -49,8 +49,9 @@ public class WorkoutExecutionViewController implements GuiController, WorkoutExe
     private Timeline restTimeline;
     private int remainingRestSeconds;
 
-    public WorkoutExecutionViewController(Navigator navigator, String planId, int sessionDay, WorkoutExecutionManager executionManager, ExerciseLibraryManager exerciseLibraryManager, GuiManager guiManager) {
+    public WorkoutExecutionViewController(Navigator navigator, GuiManager guiManager, String planId, int sessionDay, WorkoutExecutionManager executionManager) {
         this.navigator = navigator;
+        this.guiManager = guiManager;
         this.planId = planId;
         this.sessionDay = sessionDay;
         this.executionManager = executionManager;

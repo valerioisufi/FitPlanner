@@ -9,6 +9,8 @@ import com.example.fitplannerclient.ui.fx.view.dashboard.TrainerHomeView;
 import javafx.application.Platform;
 import javafx.scene.layout.Pane;
 
+import com.example.fitplannerclient.controller.session.NotificationManager;
+
 public class TrainerHomeViewController implements GuiController {
     private final TrainerHomeView view;
     private final HeaderViewController headerViewController;
@@ -16,11 +18,11 @@ public class TrainerHomeViewController implements GuiController {
     private final ProfileManager profileManager;
     private final GuiManager guiManager;
 
-    public TrainerHomeViewController(Navigator navigator, ProfileManager profileManager, GuiManager guiManager) {
+    public TrainerHomeViewController(Navigator navigator, GuiManager guiManager, ProfileManager profileManager, NotificationManager notificationManager) {
         this.navigator = navigator;
         this.profileManager = profileManager;
         this.guiManager = guiManager;
-        this.headerViewController = new HeaderViewController(navigator, 0, profileManager);
+        this.headerViewController = new HeaderViewController(navigator, notificationManager, 0, HeaderViewController.Type.TRAINER);
         this.view = new TrainerHomeView(headerViewController.getView());
     }
 
@@ -31,6 +33,7 @@ public class TrainerHomeViewController implements GuiController {
 
     @Override
     public void start() {
+        headerViewController.start();
         ProfileBean profile = profileManager.getCacheProfileInfo();
         view.setWelcomeMessage("Benvenuto, " + profile.getFirstName() + "!", "Gestisci la tua libreria e i piani dei tuoi atleti.");
         view.showTrainerDashboard(
@@ -59,6 +62,6 @@ public class TrainerHomeViewController implements GuiController {
 
     @Override
     public void stop() {
-        // Metodo intenzionalmente vuoto
+        headerViewController.stop();
     }
 }

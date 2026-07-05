@@ -21,6 +21,7 @@ public class ApplicationContext {
     private final ExerciseLibraryApi exerciseLibraryApi;
     private final WorkoutPlanApi workoutPlanApi;
     private final SessionLogApi sessionLogApi;
+    private final NotificationApi notificationApi;
 
     private final SessionManager sessionManager;
 
@@ -34,6 +35,7 @@ public class ApplicationContext {
         this.exerciseLibraryApi = new HttpExerciseLibraryApi(httpService);
         this.workoutPlanApi = new HttpWorkoutPlanApi(httpService);
         this.sessionLogApi = new HttpSessionLogApi(httpService);
+        this.notificationApi = new HttpNotificationApi(httpService);
 
         this.sessionManager = new SessionManager(new AuthManager(authApi), tokenStore, this::createUserSession);
     }
@@ -43,7 +45,7 @@ public class ApplicationContext {
     }
 
     private UserSessionContext createUserSession() {
-        return new UserSessionContext(profileApi, exerciseLibraryApi, workoutPlanApi, sessionLogApi);
+        return new UserSessionContext(profileApi, exerciseLibraryApi, workoutPlanApi, sessionLogApi, notificationApi);
     }
 
     private CompletableFuture<Boolean> handleSessionExpired() {

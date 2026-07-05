@@ -28,17 +28,17 @@ public class WorkoutPlanEditorViewController implements GuiController {
     private WorkoutPlanBean activePlan;
     private WorkoutSessionBean activeSession;
     private final Navigator navigator;
+    private final GuiManager guiManager;
     private final EditWorkoutPlanManager editWorkoutPlanManager;
     private final ExerciseLibraryManager exerciseManager;
-    private final GuiManager guiManager;
 
     private final WorkoutPlanObserver observer;
 
-    public WorkoutPlanEditorViewController(Navigator navigator, String planIdToEdit, boolean copyOfExisting, EditWorkoutPlanManager editWorkoutPlanManager, ExerciseLibraryManager exerciseManager, GuiManager guiManager) {
+    public WorkoutPlanEditorViewController(Navigator navigator, GuiManager guiManager, String planIdToEdit, boolean copyOfExisting, EditWorkoutPlanManager editWorkoutPlanManager, ExerciseLibraryManager exerciseManager) {
         this.navigator = navigator;
+        this.guiManager = guiManager;
         this.editWorkoutPlanManager = editWorkoutPlanManager;
         this.exerciseManager = exerciseManager;
-        this.guiManager = guiManager;
 
         this.view = new WorkoutPlanEditorView();
 

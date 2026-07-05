@@ -14,6 +14,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import com.example.fitplannerclient.controller.session.NotificationManager;
+
 public class ProgressViewController implements GuiController {
 
     private final ProgressView view;
@@ -27,10 +29,10 @@ public class ProgressViewController implements GuiController {
     private Set<String> selectedExerciseIds = Set.of();
 
     public ProgressViewController(
-            Navigator navigator, WorkoutHistoryManager historyManager, ProfileManager profileManager, GuiManager guiManager
+            Navigator navigator, GuiManager guiManager, WorkoutHistoryManager historyManager, NotificationManager notificationManager
     ) {
         this(historyManager, guiManager, false);
-        this.headerViewController = new HeaderViewController(navigator, 2, profileManager);
+        this.headerViewController = new HeaderViewController(navigator, notificationManager, 2, HeaderViewController.Type.ATHLETE);
         this.view.setHeaderView(headerViewController.getView());
     }
 
@@ -52,6 +54,9 @@ public class ProgressViewController implements GuiController {
 
     @Override
     public void start() {
+        if (headerViewController != null) {
+            headerViewController.start();
+        }
         view.selectDefaultPeriod();
     }
 
@@ -99,7 +104,9 @@ public class ProgressViewController implements GuiController {
 
     @Override
     public void stop() {
-        // nessuna risorsa da rilasciare
+        if (headerViewController != null) {
+            headerViewController.stop();
+        }
     }
 
     @Override
