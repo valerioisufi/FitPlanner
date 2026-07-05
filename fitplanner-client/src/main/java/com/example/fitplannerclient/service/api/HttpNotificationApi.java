@@ -8,7 +8,7 @@ import java.util.function.BiConsumer;
 public class HttpNotificationApi implements NotificationApi {
 
     private final HttpService httpService;
-    private static final String NOTIFICATION_ENDPOINT = "/notification/subscribe";
+    private static final String NOTIFICATION_ENDPOINT = "/notifications/subscribe";
 
     public HttpNotificationApi(HttpService httpService) {
         this.httpService = httpService;
