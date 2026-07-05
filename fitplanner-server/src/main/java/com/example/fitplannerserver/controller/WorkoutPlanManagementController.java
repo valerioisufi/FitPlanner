@@ -175,7 +175,9 @@ public class WorkoutPlanManagementController {
             newPlan.setStartDate(oldPlan.getStartDate());
 
             workoutPlanDao.savePlan(newPlan);
-            notificationController.sendNotificationToUser(oldPlan.getAssignedToId(), "PLAN_UPDATED", "Il tuo trainer ha aggiornato il tuo piano.");
+
+            if(oldPlan.getAssignedToId()!=null)
+                notificationController.sendNotificationToUser(oldPlan.getAssignedToId(), "PLAN_UPDATED", "Il tuo trainer ha aggiornato il tuo piano.");
 
         } catch (DaoException e) {
             throw new SystemException("Errore nell'aggiornamento del piano", e);
