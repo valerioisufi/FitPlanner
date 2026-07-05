@@ -79,8 +79,12 @@ public class AthleteHomeView extends BorderPane {
         leftPanel.getStyleClass().add("card");
         leftPanel.setPadding(new Insets(25));
 
-        ScheduleDayBean suggestedDay = schedule.getDays().get(schedule.getSuggestedDayIndex());
-        updateLeftPanel(leftPanel, schedule.getPlanTitle(), suggestedDay, onStartSession);
+        if (schedule.getSuggestedDayIndex() < 0) {
+            showNoSuggestedDay(leftPanel, schedule.getPlanTitle());
+        } else {
+            ScheduleDayBean suggestedDay = schedule.getDays().get(schedule.getSuggestedDayIndex());
+            updateLeftPanel(leftPanel, schedule.getPlanTitle(), suggestedDay, onStartSession);
+        }
 
         // --- Right Panel: THIS WEEK ---
         VBox rightPanel = buildRightPanel(schedule, leftPanel, onStartSession);
@@ -238,6 +242,26 @@ public class AthleteHomeView extends BorderPane {
 
         card.getChildren().addAll(noPlanLabel, detailLabel);
         contentBox.getChildren().add(card);
+    }
+
+    public void showNoSuggestedDay(VBox leftPanel, String planTitle) {
+        leftPanel.getChildren().clear();
+
+        BorderPane cardHeader = new BorderPane();
+
+        VBox titleBox = new VBox(4);
+        titleBox.setAlignment(Pos.CENTER);
+        Label mainTitle = new Label("Nessun giorno suggerito per oggi.");
+        mainTitle.getStyleClass().add(HEADING_H2_CLASS);
+        Label subTitle = new Label(planTitle);
+        subTitle.getStyleClass().add("body-small");
+        titleBox.getChildren().addAll(mainTitle, subTitle);
+
+        cardHeader.setCenter(titleBox);
+
+        leftPanel.getChildren().addAll(cardHeader);
+
+
     }
 
     public void showTrainerInviteCard(Consumer<String> onSubmit) {

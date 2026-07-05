@@ -40,7 +40,7 @@ public class AthleteHomeViewController implements GuiController {
         // Load the current cycle schedule
         planManager.getCurrentCycleScheduleAsync()
                 .thenAccept(schedule -> Platform.runLater(() -> {
-                    if (schedule == null || schedule.getSuggestedDayIndex() < 0) {
+                    if (schedule == null) {
                         view.showNoPlanAssigned();
                     } else {
                         view.showAthleteDashboard(schedule, absoluteDay ->
