@@ -9,9 +9,7 @@ import com.example.fitplannerclient.entity.plan.block.ProtocolBlock;
 import com.example.fitplannerclient.entity.plan.decorator.*;
 import com.example.fitplannerclient.entity.plan.exercise.ExerciseNode;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Deque;
 import java.util.List;
 
 public class NodeFinderVisitor implements WorkoutPlanVisitor {
@@ -28,7 +26,7 @@ public class NodeFinderVisitor implements WorkoutPlanVisitor {
 
     private List<PlanNode> foundPath = new ArrayList<>();
 
-    private final Deque<PlanNode> currentPath = new ArrayDeque<>();
+    private final List<PlanNode> currentPath = new ArrayList<>();
 
     public NodeFinderVisitor(String id) {
         this.id = id;
@@ -82,18 +80,18 @@ public class NodeFinderVisitor implements WorkoutPlanVisitor {
 
     @Override
     public void visit(ExerciseNode exerciseNode) {
-        currentPath.push(exerciseNode);
+        currentPath.addLast(exerciseNode);
 
         if(exerciseNode.getId().equals(id)) {
             foundNode = exerciseNode;
             foundPath = new ArrayList<>(currentPath);
         }
 
-        currentPath.pop();
+        currentPath.removeLast();
     }
 
     private <T extends PlanNode & GroupNode> void visitGroupNode(T groupNode) {
-        currentPath.push(groupNode);
+        currentPath.addLast(groupNode);
 
         if(groupNode.getId().equals(id)) {
             foundNode = groupNode;
@@ -120,7 +118,7 @@ public class NodeFinderVisitor implements WorkoutPlanVisitor {
                 }
             }
         }
-        currentPath.pop();
+        currentPath.removeLast();
     }
 
     @Override
@@ -134,7 +132,7 @@ public class NodeFinderVisitor implements WorkoutPlanVisitor {
     }
 
     private void visitDecorator(FlowDecorator decorator) {
-        currentPath.push(decorator);
+        currentPath.addLast(decorator);
 
         if(decorator.getId().equals(id)) {
             foundNode = decorator;
@@ -151,7 +149,7 @@ public class NodeFinderVisitor implements WorkoutPlanVisitor {
                 foundPosition = -1;
             }
         }
-        currentPath.pop();
+        currentPath.removeLast();
     }
 
     @Override
