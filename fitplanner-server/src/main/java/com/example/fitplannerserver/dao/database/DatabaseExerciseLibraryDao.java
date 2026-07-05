@@ -126,8 +126,8 @@ public class DatabaseExerciseLibraryDao implements ExerciseLibraryDao {
                     List<ExerciseDescription> exercises = new ArrayList<>();
                     while (rs.next()) {
                         ExerciseDescription exercise = new ExerciseDescription(
-                                rs.getString(EXERCISE_ID),
                                 rs.getString(TRAINER_ID),
+                                rs.getString(EXERCISE_ID),
                                 rs.getString("name"),
                                 rs.getString(EXECUTION),
                                 List.of(rs.getString(MUSCLE_GROUPS).split(",")));
