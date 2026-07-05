@@ -3,6 +3,7 @@ package com.example.fitplannerserver;
 import com.example.fitplannercommon.WorkoutPlanDTO;
 import com.example.fitplannercommon.WorkoutPlanSummaryDTO;
 import com.example.fitplannercommon.WorkoutSessionDTO;
+import com.example.fitplannerserver.controller.NotificationController;
 import com.example.fitplannerserver.controller.WorkoutPlanManagementController;
 import com.example.fitplannerserver.dao.ProfileDao;
 import com.example.fitplannerserver.dao.WorkoutPlanDao;
@@ -45,6 +46,7 @@ class TestWorkoutPlanManagementController {
 
         controller = new WorkoutPlanManagementController(
                 mockIdentityProvider,
+                new NotificationController(mockIdentityProvider),
                 workoutPlanDao,
                 profileDao
         );

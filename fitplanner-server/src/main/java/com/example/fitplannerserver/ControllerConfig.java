@@ -28,18 +28,20 @@ public class ControllerConfig {
     }
 
     @Bean
-    public ProfileController profileController(IdentityProvider identityProvider) {
+    public ProfileController profileController(IdentityProvider identityProvider, NotificationController notificationController) {
         return new ProfileController(
                 identityProvider,
+                notificationController,
                 DaoFactory.getInstance().getProfileDao(),
                 DaoFactory.getInstance().getWorkoutPlanDao()
         );
     }
 
     @Bean
-    public WorkoutPlanManagementController workoutPlanManagementController(IdentityProvider identityProvider) {
+    public WorkoutPlanManagementController workoutPlanManagementController(IdentityProvider identityProvider, NotificationController notificationController) {
         return new WorkoutPlanManagementController(
                 identityProvider,
+                notificationController,
                 DaoFactory.getInstance().getWorkoutPlanDao(),
                 DaoFactory.getInstance().getProfileDao()
         );
@@ -64,9 +66,10 @@ public class ControllerConfig {
     }
 
     @Bean
-    public SessionLogController sessionLogController(IdentityProvider identityProvider) {
+    public SessionLogController sessionLogController(IdentityProvider identityProvider, NotificationController notificationController) {
         return new SessionLogController(
                 identityProvider,
+                notificationController,
                 DaoFactory.getInstance().getSessionLogDao(),
                 DaoFactory.getInstance().getProfileDao()
         );

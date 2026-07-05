@@ -21,16 +21,19 @@ import java.util.List;
 
 public class ProfileController {
     private final IdentityProvider identityProvider;
+    private final NotificationController notificationController;
 
     private final ProfileDao profileDao;
     private final WorkoutPlanDao workoutPlanDao;
 
     public ProfileController(
             IdentityProvider identityProvider,
+            NotificationController notificationController,
             ProfileDao profileDao,
             WorkoutPlanDao workoutPlanDao
     ) {
         this.identityProvider = identityProvider;
+        this.notificationController = notificationController;
 
         this.profileDao = profileDao;
         this.workoutPlanDao = workoutPlanDao;
@@ -139,6 +142,9 @@ public class ProfileController {
 
             athlete.linkTo(trainer);
             profileDao.save(athlete);
+
+            String notificationMsg = String.format("L'atleta %s %s si è collegato a te", athlete.getFirstName(), athlete.getLastName());
+            notificationController.sendNotificationToUser(trainer.getId(), "NEW_ATHLETE_LINKED", notificationMsg);
 
         } catch (DaoException e){
             throw new SystemException("Errore durante il collegamento al trainer", e);

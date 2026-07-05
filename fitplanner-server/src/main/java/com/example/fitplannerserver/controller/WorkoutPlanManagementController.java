@@ -21,17 +21,21 @@ import java.util.Optional;
 
 public class WorkoutPlanManagementController {
     private static final String PLAN_NOT_FOUND_MSG = "WorkoutPlan non trovato";
+
     private final IdentityProvider identityProvider;
+    private final NotificationController notificationController;
 
     private final WorkoutPlanDao workoutPlanDao;
     private final ProfileDao profileDao;
 
     public WorkoutPlanManagementController(
             IdentityProvider identityProvider,
+            NotificationController notificationController,
             WorkoutPlanDao workoutPlanDao,
             ProfileDao profileDao
     ) {
         this.identityProvider = identityProvider;
+        this.notificationController = notificationController;
 
         this.workoutPlanDao = workoutPlanDao;
         this.profileDao = profileDao;
@@ -142,6 +146,8 @@ public class WorkoutPlanManagementController {
             athleteSpecificPlan.setStartDate(LocalDate.now(ZoneOffset.UTC));
             workoutPlanDao.savePlan(athleteSpecificPlan);
 
+            notificationController.sendNotificationToUser(athleteId, "NEW_PLAN_ASSIGNED", "Il tuo trainer ti ha assegnato un nuovo piano.");
+
         } catch (DaoException e) {
             throw new SystemException("Errore nell'assegnare il WorkoutPlan", e);
         }
@@ -169,6 +175,7 @@ public class WorkoutPlanManagementController {
             newPlan.setStartDate(oldPlan.getStartDate());
 
             workoutPlanDao.savePlan(newPlan);
+            notificationController.sendNotificationToUser(oldPlan.getAssignedToId(), "PLAN_UPDATED", "Il tuo trainer ha aggiornato il tuo piano.");
 
         } catch (DaoException e) {
             throw new SystemException("Errore nell'aggiornamento del piano", e);

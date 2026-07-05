@@ -10,6 +10,7 @@ import com.example.fitplannerserver.mapper.LogMapper;
 import com.example.fitplannerserver.model.user.Account;
 import com.example.fitplannerserver.model.log.ExerciseLog;
 import com.example.fitplannerserver.model.log.SessionLog;
+import com.example.fitplannerserver.model.user.AthleteUser;
 import com.example.fitplannerserver.security.IdentityProvider;
 import com.example.fitplannerserver.util.ValidationUtils;
 
@@ -23,16 +24,19 @@ import static com.example.fitplannerserver.mapper.LogMapper.toBean;
 
 public class SessionLogController {
     private final IdentityProvider identityProvider;
+    private final NotificationController notificationController;
 
     private final SessionLogDao sessionLogDao;
     private final ProfileDao profileDao;
 
     public SessionLogController(
             IdentityProvider identityProvider,
+            NotificationController notificationController,
             SessionLogDao sessionLogDao,
             ProfileDao profileDao
     ) {
         this.identityProvider = identityProvider;
+        this.notificationController = notificationController;
 
         this.sessionLogDao = sessionLogDao;
         this.profileDao = profileDao;
@@ -86,8 +90,15 @@ public class SessionLogController {
         SessionLog sessionLog = LogMapper.toEntity(identityProvider.getUserId(), logBean);
 
         try {
+            AthleteUser athleteProfile = profileDao.findAthleteById(identityProvider.getUserId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Atleta non trovato"));
+
             sessionLogDao.saveSessionLog(sessionLog);
 
+            if(athleteProfile.getTrainerId() != null) {
+                String notificationMsg = String.format("L'atleta %s %s ha completato una sessione di allenamento", athleteProfile.getFirstName(), athleteProfile.getLastName());
+                notificationController.sendNotificationToUser(athleteProfile.getTrainerId(), "SESSION_COMPLETED", notificationMsg);
+            }
         } catch (DaoException e) {
             throw new SystemException("Errore nel salvare il session log", e);
         }
