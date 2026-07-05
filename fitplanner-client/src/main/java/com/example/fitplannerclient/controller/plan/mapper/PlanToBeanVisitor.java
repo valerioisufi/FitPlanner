@@ -100,6 +100,20 @@ public class PlanToBeanVisitor implements WorkoutPlanVisitor {
 
         nodeBean.setModifiers(new ArrayList<>(modifierBeans));
         nodeBean.setFlowDecorators(new ArrayList<>(accumulatedDecorators));
+
+        StringBuilder errorMsg = new StringBuilder();
+        String selfError = getErrorMessage(exerciseNode.getId());
+        if (selfError != null) {
+            errorMsg.append(selfError).append("\n");
+        }
+        for (FlowDecoratorBean dec : accumulatedDecorators) {
+            String decError = getErrorMessage(dec.getId());
+            if (decError != null) {
+                errorMsg.append(decError).append("\n");
+            }
+        }
+        nodeBean.setValidationErrorMsg(errorMsg.isEmpty() ? null : errorMsg.toString().trim());
+
         accumulatedDecorators.clear();
 
         currentPlanNodeBean = nodeBean;
@@ -109,6 +123,20 @@ public class PlanToBeanVisitor implements WorkoutPlanVisitor {
     public void visit(Block block) {
         PlanNodeBean nodeBean = new PlanNodeBean(block.getId(), block.getTitle(), NodeType.BLOCK);
         nodeBean.setFlowDecorators(new ArrayList<>(accumulatedDecorators));
+
+        StringBuilder errorMsg = new StringBuilder();
+        String selfError = getErrorMessage(block.getId());
+        if (selfError != null) {
+            errorMsg.append(selfError).append("\n");
+        }
+        for (FlowDecoratorBean dec : accumulatedDecorators) {
+            String decError = getErrorMessage(dec.getId());
+            if (decError != null) {
+                errorMsg.append(decError).append("\n");
+            }
+        }
+        nodeBean.setValidationErrorMsg(errorMsg.isEmpty() ? null : errorMsg.toString().trim());
+
         accumulatedDecorators.clear();
 
         for (int i = 0; i < block.getChildrenCount(); i++) {
@@ -129,7 +157,19 @@ public class PlanToBeanVisitor implements WorkoutPlanVisitor {
         PlanNodeBean nodeBean = new PlanNodeBean(protocolBlock.getId(), protocolBlock.getSemanticType(), NodeType.PROTOCOL_BLOCK);
         nodeBean.setFlowDecorators(new ArrayList<>(accumulatedDecorators));
         nodeBean.setParameters(protocolBlock.getParameters() != null ? new HashMap<>(protocolBlock.getParameters()) : new HashMap<>());
-        nodeBean.setValidationErrorMsg(getErrorMessage(protocolBlock.getId()));
+
+        StringBuilder errorMsg = new StringBuilder();
+        String selfError = getErrorMessage(protocolBlock.getId());
+        if (selfError != null) {
+            errorMsg.append(selfError).append("\n");
+        }
+        for (FlowDecoratorBean dec : accumulatedDecorators) {
+            String decError = getErrorMessage(dec.getId());
+            if (decError != null) {
+                errorMsg.append(decError).append("\n");
+            }
+        }
+        nodeBean.setValidationErrorMsg(errorMsg.isEmpty() ? null : errorMsg.toString().trim());
 
         accumulatedDecorators.clear();
 
@@ -203,6 +243,8 @@ public class PlanToBeanVisitor implements WorkoutPlanVisitor {
         for(ValidationResult.ValidationError error : validationResult.getErrorsByNodeId(nodeId)) {
             errorMsg.append(error.message()).append("\n");
         }
+
+        if (errorMsg.isEmpty()) return null;
         return errorMsg.toString();
     }
 }

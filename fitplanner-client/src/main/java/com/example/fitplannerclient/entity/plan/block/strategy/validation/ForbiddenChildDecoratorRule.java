@@ -41,7 +41,7 @@ public class ForbiddenChildDecoratorRule implements ValidationRule {
                             "Questo blocco non ammette il decoratore interno: " + forbiddenType,
                             decorator.getId()
                     );
-                } else if (decorator.getWrappedNode() != null) {
+                } else {
                     decorator.getWrappedNode().accept(this);
                 }
             }

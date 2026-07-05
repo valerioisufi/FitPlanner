@@ -8,7 +8,7 @@ import com.example.fitplannerclient.entity.plan.execution.ExecutionResult;
 import com.example.fitplannerclient.entity.plan.execution.PlanNodeState;
 
 public class RestDecorator extends FlowDecorator{
-    private String restDuration;
+    private String restDuration; // espresso in secondi
 
     private int sleepTimeMillis = 0;
 
@@ -62,7 +62,7 @@ public class RestDecorator extends FlowDecorator{
         ExecutionResult result = wrappedNode.execute(context);
 
         if (result.getState() == PlanNodeState.COMPLETED || result.getState() == PlanNodeState.SKIPPED) {
-            int actualRest = context.resolveAsInteger(restDuration, 0);
+            int actualRest = context.resolveAsInteger(restDuration, 0) * 1000;
 
             if (actualRest <= 0) {
                 this.state = PlanNodeState.COMPLETED;

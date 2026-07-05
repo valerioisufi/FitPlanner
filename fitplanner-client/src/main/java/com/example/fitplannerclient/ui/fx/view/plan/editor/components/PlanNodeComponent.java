@@ -14,6 +14,7 @@ import javafx.geometry.Side;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.*;
 import javafx.scene.shape.Rectangle;
 
@@ -168,6 +169,10 @@ public class PlanNodeComponent extends VBox {
         // evidenzia il nodo come non valido
         if (bean.getValidationErrorMsg() != null) {
             nodeContent.getStyleClass().add("node-invalid");
+
+            Tooltip tooltip = new Tooltip(bean.getValidationErrorMsg());
+            tooltip.setStyle("-fx-font-size: 12px; -fx-background-color: #ef4444; -fx-text-fill: white; -fx-padding: 6px;");
+            Tooltip.install(nodeContent, tooltip);
         }
     }
 
@@ -271,6 +276,7 @@ public class PlanNodeComponent extends VBox {
                             modifier.getId(),
                             BadgeComponent.BadgeType.MODIFIER,
                             modifier.getName(),
+                            modifier.getValue(),
                             formatValueWithUnit(modifier.getName(), modifier.getValue()),
                             color
                     );
@@ -303,7 +309,7 @@ public class PlanNodeComponent extends VBox {
             String typeName = decorator.getType().name().replace("_", " ");
             BadgeComponent.BadgeColor color = resolveColorFromName(typeName, BadgeComponent.BadgeType.DECORATOR);
 
-            BadgeComponent badge = new BadgeComponent(decorator.getId(), BadgeComponent.BadgeType.DECORATOR, typeName, formatValueWithUnit(typeName, decorator.getValue()), color);
+            BadgeComponent badge = new BadgeComponent(decorator.getId(), BadgeComponent.BadgeType.DECORATOR, typeName, decorator.getValue(), formatValueWithUnit(typeName, decorator.getValue()), color);
             if (isEditable) {
                 badge.setOnEditClicked(this::fireEditBadgeClicked);
 

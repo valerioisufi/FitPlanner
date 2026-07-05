@@ -162,14 +162,14 @@ public class EditBadgeModal extends VBox {
     private void setupValidationListener() {
         valueField.textProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal == null) return;
-            // Allow decimals for weight/distance, but integer for rounds/time.
-            // A simple regex that allows numbers and optional decimal point.
+
+            // Allow integer for rounds/time
             boolean isTut = nameLabel.getText() != null && nameLabel.getText().equalsIgnoreCase("TUT");
             if (isTut) {
                 if (!newVal.matches("[\\d/\\-]*") && toggleBox.isVisible() && fixedValueRadio.isSelected()) {
                     valueField.setText(oldVal);
                 }
-            } else if (!newVal.matches("\\d*(\\.\\d*)?") && toggleBox.isVisible() && fixedValueRadio.isSelected()) {
+            } else if (!newVal.matches("\\d*") && toggleBox.isVisible() && fixedValueRadio.isSelected()) {
                 valueField.setText(oldVal);
             }
         });
@@ -196,7 +196,7 @@ public class EditBadgeModal extends VBox {
         
         valueLabelDesc.setText("Regole di Progressione *");
         valueField.setText(value);
-        valueField.setPromptText("Es. WEIGHT: 50, 52.5, 55; REPS: 10, 8, 6");
+        valueField.setPromptText("Es. WEIGHT: 50, 55; REPS: 10, 8");
         
         hintLabel.setText("Formato: CHIAVE1: val1, val2; CHIAVE2: val1, val2");
         hintLabel.setVisible(true);
@@ -238,12 +238,11 @@ public class EditBadgeModal extends VBox {
     }
 
     private String getUnitForType(String type) {
-        return switch (type.toUpperCase()) {
-            case "REST", "TIME_LIMIT", "INTERVAL", "TEMPO" -> "secondi";
-            case "LOOP", "SETS" -> "round";
+        return switch (type.toUpperCase().replace(" ", "_")) {
+            case "REST", "TIME_LIMIT", "INTERVAL" -> "secondi";
+            case "LOOP" -> "round";
             case "REPS" -> "ripetizioni";
             case "WEIGHT" -> "kg";
-            case "DISTANCE" -> "km";
             default -> "";
         };
     }

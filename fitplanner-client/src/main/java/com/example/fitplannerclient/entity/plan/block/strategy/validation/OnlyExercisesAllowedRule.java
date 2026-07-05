@@ -23,19 +23,12 @@ public class OnlyExercisesAllowedRule implements ValidationRule {
             // nodi non validi
             @Override public void visit(Block blockNode) { addError(blockNode); }
             @Override public void visit(ProtocolBlock protocolBlock) { addError(protocolBlock); }
-            @Override public void visit(LoopDecorator loopDecorator) { visitWrapped(loopDecorator); }
-            @Override public void visit(RestDecorator restDecorator) { visitWrapped(restDecorator); }
-            @Override public void visit(TimeLimitDecorator timeLimitDecorator) { visitWrapped(timeLimitDecorator); }
-            @Override public void visit(ProgressionDecorator progressionDecorator) { visitWrapped(progressionDecorator); }
-            @Override public void visit(IntervalDecorator intervalDecorator) { visitWrapped(intervalDecorator); }
 
-            private void visitWrapped(FlowDecorator decorator) {
-                if (decorator.getWrappedNode() != null) {
-                    decorator.getWrappedNode().accept(this);
-                }
-            }
-
-
+            @Override public void visit(LoopDecorator loopDecorator) { loopDecorator.getWrappedNode().accept(this); }
+            @Override public void visit(RestDecorator restDecorator) { restDecorator.getWrappedNode().accept(this); }
+            @Override public void visit(TimeLimitDecorator timeLimitDecorator) { timeLimitDecorator.getWrappedNode().accept(this); }
+            @Override public void visit(ProgressionDecorator progressionDecorator) { progressionDecorator.getWrappedNode().accept(this); }
+            @Override public void visit(IntervalDecorator intervalDecorator) { intervalDecorator.getWrappedNode().accept(this); }
 
             private void addError(PlanNode node) {
                 result.addError(

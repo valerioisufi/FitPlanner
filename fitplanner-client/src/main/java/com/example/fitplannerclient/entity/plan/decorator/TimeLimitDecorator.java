@@ -7,7 +7,7 @@ import com.example.fitplannerclient.entity.plan.execution.ExecutionResult;
 import com.example.fitplannerclient.entity.plan.execution.PlanNodeState;
 
 public class TimeLimitDecorator extends FlowDecorator {
-    private String timeLimit;
+    private String timeLimit; // espresso in secondi
     private int timeLeftMillis = 0;
 
     public TimeLimitDecorator(PlanNode wrappedNode, String timeLimit) {
@@ -28,7 +28,7 @@ public class TimeLimitDecorator extends FlowDecorator {
 
         if (this.state == PlanNodeState.IDLE) {
             this.state = PlanNodeState.RUNNING;
-            this.timeLeftMillis = context.resolveAsInteger(timeLimit, 0);
+            this.timeLeftMillis = context.resolveAsInteger(timeLimit, 0) * 1000;
         }
 
         int delta = context.getTickDelta();

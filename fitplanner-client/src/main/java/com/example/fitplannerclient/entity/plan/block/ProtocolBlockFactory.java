@@ -28,6 +28,18 @@ public class ProtocolBlockFactory {
         }
     }
 
+    public ProtocolBlock create(String semanticType) {
+        return switch (semanticType) {
+            case "DROP_SET" -> createDropSet();
+            case "SUPER_SET" -> createSuperSet();
+            case "GIANT_SET" -> createGiantSet();
+            case "CIRCUIT" -> createCircuit();
+            case "AMRAP" -> createAMRAP();
+            case "EMOM" -> createEMOM();
+            default -> createCircuit();
+        };
+    }
+
     public ProtocolBlock createCircuit() {
         ProtocolBlock circuitBlock = new ProtocolBlock(
                 ProtocolBlockTypes.CIRCUIT.getSemanticType(),
@@ -40,7 +52,7 @@ public class ProtocolBlockFactory {
         );
         circuitBlock.setParameter("CIRCUIT_ROUNDS", "3");
         circuitBlock.setParameter("CIRCUIT_REST_BETWEEN_EXERCISES", "0");
-        circuitBlock.setParameter("CIRCUIT_REST_BETWEEN_ROUNDS", "120000"); // 2 min in ms
+        circuitBlock.setParameter("CIRCUIT_REST_BETWEEN_ROUNDS", "120"); // 2 min
         return circuitBlock;
     }
 
@@ -87,7 +99,7 @@ public class ProtocolBlockFactory {
                         new WrapWithDecoratorRule(new TimeLimitDecorator(null, "${AMRAP_TIME}"))
                 )
         );
-        block.setParameter("AMRAP_TIME", "600000"); // 10 min in ms
+        block.setParameter("AMRAP_TIME", "600"); // 10 min
         return block;
     }
 
@@ -101,7 +113,7 @@ public class ProtocolBlockFactory {
                         new WrapWithDecoratorRule(new LoopDecorator(null, "${EMOM_ROUNDS}"))
                 )
         );
-        block.setParameter("EMOM_INTERVAL", "60000"); // 1 min in ms
+        block.setParameter("EMOM_INTERVAL", "60"); // 1 min
         block.setParameter("EMOM_ROUNDS", "10");
         return block;
     }

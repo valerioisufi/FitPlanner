@@ -8,7 +8,7 @@ import com.example.fitplannerclient.entity.plan.execution.ExecutionResult;
 import com.example.fitplannerclient.entity.plan.execution.PlanNodeState;
 
 public class IntervalDecorator extends FlowDecorator {
-    private String intervalDuration;
+    private String intervalDuration; // espresso in secondi
     private int timeLeftMillis = 0;
 
     public IntervalDecorator(PlanNode wrappedNode, String intervalDuration) {
@@ -29,7 +29,7 @@ public class IntervalDecorator extends FlowDecorator {
 
         if (this.state == PlanNodeState.IDLE) {
             this.state = PlanNodeState.RUNNING;
-            this.timeLeftMillis = context.resolveAsInteger(intervalDuration, 0);
+            this.timeLeftMillis = context.resolveAsInteger(intervalDuration, 0) * 1000;
         }
 
         int delta = context.getTickDelta();

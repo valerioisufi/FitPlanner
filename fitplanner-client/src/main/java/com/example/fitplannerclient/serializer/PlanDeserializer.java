@@ -8,6 +8,7 @@ import com.example.fitplannerclient.entity.plan.WorkoutPlan;
 import com.example.fitplannerclient.entity.plan.WorkoutSession;
 import com.example.fitplannerclient.entity.plan.block.Block;
 import com.example.fitplannerclient.entity.plan.block.ProtocolBlock;
+import com.example.fitplannerclient.entity.plan.block.ProtocolBlockFactory;
 import com.example.fitplannerclient.entity.plan.decorator.*;
 import com.example.fitplannerclient.entity.plan.exercise.ExerciseModifier;
 import com.example.fitplannerclient.entity.plan.exercise.ExerciseNode;
@@ -100,7 +101,8 @@ public class PlanDeserializer {
 
     private ProtocolBlock deserializeProtocolBlockNode(PlanNodeDTO dto) {
         // Il semanticType viene memorizzato nel campo name del DTO
-        ProtocolBlock protocolBlock = new ProtocolBlock(dto.getName(), null, null, null);
+        ProtocolBlockFactory factory = new ProtocolBlockFactory();
+        ProtocolBlock protocolBlock = factory.create(dto.getName());
         if (dto.getParameters() != null) {
             for (Map.Entry<String, String> entry : dto.getParameters().entrySet()) {
                 protocolBlock.setParameter(entry.getKey(), entry.getValue());
@@ -197,7 +199,8 @@ public class PlanDeserializer {
     }
 
     private ProtocolBlock toEntityProtocolBlockNode(PlanNodeBean bean) {
-        ProtocolBlock protocolBlock = new ProtocolBlock(bean.getName(), null, null, null);
+        ProtocolBlockFactory factory = new ProtocolBlockFactory();
+        ProtocolBlock protocolBlock = factory.create(bean.getName());
         if (bean.getParameters() != null) {
             for (Map.Entry<String, String> entry : bean.getParameters().entrySet()) {
                 protocolBlock.setParameter(entry.getKey(), entry.getValue());
