@@ -37,8 +37,17 @@ public class PlanManagementViewController implements GuiController {
         this.headerViewController = new HeaderViewController(navigator, notificationManager, 2, HeaderViewController.Type.TRAINER);
         this.view = new PlanManagementView();
         this.view.setHeaderView(this.headerViewController.getView());
+        this.view.setAthleteResolver(this::getAthleteById);
 
         bindActions();
+    }
+
+    private ProfileBean getAthleteById(String athleteId) {
+        if (athletesCache == null || athletesCache.isEmpty()) return null;
+        return athletesCache.stream()
+                .filter(a -> athleteId.equals(a.getUserId()))
+                .findFirst()
+                .orElse(null);
     }
 
     private void bindActions() {
@@ -127,7 +136,7 @@ public class PlanManagementViewController implements GuiController {
             athletesCache = athletes;
             return planManager.getMyCreatedPlansSummaryAsync();
         }).thenAccept(plans ->
-            Platform.runLater(() -> view.setPlansList(plans, athletesCache))
+            Platform.runLater(() -> view.setPlansList(plans))
         ).exceptionally(ex -> {
             Platform.runLater(() -> guiManager.showExceptionError("Errore nel caricamento dei dati:", ex));
             return null;

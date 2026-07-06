@@ -18,6 +18,7 @@ import javafx.scene.layout.*;
 
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class PlanManagementView extends BorderPane {
 
@@ -26,7 +27,7 @@ public class PlanManagementView extends BorderPane {
     private static final String TEXT_COLOR_LIGHT = "text-color-light";
 
     private final CardListView<WorkoutPlanSummaryBean> cardListView;
-    private List<ProfileBean> athletesCache; // todo da spostare al livello controller
+    private Function<String, ProfileBean> athleteResolver;
     
     private final AssignPlanModal assignModal;
 
@@ -95,8 +96,11 @@ public class PlanManagementView extends BorderPane {
         assignModal.setPlan(plan, athletes);
     }
 
-    public void setPlansList(List<WorkoutPlanSummaryBean> plans, List<ProfileBean> athletes) {
-        this.athletesCache = athletes;
+    public void setAthleteResolver(Function<String, ProfileBean> athleteResolver) {
+        this.athleteResolver = athleteResolver;
+    }
+
+    public void setPlansList(List<WorkoutPlanSummaryBean> plans) {
         cardListView.setItems(plans, "Nessun piano di allenamento presente.");
     }
 
@@ -126,10 +130,8 @@ public class PlanManagementView extends BorderPane {
         
         String assignedId = plan.getAssignedTo();
         ProfileBean assignedAthlete = null;
-        if (assignedId != null && !assignedId.isEmpty() && athletesCache != null) {
-            assignedAthlete = athletesCache.stream()
-                .filter(a -> assignedId.equals(a.getUserId()))
-                .findFirst().orElse(null);
+        if (assignedId != null && !assignedId.isEmpty() && athleteResolver != null) {
+            assignedAthlete = athleteResolver.apply(assignedId);
         }
 
         if (assignedAthlete != null) {
