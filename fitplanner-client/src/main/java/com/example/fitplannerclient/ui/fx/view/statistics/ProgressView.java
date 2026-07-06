@@ -64,6 +64,8 @@ public class ProgressView extends BorderPane {
         VBox panel = new VBox(10);
         panel.setPrefWidth(220);
         panel.setMinWidth(Region.USE_PREF_SIZE);
+        panel.getStyleClass().add("card");
+        panel.setPadding(new Insets(20));
 
         Label title = new Label("Esercizi");
         title.getStyleClass().add(BODY_BASE_CLASS);
@@ -147,9 +149,15 @@ public class ProgressView extends BorderPane {
         chart = new LineChart<>(axisX, axisY);
         chart.setAnimated(false);
         chart.setMinHeight(350);
-        HBox.setHgrow(chart, Priority.ALWAYS);
+        VBox.setVgrow(chart, Priority.ALWAYS);
 
-        return chart;
+        VBox chartCard = new VBox();
+        chartCard.getStyleClass().add("card");
+        chartCard.setPadding(new Insets(20));
+        HBox.setHgrow(chartCard, Priority.ALWAYS);
+        chartCard.getChildren().add(chart);
+
+        return chartCard;
     }
 
     public void setAvailableExercises(Map<String, String> exercises, Set<String> selectedIds) {

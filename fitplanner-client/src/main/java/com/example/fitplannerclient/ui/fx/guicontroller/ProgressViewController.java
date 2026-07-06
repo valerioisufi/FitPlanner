@@ -33,7 +33,7 @@ public class ProgressViewController implements GuiController {
             Navigator navigator, GuiManager guiManager, WorkoutHistoryManager historyManager, NotificationManager notificationManager
     ) {
         this(historyManager, guiManager, false);
-        this.headerViewController = new HeaderViewController(navigator, notificationManager, 2, HeaderViewController.Type.ATHLETE);
+        this.headerViewController = new HeaderViewController(navigator, notificationManager, 1, HeaderViewController.Type.ATHLETE);
         this.view.setHeaderView(headerViewController.getView());
     }
 

@@ -17,7 +17,6 @@ import com.example.fitplannerclient.controller.plan.execution.observer.WorkoutEx
 import com.example.fitplannerclient.controller.plan.execution.observer.WorkoutExecutionSubject;
 import com.example.fitplannerclient.entity.plan.WorkoutPlan;
 import com.example.fitplannerclient.entity.plan.WorkoutSession;
-import com.example.fitplannerclient.entity.plan.execution.ExecutionContext;
 import com.example.fitplannerclient.entity.plan.execution.PlanNodeState;
 import com.example.fitplannerclient.entity.plan.execution.WorkoutStatus;
 import com.example.fitplannerclient.entity.plan.exercise.ExerciseNode;
