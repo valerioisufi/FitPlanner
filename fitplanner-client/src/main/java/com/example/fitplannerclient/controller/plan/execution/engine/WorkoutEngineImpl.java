@@ -62,9 +62,9 @@ public class WorkoutEngineImpl implements WorkoutEngine {
         this.updateListener = callback;
     }
 
-    public void notifyUpdate(WorkoutStatus status, ExecutionResult result, ExerciseNode activeNode) {
+    public void notifyUpdate(WorkoutStatus status, ExecutionResult result, ExerciseNode activeNode, String breadcrumb) {
         if (updateListener != null) {
-            updateListener.onUpdate(status, result, activeNode);
+            updateListener.onUpdate(status, result, activeNode, breadcrumb);
         }
     }
 

@@ -16,7 +16,7 @@ public interface WorkoutEngine {
 
     @FunctionalInterface
     interface UpdateCallback {
-        void onUpdate(WorkoutStatus status, ExecutionResult result, ExerciseNode activeNode);
+        void onUpdate(WorkoutStatus status, ExecutionResult result, ExerciseNode activeNode, String breadcrumb);
     }
 
     void setOnUpdateListener(UpdateCallback callback);

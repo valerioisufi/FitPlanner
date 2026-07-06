@@ -44,7 +44,7 @@ public class PauseState extends EngineState {
         context.injectSignal(signal);
 
         ExecutionResult result = engine.execute(context);
-        engine.notifyUpdate(this.getStatus(), result, context.getActiveNode());
+        engine.notifyUpdate(this.getStatus(), result, context.getActiveNode(), context.getBreadcrumb());
 
         if (result.getState() == PlanNodeState.COMPLETED) {
             // il piano è terminato mentre il motore era in pausa

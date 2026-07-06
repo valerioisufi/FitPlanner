@@ -30,7 +30,7 @@ public class PlayState extends EngineState {
                 Thread.interrupted();
                 ExecutionResult result = engine.execute(context);
 
-                engine.notifyUpdate(this.getStatus(), result, context.getActiveNode());
+                engine.notifyUpdate(this.getStatus(), result, context.getActiveNode(), context.getBreadcrumb());
 
                 if (result.getState() == PlanNodeState.COMPLETED) {
                     engine.stop();

@@ -96,10 +96,10 @@ public class WorkoutExecutionManager {
     }
 
     private void setupEngineUpdateListener() {
-        this.engine.setOnUpdateListener((status, result, activeNode) -> {
+        this.engine.setOnUpdateListener((status, result, activeNode, breadcrumb) -> {
             notifyEngineStatus(status);
             notifyExecutionPhase(result);
-            notifyActiveNodeChange(activeNode);
+            notifyActiveNodeChange(activeNode, breadcrumb);
         });
     }
 
@@ -126,7 +126,7 @@ public class WorkoutExecutionManager {
         }
     }
 
-    private void notifyActiveNodeChange(ExerciseNode activeNode) {
+    private void notifyActiveNodeChange(ExerciseNode activeNode, String breadcrumb) {
         if (activeNode == null || activeNode.getId().equals(lastActiveNodeId)) {
             return;
         }
@@ -135,7 +135,7 @@ public class WorkoutExecutionManager {
         String resourceId = activeNode.getResourceId();
         
         if (resourceId != null && !resourceId.isEmpty()) {
-            fetchAndNotifyExercise(activeNode);
+            fetchAndNotifyExercise(activeNode, breadcrumb);
         }
     }
 
@@ -149,7 +149,7 @@ public class WorkoutExecutionManager {
         };
     }
 
-    private void fetchAndNotifyExercise(ExerciseNode activeNode) {
+    private void fetchAndNotifyExercise(ExerciseNode activeNode, String breadcrumb) {
         List<ExerciseModifierBean> modifierBeans = activeNode.getResolvedModifiers()
                 .stream()
                 .map(mod -> new ExerciseModifierBean(
@@ -159,6 +159,28 @@ public class WorkoutExecutionManager {
                 ))
                 .toList();
 
+        CompletableFuture<List<ExerciseDescription>> exerciseDescriptionsFuture = exerciseRepository.getExercisesAsync(List.of(activeNode.getResourceId()));
+        CompletableFuture<ExerciseLogBean> lastWeightFuture = logRepository.getLastWeightUsedAsync(activeNode.getResourceId())
+                .thenApply(this::exerciseLogEntityToBean);
+
+        exerciseDescriptionsFuture.thenCombine(lastWeightFuture, (exerciseDescriptions, lastWeight) -> {
+            if (!exerciseDescriptions.isEmpty()) {
+                var entity = exerciseDescriptions.getFirst();
+                ExerciseDescriptionBean descriptionBean = new ExerciseDescriptionBean();
+                descriptionBean.setExerciseId(entity.getExerciseId());
+                descriptionBean.setName(entity.getName());
+                descriptionBean.setExecution(entity.getExecution());
+                descriptionBean.setMuscleGroups(entity.getMuscleGroups());
+
+                return new CurrentExerciseBean(descriptionBean, modifierBeans, breadcrumb, lastWeight);
+            }
+            return null;
+        }).thenAccept(currentExerciseBean -> {
+            if (currentExerciseBean != null) {
+                workoutExecutionSubject.notifyCurrentExercise(currentExerciseBean);
+            }
+        });
+
         exerciseRepository.getExercisesAsync(List.of(activeNode.getResourceId())).thenAccept(list -> {
             if (!list.isEmpty()) {
                 var entity = list.getFirst();
@@ -167,7 +189,11 @@ public class WorkoutExecutionManager {
                 descriptionBean.setName(entity.getName());
                 descriptionBean.setExecution(entity.getExecution());
                 descriptionBean.setMuscleGroups(entity.getMuscleGroups());
-                workoutExecutionSubject.notifyCurrentExercise(new CurrentExerciseBean(descriptionBean, modifierBeans));
+
+                ExerciseLogBean lastWeight = logRepository.getLastWeightUsedAsync(activeNode.getResourceId())
+                        .thenApply(this::exerciseLogEntityToBean).join();
+
+                workoutExecutionSubject.notifyCurrentExercise(new CurrentExerciseBean(descriptionBean, modifierBeans, breadcrumb, lastWeight));
             }
         });
     }
@@ -200,11 +226,6 @@ public class WorkoutExecutionManager {
 
     public void done() {
         if (engine != null) engine.done();
-    }
-
-    public CompletableFuture<ExerciseLogBean> getLastWeightUsedAsync(String exerciseId) {
-        return logRepository.getLastWeightUsedAsync(exerciseId)
-                .thenApply(this::exerciseLogEntityToBean);
     }
 
     public ExerciseLogBean getSessionExerciseLog(String exerciseId) {
