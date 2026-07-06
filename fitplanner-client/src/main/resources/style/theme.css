@@ -791,3 +791,46 @@
     -fx-background-radius: 50%;
     -fx-cursor: hand;
 }
+
+/* ==========================================
+ * PROGRESS CHART
+ * ========================================== */
+
+.chart-plot-background {
+    -fx-background-color: transparent;
+}
+
+.chart-vertical-grid-lines,
+.chart-horizontal-grid-lines {
+    -fx-stroke: -border-color;
+    -fx-stroke-dash-array: 5 5;
+}
+
+.axis {
+    -fx-tick-label-fill: -fx-color-text-body;
+    -fx-font-family: 'Space Grotesk Medium';
+    -fx-font-size: 12px;
+}
+
+.axis-label {
+    -fx-text-fill: -fx-color-text-body;
+    -fx-font-family: 'Space Grotesk Bold';
+    -fx-font-size: 14px;
+}
+
+.chart-legend {
+    -fx-background-color: transparent;
+}
+
+.chart-legend-item {
+    -fx-text-fill: -fx-color-text-body;
+    -fx-font-family: 'Space Grotesk Medium';
+    -fx-font-size: 13px;
+}
+
+.axis:bottom {
+    -fx-border-color: transparent;
+}
+.axis:left {
+    -fx-border-color: transparent;
+}
