@@ -1,4 +1,4 @@
-package com.example.fitplannerclient.ui.cli;
+package com.example.fitplannerclient.ui.cli.io;
 
 import java.util.List;
 
@@ -20,6 +20,10 @@ public class OutputPrinter {
         for (int i = 0; i < options.size(); i++) {
             System.out.println((i + 1) + ". " + options.get(i));
         }
+    }
+
+    public void printTitle(String title) {
+        System.out.println("\n--- " + title + " ---");
     }
 
     public void printError(String message) {
@@ -45,8 +49,10 @@ public class OutputPrinter {
     public void printTable(String[] headers, String[][] data) {
         if (headers == null || headers.length == 0) return;
         int[] colWidths = calculateColumnWidths(headers, data);
+
         String format = buildFormatString(colWidths);
         printHeaderAndSeparator(headers, colWidths, format);
+
         if (data != null) {
             for (String[] row : data) {
                 System.out.printf(format, (Object[]) row);
@@ -59,6 +65,7 @@ public class OutputPrinter {
         for (int i = 0; i < headers.length; i++) {
             colWidths[i] = headers[i].length();
         }
+
         if (data != null) {
             for (String[] row : data) {
                 for (int i = 0; i < row.length; i++) {
@@ -68,14 +75,17 @@ public class OutputPrinter {
                 }
             }
         }
+
         return colWidths;
     }
 
     private String buildFormatString(int[] colWidths) {
         StringBuilder formatBuilder = new StringBuilder();
+
         for (int width : colWidths) {
             formatBuilder.append("%-").append(width + 2).append("s");
         }
+
         formatBuilder.append("%n");
         return formatBuilder.toString();
     }
@@ -83,6 +93,7 @@ public class OutputPrinter {
     private void printHeaderAndSeparator(String[] headers, int[] colWidths, String format) {
         System.out.printf(format, (Object[]) headers);
         StringBuilder separator = new StringBuilder();
+
         for (int width : colWidths) {
             separator.append("-".repeat(width + 2));
         }

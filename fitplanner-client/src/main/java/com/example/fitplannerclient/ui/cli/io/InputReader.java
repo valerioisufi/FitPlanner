@@ -1,4 +1,4 @@
-package com.example.fitplannerclient.ui.cli;
+package com.example.fitplannerclient.ui.cli.io;
 
 import java.util.Scanner;
 import java.util.function.UnaryOperator;

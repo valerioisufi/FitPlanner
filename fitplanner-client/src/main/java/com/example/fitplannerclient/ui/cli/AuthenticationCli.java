@@ -4,6 +4,8 @@ import com.example.fitplannerclient.bean.auth.LoginBean;
 import com.example.fitplannerclient.bean.auth.RegisterBean;
 import com.example.fitplannerclient.bean.profile.ProfileBean;
 import com.example.fitplannerclient.controller.session.SessionManager;
+import com.example.fitplannerclient.ui.cli.io.InputReader;
+import com.example.fitplannerclient.ui.cli.io.OutputPrinter;
 import com.example.fitplannerclient.util.ValidationUtils;
 
 import java.util.List;

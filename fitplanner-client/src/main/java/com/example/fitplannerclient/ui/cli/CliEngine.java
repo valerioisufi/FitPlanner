@@ -2,6 +2,8 @@ package com.example.fitplannerclient.ui.cli;
 
 import com.example.fitplannerclient.context.UserSessionContext;
 import com.example.fitplannerclient.controller.session.SessionManager;
+import com.example.fitplannerclient.ui.cli.io.InputReader;
+import com.example.fitplannerclient.ui.cli.io.OutputPrinter;
 
 import java.util.Scanner;
 

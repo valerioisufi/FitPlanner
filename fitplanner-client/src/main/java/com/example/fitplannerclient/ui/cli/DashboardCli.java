@@ -7,6 +7,8 @@ import com.example.fitplannerclient.controller.plan.WorkoutPlanManager;
 import com.example.fitplannerclient.ui.cli.athleteCli.SessionsCli;
 import com.example.fitplannerclient.ui.cli.athleteCli.StatisticsCli;
 import com.example.fitplannerclient.ui.cli.athleteCli.WorkoutCli;
+import com.example.fitplannerclient.ui.cli.io.InputReader;
+import com.example.fitplannerclient.ui.cli.io.OutputPrinter;
 
 import java.util.List;
 
@@ -21,16 +23,16 @@ public class DashboardCli implements CliView {
         this.engine = engine;
         this.printer = engine.getPrinter();
         this.reader = engine.getInput();
-        this.planManager = engine.getSessionContext().createWorkoutPlanManager(); //evitiamo i nullPointer inizializzando
+        this.planManager = engine.getSessionContext().createWorkoutPlanManager(); // evitiamo i nullPointer inizializzando
 
         engine.getPrinter().printHeader("DASHBOARD");
         ProfileBean.ProfileType type = engine.getSessionContext().createProfileManager().getProfileInfoAsync().join().getProfileType();
+
         if (type == ProfileBean.ProfileType.ATHLETE) {
-            athleteDashboard(engine);
+            return athleteDashboard(engine);
         } else {
-            trainerDashboard(engine);
+            return trainerDashboard(engine);
         }
-        return this;
     }
 
     private CliView athleteDashboard(CliEngine engine){
@@ -61,6 +63,7 @@ public class DashboardCli implements CliView {
             var plan = planManager.getAssignedPlanAsync().join();
             WorkoutSessionBean todayPlan = plan.getSession(suggestedDay);
             if(todayPlan == null) return;
+
             List<ExerciseModifierBean> exercises = todayPlan.getPlanRoot().getModifiers();
 
             String[] title = {"nome" , todayPlan.getName()};
@@ -69,7 +72,7 @@ public class DashboardCli implements CliView {
                 String[][] data = {
                         {"Esercizio",   exercise.getName()},
                         {"Ripetizioni", exercise.getValue()}
-                        };
+                };
                 printer.printTable(null, data);
             }
         }catch (Exception e){
