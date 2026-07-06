@@ -7,7 +7,6 @@ import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TextField;
 import javafx.scene.layout.*;
 
 import java.util.List;
@@ -15,12 +14,9 @@ import java.util.function.Consumer;
 
 public class SelectExerciseModal extends VBox {
 
-    private final TextField searchField = new TextField();
     private final VBox exerciseListContainer = new VBox(10);
     private Runnable onCloseAction;
     private Consumer<ExerciseDescriptionBean> onSaveAction;
-
-    private List<ExerciseDescriptionBean> allExercises;
 
     public SelectExerciseModal() {
         this.getStyleClass().add("card");
@@ -50,10 +46,6 @@ public class SelectExerciseModal extends VBox {
 
         header.getChildren().addAll(titleBox, spacer, closeBtn);
 
-        searchField.setPromptText("Cerca per nome o gruppo muscolare...");
-        searchField.getStyleClass().add("text-field");
-        searchField.textProperty().addListener((obs, oldVal, newVal) -> filterExercises(newVal));
-
         ScrollPane scrollPane = new ScrollPane(exerciseListContainer);
         scrollPane.setFitToWidth(true);
         scrollPane.setPrefHeight(300);
@@ -69,28 +61,15 @@ public class SelectExerciseModal extends VBox {
 
         footer.getChildren().add(cancelBtn);
 
-        this.getChildren().addAll(header, searchField, scrollPane, footer);
+        this.getChildren().addAll(header, scrollPane, footer);
     }
 
     public void setExercises(List<ExerciseDescriptionBean> exercises) {
-        this.allExercises = exercises;
-        filterExercises(searchField.getText());
-    }
-
-    private void filterExercises(String query) {
         exerciseListContainer.getChildren().clear();
-        if (allExercises == null) return;
+        if (exercises == null) return;
 
-        String q = query != null ? query.toLowerCase() : "";
-
-        for (ExerciseDescriptionBean ex : allExercises) {
-            boolean matchesName = ex.getName().toLowerCase().contains(q);
-            boolean matchesMuscle = ex.getMuscleGroups() != null && ex.getMuscleGroups().stream()
-                    .anyMatch(m -> m.toLowerCase().contains(q));
-
-            if (matchesName || matchesMuscle) {
-                exerciseListContainer.getChildren().add(createExerciseItem(ex));
-            }
+        for (ExerciseDescriptionBean ex : exercises) {
+            exerciseListContainer.getChildren().add(createExerciseItem(ex));
         }
     }
 
