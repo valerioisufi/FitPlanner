@@ -73,6 +73,7 @@ public class WorkoutEngineImpl implements WorkoutEngine {
     }
 
     public ExecutionResult execute(ExecutionContext context) {
+        context.clearBreadcrumb();
         return planRoot.execute(context);
     }
 

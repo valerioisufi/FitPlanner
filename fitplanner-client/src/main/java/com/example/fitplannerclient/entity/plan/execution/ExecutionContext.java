@@ -2,7 +2,9 @@ package com.example.fitplannerclient.entity.plan.execution;
 
 import com.example.fitplannerclient.entity.plan.exercise.ExerciseNode;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -15,6 +17,7 @@ public class ExecutionContext {
 
     private int tickDelta;
     private ExerciseNode activeNode;
+    private final List<String> breadcrumb = new ArrayList<>();
 
     public ExecutionContext() {
         this.currentSignal = ControlSignal.NONE;
@@ -26,6 +29,18 @@ public class ExecutionContext {
 
     public ExerciseNode getActiveNode() {
         return this.activeNode;
+    }
+
+    public String getBreadcrumb() {
+        return String.join(" > ", breadcrumb);
+    }
+
+    public void prependBreadcrumb(String node) {
+        this.breadcrumb.addFirst(node);
+    }
+
+    public void clearBreadcrumb() {
+        this.breadcrumb.clear();
     }
 
     public void reset() {

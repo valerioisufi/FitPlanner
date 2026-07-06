@@ -68,7 +68,10 @@ public class IntervalDecorator extends FlowDecorator {
             int childSleep = result.getRequestedSleepMillis();
             int sleepTime = (childSleep < 0) ? this.timeLeftMillis : Math.min(childSleep, this.timeLeftMillis);
 
+            context.prependBreadcrumb("Interval " + (this.timeLeftMillis / 1000) + "s");
             return new ExecutionResult(PlanNodeState.RUNNING, sleepTime);
+        } else if (result.getState() == PlanNodeState.WAITING) {
+            context.prependBreadcrumb("Interval " + (this.timeLeftMillis / 1000) + "s");
         }
 
         return result;

@@ -102,6 +102,9 @@ public class Block extends PlanNode implements GroupNode {
 
             } else {
                 // il figlio è RUNNING o WAITING
+                if (this.title != null && !this.title.isEmpty()) {
+                    context.prependBreadcrumb(this.title);
+                }
                 return result;
             }
         }

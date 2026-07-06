@@ -35,6 +35,11 @@ public class LoopDecorator extends FlowDecorator {
 
         ExecutionResult result = wrappedNode.execute(context);
 
+        if (result.getState() == PlanNodeState.RUNNING || result.getState() == PlanNodeState.WAITING) {
+            context.prependBreadcrumb("Round " + (currentRound + 1) + "/" + resolvedRounds);
+            return result;
+        }
+
         if (result.getState() == PlanNodeState.COMPLETED || result.getState() == PlanNodeState.SKIPPED) {
             currentRound++;
 

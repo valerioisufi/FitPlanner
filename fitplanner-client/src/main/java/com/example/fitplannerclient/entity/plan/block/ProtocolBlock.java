@@ -33,8 +33,8 @@ public class ProtocolBlock extends PlanNode implements GroupNode {
         this.compositionRules = compositionRules;
         this.blockCompositionRules = blockCompositionRules;
 
-        this.rawGroup = new Block(semanticType + " (Raw)");
-        this.decoratedGroup = new Block(semanticType + " (Decorated)");
+        this.rawGroup = new Block("");
+        this.decoratedGroup = new Block("");
 
         buildExecutionRoot();
     }
@@ -133,6 +133,11 @@ public class ProtocolBlock extends PlanNode implements GroupNode {
         }
 
         ExecutionResult result = internalExecutionRoot.execute(context);
+
+        if (result.getState() == PlanNodeState.RUNNING || result.getState() == PlanNodeState.WAITING) {
+            context.prependBreadcrumb(this.semanticType.replace("_", " "));
+            return result;
+        }
 
         if (result.getState() == PlanNodeState.COMPLETED) {
             this.state = PlanNodeState.COMPLETED;

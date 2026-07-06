@@ -58,7 +58,11 @@ public class TimeLimitDecorator extends FlowDecorator {
                 int childSleep = result.getRequestedSleepMillis();
                 int sleepTime = (childSleep < 0) ? this.timeLeftMillis : Math.min(childSleep, this.timeLeftMillis);
 
+                context.prependBreadcrumb("Time Limit " + (this.timeLeftMillis / 1000) + "s");
                 return new ExecutionResult(PlanNodeState.RUNNING, sleepTime);
+            }
+            if (result.getState() == PlanNodeState.WAITING) {
+                context.prependBreadcrumb("Time Limit " + (this.timeLeftMillis / 1000) + "s");
             }
 
             return result;
