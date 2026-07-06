@@ -151,7 +151,7 @@ public class Navigator {
     }
 
     public void goToAthleteDashboard(ProfileBean athlete) {
-        AthleteDashboardViewController controller = new AthleteDashboardViewController(
+        AthleteDetailsViewController controller = new AthleteDetailsViewController(
                 this,
                 guiManager,
                 athlete,

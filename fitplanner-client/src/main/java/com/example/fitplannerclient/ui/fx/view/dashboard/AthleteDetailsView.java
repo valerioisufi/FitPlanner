@@ -15,7 +15,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-public class AthleteDashboardView extends BorderPane {
+public class AthleteDetailsView extends BorderPane {
 
     private static final String HEADING_H2_CLASS = "heading-h2";
 
@@ -26,7 +26,7 @@ public class AthleteDashboardView extends BorderPane {
     private final VBox progressSection;
     private final VBox logsSection;
 
-    public AthleteDashboardView() {
+    public AthleteDetailsView() {
         contentBox = new VBox(24);
         contentBox.setPadding(new Insets(32));
         contentBox.setAlignment(Pos.TOP_LEFT);
