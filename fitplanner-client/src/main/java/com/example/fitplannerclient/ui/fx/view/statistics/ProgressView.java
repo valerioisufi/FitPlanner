@@ -146,13 +146,13 @@ public class ProgressView extends BorderPane {
 
         chart = new LineChart<>(axisX, axisY);
         chart.setAnimated(false);
+        chart.setMinHeight(350);
         HBox.setHgrow(chart, Priority.ALWAYS);
 
         return chart;
     }
 
-    public void setAvailableExercises(Map<String, String> exercises) {
-        Set<String> previouslySelected = getSelectedExerciseIds();
+    public void setAvailableExercises(Map<String, String> exercises, Set<String> selectedIds) {
         exerciseListBox.getChildren().clear();
 
         exercises.entrySet().stream()
@@ -161,7 +161,7 @@ public class ProgressView extends BorderPane {
                     CheckBox cb = new CheckBox(entry.getValue());
                     cb.setUserData(entry.getKey());
                     cb.getStyleClass().add(BODY_BASE_CLASS);
-                    cb.setSelected(previouslySelected.contains(entry.getKey()));
+                    cb.setSelected(selectedIds != null && selectedIds.contains(entry.getKey()));
                     cb.selectedProperty().addListener((obs, was, is) -> notifySelectionChange());
                     exerciseListBox.getChildren().add(cb);
                 });

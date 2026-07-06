@@ -112,6 +112,12 @@ public class SessionLogRepository {
             entity.setStatus(dto.getStatus().name());
         }
 
+        if (dto.getExerciseLogs() != null) {
+            for (ExerciseLogDTO exerciseDto : dto.getExerciseLogs()) {
+                entity.addLog(exerciseLogDtoToEntity(exerciseDto));
+            }
+        }
+
         return entity;
     }
 

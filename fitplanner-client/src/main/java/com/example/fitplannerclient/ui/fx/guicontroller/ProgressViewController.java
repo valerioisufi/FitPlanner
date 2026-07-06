@@ -12,6 +12,7 @@ import javafx.scene.layout.Pane;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.example.fitplannerclient.controller.session.NotificationManager;
 
@@ -26,6 +27,7 @@ public class ProgressViewController implements GuiController {
     // esercizi disponibili nel periodo corrente e selezione dell'utente
     private FilterBean availableFilters;
     private Set<String> selectedExerciseIds = Set.of();
+    private boolean isFirstLoad = true;
 
     public ProgressViewController(
             Navigator navigator, GuiManager guiManager, WorkoutHistoryManager historyManager, NotificationManager notificationManager
@@ -64,7 +66,15 @@ public class ProgressViewController implements GuiController {
                 .thenAccept(filters ->
                     Platform.runLater(() -> {
                         this.availableFilters = filters;
-                        view.setAvailableExercises(filters.exercises());
+                        
+                        if (isFirstLoad) {
+                            // seleziono di default i primi 5 esercizi
+                            this.selectedExerciseIds = filters.exercises().keySet().stream()
+                                    .limit(5).collect(Collectors.toSet());
+                            this.isFirstLoad = false;
+                        }
+
+                        view.setAvailableExercises(filters.exercises(), this.selectedExerciseIds);
 
                         refreshChart();
                     })

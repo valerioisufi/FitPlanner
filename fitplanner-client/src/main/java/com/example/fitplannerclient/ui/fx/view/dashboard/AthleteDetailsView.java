@@ -63,7 +63,6 @@ public class AthleteDetailsView extends BorderPane {
 
         ScrollPane scrollPane = new ScrollPane(contentBox);
         scrollPane.setFitToWidth(true);
-        scrollPane.setFitToHeight(true);
 
         this.setCenter(scrollPane);
     }
