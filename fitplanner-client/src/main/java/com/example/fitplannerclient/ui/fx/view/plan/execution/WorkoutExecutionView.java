@@ -26,17 +26,21 @@ import java.util.function.Consumer;
 
 public class WorkoutExecutionView extends BorderPane {
 
+    private static final String HEADING_H1_CLASS = "heading-h1";
+    private static final String HEADING_H3_CLASS = "heading-h3";
+
     private static final String BUTTON_HEADER_ICON = "button-header-icon";
     private static final String PLAYER_BUTTON_CLASS = "execution-player-button";
     private static final String CARD_CLASS = "card";
     private static final String BUTTON_PRIMARY_CLASS = "button-primary";
     private static final String BODY_BASE_CLASS = "body-base";
-    private static final String HEADING_H3_CLASS = "heading-h3";
 
     // --- Esercizio corrente (sinistra) ---
     private final VBox exerciseBox = new VBox(15);
+    private final Label lblBreadcrumb = new Label();
     private final Label lblExerciseName = new Label();
     private final Label lblMuscleGroups = new Label();
+    private final Label lblLastWeight = new Label();
     private final FlowPane modifiersPane = new FlowPane(8, 8);
     private final Label lblInstructionSteps = new Label();
     private final Button btnDone = new Button("DONE");
@@ -112,15 +116,25 @@ public class WorkoutExecutionView extends BorderPane {
         exerciseBox.getStyleClass().add(CARD_CLASS);
 
         Label lblExerciseBoxTitle = new Label("Esercizio corrente");
-        lblExerciseBoxTitle.getStyleClass().add("heading-h1");
+        lblExerciseBoxTitle.getStyleClass().add(HEADING_H1_CLASS);
 
-        lblExerciseName.getStyleClass().add("heading-h2");
+        lblBreadcrumb.getStyleClass().addAll(BODY_BASE_CLASS, "execution-breadcrumb");
+        lblBreadcrumb.setWrapText(true);
+
+        lblExerciseName.getStyleClass().addAll(HEADING_H1_CLASS, "execution-title");
         lblExerciseName.setWrapText(true);
+        
+        VBox titleBox = new VBox(2, lblBreadcrumb, lblExerciseName);
 
         lblMuscleGroups.getStyleClass().add("execution-focus-label");
         lblMuscleGroups.setWrapText(true);
 
-        VBox header = new VBox(8, lblExerciseName, lblMuscleGroups, modifiersPane);
+        lblLastWeight.getStyleClass().addAll(BODY_BASE_CLASS, "execution-last-weight-chip");
+        lblLastWeight.setWrapText(true);
+
+        VBox detailsBox = new VBox(8, lblMuscleGroups, lblLastWeight, modifiersPane);
+
+        VBox header = new VBox(16, titleBox, detailsBox);
         header.getStyleClass().addAll("plan-node", "node-exercise");
 
         Label lblInstructionTitle = new Label("Come eseguire");
@@ -170,7 +184,7 @@ public class WorkoutExecutionView extends BorderPane {
         sessionCompletedBox.getStyleClass().add(CARD_CLASS);
 
         Label lblCompletedTitle = new Label("Allenamento completato!");
-        lblCompletedTitle.getStyleClass().add("heading-h1");
+        lblCompletedTitle.getStyleClass().add(HEADING_H1_CLASS);
 
         Label lblCompletedMessage = new Label("Hai completato tutti gli esercizi della sessione. Aggiungi qualche nota e salva il log.");
         lblCompletedMessage.getStyleClass().add(BODY_BASE_CLASS);
@@ -269,10 +283,23 @@ public class WorkoutExecutionView extends BorderPane {
 
     // --- Esercizio corrente ---
 
-    public void setCurrentExercise(String name, String musclesFocus, List<ExerciseModifierBean> modifiers, String instructions) {
+    public void setCurrentExercise(String name, String musclesFocus, List<ExerciseModifierBean> modifiers, String instructions, String breadcrumb, String lastWeight) {
+        lblBreadcrumb.setText(breadcrumb != null ? breadcrumb : "");
+        lblBreadcrumb.setVisible(breadcrumb != null && !breadcrumb.isEmpty());
+        lblBreadcrumb.setManaged(breadcrumb != null && !breadcrumb.isEmpty());
+
         lblExerciseName.setText(name);
         lblMuscleGroups.setText("FOCUS: " + musclesFocus);
         lblInstructionSteps.setText(instructions);
+
+        if (lastWeight != null && !lastWeight.isEmpty()) {
+            lblLastWeight.setText("LAST: " + lastWeight);
+            lblLastWeight.setVisible(true);
+            lblLastWeight.setManaged(true);
+        } else {
+            lblLastWeight.setVisible(false);
+            lblLastWeight.setManaged(false);
+        }
 
         modifiersPane.getChildren().clear();
         if (modifiers != null) {

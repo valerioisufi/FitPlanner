@@ -41,6 +41,7 @@ public class WorkoutExecutionManager {
 
     private final WorkoutExecutionSubject workoutExecutionSubject = new WorkoutExecutionSubject();
     private String lastActiveNodeId = null;
+    private String lastBreadcrumb = null;
     private WorkoutExecutionObserver.WorkoutExecutionPhase lastPhase = null;
     private int currentAbsoluteSessionDay;
 
@@ -79,6 +80,7 @@ public class WorkoutExecutionManager {
                     // Log di sessione accumulato durante l'esecuzione
                     this.currentSessionLog = new SessionLog(System.currentTimeMillis());
                     this.lastActiveNodeId = null;
+                    this.lastBreadcrumb = null;
                     this.lastPhase = null;
 
                     // Inizializza il motore passando la radice della sessione
@@ -127,11 +129,17 @@ public class WorkoutExecutionManager {
     }
 
     private void notifyActiveNodeChange(ExerciseNode activeNode, String breadcrumb) {
-        if (activeNode == null || activeNode.getId().equals(lastActiveNodeId)) {
+        if (activeNode == null) return;
+
+        boolean nodeChanged = !activeNode.getId().equals(lastActiveNodeId);
+        boolean breadcrumbChanged = breadcrumb != null && !breadcrumb.equals(lastBreadcrumb);
+
+        if (!nodeChanged && !breadcrumbChanged) {
             return;
         }
 
         lastActiveNodeId = activeNode.getId();
+        lastBreadcrumb = breadcrumb;
         String resourceId = activeNode.getResourceId();
         
         if (resourceId != null && !resourceId.isEmpty()) {

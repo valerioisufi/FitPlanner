@@ -20,6 +20,7 @@ import javafx.scene.layout.Pane;
 import javafx.util.Duration;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class WorkoutExecutionViewController implements GuiController, WorkoutExecutionObserver {
 
@@ -179,7 +180,17 @@ public class WorkoutExecutionViewController implements GuiController, WorkoutExe
 
             String focus = description.getMuscleGroups() != null ? String.join(", ", description.getMuscleGroups()) : "N/A";
             String instructions = description.getExecution() != null ? description.getExecution() : "Non ci sono informazioni sull'esercizio.";
-            view.setCurrentExercise(description.getName(), focus, currentExercise.getModifiers(), instructions);
+
+            String breadcrumb = currentExercise.getBreadcrumb();
+            String lastWeightStr = "";
+
+            if (currentExercise.getLastWeightLog() != null && currentExercise.getLastWeightLog().getSets() != null) {
+                lastWeightStr = currentExercise.getLastWeightLog().getSets().stream()
+                        .map(set -> set.getLoad() + "kg x " + set.getReps())
+                        .collect(Collectors.joining(" | "));
+            }
+
+            view.setCurrentExercise(description.getName(), focus, currentExercise.getModifiers(), instructions, breadcrumb, lastWeightStr);
 
             loadExerciseLog(currentExercise.getModifiers());
         });

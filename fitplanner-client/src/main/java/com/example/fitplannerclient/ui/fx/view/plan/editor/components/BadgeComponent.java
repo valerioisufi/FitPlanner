@@ -16,7 +16,7 @@ public class BadgeComponent extends HBox {
 
     private String name;
     private String value;
-    private BadgeColor color;
+    private final BadgeColor color;
 
     private Consumer<BadgeComponent> onEditClicked;
 
@@ -42,13 +42,10 @@ public class BadgeComponent extends HBox {
         this.getChildren().addAll(nameLabel, valueLabel);
 
         this.setOnMouseClicked(e -> {
-            logger.info("BadgeComponent clicked! type={}, name={}, value={}", badgeType, name, value);
             if (onEditClicked != null) {
-                logger.info("onEditClicked is NOT null, calling accept...");
+                logger.info("BadgeComponent clicked! type={}, name={}, value={}", badgeType, name, value);
                 onEditClicked.accept(this);
                 e.consume();
-            } else {
-                logger.info("onEditClicked IS NULL!");
             }
         });
     }

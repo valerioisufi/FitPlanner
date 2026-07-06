@@ -792,6 +792,27 @@
     -fx-cursor: hand;
 }
 
+.execution-breadcrumb {
+    -fx-text-fill: #94A3B8;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+.execution-title {
+    -fx-font-size: 28px;
+}
+
+.execution-last-weight-chip {
+    -fx-background-color: #F8FAFC;
+    -fx-text-fill: #64748B;
+    -fx-border-color: #E2E8F0;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-padding: 4 10;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
 /* ==========================================
  * PROGRESS CHART
  * ========================================== */
