@@ -1,5 +1,6 @@
 package com.example.fitplannerclient.ui.cli;
 
+import com.example.fitplannerclient.bean.profile.ProfileBean;
 import com.example.fitplannerclient.context.UserSessionContext;
 import com.example.fitplannerclient.controller.session.SessionManager;
 import com.example.fitplannerclient.ui.cli.io.InputReader;
@@ -27,6 +28,11 @@ public class CliEngine {
 
     public InputReader getInput() { return inputReader; }
     public OutputPrinter getPrinter() { return outputPrinter; }
+
+    /** Tipo di profilo dell'utente corrente (ATHLETE/TRAINER). */
+    public ProfileBean.ProfileType getProfileType() {
+        return getSessionContext().createProfileManager().getProfileInfoAsync().join().getProfileType();
+    }
 
     public void start() {
         CliView currentCliView = initialView();

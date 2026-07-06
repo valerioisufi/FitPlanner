@@ -2,74 +2,57 @@ package com.example.fitplannerclient.ui.cli;
 
 import com.example.fitplannerclient.bean.profile.ProfileBean;
 import com.example.fitplannerclient.controller.profile.ProfileManager;
-import com.example.fitplannerclient.ui.cli.io.InputReader;
-import com.example.fitplannerclient.ui.cli.io.OutputPrinter;
 import com.example.fitplannerclient.util.ValidationUtils;
 
+import java.util.Arrays;
 import java.util.List;
 
-public class ProfileCli implements CliView {
-    CliEngine engine;
-    OutputPrinter printer;
-    InputReader reader;
-    ProfileManager profileManager;
+public class ProfileCli extends AbstractCliView {
+
+    private ProfileManager profileManager;
 
     @Override
-    public CliView execute(CliEngine engine) {
-        this.engine = engine;
-        printer = engine.getPrinter();
-        reader = engine.getInput();
-
+    protected CliView render() {
         profileManager = engine.getSessionContext().createProfileManager();
 
         ProfileBean.ProfileType type = profileManager.getProfileInfoAsync().join().getProfileType();
-        String msg = "";
-        if (type == ProfileBean.ProfileType.ATHLETE) {
-            msg = "Aggiungi trainer";
-        } else {
-            msg = "Visualizza codice d'invito";
-        }
+        String extra = (type == ProfileBean.ProfileType.ATHLETE) ? "Aggiungi trainer" : "Visualizza codice d'invito";
 
         printer.printHeader("PROFILO");
-        printer.printMenu(null, List.of("Indietro", "Visualizza", "Modifica", msg, "Logout"));
+        printer.printMenu(null, List.of("Indietro", "Visualizza", "Modifica", extra, "Logout"));
 
         int scelta = reader.readInt("Scegli un'opzione: ", 1, 5);
 
-        if (scelta == 1) {
-            return new DashboardCli();
-        } else if (scelta == 2) {
-            printProfileData();
-        } else if (scelta == 3) {
-            updateProfileData();
-        } else if (scelta == 4) {
-            if (type == ProfileBean.ProfileType.ATHLETE) {
-                useTrainerCode();
-            } else {
-                printInvitationCode();
+        switch (scelta) {
+            case 1 -> { return new DashboardCli(); }
+            case 2 -> printProfileData();
+            case 3 -> updateProfileData();
+            case 4 -> {
+                if (type == ProfileBean.ProfileType.ATHLETE) {
+                    useTrainerCode();
+                } else {
+                    printInvitationCode();
+                }
             }
-        } else if (scelta == 5) {
-            engine.getSessionManager().logout();
-            return new AuthenticationCli();
+            case 5 -> {
+                engine.getSessionManager().logout();
+                return new AuthenticationCli();
+            }
         }
 
         return this;
     }
 
-    @Override
-    public void stop() {
-        // Intenzionalmente vuoto
-    }
-
-    public void printProfileData() {
+    private void printProfileData() {
         try {
-            var profile = profileManager.getProfileInfoAsync().join();
-            String[] headers = {"Campo", "Valore"};
-            String[][] data = {
-                    {"Nome", profile.getFirstName()},
-                    {"Cognome", profile.getLastName()},
-                    {"Email di contatto", profile.getContactEmail()},
-                    {"Numero di telefono", profile.getPhoneNumber()},
-            };
+            ProfileBean profile = profileManager.getProfileInfoAsync().join();
+            List<String> headers = Arrays.asList("Campo", "Valore");
+            List<List<String>> data = Arrays.asList(
+                    Arrays.asList("Nome", profile.getFirstName() != null ? profile.getFirstName() : ""),
+                    Arrays.asList("Cognome", profile.getLastName() != null ? profile.getLastName() : ""),
+                    Arrays.asList("Email di contatto", profile.getContactEmail() != null ? profile.getContactEmail() : ""),
+                    Arrays.asList("Numero di telefono", profile.getPhoneNumber() != null ? profile.getPhoneNumber() : "")
+            );
             printer.printTable(headers, data);
         } catch (Exception ex) {
             printer.printException("Errore nel recupero del profilo: ", ex);
@@ -78,9 +61,9 @@ public class ProfileCli implements CliView {
         reader.waitForEnter();
     }
 
-    public void updateProfileData() {
-        try{
-            var profile = profileManager.getProfileInfoAsync().join();
+    private void updateProfileData() {
+        try {
+            ProfileBean profile = profileManager.getProfileInfoAsync().join();
             String name = reader.readStringAndValidate("Inserisci il nuovo nome", input -> ValidationUtils.validateName(input, "Nome", 50), profile.getFirstName());
             String surname = reader.readStringAndValidate("Inserisci il nuovo cognome", input -> ValidationUtils.validateName(input, "Cognome", 50), profile.getLastName());
             String email = reader.readStringAndValidate("Inserisci la nuova email di contatto", ValidationUtils::validateEmail, profile.getContactEmail());
@@ -100,7 +83,7 @@ public class ProfileCli implements CliView {
         printProfileData();
     }
 
-    public void printInvitationCode() {
+    private void printInvitationCode() {
         try {
             String code = profileManager.getInvitationCodeAsync().join();
             printer.printSuccess("Codice d'invito: " + code);
@@ -111,8 +94,7 @@ public class ProfileCli implements CliView {
         reader.waitForEnter();
     }
 
-    public void useTrainerCode() {
-
+    private void useTrainerCode() {
         String invitationCode = reader.readString("Inserisci il codice d'invito: ");
 
         try {
@@ -124,6 +106,4 @@ public class ProfileCli implements CliView {
 
         reader.waitForEnter();
     }
-
-
 }

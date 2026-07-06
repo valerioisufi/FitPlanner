@@ -1,6 +1,9 @@
 package com.example.fitplannerclient.ui.cli.io;
 
 import java.util.List;
+import com.example.fitplannerclient.bean.plan.PlanNodeBean;
+import com.example.fitplannerclient.bean.plan.ExerciseModifierBean;
+import com.example.fitplannerclient.bean.plan.FlowDecoratorBean;
 
 public class OutputPrinter {
 
@@ -46,31 +49,31 @@ public class OutputPrinter {
     /**
      * Stampa i dati in formato tabellare.
      */
-    public void printTable(String[] headers, String[][] data) {
-        if (headers == null || headers.length == 0) return;
+    public void printTable(List<String> headers, List<List<String>> data) {
+        if (headers == null || headers.isEmpty()) return;
         int[] colWidths = calculateColumnWidths(headers, data);
 
         String format = buildFormatString(colWidths);
         printHeaderAndSeparator(headers, colWidths, format);
 
         if (data != null) {
-            for (String[] row : data) {
-                System.out.printf(format, (Object[]) row);
+            for (List<String> row : data) {
+                System.out.printf(format, row.toArray());
             }
         }
     }
 
-    private int[] calculateColumnWidths(String[] headers, String[][] data) {
-        int[] colWidths = new int[headers.length];
-        for (int i = 0; i < headers.length; i++) {
-            colWidths[i] = headers[i].length();
+    private int[] calculateColumnWidths(List<String> headers, List<List<String>> data) {
+        int[] colWidths = new int[headers.size()];
+        for (int i = 0; i < headers.size(); i++) {
+            colWidths[i] = headers.get(i).length();
         }
 
         if (data != null) {
-            for (String[] row : data) {
-                for (int i = 0; i < row.length; i++) {
-                    if (row[i] != null && row[i].length() > colWidths[i]) {
-                        colWidths[i] = row[i].length();
+            for (List<String> row : data) {
+                for (int i = 0; i < row.size(); i++) {
+                    if (row.get(i) != null && row.get(i).length() > colWidths[i]) {
+                        colWidths[i] = row.get(i).length();
                     }
                 }
             }
@@ -90,13 +93,63 @@ public class OutputPrinter {
         return formatBuilder.toString();
     }
 
-    private void printHeaderAndSeparator(String[] headers, int[] colWidths, String format) {
-        System.out.printf(format, (Object[]) headers);
+    private void printHeaderAndSeparator(List<String> headers, int[] colWidths, String format) {
+        System.out.printf(format, headers.toArray());
         StringBuilder separator = new StringBuilder();
 
         for (int width : colWidths) {
             separator.append("-".repeat(width + 2));
         }
         System.out.println(separator.toString());
+    }
+
+    public void printPlan(PlanNodeBean root) {
+        if (root == null) {
+            System.out.println("Plan is empty.");
+            return;
+        }
+        System.out.println();
+        printPlanRecursive(root, "", true);
+        System.out.println();
+    }
+
+    private void printPlanRecursive(PlanNodeBean node, String prefix, boolean isTail) {
+        StringBuilder nodeDisplay = new StringBuilder();
+        nodeDisplay.append(node.getName());
+        
+        if (node.getType() != null) {
+            nodeDisplay.append(" [").append(node.getType()).append("]");
+        }
+
+        if (node.getModifiers() != null && !node.getModifiers().isEmpty()) {
+            nodeDisplay.append(" (");
+            for (int i = 0; i < node.getModifiers().size(); i++) {
+                ExerciseModifierBean mod = node.getModifiers().get(i);
+                nodeDisplay.append(mod.getName()).append(": ").append(mod.getValue());
+                if (i < node.getModifiers().size() - 1) nodeDisplay.append(", ");
+            }
+            nodeDisplay.append(")");
+        }
+
+        if (node.getFlowDecorators() != null && !node.getFlowDecorators().isEmpty()) {
+            nodeDisplay.append(" {");
+            for (int i = 0; i < node.getFlowDecorators().size(); i++) {
+                FlowDecoratorBean dec = node.getFlowDecorators().get(i);
+                nodeDisplay.append(dec.getType()).append(": ").append(dec.getValue());
+                if (i < node.getFlowDecorators().size() - 1) nodeDisplay.append(", ");
+            }
+            nodeDisplay.append("}");
+        }
+
+        System.out.println(prefix + (isTail ? "└── " : "├── ") + nodeDisplay);
+
+        if (node.getChildren() != null) {
+            for (int i = 0; i < node.getChildren().size() - 1; i++) {
+                printPlanRecursive(node.getChildren().get(i), prefix + (isTail ? "    " : "│   "), false);
+            }
+            if (!node.getChildren().isEmpty()) {
+                printPlanRecursive(node.getChildren().getLast(), prefix + (isTail ? "    " : "│   "), true);
+            }
+        }
     }
 }

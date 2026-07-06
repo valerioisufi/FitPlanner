@@ -4,42 +4,28 @@ import com.example.fitplannerclient.bean.auth.LoginBean;
 import com.example.fitplannerclient.bean.auth.RegisterBean;
 import com.example.fitplannerclient.bean.profile.ProfileBean;
 import com.example.fitplannerclient.controller.session.SessionManager;
-import com.example.fitplannerclient.ui.cli.io.InputReader;
-import com.example.fitplannerclient.ui.cli.io.OutputPrinter;
 import com.example.fitplannerclient.util.ValidationUtils;
 
 import java.util.List;
 
-public class AuthenticationCli implements CliView {
+public class AuthenticationCli extends AbstractCliView {
 
-    CliEngine engine;
-    OutputPrinter printer;
-    InputReader reader;
-
-    SessionManager sessionManager;
+    private SessionManager sessionManager;
 
     @Override
-    public CliView execute(CliEngine engine) {
-        this.engine = engine;
-        printer = engine.getPrinter();
-        reader = engine.getInput();
-
+    protected CliView render() {
         sessionManager = engine.getSessionManager();
 
         printer.printHeader("AUTENTICAZIONE");
         printer.printMenu(null, List.of("Accedi", "Registrati", "Esci"));
 
         int scelta = reader.readInt("Scegli un'opzione: ", 1, 3);
-
-        if (scelta == 1) {
-            return login();
-        } else if (scelta == 2) {
-            return register();
-        } else if (scelta == 3) {
-            return null; // Esci dall'app
-        }
-
-        return this;
+        return switch (scelta) {
+            case 1 -> login();
+            case 2 -> register();
+            case 3 -> null; // Esci dall'app
+            default -> this;
+        };
     }
 
     private CliView login() {
@@ -53,8 +39,7 @@ public class AuthenticationCli implements CliView {
             printer.printSuccess("Login effettuato con successo!");
             return new DashboardCli();
         } catch (Exception ex) {
-            String errorMsg = ex.getCause() != null ? ex.getCause().getMessage() : ex.getMessage();
-            printer.printError("Errore nel login: " + errorMsg);
+            printer.printException("Errore nel login: ", ex);
             return this; // Riprova a fare il login o la registrazione
         }
     }
@@ -84,7 +69,6 @@ public class AuthenticationCli implements CliView {
         profile.setLastName(surname);
         profile.setContactEmail(contactEmail);
         profile.setPhoneNumber(phoneNumber);
-
         profile.setProfileType(profileType);
 
         RegisterBean registerBean = new RegisterBean();
@@ -97,14 +81,8 @@ public class AuthenticationCli implements CliView {
             printer.printSuccess("Registrazione effettuata con successo!");
             return new DashboardCli();
         } catch (Exception ex) {
-            String errorMsg = ex.getCause() != null ? ex.getCause().getMessage() : ex.getMessage();
-            printer.printError("Errore durante la registrazione: " + errorMsg);
+            printer.printException("Errore durante la registrazione: ", ex);
             return this;
         }
-    }
-
-    @Override
-    public void stop() { 
-        // Intenzionalmente vuoto
     }
 }

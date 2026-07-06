@@ -2,7 +2,6 @@ package com.example.fitplannerclient.bean.exercise;
 
 import com.example.fitplannerclient.bean.log.ExerciseLogBean;
 import com.example.fitplannerclient.bean.plan.ExerciseModifierBean;
-import com.example.fitplannerclient.entity.log.ExerciseLog;
 
 import java.util.ArrayList;
 import java.util.List;

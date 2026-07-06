@@ -46,4 +46,4 @@ build/
 
 ### Project ###
 /filesystem_db/
-/cli.log
+/app.log

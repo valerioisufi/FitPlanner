@@ -1,6 +1,10 @@
 package com.example.fitplannerclient.ui.cli.io;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.Scanner;
+import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
 public class InputReader {
@@ -41,7 +45,7 @@ public class InputReader {
 
         if (msg != null) {
             printer.printError(msg);
-            return readStringAndValidate(prompt, validator);
+            return readStringAndValidate(prompt, validator, defaultInput);
         }
 
         return input;
@@ -87,5 +91,29 @@ public class InputReader {
     public void waitForEnter() {
         System.out.println("Premi invio per continuare...");
         scanner.nextLine();
+    }
+
+    /**
+     * Mostra un menu numerato degli {@code items} (più una voce di annullamento)
+     * e restituisce l'elemento scelto, o vuoto se l'utente annulla.
+     */
+    public <T> Optional<T> selectFrom(String title, List<T> items, Function<T, String> label) {
+        return selectFrom(title, items, label, "Annulla");
+    }
+
+    public <T> Optional<T> selectFrom(String title, List<T> items, Function<T, String> label, String cancelLabel) {
+        List<String> options = new ArrayList<>();
+        for (T item : items) {
+            options.add(label.apply(item));
+        }
+        options.add(cancelLabel);
+
+        printer.printMenu(title, options);
+        int choice = readInt("Scelta: ", 1, options.size());
+
+        if (choice == options.size()) {
+            return Optional.empty();
+        }
+        return Optional.of(items.get(choice - 1));
     }
 }
