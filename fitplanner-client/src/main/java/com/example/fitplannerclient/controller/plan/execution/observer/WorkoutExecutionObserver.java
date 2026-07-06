@@ -1,12 +1,14 @@
 package com.example.fitplannerclient.controller.plan.execution.observer;
 
-import com.example.fitplannerclient.bean.exercise.ExerciseDescriptionBean;
+import com.example.fitplannerclient.bean.exercise.CurrentExerciseBean;
 
 public interface WorkoutExecutionObserver {
 
-    void updateCurrentExercise(ExerciseDescriptionBean description);
+    void updateCurrentExercise(CurrentExerciseBean currentExercise);
 
     void updateCurrentWorkoutEngineState(WorkoutExecutionState state);
+
+    void updateExecutionPhase(WorkoutExecutionPhase phase);
 
     void updateCurrentRestTime(int restTimeSeconds);
 
@@ -14,5 +16,11 @@ public interface WorkoutExecutionObserver {
         STOPPED,
         PLAYING,
         PAUSED
+    }
+
+    enum WorkoutExecutionPhase {
+        EXERCISE,
+        REST,
+        COMPLETED
     }
 }

@@ -154,7 +154,7 @@ class TestRestDecorator {
         ExecutionResult result = rest.execute(context);
 
         // Assert
-        assertEquals(PlanNodeState.REVERT, result.getState());
+        assertEquals(PlanNodeState.RUNNING, result.getState());
         assertEquals(ControlSignal.NONE, context.getCurrentSignal());
         assertEquals(1, child.getResetCallCount()); 
     }

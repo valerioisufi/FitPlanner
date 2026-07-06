@@ -86,7 +86,7 @@ public class IntervalDecorator extends FlowDecorator {
             context.consumeTickDelta(context.getTickDelta());
 
             this.reset();
-            return new ExecutionResult(PlanNodeState.REVERT);
+            return this.execute(context);
         }
 
         int consumed = Math.min(this.timeLeftMillis, delta);

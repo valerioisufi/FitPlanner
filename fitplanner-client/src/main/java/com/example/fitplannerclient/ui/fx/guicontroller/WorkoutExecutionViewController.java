@@ -1,18 +1,17 @@
 package com.example.fitplannerclient.ui.fx.guicontroller;
 
+import com.example.fitplannerclient.bean.exercise.CurrentExerciseBean;
 import com.example.fitplannerclient.bean.exercise.ExerciseDescriptionBean;
-import com.example.fitplannerclient.bean.plan.NodeType;
-import com.example.fitplannerclient.bean.plan.PlanNodeBean;
-import com.example.fitplannerclient.controller.exercise.ExerciseLibraryManager;
+import com.example.fitplannerclient.bean.log.ExerciseLogBean;
+import com.example.fitplannerclient.bean.log.ExerciseSetBean;
+import com.example.fitplannerclient.bean.plan.ExerciseModifierBean;
 import com.example.fitplannerclient.controller.plan.execution.WorkoutExecutionManager;
 import com.example.fitplannerclient.controller.plan.execution.observer.WorkoutExecutionObserver;
 import com.example.fitplannerclient.ui.fx.GuiController;
 import com.example.fitplannerclient.ui.fx.GuiManager;
 import com.example.fitplannerclient.ui.fx.Navigator;
-import com.example.fitplannerclient.ui.fx.components.Icon;
 import com.example.fitplannerclient.ui.fx.view.plan.execution.WorkoutExecutionView;
-import com.example.fitplannerclient.bean.log.ExerciseLogBean;
-import com.example.fitplannerclient.bean.log.ExerciseSetBean;
+import com.example.fitplannerclient.util.ValidationUtils;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -20,31 +19,24 @@ import javafx.application.Platform;
 import javafx.scene.layout.Pane;
 import javafx.util.Duration;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class WorkoutExecutionViewController implements GuiController, WorkoutExecutionObserver {
 
-    private static final String BUTTON_HEADER_ICON = "button-header-icon";
+    private static final String DEFAULT_RPE = "8";
 
     private final WorkoutExecutionView view;
 
     private final String planId;
     private final int sessionDay;
-    private final List<PlanNodeBean> exerciseNodes = new ArrayList<>();
-    private final List<ExerciseLogBean> exerciseLogs = new ArrayList<>();
-    private final List<ExerciseSetBean> currentExerciseSets = new ArrayList<>();
 
-    private int currentExerciseIndex = 0;
+    private String currentExerciseId;
     private int currentSetNum = 1;
-    private int totalSetsForExercise = 3;
-    private int targetRepsForExercise = 10;
     private boolean isPlaying = true;
 
     private final Navigator navigator;
-    private final WorkoutExecutionManager executionManager;
-    private final ExerciseLibraryManager exerciseLibraryManager;
     private final GuiManager guiManager;
+    private final WorkoutExecutionManager executionManager;
 
     private Timeline restTimeline;
     private int remainingRestSeconds;
@@ -55,22 +47,32 @@ public class WorkoutExecutionViewController implements GuiController, WorkoutExe
         this.planId = planId;
         this.sessionDay = sessionDay;
         this.executionManager = executionManager;
-        this.exerciseLibraryManager = exerciseLibraryManager;
-        this.guiManager = guiManager;
 
         this.view = new WorkoutExecutionView(null);
 
-        setupButtons();
+        bindValidators();
+        setupActions();
     }
 
-    private void setupButtons() {
-        this.view.getBtnSkipPrevious().setOnAction(e -> skipPrevious());
-        this.view.getBtnPlayPause().setOnAction(e -> togglePlayPause());
-        this.view.getBtnSkipNext().setOnAction(e -> skipNext());
-        this.view.getBtnEndWorkout().setOnAction(e -> finishWorkoutSession());
-        
-        this.view.setOnLogSetAction(this::handleLogSet);
-        this.view.setOnSkipRestAction(this::skipNext);
+    private void bindValidators() {
+        view.getWeightField().setValidator(weight -> ValidationUtils.validateDecimalInRange(weight, "Peso", 0, 1000));
+        view.getRepsField().setValidator(reps -> ValidationUtils.validateIntegerInRange(reps, "Reps", 1, 999));
+        view.getRpeField().setValidator(rpe -> ValidationUtils.validateIntegerInRange(rpe, "RPE", 1, 10));
+        view.getNotesField().setValidator(notes -> ValidationUtils.validateOptionalMaxLength(notes, "Note", 500));
+        view.getSessionNotesField().setValidator(notes -> ValidationUtils.validateOptionalMaxLength(notes, "Note", 500));
+    }
+
+    private void setupActions() {
+        view.setOnSkipPreviousAction(executionManager::skipPrevious);
+        view.setOnPlayPauseAction(this::togglePlayPause);
+        view.setOnSkipNextAction(executionManager::skipNext);
+        view.setOnEndWorkoutAction(this::finishWorkoutSession);
+
+        view.setOnDoneAction(executionManager::done);
+        view.setOnSkipRestAction(executionManager::skipNext);
+        view.setOnSaveSessionAction(this::finishWorkoutSession);
+        view.setOnLogSetAction(this::handleLogSet);
+        view.setOnNotesChanged(this::handleExerciseNotesChanged);
     }
 
     @Override
@@ -83,17 +85,8 @@ public class WorkoutExecutionViewController implements GuiController, WorkoutExe
         executionManager.attachObserver(this);
         executionManager.startSessionAsync(planId, sessionDay)
             .thenRun(() ->
-                Platform.runLater(() -> {
-                    executionManager.play();
-                    PlanNodeBean rootBean = executionManager.getSessionRootBeanForUi();
-                    collectExerciseNodes(rootBean);
-            
-                    if (exerciseNodes.isEmpty()) {
-                        navigator.goHome();
-                    } else {
-                        // Il motore provvederà a fare tick e aggiornare la UI via observer
-                    }
-                })
+                    // Il motore provvederà a fare tick e aggiornare la UI via observer
+                    Platform.runLater(executionManager::play)
             )
             .exceptionally(ex -> {
                 Platform.runLater(() -> {
@@ -110,75 +103,48 @@ public class WorkoutExecutionViewController implements GuiController, WorkoutExe
         if (restTimeline != null) restTimeline.stop();
     }
 
-    private void collectExerciseNodes(PlanNodeBean node) {
-        if (node == null) return;
-        if (node.getType() == NodeType.EXERCISE) {
-            exerciseNodes.add(node);
-        }
-        if (node.getChildren() != null) {
-            for (PlanNodeBean child : node.getChildren()) {
-                collectExerciseNodes(child);
-            }
-        }
-    }
-
-    private void skipPrevious() {
-        saveCurrentExerciseLogs();
-        executionManager.skipPrevious();
-    }
-
-    private void skipNext() {
-        saveCurrentExerciseLogs();
-        executionManager.skipNext();
-    }
-
     private void togglePlayPause() {
         if (isPlaying) {
             executionManager.pause();
-            view.getBtnPlayPause().setGraphic(new Icon("play-icon", 40, List.of(BUTTON_HEADER_ICON)));
         } else {
             executionManager.play();
-            view.getBtnPlayPause().setGraphic(new Icon("pause-icon", 40, List.of(BUTTON_HEADER_ICON)));
         }
-        isPlaying = !isPlaying;
     }
 
     private void handleLogSet() {
-        String weightStr = view.getCurrentWeight();
-        String repsStr = view.getCurrentReps();
-        String rpeStr = view.getCurrentRpe();
-        
-        double weight = 0.0;
-        int reps = 0;
-        int rpe = 0;
-        try { weight = Double.parseDouble(weightStr); } catch (NumberFormatException ignored) { /* ignored */ }
-        try { reps = Integer.parseInt(repsStr); } catch (NumberFormatException ignored) { /* ignored */ }
-        try { rpe = Integer.parseInt(rpeStr); } catch (NumberFormatException ignored) { /* ignored */ }
+        if (currentExerciseId == null) return;
 
-        // Save logic
-        currentExerciseSets.add(new ExerciseSetBean(reps, weight, rpe));
-        
-        // Add row to view
-        view.addLoggedSetRow(currentSetNum, weightStr, repsStr, rpeStr);
-        
-        // Prepare next set
+        // Le validazioni vengono valutate separatamente per evitare lo short-circuit,
+        // così TUTTI i campi mostrano il proprio errore contemporaneamente
+        boolean isWeightValid = view.getWeightField().validate();
+        boolean isRepsValid = view.getRepsField().validate();
+        boolean isRpeValid = view.getRpeField().validate();
+        boolean isValid = isWeightValid && isRepsValid && isRpeValid;
+
+        if (!isValid) return;
+
+        double weight = Double.parseDouble(view.getWeight());
+        int reps = Integer.parseInt(view.getReps());
+        int rpe = Integer.parseInt(view.getRpe());
+
+        executionManager.logExerciseSet(currentExerciseId, new ExerciseSetBean(reps, weight, rpe));
+
+        view.addLoggedSetRow(currentSetNum, view.getWeight(), view.getReps(), view.getRpe());
         currentSetNum++;
-        view.setCurrentSetNumber(currentSetNum, weightStr, String.valueOf(targetRepsForExercise));
+        view.setCurrentSetNumber(currentSetNum);
     }
 
-    private void saveCurrentExerciseLogs() {
-        if (currentExerciseSets.isEmpty()) return;
-
-        PlanNodeBean exNode = exerciseNodes.get(currentExerciseIndex);
-        ExerciseLogBean exLog = new ExerciseLogBean(exNode.getName(), exNode.getId(), new ArrayList<>(currentExerciseSets), "Log");
-        exerciseLogs.add(exLog);
-        currentExerciseSets.clear();
+    private void handleExerciseNotesChanged(String notes) {
+        if (currentExerciseId == null) return;
+        if (view.getNotesField().validate()) {
+            executionManager.updateExerciseNotes(currentExerciseId, notes);
+        }
     }
 
     private void finishWorkoutSession() {
-        saveCurrentExerciseLogs();
-        
-        executionManager.finishAndSaveSession()
+        if (!view.getSessionNotesField().validate()) return;
+
+        executionManager.finishAndSaveSession(view.getSessionNotes())
                 .thenRun(() -> Platform.runLater(() -> {
                     guiManager.showNotification(GuiManager.NotificationType.SUCCESS, "Allenamento salvato con successo!");
                     navigator.goHome();
@@ -190,14 +156,73 @@ public class WorkoutExecutionViewController implements GuiController, WorkoutExe
     }
 
     @Override
-    public void updateCurrentExercise(ExerciseDescriptionBean description) {
+    public void updateExecutionPhase(WorkoutExecutionPhase phase) {
         Platform.runLater(() -> {
             if (restTimeline != null) restTimeline.stop();
-            view.showExerciseDetails();
-            String focus = description.getMuscleGroups() != null ? String.join(", ", description.getMuscleGroups()) : "N/A";
-            view.setExerciseDetails(focus);
-            view.setInstructions(description.getName(), description.getExecution() != null ? description.getExecution() : "Nessuna istruzione fornita.");
+
+            switch (phase) {
+                case EXERCISE -> view.showExerciseDetails();
+                case REST -> view.showRestTimer();
+                case COMPLETED -> {
+                    view.setPlayerControlsDisable(true);
+                    view.showSessionCompleted();
+                }
+            }
         });
+    }
+
+    @Override
+    public void updateCurrentExercise(CurrentExerciseBean currentExercise) {
+        Platform.runLater(() -> {
+            ExerciseDescriptionBean description = currentExercise.getExerciseDescription();
+            currentExerciseId = description.getExerciseId();
+
+            String focus = description.getMuscleGroups() != null ? String.join(", ", description.getMuscleGroups()) : "N/A";
+            String instructions = description.getExecution() != null ? description.getExecution() : "Non ci sono informazioni sull'esercizio.";
+            view.setCurrentExercise(description.getName(), focus, currentExercise.getModifiers(), instructions);
+
+            loadExerciseLog(currentExercise.getModifiers());
+        });
+    }
+
+    private void loadExerciseLog(List<ExerciseModifierBean> modifiers) {
+        ExerciseLogBean exerciseLog = executionManager.getSessionExerciseLog(currentExerciseId);
+
+        view.clearSets();
+        int setNum = 1;
+        for (ExerciseSetBean set : exerciseLog.getSets()) {
+            view.addLoggedSetRow(setNum++, String.valueOf(set.getLoad()), String.valueOf(set.getReps()), String.valueOf(set.getRpe()));
+        }
+        currentSetNum = setNum;
+        view.setCurrentSetNumber(currentSetNum);
+
+        prefillSetForm(exerciseLog, modifiers);
+        view.setNotesText(exerciseLog.getNotes());
+    }
+
+    private void prefillSetForm(ExerciseLogBean exerciseLog, List<ExerciseModifierBean> modifiers) {
+        String weight = numericModifierValue(modifiers, "WEIGHT");
+        String reps = numericModifierValue(modifiers, "REPS");
+        String rpe = numericModifierValue(modifiers, "RPE");
+
+        if (!exerciseLog.getSets().isEmpty()) {
+            ExerciseSetBean lastSet = exerciseLog.getSets().getLast();
+            weight = String.valueOf(lastSet.getLoad());
+            reps = String.valueOf(lastSet.getReps());
+            rpe = String.valueOf(lastSet.getRpe());
+        }
+
+        view.setSetFormValues(weight, reps, rpe.isEmpty() ? DEFAULT_RPE : rpe);
+    }
+
+    private String numericModifierValue(List<ExerciseModifierBean> modifiers, String modifierName) {
+        if (modifiers == null) return "";
+        return modifiers.stream()
+                .filter(mod -> modifierName.equalsIgnoreCase(mod.getName()))
+                .map(ExerciseModifierBean::getValue)
+                .filter(value -> value != null && value.matches("\\d+"))
+                .findFirst()
+                .orElse("");
     }
 
     @Override
@@ -205,10 +230,14 @@ public class WorkoutExecutionViewController implements GuiController, WorkoutExe
         Platform.runLater(() -> {
             if (state == WorkoutExecutionState.PLAYING) {
                 isPlaying = true;
-                view.getBtnPlayPause().setGraphic(new Icon("pause-icon", 40, List.of(BUTTON_HEADER_ICON)));
+                view.setPlaying(true);
+
+                if (restTimeline != null) restTimeline.play();
             } else if (state == WorkoutExecutionState.PAUSED) {
                 isPlaying = false;
-                view.getBtnPlayPause().setGraphic(new Icon("play-icon", 40, List.of(BUTTON_HEADER_ICON)));
+                view.setPlaying(false);
+
+                if (restTimeline != null) restTimeline.pause();
             }
         });
     }
@@ -217,29 +246,28 @@ public class WorkoutExecutionViewController implements GuiController, WorkoutExe
     public void updateCurrentRestTime(int restTimeSeconds) {
         Platform.runLater(() -> {
             if (restTimeline != null) restTimeline.stop();
-            
-            view.showRestTimer();
+
             remainingRestSeconds = restTimeSeconds;
-            
-            int min = restTimeSeconds / 60;
-            int sec = restTimeSeconds % 60;
-            String timeStr = String.format("%02d:%02d", min, sec);
+
+            String timeStr = formatSeconds(restTimeSeconds);
             view.setTimerTarget(timeStr);
             view.setTimerText(timeStr);
-            
+
             restTimeline = new Timeline(new KeyFrame(Duration.seconds(1), e -> {
                 remainingRestSeconds--;
                 if (remainingRestSeconds <= 0) {
                     restTimeline.stop();
                     // Il motore proseguirà da solo e invierà l'update del nuovo esercizio.
                 } else {
-                    int m = remainingRestSeconds / 60;
-                    int s = remainingRestSeconds % 60;
-                    view.setTimerText(String.format("%02d:%02d", m, s));
+                    view.setTimerText(formatSeconds(remainingRestSeconds));
                 }
             }));
             restTimeline.setCycleCount(Animation.INDEFINITE);
             restTimeline.play();
         });
+    }
+
+    private String formatSeconds(int totalSeconds) {
+        return String.format("%02d:%02d", totalSeconds / 60, totalSeconds % 60);
     }
 }

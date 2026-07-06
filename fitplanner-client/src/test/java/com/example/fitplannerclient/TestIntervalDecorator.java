@@ -159,7 +159,7 @@ class TestIntervalDecorator {
         ExecutionResult result = interval.execute(context);
 
         // Assert
-        assertEquals(PlanNodeState.REVERT, result.getState());
+        assertEquals(PlanNodeState.RUNNING, result.getState());
         assertEquals(1, child.getResetCallCount());
         assertEquals(0, context.getTickDelta());
     }

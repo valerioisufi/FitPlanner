@@ -1,6 +1,8 @@
 package com.example.fitplannerclient.controller.plan.execution.engine;
 
 import com.example.fitplannerclient.controller.plan.execution.engine.state.EngineState;
+import com.example.fitplannerclient.entity.plan.execution.ExecutionResult;
+import com.example.fitplannerclient.entity.plan.execution.WorkoutStatus;
 import com.example.fitplannerclient.entity.plan.exercise.ExerciseNode;
 
 public interface WorkoutEngine {
@@ -14,7 +16,7 @@ public interface WorkoutEngine {
 
     @FunctionalInterface
     interface UpdateCallback {
-        void onUpdate(EngineState state, ExerciseNode activeNode, int timeRemainingMillis);
+        void onUpdate(WorkoutStatus status, ExecutionResult result, ExerciseNode activeNode);
     }
 
     void setOnUpdateListener(UpdateCallback callback);

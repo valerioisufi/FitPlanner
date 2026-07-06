@@ -4,9 +4,10 @@ import com.example.fitplannerclient.controller.plan.execution.engine.WorkoutEngi
 import com.example.fitplannerclient.entity.plan.execution.WorkoutStatus;
 import com.example.fitplannerclient.mock.DummyPlanNode;
 import org.junit.jupiter.api.Test;
-import java.util.concurrent.TimeUnit;
-import static org.awaitility.Awaitility.await;
 
+import java.util.concurrent.TimeUnit;
+
+import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -53,7 +54,7 @@ class TestWorkoutEngine {
 
         // Act
         engine.play();
-        
+
         await().atMost(200, TimeUnit.MILLISECONDS).until(() ->
                 engine.getState().getStatus() == WorkoutStatus.PLAYING
         );
@@ -96,6 +97,9 @@ class TestWorkoutEngine {
         WorkoutEngineImpl engine = new WorkoutEngineImpl(rootNode);
 
         engine.play();
+        await().atMost(200, TimeUnit.MILLISECONDS).until(() ->
+                engine.getState().getStatus() == WorkoutStatus.PLAYING
+        );
         engine.pause();
 
         int executeCallsBeforeSkip = rootNode.getExecuteCallCount();
@@ -116,6 +120,9 @@ class TestWorkoutEngine {
         WorkoutEngineImpl engine = new WorkoutEngineImpl(rootNode);
 
         engine.play();
+        await().atMost(200, TimeUnit.MILLISECONDS).until(() ->
+                engine.getState().getStatus() == WorkoutStatus.PLAYING
+        );
         engine.pause();
 
         int executeCallsBeforeDone = rootNode.getExecuteCallCount();

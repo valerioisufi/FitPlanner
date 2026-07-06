@@ -1,6 +1,7 @@
 package com.example.fitplannerclient.controller.plan;
 
 import com.example.fitplannerclient.bean.plan.*;
+import com.example.fitplannerclient.entity.ExerciseDescription;
 import com.example.fitplannerclient.entity.plan.WorkoutPlan;
 import com.example.fitplannerclient.entity.plan.WorkoutPlanSummary;
 import com.example.fitplannerclient.entity.plan.WorkoutSchedule;
@@ -46,8 +47,11 @@ public class WorkoutPlanManager {
     }
 
     public CompletableFuture<WorkoutPlanBean> getAssignedPlanAsync() {
-        return planRepository.getAssignedPlanAsync()
-                .thenApply(this::entityToBean);
+        CompletableFuture<WorkoutPlan> planFuture = planRepository.getAssignedPlanAsync();
+        CompletableFuture<List<ExerciseDescription>> exercisesFuture = exerciseRepository.getExercisesAsync(null);
+
+        return CompletableFuture.allOf(planFuture, exercisesFuture)
+                .thenApply(v -> entityToBean(planFuture.join()));
     }
 
     public CompletableFuture<WorkoutPlanBean> getAssignedPlanOfAthleteAsync(String athleteId) {
@@ -58,9 +62,13 @@ public class WorkoutPlanManager {
                             .findFirst()
                             .map(WorkoutPlanSummary::planId);
 
-                    return planId.map(s -> planRepository.getPlanByIdAsync(s)
-                                    .thenApply(this::entityToBean)
-                            ).orElseGet(() -> CompletableFuture.completedFuture(null));
+                    return planId.map(s -> {
+                        CompletableFuture<WorkoutPlan> planFuture = planRepository.getPlanByIdAsync(s);
+                        CompletableFuture<List<ExerciseDescription>> exercisesFuture = exerciseRepository.getExercisesAsync(null);
+                        
+                        return CompletableFuture.allOf(planFuture, exercisesFuture)
+                                .thenApply(v -> entityToBean(planFuture.join()));
+                    }).orElseGet(() -> CompletableFuture.completedFuture(null));
                 });
     }
 
@@ -74,8 +82,12 @@ public class WorkoutPlanManager {
      * Restituisce null se non c'è un piano assegnato
      */
     public CompletableFuture<WorkoutScheduleBean> getCurrentCycleScheduleAsync() {
-        return planRepository.getCurrentCycleScheduleAsync()
-                .thenCombine(planRepository.getAssignedPlanAsync(), this::buildScheduleBean);
+        CompletableFuture<WorkoutSchedule> scheduleFuture = planRepository.getCurrentCycleScheduleAsync();
+        CompletableFuture<WorkoutPlan> planFuture = planRepository.getAssignedPlanAsync();
+        CompletableFuture<List<ExerciseDescription>> exercisesFuture = exerciseRepository.getExercisesAsync(null);
+
+        return CompletableFuture.allOf(scheduleFuture, planFuture, exercisesFuture)
+                .thenApply(v -> buildScheduleBean(scheduleFuture.join(), planFuture.join()));
     }
 
     private WorkoutScheduleBean buildScheduleBean(WorkoutSchedule schedule, WorkoutPlan plan) {
@@ -126,7 +138,6 @@ public class WorkoutPlanManager {
         PlanNodeBean rootNode = null;
         if (session.getRoot() != null) {
             PlanToBeanVisitor visitor = new PlanToBeanVisitor(this::resolveExerciseName);
-            visitor.getAccumulatedDecorators().clear();
             session.getRoot().accept(visitor);
             rootNode = visitor.getCurrentPlanNodeBean();
         }
@@ -138,15 +149,7 @@ public class WorkoutPlanManager {
 
     public WorkoutPlanBean entityToBean(WorkoutPlan plan) {
         if (plan == null) return null;
-        PlanToBeanVisitor visitor = new PlanToBeanVisitor(
-                uuid -> {
-                    if (exerciseRepository != null) {
-                        var exercise = exerciseRepository.getCachedExercise(uuid);
-                        if (exercise != null) return exercise.getName();
-                    }
-                    return "Esercizio Sconosciuto";
-                }
-        );
+        PlanToBeanVisitor visitor = new PlanToBeanVisitor(this::resolveExerciseName);
         plan.accept(visitor);
         return visitor.getPlanBean();
     }

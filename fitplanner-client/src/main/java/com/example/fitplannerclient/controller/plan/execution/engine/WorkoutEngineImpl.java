@@ -4,6 +4,7 @@ import com.example.fitplannerclient.controller.plan.execution.engine.state.Engin
 import com.example.fitplannerclient.entity.plan.PlanNode;
 import com.example.fitplannerclient.entity.plan.execution.ExecutionContext;
 import com.example.fitplannerclient.entity.plan.execution.ExecutionResult;
+import com.example.fitplannerclient.entity.plan.execution.WorkoutStatus;
 import com.example.fitplannerclient.entity.plan.exercise.ExerciseNode;
 
 public class WorkoutEngineImpl implements WorkoutEngine {
@@ -61,9 +62,9 @@ public class WorkoutEngineImpl implements WorkoutEngine {
         this.updateListener = callback;
     }
 
-    public void notifyUpdate(EngineState state, ExerciseNode activeNode, int timeRemaining) {
+    public void notifyUpdate(WorkoutStatus status, ExecutionResult result, ExerciseNode activeNode) {
         if (updateListener != null) {
-            updateListener.onUpdate(state, activeNode, timeRemaining);
+            updateListener.onUpdate(status, result, activeNode);
         }
     }
 

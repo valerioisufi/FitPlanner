@@ -29,8 +29,8 @@ public class PlayState extends EngineState {
             while (engine.getState().isPlaying()) {
                 Thread.interrupted();
                 ExecutionResult result = engine.execute(context);
-                
-                engine.notifyUpdate(this, context.getActiveNode(), result.getRequestedSleepMillis());
+
+                engine.notifyUpdate(this.getStatus(), result, context.getActiveNode());
 
                 if (result.getState() == PlanNodeState.COMPLETED) {
                     engine.stop();

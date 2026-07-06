@@ -11,7 +11,9 @@ import java.util.*;
 
 public class ExerciseNode extends PlanNode {
     private String resourceId;
-    private Map<ModifierType, ExerciseModifier> modifiers = new EnumMap<>(ModifierType.class);
+    private final Map<ModifierType, ExerciseModifier> modifiers = new EnumMap<>(ModifierType.class);
+
+    private List<ExerciseModifier> currentResolvedModifiers = new ArrayList<>();
 
     public ExerciseNode(String resourceId) {
         this.resourceId = resourceId;
@@ -54,6 +56,8 @@ public class ExerciseNode extends PlanNode {
 
         if (this.state == PlanNodeState.IDLE) {
             // l'esercizio è iniziato
+            this.currentResolvedModifiers = resolveVariables(context);
+
             context.setActiveNode(this);
             this.state = PlanNodeState.RUNNING;
             return new ExecutionResult(PlanNodeState.RUNNING);
@@ -76,6 +80,7 @@ public class ExerciseNode extends PlanNode {
     @Override
     public void reset() {
         this.state = PlanNodeState.IDLE;
+        this.currentResolvedModifiers.clear();
     }
 
     public String getResourceId() {
@@ -106,7 +111,11 @@ public class ExerciseNode extends PlanNode {
         return modifiers.containsKey(type);
     }
 
-    public List<ExerciseModifier> getResolvedModifiers(ExecutionContext context) {
+    public List<ExerciseModifier> getResolvedModifiers() {
+        return currentResolvedModifiers;
+    }
+
+    private List<ExerciseModifier> resolveVariables(ExecutionContext context) {
         if (context == null) {
             return new ArrayList<>(modifiers.values());
         }

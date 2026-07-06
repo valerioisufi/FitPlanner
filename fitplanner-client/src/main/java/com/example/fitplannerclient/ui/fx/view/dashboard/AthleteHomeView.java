@@ -251,7 +251,7 @@ public class AthleteHomeView extends BorderPane {
 
         VBox titleBox = new VBox(4);
         titleBox.setAlignment(Pos.CENTER);
-        Label mainTitle = new Label("Nessun giorno suggerito per oggi.");
+        Label mainTitle = new Label("Nessun allenamento suggerito per oggi.");
         mainTitle.getStyleClass().add(HEADING_H2_CLASS);
         Label subTitle = new Label(planTitle);
         subTitle.getStyleClass().add("body-small");

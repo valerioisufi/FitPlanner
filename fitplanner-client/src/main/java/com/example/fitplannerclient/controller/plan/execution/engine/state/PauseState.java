@@ -4,7 +4,7 @@ import com.example.fitplannerclient.controller.plan.execution.engine.WorkoutEngi
 import com.example.fitplannerclient.entity.plan.execution.ControlSignal;
 import com.example.fitplannerclient.entity.plan.execution.ExecutionContext;
 import com.example.fitplannerclient.entity.plan.execution.ExecutionResult;
-
+import com.example.fitplannerclient.entity.plan.execution.PlanNodeState;
 import com.example.fitplannerclient.entity.plan.execution.WorkoutStatus;
 
 public class PauseState extends EngineState {
@@ -26,28 +26,29 @@ public class PauseState extends EngineState {
 
     @Override
     public void skipNext(WorkoutEngineImpl engine) {
-        ExecutionContext context = engine.getContext();
-        context.injectSignal(ControlSignal.SKIP_NEXT);
-
-        ExecutionResult result = engine.execute(context);
-        engine.notifyUpdate(this, context.getActiveNode(), result.getRequestedSleepMillis());
+        executeWithSignal(engine, ControlSignal.SKIP_NEXT);
     }
 
     @Override
     public void skipPrevious(WorkoutEngineImpl engine) {
-        ExecutionContext context = engine.getContext();
-        context.injectSignal(ControlSignal.SKIP_PREVIOUS);
-
-        ExecutionResult result = engine.execute(context);
-        engine.notifyUpdate(this, context.getActiveNode(), result.getRequestedSleepMillis());
+        executeWithSignal(engine, ControlSignal.SKIP_PREVIOUS);
     }
 
     @Override
     public void done(WorkoutEngineImpl engine) {
+        executeWithSignal(engine, ControlSignal.DONE);
+    }
+
+    private void executeWithSignal(WorkoutEngineImpl engine, ControlSignal signal) {
         ExecutionContext context = engine.getContext();
-        context.injectSignal(ControlSignal.DONE);
+        context.injectSignal(signal);
 
         ExecutionResult result = engine.execute(context);
-        engine.notifyUpdate(this, context.getActiveNode(), result.getRequestedSleepMillis());
+        engine.notifyUpdate(this.getStatus(), result, context.getActiveNode());
+
+        if (result.getState() == PlanNodeState.COMPLETED) {
+            // il piano è terminato mentre il motore era in pausa
+            stop(engine);
+        }
     }
 }

@@ -37,11 +37,11 @@ public class RestDecorator extends FlowDecorator{
                 return new ExecutionResult(PlanNodeState.COMPLETED);
             }
             if (context.consumeSignal(ControlSignal.SKIP_PREVIOUS)) {
-                // durante il riposto l'utente ha deciso di tornare all'esercizio precedente
+                // durante il riposo l'utente ha deciso di ripetere l'esercizio appena concluso
                 context.consumeTickDelta(context.getTickDelta());
 
                 this.reset();
-                return new ExecutionResult(PlanNodeState.REVERT);
+                return this.execute(context);
             }
 
             int tickDelta = context.getTickDelta();

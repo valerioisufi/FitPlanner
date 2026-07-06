@@ -627,7 +627,7 @@
 }
 .workout-row-done .icon-label {
     -fx-text-fill: white;
-    -fx-background-color: -fx-radix-green-9;
+    -fx-background-color: -fx-radix-green-8;
     -fx-background-radius: 50%;
     -fx-padding: 2px 6px;
 }
@@ -727,13 +727,6 @@
  * WORKOUT EXECUTION
  * ========================================== */
 
-.execution-plan-node-container {
-    -fx-border-color: #E2E8F0;
-    -fx-border-radius: 8px;
-    -fx-background-radius: 8px;
-    -fx-padding: 20px;
-}
-
 .execution-focus-label {
     -fx-font-family: 'Space Grotesk Bold';
     -fx-font-size: 13px;
@@ -752,7 +745,49 @@
     -fx-text-fill: -fx-radix-green-11;
 }
 
-.execution-btn-log {
-    -fx-background-color: #D3F2A3;
-    -fx-text-fill: -fx-radix-green-12;
+.execution-set-form {
+    -fx-border-color: #E2E8F0;
+    -fx-border-width: 1px;
+    -fx-border-radius: 8px;
+    -fx-background-color: #F8FAFC;
+    -fx-background-radius: 8px;
+}
+
+.execution-set-row {
+    -fx-border-color: #E2E8F0;
+    -fx-border-width: 0 0 1 0;
+}
+
+.execution-set-row-title {
+    -fx-font-family: 'Space Grotesk Bold';
+    -fx-font-size: 10px;
+    -fx-text-fill: -fx-color-text-light;
+}
+
+.execution-set-row-value {
+    -fx-font-family: 'Space Grotesk Bold';
+    -fx-font-size: 14px;
+    -fx-text-fill: -fx-color-text-body;
+}
+
+.execution-rpe-chip {
+    -fx-font-family: 'Space Grotesk Bold';
+    -fx-font-size: 12px;
+    -fx-background-color: -fx-radix-red-11;
+    -fx-text-fill: white;
+    -fx-padding: 4px 8px;
+    -fx-background-radius: 4px;
+}
+
+.execution-player-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+    -fx-cursor: hand;
+}
+
+.execution-btn-end {
+    -fx-background-color: -fx-radix-red-3;
+    -fx-padding: 8px;
+    -fx-background-radius: 50%;
+    -fx-cursor: hand;
 }

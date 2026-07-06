@@ -1,6 +1,6 @@
 package com.example.fitplannerclient.controller.plan.execution.observer;
 
-import com.example.fitplannerclient.bean.exercise.ExerciseDescriptionBean;
+import com.example.fitplannerclient.bean.exercise.CurrentExerciseBean;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,15 +16,21 @@ public class WorkoutExecutionSubject {
         this.observers.remove(observer);
     }
 
-    public void notifyCurrentExercise(ExerciseDescriptionBean description) {
+    public void notifyCurrentExercise(CurrentExerciseBean currentExercise) {
         for (WorkoutExecutionObserver observer : observers) {
-            observer.updateCurrentExercise(description);
+            observer.updateCurrentExercise(currentExercise);
         }
     }
 
     public void notifyCurrentWorkoutEngineState(WorkoutExecutionObserver.WorkoutExecutionState state) {
         for (WorkoutExecutionObserver observer : observers) {
             observer.updateCurrentWorkoutEngineState(state);
+        }
+    }
+
+    public void notifyExecutionPhase(WorkoutExecutionObserver.WorkoutExecutionPhase phase) {
+        for (WorkoutExecutionObserver observer : observers) {
+            observer.updateExecutionPhase(phase);
         }
     }
 
