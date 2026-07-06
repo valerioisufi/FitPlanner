@@ -3,6 +3,7 @@ package com.example.fitplannerclient.ui.fx.view.dashboard;
 import com.example.fitplannerclient.bean.plan.ScheduleDayBean;
 import com.example.fitplannerclient.bean.plan.WorkoutScheduleBean;
 import com.example.fitplannerclient.bean.plan.WorkoutState;
+import com.example.fitplannerclient.ui.fx.components.FormField;
 import com.example.fitplannerclient.ui.fx.view.plan.editor.PlanViewer;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -16,7 +17,6 @@ import javafx.scene.layout.*;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
-import java.util.function.Consumer;
 import java.util.function.IntConsumer;
 
 public class AthleteHomeView extends BorderPane {
@@ -28,6 +28,10 @@ public class AthleteHomeView extends BorderPane {
     private final VBox contentBox;
     private final Label welcomeTitle;
     private final Label welcomeSubtitle;
+
+    private IntConsumer onStartSessionAction;
+    private Runnable onTrainerInviteSubmitAction;
+    private final FormField inviteCodeField;
 
     public AthleteHomeView(Node header) {
         if (header != null) {
@@ -56,6 +60,11 @@ public class AthleteHomeView extends BorderPane {
         scrollPane.setFitToHeight(true);
 
         this.setCenter(scrollPane);
+
+        TextField codeInput = new TextField();
+        codeInput.getStyleClass().add("text-field");
+        inviteCodeField = new FormField(null, "Es. ABC1-XY2Z", codeInput);
+        HBox.setHgrow(inviteCodeField, Priority.ALWAYS);
     }
 
     public void setWelcomeMessage(String title, String subtitle) {
@@ -63,7 +72,11 @@ public class AthleteHomeView extends BorderPane {
         welcomeSubtitle.setText(subtitle);
     }
 
-    public void showAthleteDashboard(WorkoutScheduleBean schedule, IntConsumer onStartSession) {
+    public void setOnStartSessionAction(IntConsumer action) { this.onStartSessionAction = action; }
+    public void setOnTrainerInviteSubmitAction(Runnable action) { this.onTrainerInviteSubmitAction = action; }
+    public FormField getInviteCodeField() { return this.inviteCodeField; }
+
+    public void showAthleteDashboard(WorkoutScheduleBean schedule) {
         // Clear old dashboard cards (keep welcome section)
         while (contentBox.getChildren().size() > 1) {
             contentBox.getChildren().remove(1);
@@ -83,18 +96,18 @@ public class AthleteHomeView extends BorderPane {
             showNoSuggestedDay(leftPanel, schedule.getPlanTitle());
         } else {
             ScheduleDayBean suggestedDay = schedule.getDays().get(schedule.getSuggestedDayIndex());
-            updateLeftPanel(leftPanel, schedule.getPlanTitle(), suggestedDay, onStartSession);
+            updateLeftPanel(leftPanel, schedule.getPlanTitle(), suggestedDay);
         }
 
         // --- Right Panel: THIS WEEK ---
-        VBox rightPanel = buildRightPanel(schedule, leftPanel, onStartSession);
+        VBox rightPanel = buildRightPanel(schedule, leftPanel);
 
         splitLayout.getChildren().addAll(leftPanel, rightPanel);
 
         contentBox.getChildren().add(splitLayout);
     }
 
-    private VBox buildRightPanel(WorkoutScheduleBean schedule, VBox leftPanel, IntConsumer onStartSession) {
+    private VBox buildRightPanel(WorkoutScheduleBean schedule, VBox leftPanel) {
         VBox rightPanel = new VBox(20);
         rightPanel.setPrefWidth(350);
         rightPanel.setMinWidth(300);
@@ -117,14 +130,14 @@ public class AthleteHomeView extends BorderPane {
 
         VBox daysList = new VBox(10);
         for (ScheduleDayBean day : schedule.getDays()) {
-            daysList.getChildren().add(buildDayRow(day, schedule.getPlanTitle(), leftPanel, onStartSession));
+            daysList.getChildren().add(buildDayRow(day, schedule.getPlanTitle(), leftPanel));
         }
 
         rightPanel.getChildren().add(daysList);
         return rightPanel;
     }
 
-    private HBox buildDayRow(ScheduleDayBean day, String planTitle, VBox leftPanel, IntConsumer onStartSession) {
+    private HBox buildDayRow(ScheduleDayBean day, String planTitle, VBox leftPanel) {
         LocalDate dayDate = toLocalDate(day.getDate());
         boolean isRest = day.getState() == WorkoutState.REST || day.getSession() == null;
         String sessionName = isRest ? REST_LABEL : day.getSession().getName();
@@ -177,14 +190,14 @@ public class AthleteHomeView extends BorderPane {
         }
 
         if (!isRest) {
-            dayRow.setOnMouseClicked(e -> updateLeftPanel(leftPanel, planTitle, day, onStartSession));
+            dayRow.setOnMouseClicked(e -> updateLeftPanel(leftPanel, planTitle, day));
             dayRow.setStyle("-fx-cursor: hand;");
         }
 
         return dayRow;
     }
 
-    private void updateLeftPanel(VBox leftPanel, String planTitle, ScheduleDayBean day, IntConsumer onStartSession) {
+    private void updateLeftPanel(VBox leftPanel, String planTitle, ScheduleDayBean day) {
         leftPanel.getChildren().clear();
 
         BorderPane cardHeader = new BorderPane();
@@ -216,7 +229,9 @@ public class AthleteHomeView extends BorderPane {
         btnStart.getStyleClass().add("button-primary");
         btnStart.setMaxWidth(Double.MAX_VALUE);
         HBox.setHgrow(btnStart, Priority.ALWAYS);
-        btnStart.setOnAction(e -> onStartSession.accept(day.getAbsoluteDay()));
+        btnStart.setOnAction(e -> {
+            if (onStartSessionAction != null) onStartSessionAction.accept(day.getAbsoluteDay());
+        });
 
         footer.getChildren().add(btnStart);
 
@@ -264,7 +279,7 @@ public class AthleteHomeView extends BorderPane {
 
     }
 
-    public void showTrainerInviteCard(Consumer<String> onSubmit) {
+    public void showTrainerInviteCard() {
         VBox card = new VBox(15);
         card.getStyleClass().add("card");
         card.setPadding(new Insets(25));
@@ -275,20 +290,17 @@ public class AthleteHomeView extends BorderPane {
         subtitle.getStyleClass().addAll(BODY_BASE_CLASS, "text-color-light");
 
         HBox inputBox = new HBox(10);
-        TextField codeInput = new TextField();
-        codeInput.setPromptText("Es. ABC1-XY2Z");
-        codeInput.getStyleClass().add("text-field");
-        HBox.setHgrow(codeInput, Priority.ALWAYS);
+        inputBox.setAlignment(Pos.TOP_LEFT);
 
         Button submitBtn = new Button("Collegati");
         submitBtn.getStyleClass().add("button-primary");
         submitBtn.setOnAction(e -> {
-            if (onSubmit != null && !codeInput.getText().isBlank()) {
-                onSubmit.accept(codeInput.getText().trim()); // todo utilizzare ValidationUtils
+            if (onTrainerInviteSubmitAction != null) {
+                onTrainerInviteSubmitAction.run();
             }
         });
 
-        inputBox.getChildren().addAll(codeInput, submitBtn);
+        inputBox.getChildren().addAll(inviteCodeField, submitBtn);
 
         card.getChildren().addAll(title, subtitle, inputBox);
         contentBox.getChildren().add(card);

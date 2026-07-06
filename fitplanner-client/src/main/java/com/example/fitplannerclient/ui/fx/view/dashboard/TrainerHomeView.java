@@ -21,6 +21,10 @@ public class TrainerHomeView extends BorderPane {
     private final Label welcomeTitle;
     private final Label welcomeSubtitle;
 
+    private Runnable onGoToLibraryAction;
+    private Runnable onGoToPlansAction;
+    private Consumer<ProfileBean> onAthleteSelectedAction;
+
     public TrainerHomeView(Node header) {
         if (header != null) {
             this.setTop(header);
@@ -70,7 +74,11 @@ public class TrainerHomeView extends BorderPane {
         welcomeSubtitle.setText(subtitle);
     }
 
-    public void showTrainerDashboard(Runnable onGoToLibrary, Runnable onGoToPlans) {
+    public void setOnGoToLibraryAction(Runnable action) { this.onGoToLibraryAction = action; }
+    public void setOnGoToPlansAction(Runnable action) { this.onGoToPlansAction = action; }
+    public void setOnAthleteSelectedAction(Consumer<ProfileBean> action) { this.onAthleteSelectedAction = action; }
+
+    public void showTrainerDashboard() {
         while (contentBox.getChildren().size() > 1) {
             contentBox.getChildren().remove(1);
         }
@@ -90,7 +98,7 @@ public class TrainerHomeView extends BorderPane {
         desc1.setWrapText(true);
         Button btn1 = new Button("Gestisci Esercizi");
         btn1.getStyleClass().add("button-primary");
-        btn1.setOnAction(e -> onGoToLibrary.run());
+        btn1.setOnAction(e -> { if (onGoToLibraryAction != null) onGoToLibraryAction.run(); });
         card1.getChildren().addAll(title1, desc1, btn1);
 
         // Card 2: Gestione Piani
@@ -104,7 +112,7 @@ public class TrainerHomeView extends BorderPane {
         desc2.setWrapText(true);
         Button btn2 = new Button("Pianifica Allenamenti");
         btn2.getStyleClass().add("button-primary");
-        btn2.setOnAction(e -> onGoToPlans.run());
+        btn2.setOnAction(e -> { if (onGoToPlansAction != null) onGoToPlansAction.run(); });
         card2.getChildren().addAll(title2, desc2, btn2);
 
         grid.add(card1, 0, 0);
@@ -113,7 +121,7 @@ public class TrainerHomeView extends BorderPane {
         contentBox.getChildren().add(grid);
     }
 
-    public void showAthleteList(List<ProfileBean> athletes, Consumer<ProfileBean> onAthleteSelected) {
+    public void showAthleteList(List<ProfileBean> athletes) {
         VBox athletesSection = new VBox(15);
         athletesSection.setPadding(new Insets(20, 0, 0, 0));
 
@@ -132,7 +140,7 @@ public class TrainerHomeView extends BorderPane {
             row.setAlignment(Pos.CENTER_LEFT);
             row.getStyleClass().add(Boolean.TRUE.equals(isLast) ? "list-row-last" : "list-row");
             row.setStyle("-fx-cursor: hand;");
-            row.setOnMouseClicked(e -> onAthleteSelected.accept(athlete));
+            row.setOnMouseClicked(e -> { if (onAthleteSelectedAction != null) onAthleteSelectedAction.accept(athlete); });
 
             VBox nameBox = new VBox(4);
             nameBox.prefWidthProperty().bind(nameHeader.widthProperty());

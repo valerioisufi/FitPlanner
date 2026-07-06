@@ -2,7 +2,6 @@ package com.example.fitplannerclient.ui.fx.guicontroller;
 
 import com.example.fitplannerclient.bean.log.FilterBean;
 import com.example.fitplannerclient.controller.log.WorkoutHistoryManager;
-import com.example.fitplannerclient.controller.profile.ProfileManager;
 import com.example.fitplannerclient.ui.fx.GuiController;
 import com.example.fitplannerclient.ui.fx.GuiManager;
 import com.example.fitplannerclient.ui.fx.Navigator;

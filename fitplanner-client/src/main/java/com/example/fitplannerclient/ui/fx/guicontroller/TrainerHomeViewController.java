@@ -24,6 +24,13 @@ public class TrainerHomeViewController implements GuiController {
         this.guiManager = guiManager;
         this.headerViewController = new HeaderViewController(navigator, notificationManager, 0, HeaderViewController.Type.TRAINER);
         this.view = new TrainerHomeView(headerViewController.getView());
+        setupActions();
+    }
+
+    private void setupActions() {
+        view.setOnGoToLibraryAction(navigator::goToExerciseLibrary);
+        view.setOnGoToPlansAction(navigator::goToPlanManagement);
+        view.setOnAthleteSelectedAction(navigator::goToAthleteDashboard);
     }
 
     @Override
@@ -36,10 +43,7 @@ public class TrainerHomeViewController implements GuiController {
         headerViewController.start();
         ProfileBean profile = profileManager.getCacheProfileInfo();
         view.setWelcomeMessage("Benvenuto, " + profile.getFirstName() + "!", "Gestisci la tua libreria e i piani dei tuoi atleti.");
-        view.showTrainerDashboard(
-                navigator::goToExerciseLibrary,
-                navigator::goToPlanManagement
-        );
+        view.showTrainerDashboard();
 
         // Fetch and set invite code
         profileManager.getInvitationCodeAsync()
@@ -52,7 +56,7 @@ public class TrainerHomeViewController implements GuiController {
         // Fetch and set athletes
         profileManager.getMyAthletesAsync()
                 .thenAccept(athletes -> Platform.runLater(() ->
-                        view.showAthleteList(athletes, navigator::goToAthleteDashboard)
+                        view.showAthleteList(athletes)
                 ))
                 .exceptionally(ex -> {
                     guiManager.showExceptionError("Errore nel caricamento degli atleti:", ex);
