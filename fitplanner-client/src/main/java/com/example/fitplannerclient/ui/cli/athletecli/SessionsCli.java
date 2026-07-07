@@ -78,13 +78,13 @@ public class SessionsCli extends AbstractCliView {
 
         printer.printMenu("Seleziona una sessione da visualizzare o avviare",
                 selectableDays.stream().map(d -> "Giorno " + d.getAbsoluteDay() + " - " + d.getSession().getName()).toList());
-        int scelta = reader.readInt("Scegli un'opzione (-1 per tornare indietro): ", -1, selectableDays.size());
+        int scelta = reader.readInt("Scegli un'opzione (0 per tornare indietro): ", 0, selectableDays.size());
 
-        if (scelta == -1) {
+        if (scelta == 0 ) {
             return this;
         }
 
-        return sessionPrinter(selectableDays.get(scelta), schedule.getPlanId());
+        return sessionPrinter(selectableDays.get(scelta-1), schedule.getPlanId());
     }
 
     private CliView sessionPrinter(ScheduleDayBean selectedDay, String planId) {

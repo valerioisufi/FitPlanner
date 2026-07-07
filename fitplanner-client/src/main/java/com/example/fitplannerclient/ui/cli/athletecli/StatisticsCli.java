@@ -44,7 +44,7 @@ public class StatisticsCli extends AbstractCliView {
                 "Visualizza statistiche ultimi 90 giorni",
                 "Scegli l'intervallo di tempo del quale vuoi vedere le statistiche")
         );
-        int scelta = reader.readInt("Scegli un'opzione: ", 1, 3);
+        int scelta = reader.readInt("Scegli un'opzione: ", 1, 4);
 
         switch (scelta) {
             case 1 -> { return getBackCli(); }

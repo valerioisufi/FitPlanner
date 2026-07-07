@@ -14,6 +14,8 @@ import java.util.Optional;
 
 public class WorkoutPlanLibraryCli extends AbstractCliView {
 
+    private static final String ATHLETE_NOT_FOUND = "Nessuno";
+    private static final String ATHLETE_ERROR = "Errore durante il caricamento degli atleti: ";
     private WorkoutPlanManager planManager;
     private ProfileManager profileManager;
 
@@ -69,7 +71,7 @@ public class WorkoutPlanLibraryCli extends AbstractCliView {
         } else {
             List<ProfileBean> athletes = profileManager.getMyAthletesAsync()
                     .exceptionally(e -> {
-                        printer.printException("Errore durante il caricamento degli atleti: ", e);
+                        printer.printException(ATHLETE_ERROR, e);
                         return new ArrayList<>();
                     }).join();
 
@@ -77,7 +79,7 @@ public class WorkoutPlanLibraryCli extends AbstractCliView {
             List<List<String>> data = new ArrayList<>();
 
             for (WorkoutPlanSummaryBean plan : plans) {
-                String assignedTo = "Nessuno";
+                String assignedTo = ATHLETE_NOT_FOUND;
 
                 if (plan.getAssignedTo() != null) {
                     ProfileBean athlete = getAthleteById(athletes, plan.getAssignedTo());
@@ -112,15 +114,32 @@ public class WorkoutPlanLibraryCli extends AbstractCliView {
             return null;
         }
 
-        return reader.selectFrom("Seleziona un piano da " + action.toLowerCase() + ":", plans,
-                        p -> p.getPlanTitle() != null ? p.getPlanTitle() : "Senza Titolo"
-                ).map(WorkoutPlanSummaryBean::getPlanId)
+        List<ProfileBean> athletes = profileManager.getMyAthletesAsync()
+                .exceptionally(e -> {
+                    printer.printException(ATHLETE_ERROR, e);
+                    return new ArrayList<>();
+                }).join();
+
+        List<List<String>> options = new ArrayList<>();
+        for (WorkoutPlanSummaryBean p : plans) {
+            String planName = p.getPlanTitle() != null ? p.getPlanTitle() : "Senza Titolo";
+
+            if (p.getAssignedTo() != null) {
+                ProfileBean athlete = getAthleteById(athletes, p.getAssignedTo());
+                String assignedTo = athlete != null ? athlete.getFirstName() + " " + athlete.getLastName() : ATHLETE_NOT_FOUND;
+                options.add(List.of(planName + " - Assegnato a: " + assignedTo, p.getPlanId()));
+            } else {
+                options.add(List.of(planName, p.getPlanId()));
+            }
+        }
+
+        return reader.selectFrom("Seleziona un piano da " + action.toLowerCase() + ":", options, List::getFirst).map(List::getLast)
                 .orElse(null);
     }
 
-
     private void eliminaPiano() {
         String planId = selezionaPiano("Eliminare");
+
         if (planId != null) {
             planManager.deletePlanAsync(planId)
                     .exceptionally(e -> {
@@ -139,7 +158,7 @@ public class WorkoutPlanLibraryCli extends AbstractCliView {
 
         List<ProfileBean> athletes = profileManager.getMyAthletesAsync()
                 .exceptionally(e -> {
-                    printer.printException("Errore durante il caricamento degli atleti: ", e);
+                    printer.printException(ATHLETE_ERROR, e);
                     return new ArrayList<>();
                 }).join();
 

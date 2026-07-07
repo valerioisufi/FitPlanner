@@ -10,7 +10,11 @@ import com.example.fitplannerclient.ui.cli.DashboardCli;
 
 import java.util.List;
 
+import java.util.concurrent.CountDownLatch;
+
 public class WorkoutCli extends AbstractCliView implements WorkoutExecutionObserver {
+
+    private final CountDownLatch initLatch = new CountDownLatch(1);
 
     private WorkoutExecutionManager executionManager;
 
@@ -56,8 +60,12 @@ public class WorkoutCli extends AbstractCliView implements WorkoutExecutionObser
     }
 
     private void showMenuAndProcessInput() {
-        while (currentPhase == null && !isCompleted) {
-            try { Thread.sleep(100); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+        if (currentPhase == null && !isCompleted) {
+            try {
+                initLatch.await();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
         }
 
         if (isCompleted) return;
@@ -197,6 +205,7 @@ public class WorkoutCli extends AbstractCliView implements WorkoutExecutionObser
     @Override
     public void updateExecutionPhase(WorkoutExecutionPhase phase) {
         this.currentPhase = phase;
+        initLatch.countDown();
 
         if (phase == WorkoutExecutionPhase.COMPLETED) {
             printer.printInfo("L'allenamento è stato completato.");
