@@ -26,12 +26,13 @@ public class AthletesCli extends AbstractCliView {
         if (athletes == null || athletes.isEmpty()) {
             printer.printInfo("Non hai ancora nessun atleta associato.");
             reader.waitForEnter();
+
             return new DashboardCli();
         }
 
-        return reader.selectFrom("Seleziona un atleta per visualizzarne i progressi:", athletes,
-                        a -> a.getFirstName() + " " + a.getLastName() + " (" + a.getContactEmail() + ")", "Indietro")
-                .<CliView>map(a -> new StatisticsCli(a.getUserId()))
+        return reader.selectFrom("Seleziona un atleta per visualizzarne i progressi:", athletes, a ->
+                        a.getFirstName() + " " + a.getLastName() + " (" + a.getContactEmail() + ")", "Indietro"
+                ).<CliView>map(a -> new StatisticsCli(a.getUserId()))
                 .orElseGet(DashboardCli::new);
     }
 }

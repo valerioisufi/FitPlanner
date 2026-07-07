@@ -78,7 +78,7 @@ public class WorkoutCli extends AbstractCliView implements WorkoutExecutionObser
                     "Salta Esercizio Corrente (Avanti)",
                     "Salta Esercizio Precedente (Indietro)",
                     "Termina Allenamento e Salva"
-            ));
+            )); // todo gestire anche tasti play/pause
 
             processExerciseMenu(reader.readInt("Scegli un'opzione: ", 1, 5));
 
@@ -166,6 +166,7 @@ public class WorkoutCli extends AbstractCliView implements WorkoutExecutionObser
     @Override
     public void updateCurrentWorkoutEngineState(WorkoutExecutionState state) {
         // Stato del motore non utilizzato dalla CLI.
+        // todo forse andrebbe utilizzato
     }
 
     @Override

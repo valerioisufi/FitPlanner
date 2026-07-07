@@ -39,7 +39,7 @@ public class StatisticsCli extends AbstractCliView {
 
         printer.printHeader(athleteId != null ? "STATISTICHE ATLETA" : "STATISTICHE");
         printer.printMenu(null, List.of("Indietro", "Visualizza statistiche ultimi 30 giorni", "Visualizza statistiche ultimi 90 giorni"));
-        int scelta = reader.readInt("Scegli un'opzione: ", 1, 3);
+        int scelta = reader.readInt("Scegli un'opzione: ", 1, 3); // todo accettare un numero qualsiasi di giorni come filtro
         switch (scelta) {
             case 1 -> { return getBackCli(); }
             case 2 -> viewStatistics(30);

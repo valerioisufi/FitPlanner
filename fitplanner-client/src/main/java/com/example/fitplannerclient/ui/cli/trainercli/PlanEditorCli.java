@@ -45,7 +45,7 @@ public class PlanEditorCli extends AbstractCliView {
                 // Ignore silent update errors
             }
         };
-        planManager.addObserver(observer);
+        planManager.addObserver(observer); // todo fare il detach in stop()
 
         try {
             if (planId == null) {
@@ -79,6 +79,7 @@ public class PlanEditorCli extends AbstractCliView {
             ));
             int choice = reader.readInt("Scelta: ", 1, 10);
 
+            // todo le funzioni che eseguono operazioni sulle sessioni non funzionano
             switch (choice) {
                 case 1 -> planManager.changePlanName(reader.readString("Nuovo nome: "));
                 case 2 -> planManager.changeCycleLength(reader.readInt("Nuovo ciclo (1-30): ", 1, 30));

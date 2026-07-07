@@ -4,8 +4,8 @@ import com.example.fitplannerclient.ui.cli.io.InputReader;
 import com.example.fitplannerclient.ui.cli.io.OutputPrinter;
 
 /**
- * Base per tutte le view CLI: espone engine/printer/reader e implementa
- * il ciclo di vita comune. Le sottoclassi implementano solo {@link #render()}.
+ * Base per tutte le view CLI: espone engine/printer/reader e implementa il ciclo di vita comune.
+ * Le sottoclassi implementano solo render().
  */
 public abstract class AbstractCliView implements CliView {
 
