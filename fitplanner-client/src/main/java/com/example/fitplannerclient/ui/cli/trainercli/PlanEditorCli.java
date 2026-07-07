@@ -20,6 +20,7 @@ public class PlanEditorCli extends AbstractCliView {
     private static final String SCELTA= "Scelta: ";
     private static final String BACK_LABEL = "Indietro";
     private static final String NO_NAME = "Senza Nome";
+    private static final String NODE_RENAME = "Rinomina Nodo";
 
     private EditWorkoutPlanManager planManager;
     private ExerciseLibraryManager exerciseManager;
@@ -158,7 +159,7 @@ public class PlanEditorCli extends AbstractCliView {
 
             switch (choice) {
                 case 1 -> sessionRunning = false;
-                case 2 -> addFromToolBox(sessionDay);
+                case 2 -> addFromToolBox(session);
                 case 3 -> {
                     if (nodeIndexMap.isEmpty()) {
                         printer.printInfo("Albero vuoto.");
@@ -195,26 +196,27 @@ public class PlanEditorCli extends AbstractCliView {
                 counter = printNode(node, counter, 0);
             }
         } else {
-            printer.printInfo("  (Vuota)");
+            printer.printLn("  (Vuota)");
         }
     }
 
     private int printNode(PlanNodeBean node, int counter, int depth) {
         String indent = "   ".repeat(depth);
         String nodeType = node.getType() != null ? node.getType().toString() : "Sconosciuto";
-        printer.printInfo(indent + "[" + counter + "] " + node.getName() + " (" + nodeType + ")");
+
+        printer.printLn(indent + "[" + counter + "] " + node.getName() + " (" + nodeType + ")");
         nodeIndexMap.put(counter, node.getId());
         counter++;
 
         if (node.getModifiers() != null) {
             for (ExerciseModifierBean mod : node.getModifiers()) {
-                printer.printInfo(indent + "  * Modificatore: " + mod.getName() + " = " + mod.getValue());
+                printer.printLn(indent + "  * Modificatore: " + mod.getName() + " = " + mod.getValue());
             }
         }
 
         if (node.getFlowDecorators() != null) {
             for (FlowDecoratorBean dec : node.getFlowDecorators()) {
-                printer.printInfo(indent + "  * Decoratore: " + dec.getType().name() + " = " + dec.getValue());
+                printer.printLn(indent + "  * Decoratore: " + dec.getType().name() + " = " + dec.getValue());
             }
         }
 
@@ -226,20 +228,20 @@ public class PlanEditorCli extends AbstractCliView {
         return counter;
     }
 
-    private void addFromToolBox(int sessionDay) {
+    private void addFromToolBox(WorkoutSessionBean session) {
         String targetParentId = null;
         if (!nodeIndexMap.isEmpty()) {
-            String q = reader.readString("Vuoi aggiungere l'elemento sotto un nodo esistente? (s/n): ");
+            String q = reader.readString("Vuoi aggiungere un elemento dentro un blocco esistente? (s/n): ");
             if (q.equalsIgnoreCase("s")) {
-                int nodeIdx = reader.readInt("Indice del nodo padre: ", 1, nodeIndexMap.size());
+                int nodeIdx = reader.readInt("Indice del blocco padre: ", 1, nodeIndexMap.size());
                 targetParentId = nodeIndexMap.get(nodeIdx);
             }
         }
         if (targetParentId == null) {
-            targetParentId = "SESSION_" + sessionDay;
+            targetParentId = session.getPlanRoot().getId();
         }
 
-        int targetIndex = reader.readInt("Posizione dell'esercizio nella scheda (0 = primo; 100 = ultimo): ", 0, 100);
+        int targetIndex = reader.readInt("Posizione dell'esercizio nel blocco scelto: ", 0, 999);
 
         printer.printMenu("Toolbox", List.of(
                 "Aggiungi Blocco Generico",
@@ -293,47 +295,63 @@ public class PlanEditorCli extends AbstractCliView {
         while (nodeRunning) {
             printer.printHeader("GESTIONE NODO: " + planManager.getNodeName(nodeId));
 
-            printer.printMenu(null, List.of(
-                    BACK_LABEL,
-                    "Rinomina Nodo",
-                    "Elimina Nodo",
-                    "Duplica Nodo",
-                    "Svuota Nodo",
-                    "Cambia Esercizio Associato",
-                    "Modifica Parametri Protocollo",
-                    "Aggiungi Modificatore/Decoratore (Badge)"
-            ));
-            int choice = reader.readInt( SCELTA, 1, 8);
+            boolean isBlock = planManager.isBlockNode(nodeId);
+            boolean isProtocol = planManager.isProtocolNode(nodeId);
+            boolean isExercise = planManager.isExerciseNode(nodeId);
 
-            switch (choice) {
-                case 1 -> nodeRunning = false;
-                case 2 -> planManager.renameNode(nodeId, reader.readString("Nuovo nome: "));
-                case 3 -> {
-                    planManager.removeNode(nodeId);
-                    nodeRunning = false;
-                }
-                case 4 -> {
-                    planManager.duplicateNode(nodeId);
-                    nodeRunning = false;
-                }
-                case 5 -> planManager.emptyNode(nodeId);
-                case 6 -> {
-                    List<ExerciseDescriptionBean> exercises = exerciseManager.getExercisesAsync(null)
-                            .exceptionally(e -> {
-                                printer.printException("Errore durante il recupero della libreria di esercizi:", e);
-                                return List.of();
-                            }).join();
+            List<String> menuOptions = new ArrayList<>();
+            menuOptions.add(BACK_LABEL);
 
-                    if (exercises != null && !exercises.isEmpty()) {
-                        reader.selectFrom("Seleziona nuovo esercizio:", exercises, ExerciseDescriptionBean::getName)
-                                .ifPresent(e -> planManager.changeExerciseResource(nodeId, e.getExerciseId()));
-                    }
+            if (isBlock || isProtocol) {
+                menuOptions.add(NODE_RENAME);
+                menuOptions.add("Svuota Nodo");
+            }
+            if (isExercise) {
+                menuOptions.add(NODE_RENAME); // Allows to rename an exercise alias
+                menuOptions.add("Cambia Esercizio Associato");
+            }
+            if (isProtocol) {
+                menuOptions.add("Modifica Parametri Protocollo");
+            }
+
+            menuOptions.add("Elimina Nodo");
+            menuOptions.add("Duplica Nodo");
+            menuOptions.add("Aggiungi Modificatore/Decoratore (Badge)");
+            menuOptions.add("Rimuovi Modificatore/Decoratore (Badge)");
+
+            printer.printMenu(null, menuOptions);
+            int choice = reader.readInt( SCELTA, 1, menuOptions.size());
+            String option = menuOptions.get(choice - 1);
+
+            if (option.equals(BACK_LABEL)) {
+                nodeRunning = false;
+            } else if (option.equals(NODE_RENAME)) {
+                planManager.renameNode(nodeId, reader.readString("Nuovo nome: "));
+            } else if (option.equals("Svuota Nodo")) {
+                planManager.emptyNode(nodeId);
+            } else if (option.equals("Elimina Nodo")) {
+                planManager.removeNode(nodeId);
+                nodeRunning = false;
+            } else if (option.equals("Duplica Nodo")) {
+                planManager.duplicateNode(nodeId);
+                nodeRunning = false;
+            } else if (option.equals("Cambia Esercizio Associato")) {
+                List<ExerciseDescriptionBean> exercises = exerciseManager.getExercisesAsync(null)
+                        .exceptionally(e -> {
+                            printer.printException("Errore durante il recupero della libreria di esercizi:", e);
+                            return List.of();
+                        }).join();
+
+                if (exercises != null && !exercises.isEmpty()) {
+                    reader.selectFrom("Seleziona nuovo esercizio:", exercises, ExerciseDescriptionBean::getName)
+                            .ifPresent(e -> planManager.changeExerciseResource(nodeId, e.getExerciseId()));
                 }
-                case 7 -> modificaParametriProtocollo(nodeId);
-                case 8 -> aggiungiBadge(nodeId);
-                default -> {
-                    //niente pt.2
-                }
+            } else if (option.equals("Modifica Parametri Protocollo")) {
+                modificaParametriProtocollo(nodeId);
+            } else if (option.equals("Aggiungi Modificatore/Decoratore (Badge)")) {
+                aggiungiBadge(nodeId);
+            } else if (option.equals("Rimuovi Modificatore/Decoratore (Badge)")) {
+                rimuoviBadge(nodeId);
             }
         }
     }
@@ -379,6 +397,33 @@ public class PlanEditorCli extends AbstractCliView {
         } catch (Exception e) {
             printer.printException("Errore nell'aggiunta del badge:", e);
             reader.waitForEnter();
+        }
+    }
+
+    private void rimuoviBadge(String nodeId) {
+        printer.printMenu("Rimuovi Badge", List.of(
+                "Rimuovi Modificatore",
+                "Rimuovi Decoratore",
+                "Annulla"
+        ));
+        int choice = reader.readInt(SCELTA, 1, 3);
+        try {
+            if (choice == 1) {
+                if (!planManager.isExerciseNode(nodeId)) {
+                    printer.printInfo("I modificatori sono solo nei nodi Esercizio.");
+                    reader.waitForEnter();
+                    return;
+                }
+                String modifierType = reader.readString("Tipo Modificatore (es. REPS, WEIGHT): ").toUpperCase();
+                planManager.removeModifier(nodeId, modifierType);
+                printer.printInfo("Modificatore rimosso.");
+            } else if (choice == 2) {
+                String decoratorId = reader.readString("ID del decoratore da rimuovere: ");
+                planManager.removeDecorator(decoratorId);
+                printer.printInfo("Decoratore rimosso.");
+            }
+        } catch (Exception e) {
+            printer.printException("Errore:", e);
         }
     }
 

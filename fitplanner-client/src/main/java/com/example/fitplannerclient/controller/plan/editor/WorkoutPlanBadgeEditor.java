@@ -239,6 +239,18 @@ public class WorkoutPlanBadgeEditor {
         }
     }
 
+    public void removeModifier(WorkoutPlan plan, String nodeId, String modifierType) {
+        if (plan == null) return;
+        ModifierType type = ModifierType.valueOf(modifierType);
+        NodeFinderVisitor finder = new NodeFinderVisitor(nodeId);
+        plan.accept(finder);
+
+        if (finder.isFound() && finder.getFoundNode() instanceof ExerciseNode ex) {
+            RemoveModifierCommand cmd = new RemoveModifierCommand(ex, type);
+            executeCommand(cmd);
+        }
+    }
+
     public List<String> getAvailableVariablesForNode(WorkoutPlan plan, String nodeId) {
         if (plan == null) return List.of();
         AvailableVariablesVisitor visitor = new AvailableVariablesVisitor(nodeId);

@@ -226,6 +226,14 @@ public class EditWorkoutPlanManager {
         badgeEditor.addModifierFromToolbox(this.plan, modifierType, value, targetNodeId);
     }
 
+    public void removeModifier(String nodeId, String modifierType) {
+        badgeEditor.removeModifier(this.plan, nodeId, modifierType);
+    }
+
+    public void removeDecorator(String decoratorId) {
+        badgeEditor.removeDecoratorFromChain(this.plan, decoratorId);
+    }
+
     public List<PlanNodeBean> getProtocolBlockLibraryCache() {
         return protocolLibraryManager.getProtocolBlockLibraryCache();
     }
@@ -239,6 +247,14 @@ public class EditWorkoutPlanManager {
 
     public boolean isExerciseNode(String nodeId) {
         return findNode(nodeId) instanceof ExerciseNode;
+    }
+
+    public boolean isProtocolNode(String nodeId) {
+        return findNode(nodeId) instanceof ProtocolBlock;
+    }
+
+    public boolean isBlockNode(String nodeId) {
+        return findNode(nodeId) instanceof Block && !(findNode(nodeId) instanceof ProtocolBlock);
     }
 
     public String getNodeName(String nodeId) {
