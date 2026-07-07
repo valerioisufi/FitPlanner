@@ -90,7 +90,7 @@ public class PlanEditorCli extends AbstractCliView {
                 case 9 -> {
                         planManager.savePlan()
                                 .exceptionally(e -> {
-                                    printer.printException("Errore durante il salvataggio del piano:", e);
+                                    printer.printException("Errore durante il salvataggio del piano: ", e);
                                     reader.waitForEnter();
                                     return null;
                                 }).join();

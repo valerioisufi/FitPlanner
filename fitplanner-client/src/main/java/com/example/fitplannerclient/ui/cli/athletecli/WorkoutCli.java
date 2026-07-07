@@ -12,6 +12,7 @@ import java.util.List;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class WorkoutCli extends AbstractCliView implements WorkoutExecutionObserver {
 
@@ -24,7 +25,7 @@ public class WorkoutCli extends AbstractCliView implements WorkoutExecutionObser
     private final int sessionDay;
 
     private volatile WorkoutExecutionPhase currentPhase;
-    private volatile CurrentExerciseBean currentExercise;
+    private final AtomicReference<CurrentExerciseBean> currentExerciseRef = new AtomicReference<>();
     private volatile WorkoutExecutionState engineState = WorkoutExecutionState.PLAYING;
     private volatile boolean isCompleted = false;
 
@@ -65,7 +66,10 @@ public class WorkoutCli extends AbstractCliView implements WorkoutExecutionObser
         transitionLatch = new CountDownLatch(1);
         action.run();
         try {
-            transitionLatch.await(500, TimeUnit.MILLISECONDS);
+            boolean success = transitionLatch.await(500, TimeUnit.MILLISECONDS);
+            if (!success) {
+                // Wait timed out
+            }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
@@ -96,7 +100,7 @@ public class WorkoutCli extends AbstractCliView implements WorkoutExecutionObser
 
     private void handleExercisePhase() {
         int waitTime = 0;
-        while (currentExercise == null && waitTime < 30) {
+        while (currentExerciseRef.get() == null && waitTime < 30) {
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {
@@ -105,7 +109,7 @@ public class WorkoutCli extends AbstractCliView implements WorkoutExecutionObser
             waitTime++;
         }
 
-        if (currentExercise != null) {
+        if (currentExerciseRef.get() != null) {
             printExerciseInfo();
         }
 
@@ -137,6 +141,9 @@ public class WorkoutCli extends AbstractCliView implements WorkoutExecutionObser
     }
 
     private void printExerciseInfo() {
+        CurrentExerciseBean currentExercise = currentExerciseRef.get();
+        if (currentExercise == null) return;
+        
         printer.printLn("Esercizio: " + currentExercise.getExerciseDescription().getName());
         printer.printLn("Istruzioni: " + currentExercise.getExerciseDescription().getExecution());
 
@@ -158,11 +165,11 @@ public class WorkoutCli extends AbstractCliView implements WorkoutExecutionObser
             case 1 -> logSeries();
             case 2 -> addNotes();
             case 3 -> {
-                currentExercise = null;
+                currentExerciseRef.set(null);
                 waitForTransition(() -> executionManager.skipNext());
             }
             case 4 -> {
-                currentExercise = null;
+                currentExerciseRef.set(null);
                 waitForTransition(() -> executionManager.skipPrevious());
             }
             case 5 -> togglePlayPause();
@@ -176,6 +183,7 @@ public class WorkoutCli extends AbstractCliView implements WorkoutExecutionObser
         int reps = reader.readInt("Ripetizioni: ", 1, 100);
         int rpe = reader.readInt("RPE (1-10): ", 1, 10);
 
+        CurrentExerciseBean currentExercise = currentExerciseRef.get();
         if (currentExercise != null) {
             executionManager.logExerciseSet(
                     currentExercise.getExerciseDescription().getExerciseId(),
@@ -183,7 +191,7 @@ public class WorkoutCli extends AbstractCliView implements WorkoutExecutionObser
             );
 
             printer.printInfo("Serie registrata con successo.");
-            currentExercise = null;
+            currentExerciseRef.set(null);
             waitForTransition(() -> executionManager.done());
         }
     }
@@ -191,6 +199,7 @@ public class WorkoutCli extends AbstractCliView implements WorkoutExecutionObser
     private void addNotes() {
         String note = reader.readString("Inserisci nota per l'esercizio: ");
 
+        CurrentExerciseBean currentExercise = currentExerciseRef.get();
         if (currentExercise != null) {
             executionManager.updateExerciseNotes(currentExercise.getExerciseDescription().getExerciseId(), note);
             printer.printInfo("Note aggiornate con successo.");
@@ -251,7 +260,7 @@ public class WorkoutCli extends AbstractCliView implements WorkoutExecutionObser
 
     @Override
     public void updateCurrentExercise(CurrentExerciseBean currentExercise) {
-        this.currentExercise = currentExercise;
+        this.currentExerciseRef.set(currentExercise);
     }
 
     @Override

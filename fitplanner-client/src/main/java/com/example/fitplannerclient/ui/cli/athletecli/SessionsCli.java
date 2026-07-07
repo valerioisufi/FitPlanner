@@ -117,6 +117,12 @@ public class SessionsCli extends AbstractCliView {
 
             int suggestedDay = day.getSuggestedDayIndex();
 
+            if (suggestedDay == -1) {
+                printer.printInfo("Non c'è alcun allenamento suggerito per oggi (scheda completata o non iniziata).");
+                reader.waitForEnter();
+                return this;
+            }
+
             WorkoutSessionBean todayPlan = day.getDays().get(suggestedDay).getSession();
             if (todayPlan == null || todayPlan.getPlanRoot() == null) {
                 printer.printInfo("Non hai ancora pianificato un giorno di allenamento.");
