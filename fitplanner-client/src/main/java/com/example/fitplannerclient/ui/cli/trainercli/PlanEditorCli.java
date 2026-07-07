@@ -19,8 +19,12 @@ import java.util.Optional;
 
 public class PlanEditorCli extends AbstractCliView {
 
+    private static final String SCELTA= "Scelta: ";
+
     private EditWorkoutPlanManager planManager;
     private ExerciseLibraryManager exerciseManager;
+
+    private WorkoutPlanObserver observer;
 
     private final String planId;
     private final boolean isClone;
@@ -38,14 +42,12 @@ public class PlanEditorCli extends AbstractCliView {
         this.planManager = engine.getSessionContext().createEditWorkoutPlanManager();
         this.exerciseManager = engine.getSessionContext().createExerciseLibraryManager();
 
-        WorkoutPlanObserver observer = () -> {
-            try {
-                this.activePlan = planManager.getPlanAsync().join();
-            } catch (Exception e) {
-                // Ignore silent update errors
-            }
+        this.observer = () -> {
+            this.activePlan = planManager.getPlanAsync()
+                    .exceptionally(ex -> activePlan).join(); // Mantieni il piano attivo corrente in caso di errore
+
         };
-        planManager.addObserver(observer); // todo fare il detach in stop()
+        planManager.addObserver(observer);
 
         try {
             if (planId == null) {
@@ -77,7 +79,7 @@ public class PlanEditorCli extends AbstractCliView {
                     "Salva e Chiudi",
                     "Esci senza salvare"
             ));
-            int choice = reader.readInt("Scelta: ", 1, 10);
+            int choice = reader.readInt(SCELTA, 1, 10);
 
             // todo le funzioni che eseguono operazioni sulle sessioni non funzionano
             switch (choice) {
@@ -106,8 +108,12 @@ public class PlanEditorCli extends AbstractCliView {
             }
         }
 
-        planManager.removeObserver(observer);
         return new WorkoutPlanLibraryCli();
+    }
+
+    @Override
+    public void stop() {
+        planManager.removeObserver(observer);
     }
 
     private void modificaSessione() {
@@ -136,7 +142,7 @@ public class PlanEditorCli extends AbstractCliView {
                     "Seleziona Nodo per Modifica/Eliminazione"
             ));
 
-            int choice = reader.readInt("Scelta: ", 1, 3);
+            int choice = reader.readInt(SCELTA, 1, 3);
 
             switch (choice) {
                 case 1 -> sessionRunning = false;
@@ -153,6 +159,7 @@ public class PlanEditorCli extends AbstractCliView {
                         }
                     }
                 }
+                default -> printer.printInfo("Scelta non valida.");
             }
         }
     }
@@ -226,7 +233,7 @@ public class PlanEditorCli extends AbstractCliView {
                 "Aggiungi Protocollo",
                 "Aggiungi Esercizio dalla Libreria"
         ));
-        int choice = reader.readInt("Scelta: ", 1, 3);
+        int choice = reader.readInt( SCELTA, 1, 3);
 
         try {
             switch (choice) {
@@ -277,7 +284,7 @@ public class PlanEditorCli extends AbstractCliView {
                     "Modifica Parametri Protocollo",
                     "Aggiungi Modificatore/Decoratore (Badge)"
             ));
-            int choice = reader.readInt("Scelta: ", 1, 8);
+            int choice = reader.readInt( SCELTA, 1, 8);
 
             try {
                 switch (choice) {
@@ -330,7 +337,7 @@ public class PlanEditorCli extends AbstractCliView {
                 "Aggiungi Decoratore (es. Rest, Loop, Progression)",
                 "Annulla"
         ));
-        int choice = reader.readInt("Scelta: ", 1, 3);
+        int choice = reader.readInt(SCELTA, 1, 3);
 
         try {
             if (choice == 1) {

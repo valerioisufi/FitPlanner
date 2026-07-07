@@ -19,6 +19,7 @@ public class WorkoutCli extends AbstractCliView implements WorkoutExecutionObser
 
     private WorkoutExecutionPhase currentPhase;
     private CurrentExerciseBean currentExercise;
+    private WorkoutExecutionState engineState = WorkoutExecutionState.PLAYING;
     private boolean isCompleted = false;
 
     public WorkoutCli(String planId, int sessionDay) {
@@ -31,23 +32,27 @@ public class WorkoutCli extends AbstractCliView implements WorkoutExecutionObser
         this.executionManager = engine.getSessionContext().createWorkoutExecutionManager();
 
         executionManager.attachObserver(this);
+        executionManager.startSessionAsync(planId, sessionDay)
+                .exceptionally(e -> {
+                    printer.printException("Errore nel caricamento dell'allenamento: ", e);
+                    return null;
+                }).join();
 
-        try {
-            executionManager.startSessionAsync(planId, sessionDay).join();
-            executionManager.play();
+        executionManager.play();
 
-            while (!isCompleted) {
-                showMenuAndProcessInput();
-            }
-
-        } catch (Exception e) {
-            printer.printException("Errore durante l'esecuzione dell'allenamento", e);
-        } finally {
-            executionManager.detachObserver(this);
-            executionManager.stop();
+        while (!isCompleted) {
+            showMenuAndProcessInput();
         }
 
         return new DashboardCli();
+    }
+
+    @Override
+    public void stop() {
+        if (executionManager != null) {
+            executionManager.detachObserver(this);
+            executionManager.stop();
+        }
     }
 
     private void showMenuAndProcessInput() {
@@ -60,66 +65,94 @@ public class WorkoutCli extends AbstractCliView implements WorkoutExecutionObser
         printer.printHeader("ALLENAMENTO IN CORSO - " + currentPhase);
 
         if (currentPhase == WorkoutExecutionPhase.EXERCISE) {
-            if (currentExercise != null) {
-                printer.printInfo("Esercizio: " + currentExercise.getExerciseDescription().getName());
-                printer.printInfo("Istruzioni: " + currentExercise.getExerciseDescription().getExecution());
-
-                if (currentExercise.getLastWeightLog() != null && currentExercise.getLastWeightLog().getSets() != null && !currentExercise.getLastWeightLog().getSets().isEmpty()) {
-                    printer.printInfo("Ultimi log:");
-                    for (ExerciseSetBean set : currentExercise.getLastWeightLog().getSets()) {
-                        printer.printInfo("- " + set.getLoad() + "kg x " + set.getReps() + " (RPE: " + set.getRpe() + ")");
-                    }
-                }
-            }
-
-            printer.printMenu(null, List.of(
-                    "Registra Serie",
-                    "Aggiungi Note Esercizio",
-                    "Salta Esercizio Corrente (Avanti)",
-                    "Salta Esercizio Precedente (Indietro)",
-                    "Termina Allenamento e Salva"
-            )); // todo gestire anche tasti play/pause
-
-            processExerciseMenu(reader.readInt("Scegli un'opzione: ", 1, 5));
-
+            handleExercisePhase();
         } else if (currentPhase == WorkoutExecutionPhase.REST) {
-            printer.printInfo("Fase di Recupero in corso...");
-            printer.printMenu(null, List.of(
-                    "Salta Recupero",
-                    "Termina Allenamento e Salva"
-            ));
+            handleRestPhase();
+        }
+    }
 
-            processRestMenu(reader.readInt("Scegli un'opzione: ", 1, 2));
+    private void handleExercisePhase() {
+        if (currentExercise != null) {
+            printExerciseInfo();
+        }
+
+        String playPauseOption = (engineState == WorkoutExecutionState.PAUSED) ? "Riprendi (Play)" : "Metti in Pausa";
+
+        printer.printMenu(null, List.of(
+                "Registra Serie",
+                "Aggiungi Note Esercizio",
+                "Esercizio successivo ",
+                "Esercizio precedente ",
+                playPauseOption,
+                "Termina Allenamento e Salva"
+        ));
+
+        processExerciseMenu(reader.readInt("Scegli un'opzione: ", 1, 6));
+    }
+
+    private void handleRestPhase() {
+        printer.printInfo("Fase di Recupero in corso...");
+        String playPauseOption = (engineState == WorkoutExecutionState.PAUSED) ? "Riprendi (Play)" : "Metti in Pausa";
+
+        printer.printMenu(null, List.of(
+                "Salta Recupero",
+                playPauseOption,
+                "Termina Allenamento e Salva"
+        ));
+
+        processRestMenu(reader.readInt("Scegli un'opzione: ", 1, 3));
+    }
+
+    private void printExerciseInfo() {
+        printer.printLn("Esercizio: " + currentExercise.getExerciseDescription().getName());
+        printer.printLn("Istruzioni: " + currentExercise.getExerciseDescription().getExecution());
+
+        if (currentExercise.getLastWeightLog() != null && currentExercise.getLastWeightLog().getSets() != null && !currentExercise.getLastWeightLog().getSets().isEmpty()) {
+            printer.printLn("Ultimi log:");
+            for (ExerciseSetBean set : currentExercise.getLastWeightLog().getSets()) {
+                printer.printLn("- " + set.getLoad() + "kg x " + set.getReps() + " (RPE: " + set.getRpe() + ")");
+            }
         }
     }
 
     private void processExerciseMenu(int scelta) {
         if (currentPhase != WorkoutExecutionPhase.EXERCISE) {
-            printer.printInfo("La fase è cambiata. Scelta ignorata.");
+            printer.printLn("La fase è cambiata. Scelta ignorata.");
             return;
         }
 
         switch (scelta) {
-            case 1 -> {
-                double weight = reader.readDouble("Peso (kg): ");
-                int reps = reader.readInt("Ripetizioni: ", 1, 999);
-                int rpe = reader.readInt("RPE (1-10): ", 1, 10);
-                if (currentExercise != null) {
-                    executionManager.logExerciseSet(currentExercise.getExerciseDescription().getExerciseId(), new ExerciseSetBean(reps, weight, rpe));
-                    printer.printInfo("Serie registrata con successo.");
-                }
-            }
-            case 2 -> {
-                String note = reader.readString("Inserisci nota per l'esercizio: ");
-                if (currentExercise != null) {
-                    executionManager.updateExerciseNotes(currentExercise.getExerciseDescription().getExerciseId(), note);
-                    printer.printInfo("Note aggiornate con successo.");
-                }
-            }
+            case 1 -> logSeries();
+            case 2 -> addNotes();
             case 3 -> executionManager.skipNext();
             case 4 -> executionManager.skipPrevious();
-            case 5 -> finishWorkout();
+            case 5 -> togglePlayPause();
+            case 6 -> finishWorkout();
             default -> printer.printInfo("Scelta non valida.");
+        }
+    }
+
+    private void logSeries() {
+        double weight = reader.readDouble("Peso (kg): ");
+        int reps = reader.readInt("Ripetizioni: ", 1, 100);
+        int rpe = reader.readInt("RPE (1-10): ", 1, 10);
+
+        if (currentExercise != null) {
+            executionManager.logExerciseSet(
+                    currentExercise.getExerciseDescription().getExerciseId(),
+                    new ExerciseSetBean(reps, weight, rpe)
+            );
+
+            printer.printInfo("Serie registrata con successo.");
+        }
+    }
+
+    private void addNotes() {
+        String note = reader.readString("Inserisci nota per l'esercizio: ");
+
+        if (currentExercise != null) {
+            executionManager.updateExerciseNotes(currentExercise.getExerciseDescription().getExerciseId(), note);
+            printer.printInfo("Note aggiornate con successo.");
         }
     }
 
@@ -129,32 +162,47 @@ public class WorkoutCli extends AbstractCliView implements WorkoutExecutionObser
             return;
         }
 
-        if (scelta == 1) {
-            executionManager.skipPrevious();
+        switch (scelta) {
+            case 1 -> executionManager.skipPrevious();
+            case 2 -> togglePlayPause();
+            case 3 -> finishWorkout();
+            default -> printer.printInfo("Scelta non valida.");
+        }
+    }
+
+    private void togglePlayPause() {
+        if (engineState == WorkoutExecutionState.PAUSED) {
+            executionManager.play();
+            printer.printInfo("Allenamento ripreso.");
         } else {
-            finishWorkout();
+            executionManager.pause();
+            printer.printInfo("Allenamento in pausa.");
         }
     }
 
     private void finishWorkout() {
         String sessionNotes = reader.readString("Note finali sessione (premi invio per saltare): ");
-        try {
-            executionManager.finishAndSaveSession(sessionNotes).join();
-            printer.printInfo("Allenamento salvato con successo.");
-        } catch (Exception e) {
-            printer.printException("Errore nel salvataggio dell'allenamento", e);
-        }
+
+        executionManager.finishAndSaveSession(sessionNotes)
+                .exceptionally(e -> {
+                    printer.printException("Errore durante il salvataggio dell'allenamento: ", e);
+                    return null;
+                }).join();
+
+        printer.printInfo("Allenamento salvato con successo.");
+
         isCompleted = true;
     }
 
     @Override
     public void updateExecutionPhase(WorkoutExecutionPhase phase) {
         this.currentPhase = phase;
+
         if (phase == WorkoutExecutionPhase.COMPLETED) {
-            printer.printInfo("\nL'allenamento è stato completato dal motore.");
+            printer.printInfo("L'allenamento è stato completato.");
             isCompleted = true;
         } else if (phase == WorkoutExecutionPhase.EXERCISE) {
-            printer.printInfo("\nPassaggio alla fase EXERCISE! (Premi invio se sei bloccato nel prompt)");
+            printer.printInfo("Passaggio alla fase EXERCISE!");
         }
     }
 
@@ -165,20 +213,11 @@ public class WorkoutCli extends AbstractCliView implements WorkoutExecutionObser
 
     @Override
     public void updateCurrentWorkoutEngineState(WorkoutExecutionState state) {
-        // Stato del motore non utilizzato dalla CLI.
-        // todo forse andrebbe utilizzato
+        this.engineState = state;
     }
 
     @Override
     public void updateCurrentRestTime(int restTimeSeconds) {
         // Ignorato per evitare spam nella console
-    }
-
-    @Override
-    public void stop() {
-        if (executionManager != null) {
-            executionManager.detachObserver(this);
-            executionManager.stop();
-        }
     }
 }

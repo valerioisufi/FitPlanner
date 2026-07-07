@@ -8,11 +8,13 @@ import com.example.fitplannerclient.ui.cli.DashboardCli;
 import com.example.fitplannerclient.util.ValidationUtils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
 public class ExerciseLibraryCli extends AbstractCliView {
+
+    private static final String EXERCISE_NOT_FOUND = "Nessun esercizio nella libreria.";
+    private static final String LIBRARY_NOT_FOUND = "Errore durante il caricamento della libreria: ";
 
     private ExerciseLibraryManager manager;
 
@@ -36,29 +38,32 @@ public class ExerciseLibraryCli extends AbstractCliView {
             case 3 -> aggiungiEsercizio();
             case 4 -> modificaEsercizio();
             case 5 -> eliminaEsercizio();
+            default -> {
+                return this;
+            }
         }
 
         return this;
     }
 
     private void visualizzaLibreria() {
-        try {
-            List<ExerciseDescriptionBean> exercises = manager.getExercisesAsync(null).join();
-            if (exercises == null || exercises.isEmpty()) {
-                printer.printInfo("Nessun esercizio nella libreria.");
-            } else {
-                List<String> headers = Arrays.asList("Nome", "Gruppi Muscolari", "Descrizione");
-                List<List<String>> data = new ArrayList<>();
-                for (ExerciseDescriptionBean ex : exercises) {
-                    String muscleGroups = ex.getMuscleGroups() != null ? String.join(", ", ex.getMuscleGroups()) : "";
-                    String execution = ex.getExecution() != null ? ex.getExecution() : "";
-                    data.add(Arrays.asList(ex.getName() != null ? ex.getName() : "", muscleGroups, execution));
-                }
-                printer.printTable(headers, data);
-            }
-        } catch (Exception e) {
-            printer.printException("Errore nel caricamento degli esercizi", e);
+        List<ExerciseDescriptionBean> exercises = getExercises();
+        if (exercises == null || exercises.isEmpty()) {
+            printer.printInfo(EXERCISE_NOT_FOUND);
+            reader.waitForEnter();
+            return;
         }
+        List<String> headers = List.of("Nome", "Gruppi Muscolari", "Descrizione");
+        List<List<String>> data = new ArrayList<>();
+
+        for (ExerciseDescriptionBean ex : exercises) {
+            String muscleGroups = ex.getMuscleGroups() != null ? String.join(", ", ex.getMuscleGroups()) : "";
+            String execution = ex.getExecution() != null ? ex.getExecution() : "";
+
+            data.add(List.of(ex.getName() != null ? ex.getName() : "", muscleGroups, execution));
+        }
+
+        printer.printTable(headers, data);
         reader.waitForEnter();
     }
 
@@ -73,68 +78,77 @@ public class ExerciseLibraryCli extends AbstractCliView {
         bean.setExecution(execution);
         bean.setMuscleGroups(parseMuscleGroups(groupsStr));
 
-        try {
-            manager.addExerciseAsync(bean).join();
-            printer.printSuccess("Esercizio aggiunto con successo!");
-        } catch (Exception e) {
-            printer.printException("Errore durante l'aggiunta", e);
-        }
+        manager.addExerciseAsync(bean)
+                .exceptionally(e -> {
+                    printer.printException("Errore durante l'aggiunta: ", e);
+                    return null;
+                }).join();
+
+        printer.printSuccess("Esercizio aggiunto con successo!");
         reader.waitForEnter();
     }
 
     private void modificaEsercizio() {
-        try {
-            List<ExerciseDescriptionBean> exercises = manager.getExercisesAsync(null).join();
-            if (exercises == null || exercises.isEmpty()) {
-                printer.printInfo("Nessun esercizio nella libreria.");
-                reader.waitForEnter();
-                return;
-            }
-
-            Optional<ExerciseDescriptionBean> selected = reader.selectFrom("Seleziona l'esercizio da modificare:",
-                    exercises, ex -> ex.getName() != null ? ex.getName() : "Esercizio Sconosciuto");
-            if (selected.isEmpty()) return;
-            ExerciseDescriptionBean beanToEdit = selected.get();
-
-            String name = reader.readStringAndValidate("Nome Esercizio", input -> ValidationUtils.validateRequired(input, "Nome", 50), beanToEdit.getName() != null ? beanToEdit.getName() : "");
-            String execDefault = beanToEdit.getExecution() != null ? beanToEdit.getExecution() : "";
-            String execution = reader.readStringAndValidate("Descrizione esecuzione", input -> null, execDefault);
-            String groupsDefault = beanToEdit.getMuscleGroups() != null ? String.join(", ", beanToEdit.getMuscleGroups()) : "";
-            String groupsStr = reader.readStringAndValidate("Gruppi muscolari (separati da virgola)", input -> null, groupsDefault);
-
-            beanToEdit.setName(name);
-            beanToEdit.setExecution(execution);
-            beanToEdit.setMuscleGroups(parseMuscleGroups(groupsStr));
-
-            manager.updateExerciseAsync(beanToEdit).join();
-            printer.printSuccess("Esercizio modificato con successo!");
-
-        } catch (Exception e) {
-            printer.printException("Errore durante la modifica", e);
+        List<ExerciseDescriptionBean> exercises = getExercises();
+        if (exercises == null || exercises.isEmpty()) {
+            printer.printInfo(EXERCISE_NOT_FOUND);
+            reader.waitForEnter();
+            return;
         }
+
+        Optional<ExerciseDescriptionBean> selected = reader.selectFrom("Seleziona l'esercizio da modificare:",
+                exercises, ex -> ex.getName() != null ? ex.getName() : "Esercizio Sconosciuto");
+        if (selected.isEmpty()) return;
+        ExerciseDescriptionBean beanToEdit = selected.get();
+
+        String name = reader.readStringAndValidate("Nome Esercizio", input -> ValidationUtils.validateRequired(input, "Nome", 50), beanToEdit.getName() != null ? beanToEdit.getName() : "");
+        String execDefault = beanToEdit.getExecution() != null ? beanToEdit.getExecution() : "";
+        String execution = reader.readStringAndValidate("Descrizione esecuzione", input -> null, execDefault);
+        String groupsDefault = beanToEdit.getMuscleGroups() != null ? String.join(", ", beanToEdit.getMuscleGroups()) : "";
+        String groupsStr = reader.readStringAndValidate("Gruppi muscolari (separati da virgola)", input -> null, groupsDefault);
+
+        beanToEdit.setName(name);
+        beanToEdit.setExecution(execution);
+        beanToEdit.setMuscleGroups(parseMuscleGroups(groupsStr));
+
+        manager.updateExerciseAsync(beanToEdit)
+                .exceptionally(e -> {
+                    printer.printException("Errore durante l'aggiornamento: ", e);
+                    return null;
+                }).join();
+
+        printer.printSuccess("Esercizio modificato con successo!");
+
+
         reader.waitForEnter();
     }
 
     private void eliminaEsercizio() {
-        try {
-            List<ExerciseDescriptionBean> exercises = manager.getExercisesAsync(null).join();
-            if (exercises == null || exercises.isEmpty()) {
-                printer.printInfo("Nessun esercizio nella libreria.");
-                reader.waitForEnter();
-                return;
-            }
-
-            Optional<ExerciseDescriptionBean> selected = reader.selectFrom("Seleziona l'esercizio da eliminare:",
-                    exercises, ex -> ex.getName() != null ? ex.getName() : "Esercizio Sconosciuto");
-            if (selected.isEmpty()) return;
-
-            manager.removeExerciseAsync(selected.get().getExerciseId()).join();
-            printer.printSuccess("Esercizio eliminato con successo!");
-
-        } catch (Exception e) {
-            printer.printException("Errore durante l'eliminazione", e);
+        List<ExerciseDescriptionBean> exercises = getExercises();
+        if (exercises == null || exercises.isEmpty()) {
+            printer.printInfo(EXERCISE_NOT_FOUND);
+            reader.waitForEnter();
+            return;
         }
-        reader.waitForEnter();
+
+        Optional<ExerciseDescriptionBean> selected = reader.selectFrom("Seleziona l'esercizio da eliminare:",
+                exercises, ex -> ex.getName() != null ? ex.getName() : "Esercizio Sconosciuto");
+        if (selected.isEmpty()) return;
+
+        manager.removeExerciseAsync(selected.get().getExerciseId()).join();
+        printer.printSuccess("Esercizio eliminato con successo!");
+
+
+    reader.waitForEnter();
+    }
+
+    private List<ExerciseDescriptionBean> getExercises() {
+        return manager.getExercisesAsync(null)
+                .exceptionally(e-> {
+                    printer.printException( LIBRARY_NOT_FOUND, e);
+                    return new ArrayList<>();
+                }).join();
+
     }
 
     /** Divide una stringa di gruppi muscolari separati da virgola, ignorando i vuoti. */

@@ -11,6 +11,9 @@ import java.util.List;
 
 public class SessionsCli extends AbstractCliView {
 
+    private static final String BACK_LABEL = "Indietro";
+    private static final String CHOOSE_OPTION_PROMPT = "Scegli un'opzione: ";
+
     private WorkoutPlanManager planManager;
 
     @Override
@@ -19,11 +22,12 @@ public class SessionsCli extends AbstractCliView {
 
         printer.printHeader("LE MIE SESSIONI");
         printer.printMenu(null, List.of(
-                "Indietro",
+                BACK_LABEL,
                 "Sessione del giorno",
                 "Visualizza tutte le sessioni"
         ));
-        int scelta = reader.readInt("Scegli un'opzione: ", 1, 3);
+
+        int scelta = reader.readInt(CHOOSE_OPTION_PROMPT, 1, 3);
         return switch (scelta) {
             case 1 -> new DashboardCli();
             case 2 -> todayPlan();
@@ -55,7 +59,7 @@ public class SessionsCli extends AbstractCliView {
         for (ScheduleDayBean day : days) {
             String sessionName = day.getSession() != null ? day.getSession().getName() : "Riposo";
             String stateStr = day.getState() != null ? day.getState().toString() : "Sconosciuto";
-            String todayStr = day.isToday() ? "SI" : "";
+            String todayStr = day.isToday() ? "X" : "";
 
             data.add(List.of(String.valueOf(day.getAbsoluteDay()), sessionName, stateStr, todayStr));
 
@@ -74,33 +78,43 @@ public class SessionsCli extends AbstractCliView {
 
         printer.printMenu("Seleziona una sessione da visualizzare o avviare",
                 selectableDays.stream().map(d -> "Giorno " + d.getAbsoluteDay() + " - " + d.getSession().getName()).toList());
-        int scelta = reader.readInt("Scegli un'opzione (0 per tornare indietro): ", 0, selectableDays.size());
+        int scelta = reader.readInt("Scegli un'opzione (-1 per tornare indietro): ", -1, selectableDays.size());
 
-        if (scelta == 0) {
+        if (scelta == -1) {
             return this;
         }
 
-        return sessionPrinter(selectableDays.get(scelta - 1), schedule.getPlanId());
+        return sessionPrinter(selectableDays.get(scelta), schedule.getPlanId());
     }
 
     private CliView sessionPrinter(ScheduleDayBean selectedDay, String planId) {
+        if(selectedDay == null) {
+            printer.printInfo("Sessione non trovata.");
+            return this;
+        }
+
         WorkoutSessionBean session = selectedDay.getSession();
         if (session == null) return this;
 
         printer.printPlan(session.getPlanRoot());
         reader.waitForEnter();
 
-        printer.printMenu("Vuoi avviare la sessione?", List.of("Avvia", "Indietro"));
-        int scelta = reader.readInt("Scegli un'opzione: ", 1, 2);
+        printer.printMenu("Vuoi avviare la sessione?", List.of("Avvia", BACK_LABEL));
+        int scelta = reader.readInt(CHOOSE_OPTION_PROMPT, 1, 2);
         if (scelta == 1) {
             return new WorkoutCli(planId, selectedDay.getAbsoluteDay());
         }
+
         return this;
     }
 
     private CliView todayPlan() {
-        try {
-            WorkoutScheduleBean day = planManager.getCurrentCycleScheduleAsync().join();
+            WorkoutScheduleBean day = planManager.getCurrentCycleScheduleAsync()
+                    .exceptionally(e -> {
+                        printer.printException("Errore nel caricamento del piano di allenamento: ", e);
+                        return null;
+                    }).join();
+
             int suggestedDay = day.getSuggestedDayIndex();
 
             WorkoutSessionBean todayPlan = day.getDays().get(suggestedDay).getSession();
@@ -112,16 +126,12 @@ public class SessionsCli extends AbstractCliView {
             printer.printPlan(todayPlan.getPlanRoot());
             reader.waitForEnter();
 
-            printer.printMenu("Vuoi avviare la scheda del giorno corrente?", List.of("Avvia", "Indietro"));
-            int scelta = reader.readInt("Scegli un'opzione: ", 1, 2);
+            printer.printMenu("Vuoi avviare la scheda del giorno corrente?", List.of("Avvia", BACK_LABEL));
+            int scelta = reader.readInt(CHOOSE_OPTION_PROMPT, 1, 2);
 
             if (scelta == 1) {
                 return new WorkoutCli(day.getPlanId(), day.getDays().get(suggestedDay).getAbsoluteDay());
             }
-
-        } catch (Exception e) {
-            printer.printException("Errore nel caricamento della scheda del giorno corrente: ", e);
-        }
 
         return this;
     }

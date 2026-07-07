@@ -46,6 +46,10 @@ public class OutputPrinter {
         System.out.println("[INFO] " + message);
     }
 
+    public void printLn(String message) {
+        System.out.println(message);
+    }
+
     /**
      * Stampa i dati in formato tabellare.
      */

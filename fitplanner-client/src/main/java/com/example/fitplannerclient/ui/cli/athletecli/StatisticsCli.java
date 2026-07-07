@@ -38,12 +38,23 @@ public class StatisticsCli extends AbstractCliView {
                 : engine.getSessionContext().createWorkoutHistoryManager();
 
         printer.printHeader(athleteId != null ? "STATISTICHE ATLETA" : "STATISTICHE");
-        printer.printMenu(null, List.of("Indietro", "Visualizza statistiche ultimi 30 giorni", "Visualizza statistiche ultimi 90 giorni"));
-        int scelta = reader.readInt("Scegli un'opzione: ", 1, 3); // todo accettare un numero qualsiasi di giorni come filtro
+        printer.printMenu(null, List.of(
+                "Indietro",
+                "Visualizza statistiche ultimi 30 giorni",
+                "Visualizza statistiche ultimi 90 giorni",
+                "Scegli l'intervallo di tempo del quale vuoi vedere le statistiche")
+        );
+        int scelta = reader.readInt("Scegli un'opzione: ", 1, 3);
+
         switch (scelta) {
             case 1 -> { return getBackCli(); }
             case 2 -> viewStatistics(30);
             case 3 -> viewStatistics(90);
+            case 4 ->
+                    viewStatistics(reader.readInt("Inserisci il numero di giorni: ", 1, Integer.MAX_VALUE));
+            default -> {
+                return this;
+            }
         }
 
         return this;
