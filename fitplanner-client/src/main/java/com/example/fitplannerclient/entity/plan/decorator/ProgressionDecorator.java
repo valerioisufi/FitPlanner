@@ -1,5 +1,6 @@
 package com.example.fitplannerclient.entity.plan.decorator;
 
+import com.example.fitplannerclient.entity.plan.execution.PlanNodeState;
 import com.example.fitplannerclient.entity.plan.visitor.WorkoutPlanVisitor;
 import com.example.fitplannerclient.entity.plan.PlanNode;
 import com.example.fitplannerclient.entity.plan.execution.ExecutionContext;
@@ -18,18 +19,6 @@ public class ProgressionDecorator extends LoopDecorator {
 
     public void setProgressionString(String progressionString) {
         this.progressionString = progressionString;
-        this.parsedProgressions = parseProgressions(progressionString);
-        
-        int maxRounds = 0;
-        if (this.parsedProgressions != null) {
-            for (List<String> values : this.parsedProgressions.values()) {
-                if (values != null && values.size() > maxRounds) {
-                    maxRounds = values.size();
-                }
-            }
-        }
-
-        this.setRoundsExpression(String.valueOf(maxRounds));
     }
 
     public String getProgressionString() {
@@ -77,13 +66,24 @@ public class ProgressionDecorator extends LoopDecorator {
 
     @Override
     public ExecutionResult execute(ExecutionContext context) {
-        if (parsedProgressions != null) {
-            for (Map.Entry<String, List<String>> entry : parsedProgressions.entrySet()) {
-                List<String> values = entry.getValue();
-
-                if (values != null && currentRound < values.size()) {
-                    context.setParameter(entry.getKey(), values.get(currentRound));
+        if (this.state == PlanNodeState.IDLE) {
+            String resolvedString = context.resolveVariables(this.progressionString);
+            this.parsedProgressions = parseProgressions(resolvedString);
+            
+            int maxRounds = 0;
+            for (List<String> values : this.parsedProgressions.values()) {
+                if (values != null && values.size() > maxRounds) {
+                    maxRounds = values.size();
                 }
+            }
+            this.setRoundsExpression(String.valueOf(maxRounds));
+        }
+
+        for (Map.Entry<String, List<String>> entry : parsedProgressions.entrySet()) {
+            List<String> values = entry.getValue();
+
+            if (values != null && currentRound < values.size()) {
+                context.setParameter(entry.getKey(), values.get(currentRound));
             }
         }
         
