@@ -13,7 +13,6 @@ import com.example.fitplannerclient.ui.cli.AbstractCliView;
 import com.example.fitplannerclient.ui.cli.CliView;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class PlanEditorCli extends AbstractCliView {
 
@@ -49,19 +48,7 @@ public class PlanEditorCli extends AbstractCliView {
 
         planManager.addObserver(observer);
 
-        AtomicBoolean created = new AtomicBoolean(true);
-        if (planId == null) {
-            planManager.createNewPlan()
-                    .exceptionally(ex -> {
-                        printer.printException("Errore nella creazione del piano:", ex);
-                        created.set(false);
-                        return null;
-                    }).join();
-        } else {
-            planManager.editExistingPlan(planId, isClone).join();
-        }
-
-        if (!created.get()) {
+        if (!createPlan()) {
             return new WorkoutPlanLibraryCli();
         }
         planManager.buildProtocolBlockLibrary();
@@ -88,15 +75,20 @@ public class PlanEditorCli extends AbstractCliView {
                 case 7 -> planManager.undo();
                 case 8 -> planManager.redo();
                 case 9 -> {
-                        planManager.savePlan()
-                                .exceptionally(e -> {
-                                    printer.printException("Errore durante il salvataggio del piano: ", e);
-                                    reader.waitForEnter();
-                                    return null;
+                        boolean success = planManager.savePlan()
+                                .handle((res, ex) -> {
+                                    if (ex != null) {
+                                        printer.printException("Errore durante il salvataggio del piano: ", ex);
+                                        reader.waitForEnter();
+                                        return false;
+                                    }
+                                    return true;
                                 }).join();
 
-                        printer.printSuccess("Piano salvato!");
-                        running = false;
+                        if (success) {
+                            printer.printSuccess("Piano salvato!");
+                            running = false;
+                        }
                 }
                 case 10 -> running = false;
                 default -> {
@@ -113,6 +105,30 @@ public class PlanEditorCli extends AbstractCliView {
         planManager.removeObserver(observer);
     }
 
+    private boolean createPlan() {
+        boolean created;
+        if (planId == null) {
+            created = planManager.createNewPlan()
+                    .handle((res, ex) -> {
+                        if (ex != null) {
+                            printer.printException("Errore nella creazione del piano: ", ex);
+                            return true;
+                        }
+                        return false;
+                    }).join();
+        } else {
+            created = planManager.editExistingPlan(planId, isClone)
+                    .handle((res, ex) -> {
+                        if (ex != null) {
+                            printer.printException("Errore nell'apertura del piano da modificare: ", ex);
+                            return true;
+                        }
+                        return false;
+                    }).join();
+        }
+        return created;
+    }
+
     private Optional<WorkoutSessionBean> chooseSession() {
         if (activePlan.getSessions() == null || activePlan.getSessions().isEmpty()) {
             printer.printInfo("Nessuna sessione presente. Aggiungi prima una sessione.");
@@ -120,7 +136,7 @@ public class PlanEditorCli extends AbstractCliView {
             return Optional.empty();
         }
 
-        return reader.selectFrom("Seleziona la sessione da modificare:",
+        return reader.selectFrom("Seleziona la sessione da modificare: ",
                 activePlan.getSessions(),
                 s -> "Giorno " + s.getDay() + " - " + (s.getName() != null ? s.getName() : NO_NAME),
                 BACK_LABEL);
