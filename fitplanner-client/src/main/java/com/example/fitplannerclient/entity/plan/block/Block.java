@@ -84,27 +84,8 @@ public class Block extends PlanNode implements GroupNode {
         }
 
         while (currentChildIndex >= 0 && currentChildIndex < children.size()) {
-            ExecutionResult result = children.get(currentChildIndex).execute(context);
-
-            if (result.getState() == PlanNodeState.COMPLETED || result.getState() == PlanNodeState.SKIPPED) {
-                currentChildIndex++;
-                // il ciclo while prosegue con il figlio successivo
-            } else if (result.getState() == PlanNodeState.REVERT) {
-                children.get(currentChildIndex).reset();
-
-                if (currentChildIndex > 0) {
-                    currentChildIndex--;
-                    children.get(currentChildIndex).reset();
-
-                } else {
-                    return new ExecutionResult(PlanNodeState.REVERT);
-                }
-
-            } else {
-                // il figlio è RUNNING o WAITING
-                if (this.title != null && !this.title.isEmpty()) {
-                    context.prependBreadcrumb(this.title);
-                }
+            ExecutionResult result = executeChild(context);
+            if (result != null) {
                 return result;
             }
         }
@@ -112,6 +93,34 @@ public class Block extends PlanNode implements GroupNode {
         // se usciamo dal ciclo while, tutti i figli sono COMPLETED
         this.state = PlanNodeState.COMPLETED;
         return new ExecutionResult(PlanNodeState.COMPLETED);
+    }
+
+    private ExecutionResult executeChild(ExecutionContext context) {
+        ExecutionResult result = children.get(currentChildIndex).execute(context);
+
+        if (result.getState() == PlanNodeState.COMPLETED || result.getState() == PlanNodeState.SKIPPED) {
+            currentChildIndex++;
+            // il ciclo while prosegue con il figlio successivo
+        } else if (result.getState() == PlanNodeState.REVERT) {
+            children.get(currentChildIndex).reset();
+
+            if (currentChildIndex > 0) {
+                currentChildIndex--;
+                children.get(currentChildIndex).reset();
+
+            } else {
+                return new ExecutionResult(PlanNodeState.REVERT);
+            }
+
+        } else {
+            // il figlio è RUNNING o WAITING
+            if (this.title != null && !this.title.isEmpty()) {
+                context.prependBreadcrumb(this.title);
+            }
+            return result;
+        }
+
+        return null;
     }
 
     @Override

@@ -38,6 +38,9 @@ public class ProfileCli extends AbstractCliView {
                 engine.getSessionManager().logout();
                 return new AuthenticationCli();
             }
+            default -> {
+                return this;
+            }
         }
 
         return this;

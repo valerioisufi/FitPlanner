@@ -1,8 +1,6 @@
 package com.example.fitplannerclient.controller.plan;
 
 import com.example.fitplannerclient.bean.plan.*;
-import com.example.fitplannerclient.bean.profile.ProfileBean;
-import com.example.fitplannerclient.controller.profile.ProfileManager;
 import com.example.fitplannerclient.entity.ExerciseDescription;
 import com.example.fitplannerclient.entity.plan.WorkoutPlan;
 import com.example.fitplannerclient.entity.plan.WorkoutPlanSummary;
