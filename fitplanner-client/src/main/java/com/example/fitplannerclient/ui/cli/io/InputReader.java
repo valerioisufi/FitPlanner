@@ -94,7 +94,7 @@ public class InputReader {
     }
 
     /**
-     * Mostra un menu numerato degli {@code items} (più una voce di annullamento)
+     * Mostra un menu numerato degli items (più una voce di annullamento)
      * e restituisce l'elemento scelto, o vuoto se l'utente annulla.
      */
     public <T> Optional<T> selectFrom(String title, List<T> items, Function<T, String> label) {

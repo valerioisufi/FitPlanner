@@ -39,18 +39,18 @@ public class WorkoutPlanLibraryCli extends AbstractCliView {
 
         switch (scelta) {
             case 1 -> { return new DashboardCli(); }
-            case 2 -> visualizzaPiani();
+            case 2 -> displayPlans();
             case 3 -> { return new PlanEditorCli(null, false); }
             case 4 -> {
-                String planId = selezionaPiano("Modifica");
+                String planId = choosePlan("Modifica");
                 if (planId != null) return new PlanEditorCli(planId, false);
             }
             case 5 -> {
-                String planId = selezionaPiano("Clona");
+                String planId = choosePlan("Clona");
                 if (planId != null) return new PlanEditorCli(planId, true);
             }
-            case 6 -> eliminaPiano();
-            case 7 -> assegnaPiano();
+            case 6 -> deletePlan();
+            case 7 -> assignPlan();
             default -> {
                 return this;
             }
@@ -59,7 +59,7 @@ public class WorkoutPlanLibraryCli extends AbstractCliView {
         return this;
     }
 
-    private void visualizzaPiani() {
+    private void displayPlans() {
         List<WorkoutPlanSummaryBean> plans = planManager.getMyCreatedPlansSummaryAsync()
                 .exceptionally(e -> {
                     printer.printException("Errore durante il caricamento dei piani: ", e);
@@ -101,7 +101,7 @@ public class WorkoutPlanLibraryCli extends AbstractCliView {
         return athletes.stream().filter(a -> id.equals(a.getUserId())).findFirst().orElse(null);
     }
 
-    private String selezionaPiano(String action) {
+    private String choosePlan(String action) {
         List<WorkoutPlanSummaryBean> plans = planManager.getMyCreatedPlansSummaryAsync()
                 .exceptionally(e -> {
                     printer.printException("Errore durante il caricamento dei piani: ", e);
@@ -137,8 +137,8 @@ public class WorkoutPlanLibraryCli extends AbstractCliView {
                 .orElse(null);
     }
 
-    private void eliminaPiano() {
-        String planId = selezionaPiano("Eliminare");
+    private void deletePlan() {
+        String planId = choosePlan("Eliminare");
 
         if (planId != null) {
             planManager.deletePlanAsync(planId)
@@ -152,8 +152,8 @@ public class WorkoutPlanLibraryCli extends AbstractCliView {
         }
     }
 
-    private void assegnaPiano() {
-        String planId = selezionaPiano("Assegnare");
+    private void assignPlan() {
+        String planId = choosePlan("Assegnare");
         if (planId == null) return;
 
         List<ProfileBean> athletes = profileManager.getMyAthletesAsync()

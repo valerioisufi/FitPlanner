@@ -112,20 +112,21 @@ public class PlanEditorCli extends AbstractCliView {
                     .handle((res, ex) -> {
                         if (ex != null) {
                             printer.printException("Errore nella creazione del piano: ", ex);
-                            return true;
+                            return false;
                         }
-                        return false;
+                        return true;
                     }).join();
         } else {
             created = planManager.editExistingPlan(planId, isClone)
                     .handle((res, ex) -> {
                         if (ex != null) {
                             printer.printException("Errore nell'apertura del piano da modificare: ", ex);
-                            return true;
+                            return false;
                         }
-                        return false;
+                        return true;
                     }).join();
         }
+
         return created;
     }
 
@@ -375,11 +376,11 @@ public class PlanEditorCli extends AbstractCliView {
                                 .ifPresent(e -> planManager.changeExerciseResource(nodeId, e.getExerciseId()));
                     }
                 }
-                case "Modifica Parametri Protocollo" -> modificaParametriProtocollo(nodeId);
-                case "Aggiungi Modificatore" -> aggiungiModificatore(nodeId);
-                case "Rimuovi Modificatore" -> rimuoviModificatore(nodeId);
-                case "Aggiungi Decoratore" -> aggiungiDecoratore(nodeId);
-                case "Rimuovi Decoratore" -> rimuoviDecoratore(nodeId);
+                case "Modifica Parametri Protocollo" -> editProtocolParameters(nodeId);
+                case "Aggiungi Modificatore" -> addModifier(nodeId);
+                case "Rimuovi Modificatore" -> removeModifier(nodeId);
+                case "Aggiungi Decoratore" -> addDecorator(nodeId);
+                case "Rimuovi Decoratore" -> removeDecorator(nodeId);
                 default -> printer.printInfo("Scelta non valida.");
             }
         }
@@ -410,7 +411,7 @@ public class PlanEditorCli extends AbstractCliView {
         return menuOptions;
     }
 
-    private void modificaParametriProtocollo(String nodeId) {
+    private void editProtocolParameters(String nodeId) {
         Map<String, String> params = planManager.getProtocolParameters(nodeId);
         if (params == null || params.isEmpty()) {
             printer.printInfo("Il nodo non supporta parametri o non ne ha.");
@@ -425,72 +426,70 @@ public class PlanEditorCli extends AbstractCliView {
         planManager.updateProtocolParameters(nodeId, newParams);
     }
 
-    private void aggiungiModificatore(String nodeId) {
-        try {
-            String modifierType = reader.readString("Tipo (REPS, WEIGHT, TUT, RPE...): ");
-            String value = reader.readString("Valore: ");
-            planManager.addModifierFromToolbox(modifierType.toUpperCase(), value, nodeId);
-        } catch (Exception e) {
-            printer.printException("Errore nell'aggiunta del modificatore:", e);
-            reader.waitForEnter();
-        }
+    private void addModifier(String nodeId) {
+        List<String> opzioniMod = List.of("REPS", "WEIGHT", "TUT", "RPE");
+        Optional<String> sceltoMod = reader.selectFrom("Seleziona Tipo Modificatore:", opzioniMod, s -> s);
+
+        if (sceltoMod.isEmpty()) return;
+        String modifierType = sceltoMod.get();
+
+        String value = reader.readString("Valore: ");
+        planManager.addModifierFromToolbox(modifierType.toUpperCase(), value, nodeId);
     }
 
-    private void aggiungiDecoratore(String nodeId) {
-        try {
-            PlanNodeBean nodeBean = findNodeBean(nodeId);
-            String targetId = nodeId;
+    private void addDecorator(String nodeId) {
+        PlanNodeBean nodeBean = findNodeBean(nodeId);
+        String targetId = nodeId;
 
-            if (nodeBean != null && nodeBean.getFlowDecorators() != null && !nodeBean.getFlowDecorators().isEmpty()) {
-                String q = reader.readString("Vuoi avvolgere un decoratore esistente anziché il nodo? (s/n): ");
-                if (q.equalsIgnoreCase("s")) {
-                    Optional<FlowDecoratorBean> selected = reader.selectFrom("Seleziona decoratore da avvolgere:",
-                            nodeBean.getFlowDecorators(),
-                            d -> d.getType().name() + " = " + d.getValue());
-                    if (selected.isPresent()) {
-                        targetId = selected.get().getId();
-                    }
+        if (nodeBean != null && nodeBean.getFlowDecorators() != null && !nodeBean.getFlowDecorators().isEmpty()) {
+            String q = reader.readString("Vuoi avvolgere un decoratore esistente anziché il nodo? (s/n): ");
+
+            if (q.equalsIgnoreCase("s")) {
+                Optional<FlowDecoratorBean> selected = reader.selectFrom("Seleziona decoratore da avvolgere: ",
+                        nodeBean.getFlowDecorators(),
+                        d -> d.getType().name() + " = " + d.getValue());
+                if (selected.isPresent()) {
+                    targetId = selected.get().getId();
                 }
             }
+        }
 
-            String decoratorType = reader.readString("Tipo Decoratore (Rest, Loop, Interval, Progression, Time Limit): ");
-            String value2 = reader.readString("Valore: ");
-            planManager.addDecoratorFromToolbox(decoratorType, value2, targetId);
-        } catch (Exception e) {
-            printer.printException("Errore nell'aggiunta del decoratore:", e);
+        List<String> opzioniDec = List.of("Rest", "Loop", "Interval", "Progression", "Time Limit");
+        Optional<String> sceltoDec = reader.selectFrom("Seleziona Tipo Decoratore:", opzioniDec, s -> s);
+
+        if (sceltoDec.isEmpty()) return;
+        String decoratorType = sceltoDec.get();
+
+        String value2 = reader.readString("Valore: ");
+        planManager.addDecoratorFromToolbox(decoratorType, value2, targetId);
+    }
+
+    private void removeModifier(String nodeId) {
+        List<String> opzioniMod = List.of("REPS", "WEIGHT", "TUT", "RPE");
+        Optional<String> sceltoMod = reader.selectFrom("Seleziona Tipo Modificatore da rimuovere:", opzioniMod, s -> s);
+
+        if (sceltoMod.isEmpty()) return;
+        String modifierType = sceltoMod.get().toUpperCase();
+
+        planManager.removeModifier(nodeId, modifierType);
+        printer.printInfo("Modificatore rimosso.");
+    }
+
+    private void removeDecorator(String nodeId) {
+        PlanNodeBean nodeBean = findNodeBean(nodeId);
+        if (nodeBean == null || nodeBean.getFlowDecorators() == null || nodeBean.getFlowDecorators().isEmpty()) {
+            printer.printInfo("Nessun decoratore presente su questo nodo.");
             reader.waitForEnter();
+            return;
         }
-    }
 
-    private void rimuoviModificatore(String nodeId) {
-        try {
-            String modifierType = reader.readString("Tipo Modificatore (es. REPS, WEIGHT): ").toUpperCase();
-            planManager.removeModifier(nodeId, modifierType);
-            printer.printInfo("Modificatore rimosso.");
-        } catch (Exception e) {
-            printer.printException("Errore:", e);
-        }
-    }
+        Optional<FlowDecoratorBean> selected = reader.selectFrom("Seleziona decoratore da rimuovere:",
+                nodeBean.getFlowDecorators(),
+                d -> d.getType().name() + " = " + d.getValue());
 
-    private void rimuoviDecoratore(String nodeId) {
-        try {
-            PlanNodeBean nodeBean = findNodeBean(nodeId);
-            if (nodeBean == null || nodeBean.getFlowDecorators() == null || nodeBean.getFlowDecorators().isEmpty()) {
-                printer.printInfo("Nessun decoratore presente su questo nodo.");
-                reader.waitForEnter();
-                return;
-            }
-
-            Optional<FlowDecoratorBean> selected = reader.selectFrom("Seleziona decoratore da rimuovere:",
-                    nodeBean.getFlowDecorators(),
-                    d -> d.getType().name() + " = " + d.getValue());
-
-            if (selected.isPresent()) {
-                planManager.removeDecorator(selected.get().getId());
-                printer.printInfo("Decoratore rimosso.");
-            }
-        } catch (Exception e) {
-            printer.printException("Errore:", e);
+        if (selected.isPresent()) {
+            planManager.removeDecorator(selected.get().getId());
+            printer.printInfo("Decoratore rimosso.");
         }
     }
 
