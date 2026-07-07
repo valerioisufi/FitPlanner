@@ -18,6 +18,7 @@ public class WorkoutCli extends AbstractCliView implements WorkoutExecutionObser
 
     private final CountDownLatch initLatch = new CountDownLatch(1);
     private CountDownLatch transitionLatch;
+    private CountDownLatch exerciseDataLatch;
 
     private WorkoutExecutionManager executionManager;
 
@@ -99,14 +100,16 @@ public class WorkoutCli extends AbstractCliView implements WorkoutExecutionObser
     }
 
     private void handleExercisePhase() {
-        int waitTime = 0;
-        while (currentExerciseRef.get() == null && waitTime < 30) {
+        if (currentExerciseRef.get() == null) {
+            exerciseDataLatch = new CountDownLatch(1);
             try {
-                Thread.sleep(100);
+                boolean success = exerciseDataLatch.await(3, TimeUnit.SECONDS);
+                if (!success) {
+                    // Wait timed out
+                }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
-            waitTime++;
         }
 
         if (currentExerciseRef.get() != null) {
@@ -224,7 +227,7 @@ public class WorkoutCli extends AbstractCliView implements WorkoutExecutionObser
         }
 
         switch (scelta) {
-            case 1 -> waitForTransition(() -> executionManager.done());
+            case 1 -> waitForTransition(() -> executionManager.skipNext());
             case 2 -> togglePlayPause();
             case 3 -> finishWorkout();
             default -> printer.printInfo("Scelta non valida.");
@@ -272,6 +275,9 @@ public class WorkoutCli extends AbstractCliView implements WorkoutExecutionObser
     @Override
     public void updateCurrentExercise(CurrentExerciseBean currentExercise) {
         this.currentExerciseRef.set(currentExercise);
+        if (exerciseDataLatch != null) {
+            exerciseDataLatch.countDown();
+        }
     }
 
     @Override
@@ -281,6 +287,8 @@ public class WorkoutCli extends AbstractCliView implements WorkoutExecutionObser
 
     @Override
     public void updateCurrentRestTime(int restTimeSeconds) {
-        // Ignorato per evitare spam nella console
+        if (transitionLatch != null) {
+            transitionLatch.countDown();
+        }
     }
 }
