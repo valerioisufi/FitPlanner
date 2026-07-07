@@ -144,8 +144,19 @@ public class WorkoutCli extends AbstractCliView implements WorkoutExecutionObser
         CurrentExerciseBean currentExercise = currentExerciseRef.get();
         if (currentExercise == null) return;
         
+        if (currentExercise.getBreadcrumb() != null && !currentExercise.getBreadcrumb().isEmpty()) {
+            printer.printLn("Posizione: " + currentExercise.getBreadcrumb());
+        }
+
         printer.printLn("Esercizio: " + currentExercise.getExerciseDescription().getName());
         printer.printLn("Istruzioni: " + currentExercise.getExerciseDescription().getExecution());
+
+        if (currentExercise.getModifiers() != null && !currentExercise.getModifiers().isEmpty()) {
+            List<String> mods = currentExercise.getModifiers().stream()
+                    .map(m -> m.getName() + ": " + m.getValue())
+                    .toList();
+            printer.printLn("Target: " + String.join(", ", mods));
+        }
 
         if (currentExercise.getLastWeightLog() != null && currentExercise.getLastWeightLog().getSets() != null && !currentExercise.getLastWeightLog().getSets().isEmpty()) {
             printer.printLn("Ultimi log:");
