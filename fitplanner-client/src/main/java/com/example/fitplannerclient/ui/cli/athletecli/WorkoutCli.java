@@ -21,10 +21,10 @@ public class WorkoutCli extends AbstractCliView implements WorkoutExecutionObser
     private final String planId;
     private final int sessionDay;
 
-    private WorkoutExecutionPhase currentPhase;
-    private CurrentExerciseBean currentExercise;
-    private WorkoutExecutionState engineState = WorkoutExecutionState.PLAYING;
-    private boolean isCompleted = false;
+    private volatile WorkoutExecutionPhase currentPhase;
+    private volatile CurrentExerciseBean currentExercise;
+    private volatile WorkoutExecutionState engineState = WorkoutExecutionState.PLAYING;
+    private volatile boolean isCompleted = false;
 
     public WorkoutCli(String planId, int sessionDay) {
         this.planId = planId;
@@ -80,6 +80,16 @@ public class WorkoutCli extends AbstractCliView implements WorkoutExecutionObser
     }
 
     private void handleExercisePhase() {
+        int waitTime = 0;
+        while (currentExercise == null && waitTime < 30) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            waitTime++;
+        }
+
         if (currentExercise != null) {
             printExerciseInfo();
         }
@@ -132,8 +142,14 @@ public class WorkoutCli extends AbstractCliView implements WorkoutExecutionObser
         switch (scelta) {
             case 1 -> logSeries();
             case 2 -> addNotes();
-            case 3 -> executionManager.skipNext();
-            case 4 -> executionManager.skipPrevious();
+            case 3 -> {
+                currentExercise = null;
+                executionManager.skipNext();
+            }
+            case 4 -> {
+                currentExercise = null;
+                executionManager.skipPrevious();
+            }
             case 5 -> togglePlayPause();
             case 6 -> finishWorkout();
             default -> printer.printInfo("Scelta non valida.");

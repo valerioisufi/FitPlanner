@@ -169,7 +169,8 @@ public class WorkoutExecutionManager {
 
         CompletableFuture<List<ExerciseDescription>> exerciseDescriptionsFuture = exerciseRepository.getExercisesAsync(List.of(activeNode.getResourceId()));
         CompletableFuture<ExerciseLogBean> lastWeightFuture = logRepository.getLastWeightUsedAsync(activeNode.getResourceId())
-                .thenApply(this::exerciseLogEntityToBean);
+                .thenApply(this::exerciseLogEntityToBean)
+                .exceptionally(throwable -> null);
 
         exerciseDescriptionsFuture.thenCombine(lastWeightFuture, (exerciseDescriptions, lastWeight) -> {
             if (!exerciseDescriptions.isEmpty()) {
@@ -186,22 +187,6 @@ public class WorkoutExecutionManager {
         }).thenAccept(currentExerciseBean -> {
             if (currentExerciseBean != null) {
                 workoutExecutionSubject.notifyCurrentExercise(currentExerciseBean);
-            }
-        });
-
-        exerciseRepository.getExercisesAsync(List.of(activeNode.getResourceId())).thenAccept(list -> {
-            if (!list.isEmpty()) {
-                var entity = list.getFirst();
-                ExerciseDescriptionBean descriptionBean = new ExerciseDescriptionBean();
-                descriptionBean.setExerciseId(entity.getExerciseId());
-                descriptionBean.setName(entity.getName());
-                descriptionBean.setExecution(entity.getExecution());
-                descriptionBean.setMuscleGroups(entity.getMuscleGroups());
-
-                ExerciseLogBean lastWeight = logRepository.getLastWeightUsedAsync(activeNode.getResourceId())
-                        .thenApply(this::exerciseLogEntityToBean).join();
-
-                workoutExecutionSubject.notifyCurrentExercise(new CurrentExerciseBean(descriptionBean, modifierBeans, breadcrumb, lastWeight));
             }
         });
     }
