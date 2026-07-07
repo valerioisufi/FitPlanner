@@ -20,7 +20,7 @@ public class SessionLog {
         this.userId = userId;
         this.notes = notes;
         this.status = status;
-        this.date = date.truncatedTo(ChronoUnit.SECONDS);
+        this.date = (date != null) ? date.truncatedTo(ChronoUnit.SECONDS) : null;
         this.planReference = new PlanReference(planId, workoutSessionDay);
 
         this.exerciseLogs = new ArrayList<>();
