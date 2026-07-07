@@ -11,10 +11,12 @@ import com.example.fitplannerclient.ui.cli.DashboardCli;
 import java.util.List;
 
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 public class WorkoutCli extends AbstractCliView implements WorkoutExecutionObserver {
 
     private final CountDownLatch initLatch = new CountDownLatch(1);
+    private CountDownLatch transitionLatch;
 
     private WorkoutExecutionManager executionManager;
 
@@ -59,6 +61,16 @@ public class WorkoutCli extends AbstractCliView implements WorkoutExecutionObser
         }
     }
 
+    private void waitForTransition(Runnable action) {
+        transitionLatch = new CountDownLatch(1);
+        action.run();
+        try {
+            transitionLatch.await(500, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
     private void showMenuAndProcessInput() {
         if (currentPhase == null && !isCompleted) {
             try {
@@ -76,6 +88,9 @@ public class WorkoutCli extends AbstractCliView implements WorkoutExecutionObser
             handleExercisePhase();
         } else if (currentPhase == WorkoutExecutionPhase.REST) {
             handleRestPhase();
+        } else if (currentPhase == WorkoutExecutionPhase.COMPLETED) {
+            printer.printInfo("L'allenamento è terminato.");
+            finishWorkout();
         }
     }
 
@@ -144,11 +159,11 @@ public class WorkoutCli extends AbstractCliView implements WorkoutExecutionObser
             case 2 -> addNotes();
             case 3 -> {
                 currentExercise = null;
-                executionManager.skipNext();
+                waitForTransition(() -> executionManager.skipNext());
             }
             case 4 -> {
                 currentExercise = null;
-                executionManager.skipPrevious();
+                waitForTransition(() -> executionManager.skipPrevious());
             }
             case 5 -> togglePlayPause();
             case 6 -> finishWorkout();
@@ -168,6 +183,8 @@ public class WorkoutCli extends AbstractCliView implements WorkoutExecutionObser
             );
 
             printer.printInfo("Serie registrata con successo.");
+            currentExercise = null;
+            waitForTransition(() -> executionManager.done());
         }
     }
 
@@ -187,7 +204,7 @@ public class WorkoutCli extends AbstractCliView implements WorkoutExecutionObser
         }
 
         switch (scelta) {
-            case 1 -> executionManager.skipPrevious();
+            case 1 -> waitForTransition(() -> executionManager.done());
             case 2 -> togglePlayPause();
             case 3 -> finishWorkout();
             default -> printer.printInfo("Scelta non valida.");
@@ -205,16 +222,15 @@ public class WorkoutCli extends AbstractCliView implements WorkoutExecutionObser
     }
 
     private void finishWorkout() {
-        String sessionNotes = reader.readString("Note finali sessione (premi invio per saltare): ");
+        String notes = reader.readString("Aggiungi note per l'intera sessione (opzionale): ");
 
-        executionManager.finishAndSaveSession(sessionNotes)
-                .exceptionally(e -> {
-                    printer.printException("Errore durante il salvataggio dell'allenamento: ", e);
+        executionManager.finishAndSaveSession(notes)
+                .exceptionally(ex -> {
+                    printer.printException("Errore nel salvataggio della sessione:", ex);
                     return null;
                 }).join();
 
-        printer.printInfo("Allenamento salvato con successo.");
-
+        printer.printInfo("Allenamento salvato con successo!");
         isCompleted = true;
     }
 
@@ -222,10 +238,12 @@ public class WorkoutCli extends AbstractCliView implements WorkoutExecutionObser
     public void updateExecutionPhase(WorkoutExecutionPhase phase) {
         this.currentPhase = phase;
         initLatch.countDown();
+        if (transitionLatch != null) {
+            transitionLatch.countDown();
+        }
 
         if (phase == WorkoutExecutionPhase.COMPLETED) {
             printer.printInfo("L'allenamento è stato completato.");
-            isCompleted = true;
         } else if (phase == WorkoutExecutionPhase.EXERCISE) {
             printer.printInfo("Passaggio alla fase EXERCISE!");
         }

@@ -186,6 +186,32 @@ public class PlanEditorCli extends AbstractCliView {
         return null;
     }
 
+    private PlanNodeBean findNodeBean(String nodeId) {
+        if (activePlan == null || activePlan.getSessions() == null) return null;
+
+        for (WorkoutSessionBean session : activePlan.getSessions()) {
+            if (session.getPlanRoot() != null) {
+                PlanNodeBean found = searchNodeBean(session.getPlanRoot(), nodeId);
+                if (found != null) return found;
+            }
+        }
+
+        return null;
+    }
+
+    private PlanNodeBean searchNodeBean(PlanNodeBean root, String nodeId) {
+        if (root.getId().equals(nodeId)) return root;
+
+        if (root.getChildren() != null) {
+            for (PlanNodeBean child : root.getChildren()) {
+                PlanNodeBean found = searchNodeBean(child, nodeId);
+                if (found != null) return found;
+            }
+        }
+
+        return null;
+    }
+
     private void printSessionTree(WorkoutSessionBean session) {
         nodeIndexMap.clear();
         printer.printHeader("ALBERO SESSIONE - Giorno " + session.getDay());
@@ -201,28 +227,32 @@ public class PlanEditorCli extends AbstractCliView {
     }
 
     private int printNode(PlanNodeBean node, int counter, int depth) {
-        String indent = "   ".repeat(depth);
+        int currentDepth = depth;
+
+        if (node.getFlowDecorators() != null) {
+            for (FlowDecoratorBean dec : node.getFlowDecorators()) {
+                String decIndent = "   ".repeat(currentDepth);
+                printer.printLn(decIndent + "└── " + dec.getType().name() + " = " + dec.getValue() + " [DECORATORE]");
+                currentDepth++;
+            }
+        }
+
+        String nodeIndent = "   ".repeat(currentDepth);
         String nodeType = node.getType() != null ? node.getType().toString() : "Sconosciuto";
 
-        printer.printLn(indent + "[" + counter + "] " + node.getName() + " (" + nodeType + ")");
+        printer.printLn(nodeIndent + "└── [" + counter + "] " + node.getName() + " (" + nodeType + ")");
         nodeIndexMap.put(counter, node.getId());
         counter++;
 
         if (node.getModifiers() != null) {
             for (ExerciseModifierBean mod : node.getModifiers()) {
-                printer.printLn(indent + "  * Modificatore: " + mod.getName() + " = " + mod.getValue());
-            }
-        }
-
-        if (node.getFlowDecorators() != null) {
-            for (FlowDecoratorBean dec : node.getFlowDecorators()) {
-                printer.printLn(indent + "  * Decoratore: " + dec.getType().name() + " = " + dec.getValue());
+                printer.printLn(nodeIndent + "      * " + mod.getName() + " = " + mod.getValue() + " [MODIFICATORE]");
             }
         }
 
         if (node.getChildren() != null) {
             for (PlanNodeBean child : node.getChildren()) {
-                counter = printNode(child, counter, depth + 1);
+                counter = printNode(child, counter, currentDepth + 1);
             }
         }
         return counter;
@@ -309,6 +339,8 @@ public class PlanEditorCli extends AbstractCliView {
             if (isExercise) {
                 menuOptions.add(NODE_RENAME); // Allows to rename an exercise alias
                 menuOptions.add("Cambia Esercizio Associato");
+                menuOptions.add("Aggiungi Modificatore");
+                menuOptions.add("Rimuovi Modificatore");
             }
             if (isProtocol) {
                 menuOptions.add("Modifica Parametri Protocollo");
@@ -316,8 +348,8 @@ public class PlanEditorCli extends AbstractCliView {
 
             menuOptions.add("Elimina Nodo");
             menuOptions.add("Duplica Nodo");
-            menuOptions.add("Aggiungi Modificatore/Decoratore (Badge)");
-            menuOptions.add("Rimuovi Modificatore/Decoratore (Badge)");
+            menuOptions.add("Aggiungi Decoratore");
+            menuOptions.add("Rimuovi Decoratore");
 
             printer.printMenu(null, menuOptions);
             int choice = reader.readInt( SCELTA, 1, menuOptions.size());
@@ -348,10 +380,14 @@ public class PlanEditorCli extends AbstractCliView {
                 }
             } else if (option.equals("Modifica Parametri Protocollo")) {
                 modificaParametriProtocollo(nodeId);
-            } else if (option.equals("Aggiungi Modificatore/Decoratore (Badge)")) {
-                aggiungiBadge(nodeId);
-            } else if (option.equals("Rimuovi Modificatore/Decoratore (Badge)")) {
-                rimuoviBadge(nodeId);
+            } else if (option.equals("Aggiungi Modificatore")) {
+                aggiungiModificatore(nodeId);
+            } else if (option.equals("Rimuovi Modificatore")) {
+                rimuoviModificatore(nodeId);
+            } else if (option.equals("Aggiungi Decoratore")) {
+                aggiungiDecoratore(nodeId);
+            } else if (option.equals("Rimuovi Decoratore")) {
+                rimuoviDecoratore(nodeId);
             }
         }
     }
@@ -371,55 +407,68 @@ public class PlanEditorCli extends AbstractCliView {
         planManager.updateProtocolParameters(nodeId, newParams);
     }
 
-    private void aggiungiBadge(String nodeId) {
-        printer.printMenu("Aggiungi Badge", List.of(
-                "Aggiungi Modificatore (es. REPS, WEIGHT, TUT)",
-                "Aggiungi Decoratore (es. Rest, Loop, Progression)",
-                "Annulla"
-        ));
-        int choice = reader.readInt(SCELTA, 1, 3);
-
+    private void aggiungiModificatore(String nodeId) {
         try {
-            if (choice == 1) {
-                if (!planManager.isExerciseNode(nodeId)) {
-                    printer.printInfo("I modificatori possono essere aggiunti solo ai nodi Esercizio.");
-                    reader.waitForEnter();
-                    return;
-                }
-                String modifierType = reader.readString("Tipo (REPS, WEIGHT, TUT, RPE...): ");
-                String value = reader.readString("Valore: ");
-                planManager.addModifierFromToolbox(modifierType.toUpperCase(), value, nodeId);
-            } else if (choice == 2) {
-                String decoratorType = reader.readString("Tipo Decoratore (Rest, Loop, Interval, Progression, Time Limit): ");
-                String value = reader.readString("Valore: ");
-                planManager.addDecoratorFromToolbox(decoratorType, value, nodeId);
-            }
+            String modifierType = reader.readString("Tipo (REPS, WEIGHT, TUT, RPE...): ");
+            String value = reader.readString("Valore: ");
+            planManager.addModifierFromToolbox(modifierType.toUpperCase(), value, nodeId);
         } catch (Exception e) {
-            printer.printException("Errore nell'aggiunta del badge:", e);
+            printer.printException("Errore nell'aggiunta del modificatore:", e);
             reader.waitForEnter();
         }
     }
 
-    private void rimuoviBadge(String nodeId) {
-        printer.printMenu("Rimuovi Badge", List.of(
-                "Rimuovi Modificatore",
-                "Rimuovi Decoratore",
-                "Annulla"
-        ));
-        int choice = reader.readInt(SCELTA, 1, 3);
+    private void aggiungiDecoratore(String nodeId) {
         try {
-            if (choice == 1) {
-                if (!planManager.isExerciseNode(nodeId)) {
-                    printer.printInfo("I modificatori sono solo nei nodi Esercizio.");
-                    reader.waitForEnter();
-                    return;
+            PlanNodeBean nodeBean = findNodeBean(nodeId);
+            String targetId = nodeId;
+
+            if (nodeBean != null && nodeBean.getFlowDecorators() != null && !nodeBean.getFlowDecorators().isEmpty()) {
+                String q = reader.readString("Vuoi avvolgere un decoratore esistente anziché il nodo? (s/n): ");
+                if (q.equalsIgnoreCase("s")) {
+                    Optional<FlowDecoratorBean> selected = reader.selectFrom("Seleziona decoratore da avvolgere:",
+                            nodeBean.getFlowDecorators(),
+                            d -> d.getType().name() + " = " + d.getValue());
+                    if (selected.isPresent()) {
+                        targetId = selected.get().getId();
+                    }
                 }
-                String modifierType = reader.readString("Tipo Modificatore (es. REPS, WEIGHT): ").toUpperCase();
-                planManager.removeModifier(nodeId, modifierType);
-                printer.printInfo("Modificatore rimosso.");
-            } else if (choice == 2) {
-                String decoratorId = reader.readString("ID del decoratore da rimuovere: ");
-                planManager.removeDecorator(decoratorId);
+            }
+
+            String decoratorType = reader.readString("Tipo Decoratore (Rest, Loop, Interval, Progression, Time Limit): ");
+            String value2 = reader.readString("Valore: ");
+            planManager.addDecoratorFromToolbox(decoratorType, value2, targetId);
+        } catch (Exception e) {
+            printer.printException("Errore nell'aggiunta del decoratore:", e);
+            reader.waitForEnter();
+        }
+    }
+
+    private void rimuoviModificatore(String nodeId) {
+        try {
+            String modifierType = reader.readString("Tipo Modificatore (es. REPS, WEIGHT): ").toUpperCase();
+            planManager.removeModifier(nodeId, modifierType);
+            printer.printInfo("Modificatore rimosso.");
+        } catch (Exception e) {
+            printer.printException("Errore:", e);
+        }
+    }
+
+    private void rimuoviDecoratore(String nodeId) {
+        try {
+            PlanNodeBean nodeBean = findNodeBean(nodeId);
+            if (nodeBean == null || nodeBean.getFlowDecorators() == null || nodeBean.getFlowDecorators().isEmpty()) {
+                printer.printInfo("Nessun decoratore presente su questo nodo.");
+                reader.waitForEnter();
+                return;
+            }
+
+            Optional<FlowDecoratorBean> selected = reader.selectFrom("Seleziona decoratore da rimuovere:",
+                    nodeBean.getFlowDecorators(),
+                    d -> d.getType().name() + " = " + d.getValue());
+
+            if (selected.isPresent()) {
+                planManager.removeDecorator(selected.get().getId());
                 printer.printInfo("Decoratore rimosso.");
             }
         } catch (Exception e) {
