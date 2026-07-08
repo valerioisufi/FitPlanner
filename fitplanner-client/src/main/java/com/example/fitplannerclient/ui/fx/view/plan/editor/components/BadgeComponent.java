@@ -127,7 +127,7 @@ public class BadgeComponent extends HBox {
         if (lower.contains("time") || lower.contains("limit")) return BadgeColor.PINK;
         if (lower.contains("loop")) return BadgeColor.RED;
         if (lower.contains("progression")) return BadgeColor.AMBER;
-        if (lower.contains("rest")) return BadgeColor.GRAY;
+        if (lower.contains("rest")) return BadgeColor.GREEN;
         return BadgeColor.GRAY;
     }
 }

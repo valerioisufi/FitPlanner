@@ -179,6 +179,14 @@ public class EditWorkoutPlanManager {
         badgeEditor.moveDecorator(this.plan, sourceDecoratorId, targetNodeId, targetIndex);
     }
 
+    public void removeModifier(String nodeId, String modifierType) {
+        badgeEditor.removeModifier(this.plan, nodeId, modifierType);
+    }
+
+    public void removeDecorator(String decoratorId) {
+        badgeEditor.removeDecoratorFromChain(this.plan, decoratorId);
+    }
+
     public CompletableFuture<Void> saveChanges() {
         return planRepository.saveChanges(this.plan);
     }
@@ -238,13 +246,6 @@ public class EditWorkoutPlanManager {
         badgeEditor.addModifierFromToolbox(this.plan, modifierType, value, targetNodeId);
     }
 
-    public void removeModifier(String nodeId, String modifierType) {
-        badgeEditor.removeModifier(this.plan, nodeId, modifierType);
-    }
-
-    public void removeDecorator(String decoratorId) {
-        badgeEditor.removeDecoratorFromChain(this.plan, decoratorId);
-    }
 
     public List<PlanNodeBean> getProtocolBlockLibraryCache() {
         return protocolLibraryManager.getProtocolBlockLibraryCache();
