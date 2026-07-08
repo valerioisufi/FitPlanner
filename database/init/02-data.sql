@@ -6,7 +6,7 @@ INSERT INTO accounts (user_id, email, password_hash, refreshToken, profile_type)
 ('11111111-1111-1111-1111-111111111111', 'trainer@fitplanner.com', '$2a$10$dvz0Ia9SgTROIAWxgc1s8.B7GE8jg/sjVMzLzRo9Eo63gzbK8Cg16', NULL, 'TRAINER');
 
 INSERT INTO profiles (user_id, first_name, last_name, contact_email, phone_number, profile_type, invitation_code, trainer_id) VALUES
-('11111111-1111-1111-1111-111111111111', 'Super', 'Trainer', 'trainer@fitplanner.com', '1234567890', 'TRAINER', 'TRAINER-1234', NULL);
+('11111111-1111-1111-1111-111111111111', 'Super', 'Trainer', 'trainer@fitplanner.com', '1234567890', 'TRAINER', 'ABCD-1234', NULL);
 
 -- 2. Inserimento Atleti
 INSERT INTO accounts (user_id, email, password_hash, refreshToken, profile_type) VALUES 

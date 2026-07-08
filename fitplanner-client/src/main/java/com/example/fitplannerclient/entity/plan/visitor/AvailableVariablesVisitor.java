@@ -45,11 +45,20 @@ public class AvailableVariablesVisitor implements WorkoutPlanVisitor {
         // Iterate up to size() - 1 to exclude the target node itself from providing variables
         for (int i = 0; i < currentPath.size() - 1; i++) {
             PlanNode n = currentPath.get(i);
+
             if (n instanceof ProtocolBlock pb && pb.getParameters() != null) {
-                vars.addAll(pb.getParameters().keySet());
-            } else if (n instanceof ProgressionDecorator pd && pd.getParsedProgressions() != null) {
-                vars.addAll(pd.getParsedProgressions().keySet());
-            }
+                for (Map.Entry<String, String> entry : pb.getParameters().entrySet()) {
+                    vars.add(entry.getKey());
+
+                    if (entry.getValue() != null && entry.getValue().contains(":")) {
+                        vars.addAll(ProgressionDecorator.parseProgressions(entry.getValue()).keySet());
+                    }
+                }
+
+            } else if (n instanceof ProgressionDecorator pd && pd.getProgressionString() != null) {
+                    vars.addAll(ProgressionDecorator.parseProgressions(pd.getProgressionString()).keySet());
+                }
+
         }
 
         for (String varName : vars) {

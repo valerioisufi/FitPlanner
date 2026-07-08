@@ -25,11 +25,7 @@ public class ProgressionDecorator extends LoopDecorator {
         return progressionString;
     }
 
-    public Map<String, List<String>> getParsedProgressions() {
-        return parsedProgressions;
-    }
-
-    private Map<String, List<String>> parseProgressions(String str) {
+    public static Map<String, List<String>> parseProgressions(String str) {
         if (str == null || str.trim().isEmpty()) {
             return Map.of();
         }
