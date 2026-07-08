@@ -79,7 +79,7 @@ public class WorkoutCli extends AbstractCliView implements WorkoutExecutionObser
     private void showMenuAndProcessInput() {
         if (currentPhase == null && !isCompleted) {
             try {
-                initLatch.await();
+                initLatch.await(); // attende l'avvio dell'engine
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
@@ -236,10 +236,10 @@ public class WorkoutCli extends AbstractCliView implements WorkoutExecutionObser
 
     private void togglePlayPause() {
         if (engineState == WorkoutExecutionState.PAUSED) {
-            executionManager.play();
+            waitForTransition(() -> executionManager.play());
             printer.printInfo("Allenamento ripreso.");
         } else {
-            executionManager.pause();
+            waitForTransition(() -> executionManager.pause());
             printer.printInfo("Allenamento in pausa.");
         }
     }
@@ -248,19 +248,22 @@ public class WorkoutCli extends AbstractCliView implements WorkoutExecutionObser
         String notes = reader.readString("Aggiungi note per l'intera sessione (opzionale): ");
 
         executionManager.finishAndSaveSession(notes)
-                .exceptionally(ex -> {
-                    printer.printException("Errore nel salvataggio della sessione:", ex);
+                .handle((result, ex) -> {
+                    if (ex != null) {
+                        printer.printException("Errore nel salvataggio della sessione:", ex);
+                    } else {
+                        printer.printInfo("Allenamento salvato con successo!");
+                    }
+                    isCompleted = true;
                     return null;
                 }).join();
-
-        printer.printInfo("Allenamento salvato con successo!");
-        isCompleted = true;
     }
 
     @Override
     public void updateExecutionPhase(WorkoutExecutionPhase phase) {
         this.currentPhase = phase;
         initLatch.countDown();
+
         if (transitionLatch != null) {
             transitionLatch.countDown();
         }
@@ -283,6 +286,9 @@ public class WorkoutCli extends AbstractCliView implements WorkoutExecutionObser
     @Override
     public void updateCurrentWorkoutEngineState(WorkoutExecutionState state) {
         this.engineState = state;
+        if (transitionLatch != null) {
+            transitionLatch.countDown();
+        }
     }
 
     @Override
