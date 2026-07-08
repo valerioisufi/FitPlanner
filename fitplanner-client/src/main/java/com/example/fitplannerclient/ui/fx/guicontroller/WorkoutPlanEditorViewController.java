@@ -52,6 +52,7 @@ public class WorkoutPlanEditorViewController implements GuiController {
 
         if (planIdToEdit == null) {
             this.editWorkoutPlanManager.createNewPlan()
+                    .thenRun(() -> Platform.runLater(this::loadLibrary))
                     .exceptionally(ex -> {
                     guiManager.showExceptionError(
                                 "Errore nella creazione del piano:", ex);
@@ -59,6 +60,7 @@ public class WorkoutPlanEditorViewController implements GuiController {
                     });
         } else {
             this.editWorkoutPlanManager.editExistingPlan(planIdToEdit, copyOfExisting)
+                    .thenRun(() -> Platform.runLater(this::loadLibrary))
                     .exceptionally(ex -> {
                     guiManager.showExceptionError(
                                 "Errore nel caricamento del piano:", ex);
@@ -306,8 +308,6 @@ public class WorkoutPlanEditorViewController implements GuiController {
         if (activePlan != null && activePlan.getSessions() != null && !activePlan.getSessions().isEmpty()) {
             this.activeSession = activePlan.getSessions().getFirst();
         }
-
-        loadLibrary();
     }
 
     @Override

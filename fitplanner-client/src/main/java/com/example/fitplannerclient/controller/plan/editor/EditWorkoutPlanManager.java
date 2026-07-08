@@ -31,14 +31,14 @@ public class EditWorkoutPlanManager {
 
     private WorkoutPlan plan;
 
-    private final WorkoutPlanRepository repository;
+    private final WorkoutPlanRepository planRepository;
     private final ExerciseRepository exerciseRepository;
     private final WorkoutPlanStructureEditor structureEditor;
     private final WorkoutPlanBadgeEditor badgeEditor;
     private final ProtocolLibraryManager protocolLibraryManager;
 
-    public EditWorkoutPlanManager(WorkoutPlanRepository repository, ExerciseRepository exerciseRepository) {
-        this.repository = repository;
+    public EditWorkoutPlanManager(WorkoutPlanRepository planRepository, ExerciseRepository exerciseRepository) {
+        this.planRepository = planRepository;
         this.exerciseRepository = exerciseRepository;
         this.protocolLibraryManager = new ProtocolLibraryManager();
         this.structureEditor = new WorkoutPlanStructureEditor(historyManager, workoutPlanSubject, protocolLibraryManager);
@@ -72,17 +72,29 @@ public class EditWorkoutPlanManager {
     }
 
     public CompletableFuture<Void> createNewPlan() {
-        return repository.createNewPlan().thenAccept(newPlan -> {
+        return planRepository.createNewPlan().thenCompose(newPlan -> {
             this.plan = newPlan;
-            workoutPlanSubject.notifyObservers();
-        });
+            if (exerciseRepository != null) {
+                return exerciseRepository.getExercisesAsync(null).thenApply(v -> null);
+            }
+            return CompletableFuture.completedFuture((Void)null);
+        }).thenAccept(v ->
+            workoutPlanSubject.notifyObservers()
+        );
     }
 
     public CompletableFuture<Void> editExistingPlan(String planId, boolean isCopy) {
-        return repository.editExistingPlan(planId, isCopy).thenAccept(loadedPlan -> {
+        return planRepository.editExistingPlan(planId, isCopy).thenCompose(loadedPlan -> {
             this.plan = loadedPlan;
-            workoutPlanSubject.notifyObservers();
-        });
+
+            if (exerciseRepository != null) {
+                return exerciseRepository.getExercisesAsync(null).thenApply(v -> null);
+            }
+
+            return CompletableFuture.completedFuture((Void)null);
+        }).thenAccept(v ->
+            workoutPlanSubject.notifyObservers()
+        );
     }
 
     public void changePlanName(String newName) {
@@ -168,7 +180,7 @@ public class EditWorkoutPlanManager {
     }
 
     public CompletableFuture<Void> saveChanges() {
-        return repository.saveChanges(this.plan);
+        return planRepository.saveChanges(this.plan);
     }
 
     public void undo() {
@@ -190,7 +202,7 @@ public class EditWorkoutPlanManager {
             );
         }
 
-        return repository.savePlan(this.plan).thenRun(workoutPlanSubject::notifyObservers);
+        return planRepository.savePlan(this.plan).thenRun(workoutPlanSubject::notifyObservers);
     }
 
     private ValidationResult validatePlan() {
@@ -261,6 +273,13 @@ public class EditWorkoutPlanManager {
         PlanNode node = findNode(nodeId);
         if (node instanceof Block block) return block.getTitle();
         if (node instanceof ProtocolBlock protocolBlock) return protocolBlock.getSemanticType();
+        if (node instanceof ExerciseNode exerciseNode) {
+            if (exerciseRepository != null) {
+                var exercise = exerciseRepository.getCachedExercise(exerciseNode.getResourceId());
+                if (exercise != null) return exercise.getName();
+            }
+            return "Esercizio Sconosciuto";
+        }
         return null;
     }
 
