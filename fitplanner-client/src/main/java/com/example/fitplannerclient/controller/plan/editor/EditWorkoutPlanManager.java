@@ -187,10 +187,6 @@ public class EditWorkoutPlanManager {
         badgeEditor.removeDecoratorFromChain(this.plan, decoratorId);
     }
 
-    public CompletableFuture<Void> saveChanges() {
-        return planRepository.saveChanges(this.plan);
-    }
-
     public void undo() {
         historyManager.undo();
         workoutPlanSubject.notifyObservers();

@@ -67,15 +67,6 @@ public class WorkoutPlanRepository {
                 });
     }
 
-    public CompletableFuture<Void> saveChanges(WorkoutPlan plan) {
-        if (plan == null || plan.getPlanId() == null) {
-            return CompletableFuture.failedFuture(new IllegalStateException("Nessun piano in modifica"));
-        }
-        PlanToDtoVisitor serializer = new PlanToDtoVisitor();
-        plan.accept(serializer);
-        return planApi.updatePlanAsync(plan.getPlanId(), serializer.getPlanDto());
-    }
-
     public CompletableFuture<Void> savePlan(WorkoutPlan plan) {
         if (plan == null) return CompletableFuture.completedFuture(null);
         PlanToDtoVisitor serializer = new PlanToDtoVisitor();
@@ -95,10 +86,6 @@ public class WorkoutPlanRepository {
                     cachedAssignedPlan = plan;
                     return plan;
                 });
-    }
-
-    public WorkoutPlan getCachedAssignedPlan() {
-        return cachedAssignedPlan;
     }
 
     public CompletableFuture<WorkoutPlan> getPlanByIdAsync(String planId) {
