@@ -26,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * Test della classe AuthenticationController che gestisce la registrazione
  * e il successivo login degli utenti
- * @author Valerio Isufi
+ * @author Dennis Imperia
  */
 class TestAuthenticationController {
 
