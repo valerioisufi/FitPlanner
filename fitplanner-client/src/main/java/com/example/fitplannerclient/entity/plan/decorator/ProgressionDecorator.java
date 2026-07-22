@@ -1,7 +1,6 @@
 package com.example.fitplannerclient.entity.plan.decorator;
 
 import com.example.fitplannerclient.entity.plan.execution.PlanNodeState;
-import com.example.fitplannerclient.entity.plan.visitor.WorkoutPlanVisitor;
 import com.example.fitplannerclient.entity.plan.PlanNode;
 import com.example.fitplannerclient.entity.plan.execution.ExecutionContext;
 import com.example.fitplannerclient.entity.plan.execution.ExecutionResult;
@@ -14,15 +13,7 @@ public class ProgressionDecorator extends LoopDecorator {
 
     public ProgressionDecorator(PlanNode wrappedNode, String progressionString) {
         super(wrappedNode, "0");
-        this.setProgressionString(progressionString);
-    }
-
-    public void setProgressionString(String progressionString) {
         this.progressionString = progressionString;
-    }
-
-    public String getProgressionString() {
-        return progressionString;
     }
 
     public static Map<String, List<String>> parseProgressions(String str) {
@@ -56,11 +47,6 @@ public class ProgressionDecorator extends LoopDecorator {
     }
 
     @Override
-    public void accept(WorkoutPlanVisitor visitor) {
-        visitor.visit(this);
-    }
-
-    @Override
     public ExecutionResult execute(ExecutionContext context) {
         if (this.state == PlanNodeState.IDLE) {
             String resolvedString = context.resolveVariables(this.progressionString);
@@ -72,7 +58,7 @@ public class ProgressionDecorator extends LoopDecorator {
                     maxRounds = values.size();
                 }
             }
-            this.setRoundsExpression(String.valueOf(maxRounds));
+            this.roundsExpression = String.valueOf(maxRounds);
         }
 
         for (Map.Entry<String, List<String>> entry : parsedProgressions.entrySet()) {
@@ -84,6 +70,22 @@ public class ProgressionDecorator extends LoopDecorator {
         }
         
         return super.execute(context);
+    }
+
+
+    @Override
+    public void setValue(String value) {
+        this.progressionString = value;
+    }
+
+    @Override
+    public FlowDecoratorType getType() {
+        return FlowDecoratorType.PROGRESSION;
+    }
+
+    @Override
+    public String getSerializedValue() {
+        return this.progressionString;
     }
 
     @Override

@@ -60,15 +60,11 @@ public class ProtocolValidationVisitor implements WorkoutPlanVisitor {
         }
     }
 
-    @Override public void visit(LoopDecorator loopDecorator) { visitWrapped(loopDecorator); }
-    @Override public void visit(RestDecorator restDecorator) { visitWrapped(restDecorator); }
-    @Override public void visit(TimeLimitDecorator timeLimitDecorator) { visitWrapped(timeLimitDecorator); }
-    @Override public void visit(ProgressionDecorator progressionDecorator) { visitWrapped(progressionDecorator); }
-    @Override public void visit(IntervalDecorator intervalDecorator) { visitWrapped(intervalDecorator); }
-
-    private void visitWrapped(FlowDecorator decorator) {
-        if (decorator.getWrappedNode() != null) {
-            decorator.getWrappedNode().accept(this);
+    @Override
+    public void visit(FlowDecorator flowDecorator) {
+        if(flowDecorator.getWrappedNode() != null) {
+            flowDecorator.getWrappedNode().accept(this);
         }
     }
+
 }

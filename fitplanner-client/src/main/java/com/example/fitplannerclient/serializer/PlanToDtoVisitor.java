@@ -120,51 +120,11 @@ public class PlanToDtoVisitor implements WorkoutPlanVisitor {
     }
 
     @Override
-    public void visit(LoopDecorator loopDecorator) {
+    public void visit(FlowDecorator flowDecorator) {
         visitFlowDecorator(
-                loopDecorator,
-                PlanNodeDTO.FlowDecoratorType.LOOP,
-                loopDecorator.getRoundsExpression()
-        );
-
-    }
-
-    @Override
-    public void visit(RestDecorator restDecorator) {
-        visitFlowDecorator(
-                restDecorator,
-                PlanNodeDTO.FlowDecoratorType.REST,
-                restDecorator.getRestDuration()
-        );
-
-    }
-
-    @Override
-    public void visit(TimeLimitDecorator timeLimitDecorator) {
-        visitFlowDecorator(
-                timeLimitDecorator,
-                PlanNodeDTO.FlowDecoratorType.TIME_LIMIT,
-                timeLimitDecorator.getTimeLimit()
-        );
-
-    }
-
-    @Override
-    public void visit(ProgressionDecorator progressionDecorator) {
-        visitFlowDecorator(
-                progressionDecorator,
-                PlanNodeDTO.FlowDecoratorType.PROGRESSION,
-                progressionDecorator.getProgressionString()
-        );
-
-    }
-
-    @Override
-    public void visit(IntervalDecorator intervalDecorator) {
-        visitFlowDecorator(
-                intervalDecorator,
-                PlanNodeDTO.FlowDecoratorType.INTERVAL,
-                intervalDecorator.getIntervalDuration()
+                flowDecorator,
+                PlanNodeDTO.FlowDecoratorType.valueOf(flowDecorator.getType().toString()),
+                flowDecorator.getSerializedValue()
         );
     }
 

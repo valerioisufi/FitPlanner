@@ -17,66 +17,12 @@ public class UpdateDecoratorValueCommand implements WorkoutPlanEditorCommand {
 
     @Override
     public void execute() {
-        flowDecorator.accept(new EmptyWorkoutPlanVisitor() {
-            @Override
-            public void visit(RestDecorator restDecorator) {
-                previousValue = restDecorator.getRestDuration();
-                restDecorator.setRestDuration(newValue);
-            }
-
-            @Override
-            public void visit(LoopDecorator loopDecorator) {
-                previousValue = loopDecorator.getRoundsExpression();
-                loopDecorator.setRoundsExpression(newValue);
-            }
-
-            @Override
-            public void visit(TimeLimitDecorator timeLimitDecorator) {
-                previousValue = timeLimitDecorator.getTimeLimit();
-                timeLimitDecorator.setTimeLimit(newValue);
-            }
-
-            @Override
-            public void visit(IntervalDecorator intervalDecorator) {
-                previousValue = intervalDecorator.getIntervalDuration();
-                intervalDecorator.setIntervalDuration(newValue);
-            }
-
-            @Override
-            public void visit(ProgressionDecorator progressionDecorator) {
-                previousValue = progressionDecorator.getProgressionString();
-                progressionDecorator.setProgressionString(newValue);
-            }
-        });
+        previousValue = flowDecorator.getSerializedValue();
+        flowDecorator.setValue(newValue);
     }
 
     @Override
     public void undo() {
-        flowDecorator.accept(new EmptyWorkoutPlanVisitor() {
-            @Override
-            public void visit(RestDecorator restDecorator) {
-                restDecorator.setRestDuration(previousValue);
-            }
-
-            @Override
-            public void visit(LoopDecorator loopDecorator) {
-                loopDecorator.setRoundsExpression(previousValue);
-            }
-
-            @Override
-            public void visit(TimeLimitDecorator timeLimitDecorator) {
-                timeLimitDecorator.setTimeLimit(previousValue);
-            }
-
-            @Override
-            public void visit(IntervalDecorator intervalDecorator) {
-                intervalDecorator.setIntervalDuration(previousValue);
-            }
-
-            @Override
-            public void visit(ProgressionDecorator progressionDecorator) {
-                progressionDecorator.setProgressionString(previousValue);
-            }
-        });
+        flowDecorator.setValue(previousValue);
     }
 }

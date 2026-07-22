@@ -1,6 +1,5 @@
 package com.example.fitplannerclient.entity.plan.decorator;
 
-import com.example.fitplannerclient.entity.plan.visitor.WorkoutPlanVisitor;
 import com.example.fitplannerclient.entity.plan.PlanNode;
 import com.example.fitplannerclient.entity.plan.execution.ControlSignal;
 import com.example.fitplannerclient.entity.plan.execution.ExecutionContext;
@@ -15,11 +14,6 @@ public class RestDecorator extends FlowDecorator{
     public RestDecorator(PlanNode wrappedNode, String restDuration) {
         super(wrappedNode);
         this.restDuration = restDuration;
-    }
-
-    @Override
-    public void accept(WorkoutPlanVisitor visitor) {
-        visitor.visit(this);
     }
 
     @Override
@@ -91,12 +85,20 @@ public class RestDecorator extends FlowDecorator{
         wrappedNode.reset();
     }
 
-    public String getRestDuration() {
-        return restDuration;
+
+    @Override
+    public void setValue(String value) {
+        this.restDuration = value;
     }
 
-    public void setRestDuration(String restDuration) {
-        this.restDuration = restDuration;
+    @Override
+    public FlowDecoratorType getType() {
+        return FlowDecoratorType.REST;
+    }
+
+    @Override
+    public String getSerializedValue() {
+        return this.restDuration;
     }
 
     @Override

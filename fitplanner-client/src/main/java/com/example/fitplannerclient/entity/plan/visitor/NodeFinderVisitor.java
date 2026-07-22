@@ -153,27 +153,8 @@ public class NodeFinderVisitor implements WorkoutPlanVisitor {
     }
 
     @Override
-    public void visit(LoopDecorator loopDecorator) {
-        visitDecorator(loopDecorator);
+    public void visit(FlowDecorator flowDecorator) {
+        visitDecorator(flowDecorator);
     }
 
-    @Override
-    public void visit(RestDecorator restDecorator) {
-        visitDecorator(restDecorator);
-    }
-
-    @Override
-    public void visit(TimeLimitDecorator timeLimitDecorator) {
-        visitDecorator(timeLimitDecorator);
-    }
-
-    @Override
-    public void visit(ProgressionDecorator progressionDecorator) {
-        visitDecorator(progressionDecorator);
-    }
-
-    @Override
-    public void visit(IntervalDecorator intervalDecorator) {
-        visitDecorator(intervalDecorator);
-    }
 }

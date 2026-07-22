@@ -16,9 +16,5 @@ public interface WorkoutPlanVisitor {
     void visit(Block block);
     void visit(ProtocolBlock protocolBlock);
 
-    void visit(LoopDecorator loopDecorator);
-    void visit(RestDecorator restDecorator);
-    void visit(TimeLimitDecorator timeLimitDecorator);
-    void visit(ProgressionDecorator progressionDecorator);
-    void visit(IntervalDecorator intervalDecorator);
+    void visit(FlowDecorator flowDecorator);
 }

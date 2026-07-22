@@ -1,6 +1,7 @@
 package com.example.fitplannerclient.controller.plan.mapper;
 
 import com.example.fitplannerclient.bean.plan.*;
+import com.example.fitplannerclient.bean.plan.FlowDecoratorType;
 import com.example.fitplannerclient.entity.plan.block.strategy.validation.ValidationResult;
 import com.example.fitplannerclient.entity.plan.visitor.WorkoutPlanVisitor;
 import com.example.fitplannerclient.entity.plan.PlanNode;
@@ -187,53 +188,13 @@ public class PlanToBeanVisitor implements WorkoutPlanVisitor {
     }
 
     @Override
-    public void visit(LoopDecorator loopDecorator) {
+    public void visit(FlowDecorator flowDecorator) {
         accumulatedDecorators.add(new FlowDecoratorBean(
-                loopDecorator.getId(),
-                FlowDecoratorType.LOOP,
-                loopDecorator.getRoundsExpression()
+                flowDecorator.getId(),
+                FlowDecoratorType.valueOf(flowDecorator.getType().toString()),
+                flowDecorator.getSerializedValue()
         ));
-        loopDecorator.getWrappedNode().accept(this);
-    }
-
-    @Override
-    public void visit(RestDecorator restDecorator) {
-        accumulatedDecorators.add(new FlowDecoratorBean(
-                restDecorator.getId(),
-                FlowDecoratorType.REST,
-                restDecorator.getRestDuration()
-        ));
-        restDecorator.getWrappedNode().accept(this);
-    }
-
-    @Override
-    public void visit(TimeLimitDecorator timeLimitDecorator) {
-        accumulatedDecorators.add(new FlowDecoratorBean(
-                timeLimitDecorator.getId(),
-                FlowDecoratorType.TIME_LIMIT,
-                timeLimitDecorator.getTimeLimit()
-        ));
-        timeLimitDecorator.getWrappedNode().accept(this);
-    }
-
-    @Override
-    public void visit(ProgressionDecorator progressionDecorator) {
-        accumulatedDecorators.add(new FlowDecoratorBean(
-                progressionDecorator.getId(),
-                FlowDecoratorType.PROGRESSION,
-                progressionDecorator.getProgressionString()
-        ));
-        progressionDecorator.getWrappedNode().accept(this);
-    }
-
-    @Override
-    public void visit(IntervalDecorator intervalDecorator) {
-        accumulatedDecorators.add(new FlowDecoratorBean(
-                intervalDecorator.getId(),
-                FlowDecoratorType.INTERVAL,
-                intervalDecorator.getIntervalDuration()
-        ));
-        intervalDecorator.getWrappedNode().accept(this);
+        flowDecorator.getWrappedNode().accept(this);
     }
 
     private String getErrorMessage(String nodeId) {

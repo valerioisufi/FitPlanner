@@ -22,9 +22,6 @@ public abstract class EmptyWorkoutPlanVisitor implements WorkoutPlanVisitor {
     @Override public void visit(Block block) {}
     @Override public void visit(ProtocolBlock protocolBlock) {}
 
-    @Override public void visit(LoopDecorator loopDecorator) {}
-    @Override public void visit(RestDecorator restDecorator) {}
-    @Override public void visit(TimeLimitDecorator timeLimitDecorator) {}
-    @Override public void visit(ProgressionDecorator progressionDecorator) {}
-    @Override public void visit(IntervalDecorator intervalDecorator) {}
+    @Override public void visit(FlowDecorator flowDecorator) {}
+
 }

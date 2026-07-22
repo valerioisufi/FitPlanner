@@ -6,11 +6,9 @@ import com.example.fitplannerclient.entity.plan.PlanNode;
 import com.example.fitplannerclient.entity.plan.block.ProtocolBlock;
 import com.example.fitplannerclient.entity.plan.decorator.*;
 
-public class ForbiddenChildDecoratorRule implements ValidationRule {
+import java.util.concurrent.Flow;
 
-    public enum FlowDecoratorType {
-        LOOP, REST, TIME_LIMIT, INTERVAL, PROGRESSION
-    }
+public class ForbiddenChildDecoratorRule implements ValidationRule {
 
     private final FlowDecoratorType forbiddenType;
 
@@ -25,15 +23,7 @@ public class ForbiddenChildDecoratorRule implements ValidationRule {
         WorkoutPlanVisitor checker = new EmptyWorkoutPlanVisitor() {
 
             @Override
-            public void visit(LoopDecorator loopDecorator) { checkDecorator(FlowDecoratorType.LOOP, loopDecorator); }
-            @Override
-            public void visit(RestDecorator restDecorator) { checkDecorator(FlowDecoratorType.REST, restDecorator); }
-            @Override
-            public void visit(TimeLimitDecorator timeLimitDecorator) { checkDecorator(FlowDecoratorType.TIME_LIMIT, timeLimitDecorator); }
-            @Override
-            public void visit(ProgressionDecorator progressionDecorator) { checkDecorator(FlowDecoratorType.PROGRESSION, progressionDecorator); }
-            @Override
-            public void visit(IntervalDecorator intervalDecorator) { checkDecorator(FlowDecoratorType.INTERVAL, intervalDecorator); }
+            public void visit(FlowDecorator flowDecorator) { checkDecorator(flowDecorator.getType(), flowDecorator); }
 
             private void checkDecorator(FlowDecoratorType visitedType, FlowDecorator decorator) {
                 if (visitedType == forbiddenType) {

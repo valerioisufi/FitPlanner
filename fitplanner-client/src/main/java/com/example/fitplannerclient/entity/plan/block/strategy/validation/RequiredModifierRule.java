@@ -31,11 +31,10 @@ public class RequiredModifierRule implements ValidationRule {
                 }
             }
 
-            @Override public void visit(LoopDecorator loopDecorator) { loopDecorator.getWrappedNode().accept(this); }
-            @Override public void visit(RestDecorator restDecorator) { restDecorator.getWrappedNode().accept(this); }
-            @Override public void visit(TimeLimitDecorator timeLimitDecorator) { timeLimitDecorator.getWrappedNode().accept(this); }
-            @Override public void visit(ProgressionDecorator progressionDecorator) { progressionDecorator.getWrappedNode().accept(this); }
-            @Override public void visit(IntervalDecorator intervalDecorator) { intervalDecorator.getWrappedNode().accept(this); }
+            @Override public void visit(FlowDecorator flowDecorator) {
+                flowDecorator.getWrappedNode().accept(this);
+            }
+
         };
 
         for (PlanNode child : block) {

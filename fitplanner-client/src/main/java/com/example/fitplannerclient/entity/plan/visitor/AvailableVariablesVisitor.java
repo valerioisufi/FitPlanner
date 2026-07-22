@@ -55,8 +55,8 @@ public class AvailableVariablesVisitor implements WorkoutPlanVisitor {
                     }
                 }
 
-            } else if (n instanceof ProgressionDecorator pd && pd.getProgressionString() != null) {
-                    vars.addAll(ProgressionDecorator.parseProgressions(pd.getProgressionString()).keySet());
+            } else if (n instanceof ProgressionDecorator pd && pd.getSerializedValue() != null) {
+                    vars.addAll(ProgressionDecorator.parseProgressions(pd.getSerializedValue()).keySet());
                 }
 
         }
@@ -112,51 +112,11 @@ public class AvailableVariablesVisitor implements WorkoutPlanVisitor {
     }
 
     @Override
-    public void visit(LoopDecorator loopDecorator) {
-        enterNode(loopDecorator);
-        checkFound(loopDecorator);
-        if (!found && loopDecorator.getWrappedNode() != null) {
-            loopDecorator.getWrappedNode().accept(this);
-        }
-        exitNode();
-    }
-
-    @Override
-    public void visit(RestDecorator restDecorator) {
-        enterNode(restDecorator);
-        checkFound(restDecorator);
-        if (!found && restDecorator.getWrappedNode() != null) {
-            restDecorator.getWrappedNode().accept(this);
-        }
-        exitNode();
-    }
-
-    @Override
-    public void visit(TimeLimitDecorator timeLimitDecorator) {
-        enterNode(timeLimitDecorator);
-        checkFound(timeLimitDecorator);
-        if (!found && timeLimitDecorator.getWrappedNode() != null) {
-            timeLimitDecorator.getWrappedNode().accept(this);
-        }
-        exitNode();
-    }
-
-    @Override
-    public void visit(ProgressionDecorator progressionDecorator) {
-        enterNode(progressionDecorator);
-        checkFound(progressionDecorator);
-        if (!found && progressionDecorator.getWrappedNode() != null) {
-            progressionDecorator.getWrappedNode().accept(this);
-        }
-        exitNode();
-    }
-
-    @Override
-    public void visit(IntervalDecorator intervalDecorator) {
-        enterNode(intervalDecorator);
-        checkFound(intervalDecorator);
-        if (!found && intervalDecorator.getWrappedNode() != null) {
-            intervalDecorator.getWrappedNode().accept(this);
+    public void visit(FlowDecorator flowDecorator) {
+        enterNode(flowDecorator);
+        checkFound(flowDecorator);
+        if (!found && flowDecorator.getWrappedNode() != null) {
+            flowDecorator.getWrappedNode().accept(this);
         }
         exitNode();
     }
