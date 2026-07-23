@@ -1,6 +1,5 @@
 package com.example.fitplannerclient.controller.plan.editor.command;
 
-import com.example.fitplannerclient.entity.plan.visitor.EmptyWorkoutPlanVisitor;
 import com.example.fitplannerclient.entity.plan.decorator.*;
 
 public class UpdateDecoratorValueCommand implements WorkoutPlanEditorCommand {

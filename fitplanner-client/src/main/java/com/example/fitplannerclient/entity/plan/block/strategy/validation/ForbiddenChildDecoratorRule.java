@@ -6,8 +6,6 @@ import com.example.fitplannerclient.entity.plan.PlanNode;
 import com.example.fitplannerclient.entity.plan.block.ProtocolBlock;
 import com.example.fitplannerclient.entity.plan.decorator.*;
 
-import java.util.concurrent.Flow;
-
 public class ForbiddenChildDecoratorRule implements ValidationRule {
 
     private final FlowDecoratorType forbiddenType;

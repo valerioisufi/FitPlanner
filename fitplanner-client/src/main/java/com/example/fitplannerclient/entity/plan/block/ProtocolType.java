@@ -13,6 +13,7 @@ public enum ProtocolType {
         this.semanticType = value;
     }
 
+    @Override
     public String toString() {
         return this.semanticType.replace("_", " ");
     }

@@ -181,7 +181,7 @@ public class PlanEditorCli extends AbstractCliView {
                         int nodeIdx = reader.readInt("Inserisci l'indice del nodo [1-" + nodeIndexMap.size() + "]: ", 1, nodeIndexMap.size());
                         PlanNodeBean nodeBean = nodeIndexMap.get(nodeIdx);
                         if (nodeBean != null) {
-                            manageNode(nodeBean.getId(), nodeBean.getName(), nodeBean.getType(), nodeBean.getParameters());
+                            manageNode(nodeBean.getId(), nodeBean.getName(), nodeBean.getType());
                         }
                     }
                 }
@@ -333,7 +333,7 @@ public class PlanEditorCli extends AbstractCliView {
 
     }
 
-    private void manageNode(String nodeId, String nodeName, NodeType nodeType, Map<String, String> nodeParams) {
+    private void manageNode(String nodeId, String nodeName, NodeType nodeType) {
         boolean nodeRunning = true;
         while (nodeRunning) {
             printer.printHeader("GESTIONE NODO: " + nodeName);
