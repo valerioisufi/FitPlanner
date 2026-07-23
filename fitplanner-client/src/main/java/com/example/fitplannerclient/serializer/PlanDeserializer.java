@@ -18,6 +18,7 @@ import java.util.Map;
 
 public class PlanDeserializer {
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final FlowDecoratorFactory flowDecoratorFactory = new FlowDecoratorFactory();
 
     public WorkoutPlan toEntity(WorkoutPlanDTO planDto) {
         WorkoutPlan workoutPlan = new WorkoutPlan(
@@ -121,15 +122,14 @@ public class PlanDeserializer {
             throw new IllegalArgumentException("Flow decorator must have a wrapped node as child");
         }
         PlanNode wrappedNode = deserializeNode(dto.getChildren().getFirst());
-        
+
         PlanNodeDTO.FlowDecorator fd = dto.getFlowDecorator();
         return switch (fd.type()) {
-            case LOOP -> new LoopDecorator(wrappedNode, fd.value());
-            case REST -> new RestDecorator(wrappedNode, fd.value());
-            case TIME_LIMIT -> new TimeLimitDecorator(wrappedNode, fd.value());
-            case INTERVAL -> new IntervalDecorator(wrappedNode, fd.value());
-            case PROGRESSION -> new ProgressionDecorator(wrappedNode, fd.value());
-            default -> throw new IllegalArgumentException("Unknown flow decorator type: " + fd.type());
+            case LOOP -> flowDecoratorFactory.createLoopDecorator(wrappedNode, fd.value());
+            case REST -> flowDecoratorFactory.createRestDecorator(wrappedNode, fd.value());
+            case TIME_LIMIT -> flowDecoratorFactory.createTimeLimitDecorator(wrappedNode, fd.value());
+            case INTERVAL -> flowDecoratorFactory.createIntervalDecorator(wrappedNode, fd.value());
+            case PROGRESSION -> flowDecoratorFactory.createProgressionDecorator(wrappedNode, fd.value());
         };
     }
 

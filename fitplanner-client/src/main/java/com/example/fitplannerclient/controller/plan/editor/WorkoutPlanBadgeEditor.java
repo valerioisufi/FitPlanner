@@ -208,15 +208,15 @@ public class WorkoutPlanBadgeEditor {
         });
     }
 
-    // todo da estrarre in una factory
-    private static FlowDecorator getFlowDecorator(String decoratorType, String value) {
+    private final FlowDecoratorFactory flowDecoratorFactory = new FlowDecoratorFactory();
+    private FlowDecorator getFlowDecorator(String decoratorType, String value) {
         FlowDecorator newDecorator;
         switch (decoratorType.toUpperCase().replace(" ", "_")) {
-            case "REST" -> newDecorator = new RestDecorator(null, value);
-            case "LOOP" -> newDecorator = new LoopDecorator(null, value);
-            case "TIME_LIMIT" -> newDecorator = new TimeLimitDecorator(null, value);
-            case "INTERVAL" -> newDecorator = new IntervalDecorator(null, value);
-            case "PROGRESSION" -> newDecorator = new ProgressionDecorator(null, value);
+            case "REST" -> newDecorator = flowDecoratorFactory.createRestDecorator(null, value);
+            case "LOOP" -> newDecorator = flowDecoratorFactory.createLoopDecorator(null, value);
+            case "TIME_LIMIT" -> newDecorator = flowDecoratorFactory.createTimeLimitDecorator(null, value);
+            case "INTERVAL" -> newDecorator = flowDecoratorFactory.createIntervalDecorator(null, value);
+            case "PROGRESSION" -> newDecorator = flowDecoratorFactory.createProgressionDecorator(null, value);
             default -> throw new IllegalArgumentException("Unknown decorator type: " + decoratorType);
         }
         return newDecorator;
