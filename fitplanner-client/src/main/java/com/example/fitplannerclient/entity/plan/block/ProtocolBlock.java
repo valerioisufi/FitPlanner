@@ -1,42 +1,49 @@
 package com.example.fitplannerclient.entity.plan.block;
 
-import com.example.fitplannerclient.entity.plan.visitor.WorkoutPlanVisitor;
 import com.example.fitplannerclient.entity.plan.PlanNode;
 import com.example.fitplannerclient.entity.plan.block.strategy.composition.CompositionRule;
 import com.example.fitplannerclient.entity.plan.block.strategy.validation.ValidationResult;
 import com.example.fitplannerclient.entity.plan.block.strategy.validation.ValidationRule;
+import com.example.fitplannerclient.entity.plan.decorator.ProgressionDecorator;
 import com.example.fitplannerclient.entity.plan.execution.ExecutionContext;
 import com.example.fitplannerclient.entity.plan.execution.ExecutionResult;
 import com.example.fitplannerclient.entity.plan.execution.PlanNodeState;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-public class ProtocolBlock extends PlanNode implements GroupNode {
-    private String semanticType;
+public class ProtocolBlock extends CompositeNode {
+    private final ProtocolType semanticType;
 
-    private List<ValidationRule> validationRules;
-    private List<CompositionRule> compositionRules;
-    private List<CompositionRule> blockCompositionRules;
+    private final List<ValidationRule> validationRules;
+    private final List<CompositionRule> compositionRules;
+    private final List<CompositionRule> blockCompositionRules;
 
-    private final Block rawGroup; // gruppo di nodi non decorati
     private final Block decoratedGroup; // gruppo di nodi decorati attraverso le composition rules (applyCompositionRules)
     private PlanNode internalExecutionRoot; // nodo radice per l'esecuzione
 
     private Map<String, String> parameters = new HashMap<>();
 
-    public ProtocolBlock(String semanticType, List<ValidationRule> validationRules, List<CompositionRule> compositionRules, List<CompositionRule> blockCompositionRules) {
+    public ProtocolBlock(ProtocolType semanticType, List<ValidationRule> validationRules, List<CompositionRule> compositionRules, List<CompositionRule> blockCompositionRules) {
+        super(semanticType.toString());
         this.semanticType = semanticType;
         this.validationRules = validationRules;
         this.compositionRules = compositionRules;
         this.blockCompositionRules = blockCompositionRules;
 
-        this.rawGroup = new Block("");
-        this.decoratedGroup = new Block("");
+        // gruppo di nodi decorati
+        this.decoratedGroup = new Block(null);
 
         buildExecutionRoot();
+    }
+
+    @Override
+    public CompositeNodeType getType() {
+        return CompositeNodeType.PROTOCOL;
+    }
+
+    @Override
+    public Optional<ProtocolType> getProtocolType() {
+        return Optional.of(this.semanticType);
     }
 
     @Override
@@ -63,22 +70,21 @@ public class ProtocolBlock extends PlanNode implements GroupNode {
 
     @Override
     public void addNode(PlanNode node) {
-        rawGroup.addNode(node);
+        super.addNode(node);
         decoratedGroup.addNode(applyCompositionRules(node));
     }
 
     @Override
     public void addNodeAt(int index, PlanNode node) {
-        rawGroup.addNodeAt(index, node);
+        super.addNodeAt(index, node);
         decoratedGroup.addNodeAt(index, applyCompositionRules(node));
     }
 
     @Override
     public boolean removeNode(PlanNode node) {
-        int idx = rawGroup.indexOf(node);
+        int idx = this.indexOf(node);
         if (idx != -1) {
-            rawGroup.removeNodeAt(idx);
-            decoratedGroup.removeNodeAt(idx);
+            this.removeNodeAt(idx);
             return true;
         }
         return false;
@@ -86,7 +92,7 @@ public class ProtocolBlock extends PlanNode implements GroupNode {
 
     @Override
     public PlanNode removeNodeAt(int index) {
-        PlanNode removedNode = rawGroup.removeNodeAt(index);
+        PlanNode removedNode = super.removeNodeAt(index);
         decoratedGroup.removeNodeAt(index);
 
         return removedNode;
@@ -94,25 +100,10 @@ public class ProtocolBlock extends PlanNode implements GroupNode {
 
     @Override
     public PlanNode replaceNode(int index, PlanNode newNode) {
-        PlanNode oldNode = rawGroup.replaceNode(index, newNode);
+        PlanNode oldNode = super.replaceNode(index, newNode);
         decoratedGroup.replaceNode(index, applyCompositionRules(newNode));
 
         return oldNode;
-    }
-
-    @Override
-    public int getChildrenCount() {
-        return rawGroup.getChildrenCount();
-    }
-
-    @Override
-    public PlanNode getNodeAt(int index) {
-        return rawGroup.getNodeAt(index);
-    }
-
-    @Override
-    public int indexOf(PlanNode node) {
-        return rawGroup.indexOf(node);
     }
 
     @Override
@@ -135,7 +126,7 @@ public class ProtocolBlock extends PlanNode implements GroupNode {
         ExecutionResult result = internalExecutionRoot.execute(context);
 
         if (result.getState() == PlanNodeState.RUNNING || result.getState() == PlanNodeState.WAITING) {
-            context.prependBreadcrumb(this.semanticType.replace("_", " "));
+            context.prependBreadcrumb(this.semanticType.toString());
             return result;
         }
 
@@ -153,24 +144,28 @@ public class ProtocolBlock extends PlanNode implements GroupNode {
     }
 
     @Override
-    public void accept(WorkoutPlanVisitor visitor) {
-        visitor.visit(this);
-    }
-
-    public String getSemanticType() {
-        return semanticType;
-    }
-
-    public void setSemanticType(String semanticType) {
-        this.semanticType = semanticType;
-    }
-
     public Map<String, String> getParameters() {
         return parameters;
     }
 
+    @Override
     public void setParameter(String key, String value) {
         this.parameters.put(key, value);
+    }
+
+    @Override
+    public Set<String> getExposedVariables() {
+        Set<String> vars = new HashSet<>();
+
+        for (Map.Entry<String, String> entry : this.getParameters().entrySet()) {
+            vars.add(entry.getKey());
+
+            if (entry.getValue() != null && entry.getValue().contains(":")) {
+                vars.addAll(ProgressionDecorator.parseProgressions(entry.getValue()).keySet());
+            }
+        }
+
+        return vars;
     }
 
     private PlanNode applyCompositionRules(PlanNode node) {
@@ -181,6 +176,7 @@ public class ProtocolBlock extends PlanNode implements GroupNode {
         return node;
     }
 
+    @Override
     public ValidationResult validate() {
         ValidationResult result = new ValidationResult();
 
@@ -194,8 +190,4 @@ public class ProtocolBlock extends PlanNode implements GroupNode {
         return result;
     }
 
-    @Override
-    public Iterator<PlanNode> iterator() {
-        return rawGroup.iterator();
-    }
 }

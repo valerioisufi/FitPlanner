@@ -1,8 +1,5 @@
 package com.example.fitplannerclient.serializer;
 
-import com.example.fitplannerclient.bean.plan.ExerciseModifierBean;
-import com.example.fitplannerclient.bean.plan.FlowDecoratorBean;
-import com.example.fitplannerclient.bean.plan.PlanNodeBean;
 import com.example.fitplannerclient.entity.plan.PlanNode;
 import com.example.fitplannerclient.entity.plan.WorkoutPlan;
 import com.example.fitplannerclient.entity.plan.WorkoutSession;
@@ -66,7 +63,7 @@ public class PlanDeserializer {
                 return deserializeExerciseNode(dto);
             case BLOCK:
                 return deserializeBlockNode(dto);
-            case PROTOCOL_BLOCK:
+            case PROTOCOL:
                 return deserializeProtocolBlockNode(dto);
             case FLOW_DECORATOR:
                 return deserializeFlowDecorator(dto);
@@ -77,7 +74,7 @@ public class PlanDeserializer {
 
     private ExerciseNode deserializeExerciseNode(PlanNodeDTO dto) {
         ExerciseNode exerciseNode = new ExerciseNode();
-        exerciseNode.setResourceId(dto.getResourceId());
+        exerciseNode.setExerciseInfo(dto.getResourceId(), dto.getName());
         if (dto.getModifiers() != null) {
             for (PlanNodeDTO.Modifier modDto : dto.getModifiers()) {
                 exerciseNode.addModifier(new ExerciseModifier(
@@ -136,81 +133,4 @@ public class PlanDeserializer {
         };
     }
 
-    public PlanNode toEntity(PlanNodeBean bean) {
-        if (bean == null) {
-            return null;
-        }
-
-        PlanNode coreNode;
-        switch (bean.getType()) {
-            case EXERCISE:
-                coreNode = toEntityExerciseNode(bean);
-                break;
-            case BLOCK:
-                coreNode = toEntityBlockNode(bean);
-                break;
-            case PROTOCOL_BLOCK:
-                coreNode = toEntityProtocolBlockNode(bean);
-                break;
-            default:
-                throw new IllegalArgumentException("Unknown bean type: " + bean.getType());
-        }
-
-        // Applica i decoratori in ordine inverso (dal più interno al più esterno)
-        PlanNode currentNode = coreNode;
-        if (bean.getFlowDecorators() != null) {
-            for (int i = bean.getFlowDecorators().size() - 1; i >= 0; i--) {
-                FlowDecoratorBean decBean = bean.getFlowDecorators().get(i);
-                currentNode = switch (decBean.getType()) {
-                    case LOOP -> new LoopDecorator(currentNode, decBean.getValue());
-                    case REST -> new RestDecorator(currentNode, decBean.getValue());
-                    case TIME_LIMIT -> new TimeLimitDecorator(currentNode, decBean.getValue());
-                    case INTERVAL -> new IntervalDecorator(currentNode, decBean.getValue());
-                    case PROGRESSION -> new ProgressionDecorator(currentNode, decBean.getValue());
-                };
-            }
-        }
-
-        return currentNode;
-    }
-
-    private ExerciseNode toEntityExerciseNode(PlanNodeBean bean) {
-        ExerciseNode exerciseNode = new ExerciseNode();
-        exerciseNode.setResourceId(bean.getResourceId());
-        if (bean.getModifiers() != null) {
-            for (ExerciseModifierBean modBean : bean.getModifiers()) {
-                exerciseNode.addModifier(new ExerciseModifier(
-                        ModifierType.valueOf(modBean.getName()),
-                        modBean.getValue()
-                ));
-            }
-        }
-        return exerciseNode;
-    }
-
-    private Block toEntityBlockNode(PlanNodeBean bean) {
-        Block block = new Block(bean.getName());
-        if (bean.getChildren() != null) {
-            for (PlanNodeBean childBean : bean.getChildren()) {
-                block.addNode(toEntity(childBean));
-            }
-        }
-        return block;
-    }
-
-    private ProtocolBlock toEntityProtocolBlockNode(PlanNodeBean bean) {
-        ProtocolBlockFactory factory = new ProtocolBlockFactory();
-        ProtocolBlock protocolBlock = factory.create(bean.getName());
-        if (bean.getParameters() != null) {
-            for (Map.Entry<String, String> entry : bean.getParameters().entrySet()) {
-                protocolBlock.setParameter(entry.getKey(), entry.getValue());
-            }
-        }
-        if (bean.getChildren() != null) {
-            for (PlanNodeBean childBean : bean.getChildren()) {
-                protocolBlock.addNode(toEntity(childBean));
-            }
-        }
-        return protocolBlock;
-    }
 }

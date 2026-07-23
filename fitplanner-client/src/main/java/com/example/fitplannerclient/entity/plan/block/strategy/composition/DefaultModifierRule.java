@@ -1,5 +1,6 @@
 package com.example.fitplannerclient.entity.plan.block.strategy.composition;
 
+import com.example.fitplannerclient.entity.plan.block.CompositeNode;
 import com.example.fitplannerclient.entity.plan.visitor.EmptyWorkoutPlanVisitor;
 import com.example.fitplannerclient.entity.plan.visitor.WorkoutPlanVisitor;
 import com.example.fitplannerclient.entity.plan.PlanNode;
@@ -27,15 +28,8 @@ public class DefaultModifierRule implements CompositionRule {
             }
 
             @Override
-            public void visit(Block block) {
-                for (PlanNode child : block) {
-                    child.accept(this);
-                }
-            }
-
-            @Override
-            public void visit(ProtocolBlock protocolBlock) {
-                for (PlanNode child : protocolBlock) {
+            public void visit(CompositeNode compositeNode) {
+                for (PlanNode child : compositeNode) {
                     child.accept(this);
                 }
             }

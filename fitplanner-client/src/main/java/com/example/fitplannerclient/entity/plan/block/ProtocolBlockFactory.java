@@ -9,25 +9,6 @@ import java.util.List;
 
 public class ProtocolBlockFactory {
 
-    private enum ProtocolBlockTypes {
-        DROP_SET("DROP_SET"),
-        SUPER_SET("SUPER_SET"),
-        GIANT_SET("GIANT_SET"),
-        CIRCUIT("CIRCUIT"),
-        AMRAP("AMRAP"),
-        EMOM("EMOM");
-
-        private final String semanticType;
-
-        ProtocolBlockTypes(String semanticType) {
-            this.semanticType = semanticType;
-        }
-
-        public String getSemanticType() {
-            return semanticType;
-        }
-    }
-
     public ProtocolBlock create(String semanticType) {
         return switch (semanticType) {
             case "DROP_SET" -> createDropSet();
@@ -42,7 +23,7 @@ public class ProtocolBlockFactory {
 
     public ProtocolBlock createCircuit() {
         ProtocolBlock circuitBlock = new ProtocolBlock(
-                ProtocolBlockTypes.CIRCUIT.getSemanticType(),
+                ProtocolType.CIRCUIT,
                 List.of(new OnlyExercisesAllowedRule()),
                 List.of(new WrapWithDecoratorRule(new RestDecorator(null, "${CIRCUIT_REST_BETWEEN_EXERCISES}"))),
                 List.of(
@@ -58,7 +39,7 @@ public class ProtocolBlockFactory {
 
     public ProtocolBlock createDropSet() {
         ProtocolBlock block = new ProtocolBlock(
-                ProtocolBlockTypes.DROP_SET.getSemanticType(),
+                ProtocolType.DROP_SET,
                 List.of(new OnlyExercisesAllowedRule(), new NodeCountRangeRule(1, 1)),
                 null,
                 List.of(new WrapWithDecoratorRule(new ProgressionDecorator(null, "${DROP_SET_PROGRESSION}")))
@@ -69,7 +50,7 @@ public class ProtocolBlockFactory {
 
     public ProtocolBlock createSuperSet() {
         ProtocolBlock block = new ProtocolBlock(
-                ProtocolBlockTypes.SUPER_SET.getSemanticType(),
+                ProtocolType.SUPER_SET,
                 List.of(new OnlyExercisesAllowedRule(), new NodeCountRangeRule(2, 2)),
                 null,
                 List.of(new WrapWithDecoratorRule(new LoopDecorator(null, "${SUPER_SET_ROUNDS}")))
@@ -80,7 +61,7 @@ public class ProtocolBlockFactory {
 
     public ProtocolBlock createGiantSet() {
         ProtocolBlock block = new ProtocolBlock(
-                ProtocolBlockTypes.GIANT_SET.getSemanticType(),
+                ProtocolType.GIANT_SET,
                 List.of(new OnlyExercisesAllowedRule(), new NodeCountRangeRule(3, -1)),
                 null,
                 List.of(new WrapWithDecoratorRule(new LoopDecorator(null, "${GIANT_SET_ROUNDS}")))
@@ -91,7 +72,7 @@ public class ProtocolBlockFactory {
 
     public ProtocolBlock createAMRAP() {
         ProtocolBlock block = new ProtocolBlock(
-                ProtocolBlockTypes.AMRAP.getSemanticType(),
+                ProtocolType.AMRAP,
                 List.of(new OnlyExercisesAllowedRule()),
                 null,
                 List.of(
@@ -105,7 +86,7 @@ public class ProtocolBlockFactory {
 
     public ProtocolBlock createEMOM() {
         ProtocolBlock block = new ProtocolBlock(
-                ProtocolBlockTypes.EMOM.getSemanticType(),
+                ProtocolType.EMOM,
                 List.of(new OnlyExercisesAllowedRule()),
                 null,
                 List.of(

@@ -3,19 +3,22 @@ package com.example.fitplannerclient.entity.plan.visitor;
 import com.example.fitplannerclient.entity.plan.PlanNode;
 import com.example.fitplannerclient.entity.plan.WorkoutPlan;
 import com.example.fitplannerclient.entity.plan.WorkoutSession;
-import com.example.fitplannerclient.entity.plan.block.Block;
+import com.example.fitplannerclient.entity.plan.block.CompositeNode;
 import com.example.fitplannerclient.entity.plan.block.GroupNode;
-import com.example.fitplannerclient.entity.plan.block.ProtocolBlock;
 import com.example.fitplannerclient.entity.plan.decorator.*;
 import com.example.fitplannerclient.entity.plan.exercise.ExerciseNode;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class NodeFinderVisitor implements WorkoutPlanVisitor {
     protected final String id;
 
     private PlanNode foundNode;
+    private ExerciseNode foundExerciseNode;
+    private FlowDecorator foundFlowDecorator;
+    private CompositeNode foundCompositeNode;
 
     private PlanNode foundParent;
     private int foundPosition;
@@ -32,9 +35,19 @@ public class NodeFinderVisitor implements WorkoutPlanVisitor {
         this.id = id;
     }
 
-    public PlanNode getFoundNode() {
-        return foundNode;
+    public Optional<PlanNode> getFoundNode() {
+        return Optional.ofNullable(foundNode);
     }
+    public Optional<ExerciseNode> getFoundExerciseNode() {
+        return Optional.ofNullable(foundExerciseNode);
+    }
+    public Optional<FlowDecorator> getFoundFlowDecorator() {
+        return Optional.ofNullable(foundFlowDecorator);
+    }
+    public Optional<CompositeNode> getFoundCompositeNode() {
+        return Optional.ofNullable(foundCompositeNode);
+    }
+
     public PlanNode getFoundParent() {
         return foundParent;
     }
@@ -63,6 +76,7 @@ public class NodeFinderVisitor implements WorkoutPlanVisitor {
         return foundNode != null;
     }
 
+
     @Override
     public void visit(WorkoutPlan workoutPlan) {
         for (WorkoutSession session : workoutPlan.getSessions()) {
@@ -84,31 +98,34 @@ public class NodeFinderVisitor implements WorkoutPlanVisitor {
 
         if(exerciseNode.getId().equals(id)) {
             foundNode = exerciseNode;
+            foundExerciseNode = exerciseNode;
             foundPath = new ArrayList<>(currentPath);
         }
 
         currentPath.removeLast();
     }
 
-    private <T extends PlanNode & GroupNode> void visitGroupNode(T groupNode) {
-        currentPath.addLast(groupNode);
+    @Override
+    public void visit(CompositeNode compositeNode) {
+        currentPath.addLast(compositeNode);
 
-        if(groupNode.getId().equals(id)) {
-            foundNode = groupNode;
+        if(compositeNode.getId().equals(id)) {
+            foundNode = compositeNode;
+            foundCompositeNode = compositeNode;
             foundPath = new ArrayList<>(currentPath);
         } else {
-            for (PlanNode child : groupNode) {
+            for (PlanNode child : compositeNode) {
                 if (foundNode != null) break;
 
-                foundParent = groupNode;
-                foundPosition = groupNode.indexOf(child);
+                foundParent = compositeNode;
+                foundPosition = compositeNode.indexOf(child);
 
-                foundGroupNodeParent = groupNode;
-                foundGroupNodePosition = groupNode.indexOf(child);
+                foundGroupNodeParent = compositeNode;
+                foundGroupNodePosition = compositeNode.indexOf(child);
                 foundGroupNodeIndex = currentPath.size() - 1;
-                
+
                 child.accept(this);
-                
+
                 if (foundNode == null) {
                     foundParent = null;
                     foundPosition = -1;
@@ -122,20 +139,12 @@ public class NodeFinderVisitor implements WorkoutPlanVisitor {
     }
 
     @Override
-    public void visit(Block block) {
-        visitGroupNode(block);
-    }
-
-    @Override
-    public void visit(ProtocolBlock protocolBlock) {
-        visitGroupNode(protocolBlock);
-    }
-
-    private void visitDecorator(FlowDecorator decorator) {
+    public void visit(FlowDecorator decorator) {
         currentPath.addLast(decorator);
 
         if(decorator.getId().equals(id)) {
             foundNode = decorator;
+            foundFlowDecorator = decorator;
             foundPath = new ArrayList<>(currentPath);
         } else {
             foundParent = decorator;
@@ -143,18 +152,13 @@ public class NodeFinderVisitor implements WorkoutPlanVisitor {
 
             if (decorator.getWrappedNode() != null)
                 decorator.getWrappedNode().accept(this);
-                
+
             if (foundNode == null) {
                 foundParent = null;
                 foundPosition = -1;
             }
         }
         currentPath.removeLast();
-    }
-
-    @Override
-    public void visit(FlowDecorator flowDecorator) {
-        visitDecorator(flowDecorator);
     }
 
 }

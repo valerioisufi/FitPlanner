@@ -237,11 +237,6 @@ public class WorkoutPlanEditorViewController implements GuiController {
             guiManager.showModal(this.view.getEditProtocolModal());
 
         } else if (payload.startsWith("MODIFIER:")) {
-            if (!editWorkoutPlanManager.isExerciseNode(targetParentId)) {
-                guiManager.showNotification(GuiManager.NotificationType.ERROR, "I Modifier possono essere aggiunti solo agli Esercizi.");
-                return;
-            }
-
             String type = payload.substring("MODIFIER:".length());
             List<String> vars = editWorkoutPlanManager.getAvailableVariablesForNode(targetParentId);
             this.view.getEditBadgeModal().setInitialData(type, "", vars);

@@ -16,6 +16,11 @@ public class ProgressionDecorator extends LoopDecorator {
         this.progressionString = progressionString;
     }
 
+    @Override
+    public Set<String> getExposedVariables() {
+        return new HashSet<>(parseProgressions(this.progressionString).keySet());
+    }
+
     public static Map<String, List<String>> parseProgressions(String str) {
         if (str == null || str.trim().isEmpty()) {
             return Map.of();

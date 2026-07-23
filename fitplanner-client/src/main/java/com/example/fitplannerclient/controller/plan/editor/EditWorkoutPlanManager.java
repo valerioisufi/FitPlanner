@@ -2,6 +2,8 @@ package com.example.fitplannerclient.controller.plan.editor;
 
 import com.example.fitplannerclient.bean.plan.PlanNodeBean;
 import com.example.fitplannerclient.bean.plan.WorkoutPlanBean;
+import com.example.fitplannerclient.entity.ExerciseDescription;
+import com.example.fitplannerclient.entity.plan.block.CompositeNode;
 import com.example.fitplannerclient.exception.WorkoutValidationException;
 import com.example.fitplannerclient.repository.WorkoutPlanRepository;
 import com.example.fitplannerclient.controller.plan.ProtocolLibraryManager;
@@ -13,9 +15,6 @@ import com.example.fitplannerclient.controller.plan.editor.observer.WorkoutPlanO
 import com.example.fitplannerclient.controller.plan.editor.observer.WorkoutPlanSubject;
 import com.example.fitplannerclient.entity.plan.PlanNode;
 import com.example.fitplannerclient.entity.plan.WorkoutPlan;
-import com.example.fitplannerclient.entity.plan.block.Block;
-import com.example.fitplannerclient.entity.plan.block.ProtocolBlock;
-import com.example.fitplannerclient.entity.plan.exercise.ExerciseNode;
 import com.example.fitplannerclient.repository.ExerciseRepository;
 import com.example.fitplannerclient.controller.plan.mapper.PlanToBeanVisitor;
 
@@ -58,13 +57,6 @@ public class EditWorkoutPlanManager {
         ValidationResult validationResult = validatePlan();
 
         PlanToBeanVisitor visitor = new PlanToBeanVisitor(
-                uuid -> {
-                    if (exerciseRepository != null) {
-                        var exercise = exerciseRepository.getCachedExercise(uuid);
-                        if (exercise != null) return exercise.getName();
-                    }
-                    return "Esercizio Sconosciuto";
-                },
                 validationResult
         );
         this.plan.accept(visitor);
@@ -132,7 +124,7 @@ public class EditWorkoutPlanManager {
     }
 
     public void changeExerciseResource(String nodeId, String newResourceId) {
-        structureEditor.changeExerciseResource(this.plan, nodeId, newResourceId);
+        structureEditor.changeExerciseResource(this.plan, nodeId, newResourceId, getExerciseName(newResourceId));
     }
 
     public void emptyNode(String nodeId) {
@@ -219,7 +211,9 @@ public class EditWorkoutPlanManager {
     }
 
     public void addExerciseFromToolbox(String exerciseId, String targetParentId, int targetIndex) {
-        structureEditor.addExerciseFromToolbox(this.plan, exerciseId, targetParentId, targetIndex);
+
+
+        structureEditor.addExerciseFromToolbox(this.plan, exerciseId, getExerciseName(exerciseId), targetParentId, targetIndex);
     }
 
     public void addBlockFromToolbox(String blockName, String targetParentId, int targetIndex) {
@@ -251,48 +245,38 @@ public class EditWorkoutPlanManager {
         return badgeEditor.getAvailableVariablesForNode(this.plan, nodeId);
     }
 
+    private String getExerciseName(String exerciseId) {
+        ExerciseDescription exercise = exerciseRepository.getCachedExercise(exerciseId);
+        return  (exercise != null) ? exercise.getName() : "Esercizio Sconosciuto";
+    }
+
 
     // Query sui nodi
 
-    public boolean isExerciseNode(String nodeId) {
-        return findNode(nodeId) instanceof ExerciseNode;
-    }
-
-    public boolean isProtocolNode(String nodeId) {
-        return findNode(nodeId) instanceof ProtocolBlock;
-    }
-
-    public boolean isBlockNode(String nodeId) {
-        return findNode(nodeId) instanceof Block && !(findNode(nodeId) instanceof ProtocolBlock);
-    }
-
     public String getNodeName(String nodeId) {
-        PlanNode node = findNode(nodeId);
-        if (node instanceof Block block) return block.getTitle();
-        if (node instanceof ProtocolBlock protocolBlock) return protocolBlock.getSemanticType();
-        if (node instanceof ExerciseNode exerciseNode) {
-            if (exerciseRepository != null) {
-                var exercise = exerciseRepository.getCachedExercise(exerciseNode.getResourceId());
-                if (exercise != null) return exercise.getName();
-            }
-            return "Esercizio Sconosciuto";
+        if (this.plan == null) return null;
+        NodeFinderVisitor finder = new NodeFinderVisitor(nodeId);
+        this.plan.accept(finder);
+
+        PlanNode node = finder.getFoundNode().orElse(null);
+
+        if(node != null) {
+            return node.getName().orElse("Sconosciuto");
         }
+
         return null;
     }
 
     public Map<String, String> getProtocolParameters(String nodeId) {
-        PlanNode node = findNode(nodeId);
-        if (node instanceof ProtocolBlock protocolBlock) {
-            return new HashMap<>(protocolBlock.getParameters());
-        }
-        return Map.of();
-    }
-
-    private PlanNode findNode(String nodeId) {
-        if (this.plan == null) return null;
+        if (this.plan == null) return Map.of();
         NodeFinderVisitor finder = new NodeFinderVisitor(nodeId);
         this.plan.accept(finder);
-        return finder.isFound() ? finder.getFoundNode() : null;
+
+        CompositeNode compositeNode = finder.getFoundCompositeNode().orElse(null);
+        if (compositeNode != null) {
+            return new HashMap<>(compositeNode.getParameters());
+        }
+        return Map.of();
     }
 
     public void buildProtocolBlockLibrary() {

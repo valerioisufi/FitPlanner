@@ -1,8 +1,10 @@
 package com.example.fitplannerclient.controller.plan.editor.command;
 
 import com.example.fitplannerclient.entity.plan.PlanNode;
+import com.example.fitplannerclient.entity.plan.block.CompositeNode;
 import com.example.fitplannerclient.entity.plan.block.GroupNode;
 import com.example.fitplannerclient.entity.plan.decorator.FlowDecorator;
+import com.example.fitplannerclient.entity.plan.visitor.EmptyWorkoutPlanVisitor;
 
 import java.util.function.Consumer;
 
@@ -43,10 +45,10 @@ public class ReplaceNodeCommand implements WorkoutPlanEditorCommand {
     }
 
     private void executeIfGroupNode(PlanNode node, Consumer<GroupNode> action) {
-        node.accept(new GroupingWorkoutPlanVisitor() {
+        node.accept(new EmptyWorkoutPlanVisitor() {
 
             @Override
-            public void visitGroupNode(GroupNode groupNode) {
+            public void visit(CompositeNode groupNode) {
                 action.accept(groupNode);
             }
 
@@ -54,10 +56,10 @@ public class ReplaceNodeCommand implements WorkoutPlanEditorCommand {
     }
 
     private void executeIfFlowDecorator(PlanNode node, Consumer<FlowDecorator> action) {
-        node.accept(new GroupingWorkoutPlanVisitor() {
+        node.accept(new EmptyWorkoutPlanVisitor() {
 
             @Override
-            public void visitFlowDecorator(FlowDecorator flowDecorator) {
+            public void visit(FlowDecorator flowDecorator) {
                 action.accept(flowDecorator);
             }
 

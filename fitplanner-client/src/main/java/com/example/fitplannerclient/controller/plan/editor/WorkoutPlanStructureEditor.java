@@ -107,21 +107,22 @@ public class WorkoutPlanStructureEditor {
         NodeFinderVisitor finder = new NodeFinderVisitor(nodeId);
         plan.accept(finder);
 
-        if (finder.isFound() && finder.getFoundNode() instanceof Block block) {
-            RenameBlockCommand cmd = new RenameBlockCommand(block, newName);
+        finder.getFoundCompositeNode().ifPresent(compositeNode -> {
+            RenameCompositeCommand cmd = new RenameCompositeCommand(compositeNode, newName);
             executeCommand(cmd);
-        }
+        });
     }
 
-    public void changeExerciseResource(WorkoutPlan plan, String nodeId, String newResourceId) {
+    public void changeExerciseResource(WorkoutPlan plan, String nodeId, String newResourceId, String newExerciseName) {
         if (plan == null) return;
+
         NodeFinderVisitor finder = new NodeFinderVisitor(nodeId);
         plan.accept(finder);
 
-        if (finder.isFound() && finder.getFoundNode() instanceof ExerciseNode node) {
-            ChangeExerciseResourceCommand cmd = new ChangeExerciseResourceCommand(node, newResourceId);
+        finder.getFoundExerciseNode().ifPresent(exerciseNode -> {
+            ChangeExerciseResourceCommand cmd = new ChangeExerciseResourceCommand(exerciseNode, newResourceId, newExerciseName);
             executeCommand(cmd);
-        }
+        });
     }
 
     public void emptyNode(WorkoutPlan plan, String nodeId) {
@@ -129,15 +130,16 @@ public class WorkoutPlanStructureEditor {
         NodeFinderVisitor finder = new NodeFinderVisitor(nodeId);
         plan.accept(finder);
 
-        if (finder.isFound() && finder.getFoundNode() instanceof GroupNode groupNode) {
+
+        finder.getFoundCompositeNode().ifPresent(compositeNode -> {
             CompositeCommand cmd = new CompositeCommand();
 
             // Remove nodes from last to first
-            for (int i = groupNode.getChildrenCount() - 1; i >= 0; i--) {
-                cmd.addCommand(new RemoveNodeCommand(groupNode, i));
+            for (int i = compositeNode.getChildrenCount() - 1; i >= 0; i--) {
+                cmd.addCommand(new RemoveNodeCommand(compositeNode, i));
             }
             executeCommand(cmd);
-        }
+        });
     }
 
     public void updateProtocolParameters(WorkoutPlan plan, String nodeId, Map<String, String> params) {
@@ -145,10 +147,10 @@ public class WorkoutPlanStructureEditor {
         NodeFinderVisitor finder = new NodeFinderVisitor(nodeId);
         plan.accept(finder);
 
-        if (finder.isFound() && finder.getFoundNode() instanceof ProtocolBlock block) {
-            UpdateProtocolParametersCommand cmd = new UpdateProtocolParametersCommand(block, params);
+        finder.getFoundCompositeNode().ifPresent(compositeNode -> {
+            UpdateProtocolParametersCommand cmd = new UpdateProtocolParametersCommand(compositeNode, params);
             executeCommand(cmd);
-        }
+        });
     }
 
     public void copyNode(WorkoutPlan plan, String nodeId, String targetParentId, int targetIndex) {
@@ -159,11 +161,13 @@ public class WorkoutPlanStructureEditor {
         NodeFinderVisitor targetFinder = new NodeFinderVisitor(targetParentId);
         plan.accept(targetFinder);
 
-        if (finder.isFound() && targetFinder.isFound() && targetFinder.getFoundNode() instanceof GroupNode targetParent) {
-            PlanNode copy = finder.getFoundOutmostNode().deepCopy();
+        if (finder.isFound()) {
+            targetFinder.getFoundCompositeNode().ifPresent(targetCompositeNode -> {
+                PlanNode copy = finder.getFoundOutmostNode().deepCopy();
 
-            InsertNodeCommand cmd = new InsertNodeCommand(copy, targetParent, targetIndex);
-            executeCommand(cmd);
+                InsertNodeCommand cmd = new InsertNodeCommand(copy, targetCompositeNode, targetIndex);
+                executeCommand(cmd);
+            });
         }
     }
 
@@ -188,30 +192,33 @@ public class WorkoutPlanStructureEditor {
         NodeFinderVisitor targetFinder = new NodeFinderVisitor(targetParentId);
         plan.accept(targetFinder);
 
-        if (finder.isFound() && targetFinder.isFound() && targetFinder.getFoundNode() instanceof GroupNode targetParent) {
-            
-            int sourceIndex = finder.getFoundGroupNodePosition();
-            GroupNode sourceParent = finder.getFoundGroupNodeParent();
+        if (finder.isFound()) {
+            targetFinder.getFoundCompositeNode().ifPresent(targetCompositeNode -> {
+                int sourceIndex = finder.getFoundGroupNodePosition();
+                GroupNode sourceParent = finder.getFoundGroupNodeParent();
 
-            if (sourceIndex == targetIndex && sourceParent == targetParent) return;
+                int adjustedTargetIndex = targetIndex;
+                if (sourceParent == targetCompositeNode && sourceIndex < targetIndex) {
+                    adjustedTargetIndex--;
+                }
 
-            if (sourceParent == targetParent && sourceIndex < targetIndex) {
-                targetIndex--;
-            }
+                if (sourceIndex == adjustedTargetIndex && sourceParent == targetCompositeNode) return;
 
-            RemoveNodeCommand removeCmd = new RemoveNodeCommand(sourceParent, sourceIndex);
-            InsertNodeCommand insertCmd = new InsertNodeCommand(finder.getFoundOutmostNode(), targetParent, targetIndex);
-            
-            CompositeCommand cmd = new CompositeCommand();
-            cmd.addCommand(removeCmd);
-            cmd.addCommand(insertCmd);
-            executeCommand(cmd);
+                RemoveNodeCommand removeCmd = new RemoveNodeCommand(sourceParent, sourceIndex);
+                InsertNodeCommand insertCmd = new InsertNodeCommand(finder.getFoundOutmostNode(), targetCompositeNode, adjustedTargetIndex);
+
+                CompositeCommand cmd = new CompositeCommand();
+                cmd.addCommand(removeCmd);
+                cmd.addCommand(insertCmd);
+                executeCommand(cmd);
+            });
+
         }
     }
 
-    public void addExerciseFromToolbox(WorkoutPlan plan, String exerciseId, String targetParentId, int targetIndex) {
+    public void addExerciseFromToolbox(WorkoutPlan plan, String exerciseId, String exerciseName, String targetParentId, int targetIndex) {
         ExerciseNode node = new ExerciseNode();
-        node.setResourceId(exerciseId);
+        node.setExerciseInfo(exerciseId, exerciseName);
         node.addModifier(new ExerciseModifier(ModifierType.REPS, "10"));
         addNodeFromToolbox(plan, node, targetParentId, targetIndex);
     }
@@ -236,14 +243,14 @@ public class WorkoutPlanStructureEditor {
         NodeFinderVisitor finder = new NodeFinderVisitor(targetParentId);
         plan.accept(finder);
 
-        if (finder.isFound() && finder.getFoundNode() instanceof GroupNode block) {
+        finder.getFoundCompositeNode().ifPresent(targetCompositeNode -> {
             int idx = targetIndex;
-            if (idx < 0 || idx > block.getChildrenCount()) {
-                idx = block.getChildrenCount();
+            if (idx < 0 || idx > targetCompositeNode.getChildrenCount()) {
+                idx = targetCompositeNode.getChildrenCount();
             }
 
-            InsertNodeCommand cmd = new InsertNodeCommand(newNode, block, idx);
+            InsertNodeCommand cmd = new InsertNodeCommand(newNode, targetCompositeNode, idx);
             executeCommand(cmd);
-        }
+        });
     }
 }

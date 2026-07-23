@@ -163,7 +163,7 @@ public class PlanNodeComponent extends VBox {
         switch (bean.getType()) {
             case EXERCISE -> nodeContent.getStyleClass().add("node-exercise");
             case BLOCK -> nodeContent.getStyleClass().add("node-block");
-            case PROTOCOL_BLOCK -> nodeContent.getStyleClass().add("node-protocol");
+            case PROTOCOL -> nodeContent.getStyleClass().add("node-protocol");
         }
 
         // evidenzia il nodo come non valido
@@ -205,8 +205,11 @@ public class PlanNodeComponent extends VBox {
                         this.fireEvent(new PlanNodeEvent(PlanNodeEvent.DELETE_NODE_REQUESTED, this.planNodeId))
                     )
                 );
-            case PROTOCOL_BLOCK -> 
+            case PROTOCOL ->
                 menu.getItems().addAll(
+                    MenuUtils.createCustomMenuItem("Modifica Nome", "edit-icon", BUTTON_HEADER_ICON, null, () ->
+                        this.fireEvent(new PlanNodeEvent(PlanNodeEvent.EDIT_NAME_CLICKED, this.planNodeId))
+                    ),
                     MenuUtils.createCustomMenuItem("Modifica Parametri Protocollo", "sliders-icon", BUTTON_HEADER_ICON, null, () ->
                         this.fireEvent(new PlanNodeEvent(PlanNodeEvent.EDIT_PROTOCOL_PARAMETERS_REQUESTED, this.planNodeId))
                     ),
@@ -259,7 +262,7 @@ public class PlanNodeComponent extends VBox {
         badgesBox.getChildren().clear();
 
         boolean hasModifiers = !exerciseModifierBeans.isEmpty();
-        boolean hasParameters = originalBean.getType() == NodeType.PROTOCOL_BLOCK && originalBean.getParameters() != null && !originalBean.getParameters().isEmpty();
+        boolean hasParameters = originalBean.getType() == NodeType.PROTOCOL && originalBean.getParameters() != null && !originalBean.getParameters().isEmpty();
 
         if (!hasModifiers && !hasParameters) {
             badgesBox.setVisible(false);

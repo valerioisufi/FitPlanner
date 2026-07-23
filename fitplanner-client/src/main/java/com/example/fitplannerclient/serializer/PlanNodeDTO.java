@@ -22,7 +22,7 @@ public class PlanNodeDTO {
     public enum NodeType {
         EXERCISE,
         BLOCK,
-        PROTOCOL_BLOCK,
+        PROTOCOL,
         FLOW_DECORATOR
     }
 

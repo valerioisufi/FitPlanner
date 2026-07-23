@@ -137,8 +137,9 @@ public class WorkoutPlanManager {
         if (session == null) return null;
         PlanNodeBean rootNode = null;
         if (session.getRoot() != null) {
-            PlanToBeanVisitor visitor = new PlanToBeanVisitor(this::resolveExerciseName);
+            PlanToBeanVisitor visitor = new PlanToBeanVisitor();
             session.getRoot().accept(visitor);
+
             rootNode = visitor.getCurrentPlanNodeBean();
         }
         if (rootNode == null) {
@@ -149,17 +150,11 @@ public class WorkoutPlanManager {
 
     public WorkoutPlanBean entityToBean(WorkoutPlan plan) {
         if (plan == null) return null;
-        PlanToBeanVisitor visitor = new PlanToBeanVisitor(this::resolveExerciseName);
-        plan.accept(visitor);
-        return visitor.getPlanBean();
-    }
 
-    private String resolveExerciseName(String uuid) {
-        if (exerciseRepository != null) {
-            var entity = exerciseRepository.getCachedExercise(uuid);
-            if (entity != null) return entity.getName();
-        }
-        return "Esercizio Sconosciuto";
+        PlanToBeanVisitor visitor = new PlanToBeanVisitor();
+        plan.accept(visitor);
+
+        return visitor.getPlanBean();
     }
 
 }

@@ -4,23 +4,28 @@ import com.example.fitplannerclient.entity.plan.exercise.ExerciseNode;
 
 public class ChangeExerciseResourceCommand implements WorkoutPlanEditorCommand {
 
-    private ExerciseNode exerciseNode;
-    private String newResourceId;
-    private String oldResourceId;
+    private final ExerciseNode exerciseNode;
+    private final String newExerciseId;
+    private final String newExerciseName;
 
-    public ChangeExerciseResourceCommand(ExerciseNode exerciseNode, String newResourceId) {
+    private String oldExerciseId;
+    private String oldExerciseName;
+
+    public ChangeExerciseResourceCommand(ExerciseNode exerciseNode, String newExerciseId, String newExerciseName) {
         this.exerciseNode = exerciseNode;
-        this.newResourceId = newResourceId;
+        this.newExerciseId = newExerciseId;
+        this.newExerciseName = newExerciseName;
     }
 
     @Override
     public void execute() {
-        oldResourceId = exerciseNode.getResourceId();
-        exerciseNode.setResourceId(newResourceId);
+        oldExerciseId = exerciseNode.getResourceId();
+        oldExerciseName = exerciseNode.getName().orElse(null);
+        exerciseNode.setExerciseInfo(newExerciseId, newExerciseName);
     }
 
     @Override
     public void undo() {
-        exerciseNode.setResourceId(oldResourceId);
+        exerciseNode.setExerciseInfo(oldExerciseId, oldExerciseName);
     }
 }

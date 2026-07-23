@@ -3,15 +3,9 @@ package com.example.fitplannerclient.entity.plan.visitor;
 import com.example.fitplannerclient.entity.plan.PlanNode;
 import com.example.fitplannerclient.entity.plan.WorkoutPlan;
 import com.example.fitplannerclient.entity.plan.WorkoutSession;
-import com.example.fitplannerclient.entity.plan.block.Block;
-import com.example.fitplannerclient.entity.plan.block.ProtocolBlock;
+import com.example.fitplannerclient.entity.plan.block.CompositeNode;
 import com.example.fitplannerclient.entity.plan.block.strategy.validation.ValidationResult;
 import com.example.fitplannerclient.entity.plan.decorator.FlowDecorator;
-import com.example.fitplannerclient.entity.plan.decorator.IntervalDecorator;
-import com.example.fitplannerclient.entity.plan.decorator.LoopDecorator;
-import com.example.fitplannerclient.entity.plan.decorator.ProgressionDecorator;
-import com.example.fitplannerclient.entity.plan.decorator.RestDecorator;
-import com.example.fitplannerclient.entity.plan.decorator.TimeLimitDecorator;
 import com.example.fitplannerclient.entity.plan.exercise.ExerciseNode;
 
 /**
@@ -41,27 +35,22 @@ public class ProtocolValidationVisitor implements WorkoutPlanVisitor {
 
     @Override
     public void visit(ExerciseNode exerciseNode) {
-        // metodo intenzionalmente vuoto
+        result.addErrors(exerciseNode.validate().getErrors());
     }
 
     @Override
-    public void visit(Block block) {
-        for (PlanNode child : block) {
-            child.accept(this);
-        }
-    }
+    public void visit(CompositeNode compositeNode) {
+        result.addErrors(compositeNode.validate().getErrors());
 
-    @Override
-    public void visit(ProtocolBlock protocolBlock) {
-        result.addErrors(protocolBlock.validate().getErrors());
-
-        for (PlanNode child : protocolBlock) {
+        for (PlanNode child : compositeNode) {
             child.accept(this);
         }
     }
 
     @Override
     public void visit(FlowDecorator flowDecorator) {
+        result.addErrors(flowDecorator.validate().getErrors());
+
         if(flowDecorator.getWrappedNode() != null) {
             flowDecorator.getWrappedNode().accept(this);
         }
