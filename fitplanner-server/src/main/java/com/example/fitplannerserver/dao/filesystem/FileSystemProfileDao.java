@@ -57,12 +57,10 @@ public class FileSystemProfileDao implements ProfileDao {
 
         String newRow = toCsvRow(user);
         lock.writeLock().lock();
-
         try {
             update(path, EXPECTED_COLUMNS, parts -> parts[0].equals(user.getId()), newRow);
-
         } catch (IOException e) {
-            throw new DaoException("Errore durante il salvataggio del profilo dell'utente", e);
+            throw new DaoException("Errore durante il salvataggio del profilo", e);
         } finally {
             lock.writeLock().unlock();
         }
@@ -73,16 +71,16 @@ public class FileSystemProfileDao implements ProfileDao {
         if (invitationCode == null || invitationCode.isBlank()) {
             return Optional.empty();
         }
-        lock.readLock().lock();
 
+        lock.readLock().lock();
         try {
-            CsvResultSet rs = search(path, EXPECTED_COLUMNS, parts -> invitationCode.equals(parts[6]), 1);
-            if (rs.next() && fromCsvRS(rs) instanceof TrainerUser trainer) {
-                return Optional.of(trainer);
+            CsvResultSet rs = search(path, EXPECTED_COLUMNS, parts -> parts[6].equals(invitationCode) && "TRAINER".equals(parts[5]), 1);
+            if (rs.next()) {
+                return Optional.of(mapTrainer(rs));
             }
             return Optional.empty();
         } catch (IOException e) {
-            throw new DaoException("Errore durante la ricerca per invitation code", e);
+            throw new DaoException("Errore durante la ricerca del trainer per codice invito", e);
         } finally {
             lock.readLock().unlock();
         }
@@ -93,16 +91,12 @@ public class FileSystemProfileDao implements ProfileDao {
         Objects.requireNonNull(trainerId, "trainerId cannot be null");
 
         lock.readLock().lock();
+        List<AthleteUser> athletes = new ArrayList<>();
         try {
-            List<AthleteUser> athletes = new ArrayList<>();
-            CsvResultSet rs = search(path, EXPECTED_COLUMNS, parts -> trainerId.equals(parts[7]), -1);
-
+            CsvResultSet rs = search(path, EXPECTED_COLUMNS, parts -> parts[7].equals(trainerId) && "ATHLETE".equals(parts[5]), -1);
             while (rs.next()) {
-                if (fromCsvRS(rs) instanceof AthleteUser athlete) {
-                    athletes.add(athlete);
-                }
+                athletes.add(mapAthlete(rs));
             }
-
             return athletes;
         } catch (IOException e) {
             throw new DaoException("Errore durante la ricerca degli atleti del trainer", e);
@@ -113,15 +107,54 @@ public class FileSystemProfileDao implements ProfileDao {
 
     @Override
     public Optional<AthleteUser> findAthleteById(String athleteId) throws DaoException {
-        return findById(athleteId).filter(AthleteUser.class::isInstance).map(AthleteUser.class::cast);
+        Objects.requireNonNull(athleteId, USER_ID_CANNOT_BE_NULL);
+
+        lock.readLock().lock();
+        try {
+            CsvResultSet rs = search(path, EXPECTED_COLUMNS, parts -> parts[0].equals(athleteId) && "ATHLETE".equals(parts[5]), 1);
+            if (rs.next()) {
+                return Optional.of(mapAthlete(rs));
+            }
+            return Optional.empty();
+        } catch (IOException e) {
+            throw new DaoException("Errore durante la ricerca dell'atleta", e);
+        } finally {
+            lock.readLock().unlock();
+        }
     }
 
     @Override
     public Optional<TrainerUser> findTrainerById(String trainerId) throws DaoException {
-        return findById(trainerId).filter(TrainerUser.class::isInstance).map(TrainerUser.class::cast);
+        Objects.requireNonNull(trainerId, USER_ID_CANNOT_BE_NULL);
+
+        lock.readLock().lock();
+        try {
+            CsvResultSet rs = search(path, EXPECTED_COLUMNS, parts -> parts[0].equals(trainerId) && "TRAINER".equals(parts[5]), 1);
+            if (rs.next()) {
+                return Optional.of(mapTrainer(rs));
+            }
+            return Optional.empty();
+        } catch (IOException e) {
+            throw new DaoException("Errore durante la ricerca del trainer", e);
+        } finally {
+            lock.readLock().unlock();
+        }
     }
 
-    // HELPER
+    @Override
+    public void delete(String userId) throws DaoException {
+        Objects.requireNonNull(userId, USER_ID_CANNOT_BE_NULL);
+
+        lock.writeLock().lock();
+        try {
+            CsvUtils.delete(path, EXPECTED_COLUMNS, parts -> parts[0].equals(userId));
+        } catch (IOException e) {
+            throw new DaoException("Errore durante l'eliminazione del profilo", e);
+        } finally {
+            lock.writeLock().unlock();
+        }
+    }
+
     private String toCsvRow(User user) {
         return new CsvRowBuilder()
                 .add(user.getId())
@@ -130,16 +163,38 @@ public class FileSystemProfileDao implements ProfileDao {
                 .add(user.getContactEmail())
                 .add(user.getPhoneNumber())
                 .add(user.getProfileType().name())
-                .add(user instanceof TrainerUser t ? t.getInvitationCode() : null)
-                .add(user instanceof AthleteUser a ? a.getTrainerId() : null)
+                .add(user.getInvitationCode())
+                .add(user.getTrainerId())
                 .build();
     }
 
     private User fromCsvRS(CsvResultSet rs) {
         Account.Role type = Account.Role.valueOf(rs.getString(5));
         if (type == Account.Role.TRAINER) {
-            return new TrainerUser(rs.getString(0), rs.getString(1), rs.getString(2), rs.getString(3), rs.getString(4), rs.getString(6));
+            return mapTrainer(rs);
         }
-        return new AthleteUser(rs.getString(0), rs.getString(1), rs.getString(2), rs.getString(3), rs.getString(4), rs.getString(7));
+        return mapAthlete(rs);
+    }
+
+    private AthleteUser mapAthlete(CsvResultSet rs) {
+        return new AthleteUser(
+                rs.getString(0),
+                rs.getString(1),
+                rs.getString(2),
+                rs.getString(3),
+                rs.getString(4),
+                rs.getString(7)
+        );
+    }
+
+    private TrainerUser mapTrainer(CsvResultSet rs) {
+        return new TrainerUser(
+                rs.getString(0),
+                rs.getString(1),
+                rs.getString(2),
+                rs.getString(3),
+                rs.getString(4),
+                rs.getString(6)
+        );
     }
 }

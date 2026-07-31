@@ -4,7 +4,6 @@ import com.example.fitplannerserver.dao.DbConnection;
 import com.example.fitplannerserver.dao.WorkoutPlanDao;
 import com.example.fitplannerserver.exception.DaoException;
 import com.example.fitplannerserver.model.plan.WorkoutPlan;
-import com.example.fitplannerserver.model.plan.WorkoutSession;
 
 import java.sql.*;
 import java.time.LocalDate;
@@ -16,6 +15,11 @@ public class DatabaseWorkoutPlanDao implements WorkoutPlanDao {
     private static final String NULL_PLAN_ID_MSG="planId cannot be null";
     private static final String NULL_TRAINER_ID_MSG="trainerId cannot be null";
 
+    private final DatabaseWorkoutSessionDao databaseWorkoutSessionDao;
+
+    public DatabaseWorkoutPlanDao(DatabaseWorkoutSessionDao databaseWorkoutSessionDao) {
+        this.databaseWorkoutSessionDao = databaseWorkoutSessionDao;
+    }
 
     @Override
     public void savePlan(WorkoutPlan plan) throws DaoException {
@@ -28,16 +32,13 @@ public class DatabaseWorkoutPlanDao implements WorkoutPlanDao {
             conn= DbConnection.getInstance().getConnection();
             conn.setAutoCommit(false);
             insertPlan(conn, plan);
-            
-            try (PreparedStatement delStm = conn.prepareStatement("DELETE FROM workout_session WHERE plan_id=?")) {
-                delStm.setString(1, plan.getPlanId());
-                delStm.executeUpdate();
-            }
 
-            insertWorkoutSession(conn, plan.getPlanId(), plan.getAllSessions());
+            databaseWorkoutSessionDao.deleteSessionsByPlanId(plan.getPlanId());
+            databaseWorkoutSessionDao.saveSessionsForPlan(plan.getPlanId(), plan.getAllSessions());
+
             conn.commit();
         } catch (SQLException e) {
-            DaoException ex = new DaoException("Errore critico durante il salvataggio dei log nel database", e);
+            DaoException ex = new DaoException("Errore durante il salvataggio del piano", e);
             safeRollback(conn, ex);
             throw ex;
         } finally {
@@ -49,6 +50,8 @@ public class DatabaseWorkoutPlanDao implements WorkoutPlanDao {
     @Override
     public void deletePlan(String planId) throws DaoException {
         Objects.requireNonNull(planId, NULL_PLAN_ID_MSG);
+
+        databaseWorkoutSessionDao.deleteSessionsByPlanId(planId);
 
         String sql= """
                 DELETE FROM workout_plan WHERE plan_id=?
@@ -73,22 +76,25 @@ public class DatabaseWorkoutPlanDao implements WorkoutPlanDao {
         Objects.requireNonNull(planId, NULL_PLAN_ID_MSG);
 
         String sql= """
-                SELECT WP.plan_id, WP.title as plan_title, WP.cycle_length, WP.start_date, WP.athlete_id, WP.trainer_id, WS.workout_session_id, WS.title AS session_title, WS.content, WS.day
-                FROM workout_plan WP LEFT JOIN workout_session WS ON WP.plan_id=WS.plan_id
-                WHERE WP.plan_id=?
-                ORDER BY WP.start_date DESC, WS.day ASC
+                SELECT plan_id, title as plan_title, cycle_length, start_date, athlete_id, trainer_id
+                FROM workout_plan
+                WHERE plan_id=?
                 """;
         Connection conn = null;
         try{
             conn = DbConnection.getInstance().getConnection();
             try(PreparedStatement stm= conn.prepareStatement(sql)){
                 stm.setString(1, planId);
+
                 try(ResultSet rs = stm.executeQuery()){
                     List<WorkoutPlan> workoutPlans= extractPlan(rs);
-                    if(workoutPlans.isEmpty()){
+                    if(workoutPlans.isEmpty()) {
                         return Optional.empty();
                     }
-                    return Optional.of(workoutPlans.getFirst());
+                    WorkoutPlan plan = workoutPlans.getFirst();
+
+                    databaseWorkoutSessionDao.findSessionsByPlanId(plan.getPlanId()).forEach(plan::addSession);
+                    return Optional.of(plan);
                 }
             }
         }catch (SQLException e){
@@ -103,10 +109,10 @@ public class DatabaseWorkoutPlanDao implements WorkoutPlanDao {
         Objects.requireNonNull(athleteId, NULL_ATHLETE_ID_MSG);
 
         String sql= """
-                SELECT WP.plan_id, WP.title as plan_title, WP.cycle_length, WP.start_date, WP.athlete_id, WP.trainer_id, WS.workout_session_id, WS.title AS session_title, WS.content, WS.day
-                FROM workout_plan WP LEFT JOIN workout_session WS ON WP.plan_id=WS.plan_id
-                WHERE WP.athlete_id=?
-                ORDER BY WP.start_date DESC, WS.day ASC
+                SELECT plan_id, title as plan_title, cycle_length, start_date, athlete_id, trainer_id
+                FROM workout_plan
+                WHERE athlete_id=?
+                ORDER BY start_date DESC
                 """;
         Connection conn= null;
         try {
@@ -118,7 +124,9 @@ public class DatabaseWorkoutPlanDao implements WorkoutPlanDao {
                     if (workoutPlans.isEmpty()) {
                         return Optional.empty();
                     }
-                    return Optional.of(workoutPlans.getFirst());
+                    WorkoutPlan plan = workoutPlans.getFirst();
+                    databaseWorkoutSessionDao.findSessionsByPlanId(plan.getPlanId()).forEach(plan::addSession);
+                    return Optional.of(plan);
                 }
             }
         }catch (SQLException e){
@@ -133,18 +141,24 @@ public class DatabaseWorkoutPlanDao implements WorkoutPlanDao {
         Objects.requireNonNull(trainerId, NULL_TRAINER_ID_MSG);
 
         String sql= """
-                SELECT WP.plan_id, WP.title as plan_title, WP.cycle_length, WP.start_date, WP.athlete_id, WP.trainer_id, WS.workout_session_id, WS.title AS session_title, WS.content, WS.day
-                FROM workout_plan WP LEFT JOIN workout_session WS ON WP.plan_id=WS.plan_id
-                WHERE WP.trainer_id=?
-                ORDER BY WP.start_date DESC, WS.day ASC
+                SELECT plan_id, title as plan_title, cycle_length, start_date, athlete_id, trainer_id
+                FROM workout_plan
+                WHERE trainer_id=?
+                ORDER BY start_date DESC
                 """;
         Connection conn= null;
         try {
             conn = DbConnection.getInstance().getConnection();
             try (PreparedStatement stm = conn.prepareStatement(sql)) {
                 stm.setString(1, trainerId);
+
                 try (ResultSet rs = stm.executeQuery()) {
-                    return extractPlan(rs);
+                    List<WorkoutPlan> workoutPlans = extractPlan(rs);
+
+                    for (WorkoutPlan plan : workoutPlans) {
+                        databaseWorkoutSessionDao.findSessionsByPlanId(plan.getPlanId()).forEach(plan::addSession);
+                    }
+                    return workoutPlans;
                 }
             }
         }catch (SQLException e){
@@ -155,8 +169,8 @@ public class DatabaseWorkoutPlanDao implements WorkoutPlanDao {
     }
 
     private void insertPlan(Connection conn, WorkoutPlan plan) throws SQLException {
-        String sqlPlan="""
-                INSERT INTO workout_plan (plan_id, title, cycle_length, start_date, athlete_id, trainer_id) 
+        String sqlPlan = """
+                INSERT INTO workout_plan (plan_id, title, cycle_length, start_date, athlete_id, trainer_id)
                 VALUES (?,?,?,?,?,?)
                 ON DUPLICATE KEY UPDATE
                 title=VALUES(title),
@@ -165,7 +179,7 @@ public class DatabaseWorkoutPlanDao implements WorkoutPlanDao {
                 athlete_id=VALUES(athlete_id),
                 trainer_id=VALUES(trainer_id)
                 """;
-        try(PreparedStatement stm= conn.prepareStatement(sqlPlan)){
+        try (PreparedStatement stm = conn.prepareStatement(sqlPlan)) {
             stm.setString(1, plan.getPlanId());
             stm.setString(2, plan.getTitle());
             stm.setInt(3, plan.getCycleLength());
@@ -173,20 +187,6 @@ public class DatabaseWorkoutPlanDao implements WorkoutPlanDao {
             stm.setString(5, plan.getAssignedToId());
             stm.setString(6, plan.getAuthorId());
             stm.executeUpdate();
-        }
-    }
-
-    private void insertWorkoutSession(Connection conn, String planId, List<WorkoutSession> workoutSessions) throws SQLException {
-        String sqlSession="INSERT INTO workout_session (plan_id, title, content, day) VALUES (?,?,?,?)";
-        try(PreparedStatement stm= conn.prepareStatement(sqlSession)){
-            stm.setString(1, planId);
-            for(WorkoutSession session : workoutSessions){
-                stm.setString(2, session.getTitle());
-                stm.setString(3, session.getContent());
-                stm.setInt(4, session.getDay());
-                stm.addBatch();
-            }
-            stm.executeBatch();
         }
     }
 
@@ -200,39 +200,24 @@ public class DatabaseWorkoutPlanDao implements WorkoutPlanDao {
         }
     }
 
-    private List<WorkoutPlan> extractPlan(ResultSet rs) throws SQLException{
-        Map<String, WorkoutPlan> workoutPlanMap= new LinkedHashMap<>();
-        while(rs.next()){
-            String planId= rs.getString("plan_id");
-            WorkoutPlan currentPlan = workoutPlanMap.get(planId);
-            
-            if (currentPlan == null) {
-                currentPlan = new WorkoutPlan(
-                        planId,
-                        rs.getString("plan_title"),
-                        rs.getInt("cycle_length")
-                );
-                LocalDate startDate = rs.getObject("start_date", LocalDate.class);
-                if (startDate != null) {
-                    currentPlan.setStartDate(startDate);
-                }
-                currentPlan.assignTo(rs.getString("athlete_id"));
-                currentPlan.setAuthorId(rs.getString("trainer_id"));
-                
-                workoutPlanMap.put(planId, currentPlan);
+    private List<WorkoutPlan> extractPlan(ResultSet rs) throws SQLException {
+        List<WorkoutPlan> workoutPlans = new ArrayList<>();
+        while (rs.next()) {
+            WorkoutPlan currentPlan = new WorkoutPlan(
+                    rs.getString("plan_id"),
+                    rs.getString("plan_title"),
+                    rs.getInt("cycle_length")
+            );
+            LocalDate startDate = rs.getObject("start_date", LocalDate.class);
+            if (startDate != null) {
+                currentPlan.setStartDate(startDate);
             }
-            
-            String workoutSessionId= rs.getString("workout_session_id");
-            if(workoutSessionId!=null){
-                WorkoutSession currentWorkoutSession= new WorkoutSession(
-                        rs.getString("session_title"),
-                        rs.getString("content"),
-                        rs.getInt("day")
-                );
-                currentPlan.addSession(currentWorkoutSession);
-            }
+            currentPlan.assignTo(rs.getString("athlete_id"));
+            currentPlan.setAuthorId(rs.getString("trainer_id"));
+
+            workoutPlans.add(currentPlan);
         }
-        return new ArrayList<>(workoutPlanMap.values());
+        return workoutPlans;
     }
 
 }

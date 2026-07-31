@@ -11,6 +11,8 @@ import java.util.*;
 
 public class ExerciseNode extends PlanNode {
     private String resourceId;
+    private String name;
+
     private final Map<ModifierType, ExerciseModifier> modifiers = new EnumMap<>(ModifierType.class);
 
     private List<ExerciseModifier> currentResolvedModifiers = new ArrayList<>();
@@ -20,6 +22,11 @@ public class ExerciseNode extends PlanNode {
     }
 
     public ExerciseNode() {}
+
+    @Override
+    public Optional<String> getName() {
+        return Optional.ofNullable(this.name);
+    }
 
     @Override
     public PlanNode deepCopy() {
@@ -87,8 +94,9 @@ public class ExerciseNode extends PlanNode {
         return resourceId;
     }
 
-    public void setResourceId(String resourceId) {
+    public void setExerciseInfo(String resourceId, String name) {
         this.resourceId = resourceId;
+        this.name = name;
     }
 
     public Collection<ExerciseModifier> getModifiers() {

@@ -17,7 +17,7 @@ public class WorkoutPlan {
     private LocalDate startDate;
     private int cycleLength;
 
-    private Map<Integer, WorkoutSession> sessions;
+    private final Map<Integer, WorkoutSession> sessions = new TreeMap<>();
 
     private String assignedToId;
     private String authorTrainerId;
@@ -27,43 +27,39 @@ public class WorkoutPlan {
 
         this.title = title;
         this.cycleLength = cycleLength;
-
-        this.sessions = new TreeMap<>();
     }
 
 
-    public WorkoutPlan(WorkoutPlan old){
-        this.planId = old.planId;
-        this.title = old.title;
-
-        this.cycleLength = old.cycleLength;
-        this.startDate = old.startDate;
-
-        this.sessions = new TreeMap<>();
-
-        this.assignedToId = old.assignedToId;
-        this.authorTrainerId = old.authorTrainerId;
-
-        for (WorkoutSession session : old.sessions.values()){
-            this.sessions.put(session.getDay(), new WorkoutSession(session));
-        }
-    }
-
-    public WorkoutPlan(WorkoutPlan old, String newPlanId){
+    public WorkoutPlan(WorkoutPlan old, String newPlanId, boolean copySessions) {
         this.planId = newPlanId;
         this.title = old.title;
 
         this.cycleLength = old.cycleLength;
         this.startDate = old.startDate;
 
-        this.sessions = new TreeMap<>();
-
+        this.assignedToId = old.assignedToId;
         this.authorTrainerId = old.authorTrainerId;
 
-        for (WorkoutSession session : old.sessions.values()){
-            this.sessions.put(session.getDay(), new WorkoutSession(session));
+        if (copySessions) {
+            for (WorkoutSession session : old.sessions.values()){
+                this.sessions.put(session.getDay(), new WorkoutSession(session));
+            }
         }
     }
+
+    public WorkoutPlan(WorkoutPlan old, boolean copySessions) {
+        this(old,  old.planId, copySessions);
+    }
+
+    public WorkoutPlan(WorkoutPlan old) {
+        this(old, true);
+    }
+
+    public WorkoutPlan(WorkoutPlan old, String newPlanId) {
+        this(old, newPlanId, true);
+        this.assignedToId = null;
+    }
+
 
     public String getPlanId() {
         return planId;

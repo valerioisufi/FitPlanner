@@ -174,7 +174,8 @@ public class WorkoutExecutionManager {
 
         exerciseDescriptionsFuture.thenCombine(lastWeightFuture, (exerciseDescriptions, lastWeight) -> {
             if (!exerciseDescriptions.isEmpty()) {
-                var entity = exerciseDescriptions.getFirst();
+                ExerciseDescription entity = exerciseDescriptions.getFirst();
+
                 ExerciseDescriptionBean descriptionBean = new ExerciseDescriptionBean();
                 descriptionBean.setExerciseId(entity.getExerciseId());
                 descriptionBean.setName(entity.getName());

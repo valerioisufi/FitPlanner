@@ -1,13 +1,13 @@
 package com.example.fitplannerclient.controller.plan.mapper;
 
 import com.example.fitplannerclient.bean.plan.*;
+import com.example.fitplannerclient.bean.plan.FlowDecoratorType;
+import com.example.fitplannerclient.entity.plan.block.CompositeNode;
 import com.example.fitplannerclient.entity.plan.block.strategy.validation.ValidationResult;
 import com.example.fitplannerclient.entity.plan.visitor.WorkoutPlanVisitor;
 import com.example.fitplannerclient.entity.plan.PlanNode;
 import com.example.fitplannerclient.entity.plan.WorkoutPlan;
 import com.example.fitplannerclient.entity.plan.WorkoutSession;
-import com.example.fitplannerclient.entity.plan.block.Block;
-import com.example.fitplannerclient.entity.plan.block.ProtocolBlock;
 import com.example.fitplannerclient.entity.plan.decorator.*;
 import com.example.fitplannerclient.entity.plan.exercise.ExerciseNode;
 import com.example.fitplannerclient.util.IDGenerator;
@@ -15,7 +15,6 @@ import com.example.fitplannerclient.util.IDGenerator;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.function.UnaryOperator;
 
 public class PlanToBeanVisitor implements WorkoutPlanVisitor {
 
@@ -25,19 +24,11 @@ public class PlanToBeanVisitor implements WorkoutPlanVisitor {
     private PlanNodeBean currentPlanNodeBean;
     private final List<FlowDecoratorBean> accumulatedDecorators = new ArrayList<>();
 
-    private final UnaryOperator<String> nameResolver;
     private ValidationResult validationResult;
 
-    public PlanToBeanVisitor() {
-        this.nameResolver = id -> "Esercizio Sconosciuto";
-    }
+    public PlanToBeanVisitor() {}
 
-    public PlanToBeanVisitor(UnaryOperator<String> nameResolver) {
-        this.nameResolver = nameResolver;
-    }
-
-    public PlanToBeanVisitor(UnaryOperator<String> nameResolver, ValidationResult validationResult) {
-        this(nameResolver);
+    public PlanToBeanVisitor(ValidationResult validationResult) {
         this.validationResult = validationResult;
     }
 
@@ -85,7 +76,7 @@ public class PlanToBeanVisitor implements WorkoutPlanVisitor {
 
     @Override
     public void visit(ExerciseNode exerciseNode) {
-        String name = nameResolver.apply(exerciseNode.getResourceId());
+        String name = exerciseNode.getName().orElse("Esercizio Sconosciuto");
         PlanNodeBean nodeBean = new PlanNodeBean(exerciseNode.getId(), name, NodeType.EXERCISE);
         nodeBean.setResourceId(exerciseNode.getResourceId());
 
@@ -120,12 +111,19 @@ public class PlanToBeanVisitor implements WorkoutPlanVisitor {
     }
 
     @Override
-    public void visit(Block block) {
-        PlanNodeBean nodeBean = new PlanNodeBean(block.getId(), block.getTitle(), NodeType.BLOCK);
+    public void visit(CompositeNode compositeNode) {
+        String name = compositeNode.getName().orElse("Senza nome");
+        NodeType nodeType = switch (compositeNode.getType()) {
+            case BLOCK ->  NodeType.BLOCK;
+            case PROTOCOL ->   NodeType.PROTOCOL;
+        };
+
+        PlanNodeBean nodeBean = new PlanNodeBean(compositeNode.getId(), name, nodeType);
         nodeBean.setFlowDecorators(new ArrayList<>(accumulatedDecorators));
+        nodeBean.setParameters(compositeNode.getParameters() != null ? new HashMap<>(compositeNode.getParameters()) : new HashMap<>());
 
         StringBuilder errorMsg = new StringBuilder();
-        String selfError = getErrorMessage(block.getId());
+        String selfError = getErrorMessage(compositeNode.getId());
         if (selfError != null) {
             errorMsg.append(selfError).append("\n");
         }
@@ -139,12 +137,12 @@ public class PlanToBeanVisitor implements WorkoutPlanVisitor {
 
         accumulatedDecorators.clear();
 
-        for (int i = 0; i < block.getChildrenCount(); i++) {
-            PlanNode child = block.getNodeAt(i);
-            
+        for (int i = 0; i < compositeNode.getChildrenCount(); i++) {
+            PlanNode child = compositeNode.getNodeAt(i);
+
             // I figli partono con un accumulatore pulito
             accumulatedDecorators.clear();
-            
+
             child.accept(this);
             nodeBean.addChild(currentPlanNodeBean);
         }
@@ -153,87 +151,13 @@ public class PlanToBeanVisitor implements WorkoutPlanVisitor {
     }
 
     @Override
-    public void visit(ProtocolBlock protocolBlock) {
-        PlanNodeBean nodeBean = new PlanNodeBean(protocolBlock.getId(), protocolBlock.getSemanticType(), NodeType.PROTOCOL_BLOCK);
-        nodeBean.setFlowDecorators(new ArrayList<>(accumulatedDecorators));
-        nodeBean.setParameters(protocolBlock.getParameters() != null ? new HashMap<>(protocolBlock.getParameters()) : new HashMap<>());
-
-        StringBuilder errorMsg = new StringBuilder();
-        String selfError = getErrorMessage(protocolBlock.getId());
-        if (selfError != null) {
-            errorMsg.append(selfError).append("\n");
-        }
-        for (FlowDecoratorBean dec : accumulatedDecorators) {
-            String decError = getErrorMessage(dec.getId());
-            if (decError != null) {
-                errorMsg.append(decError).append("\n");
-            }
-        }
-        nodeBean.setValidationErrorMsg(errorMsg.isEmpty() ? null : errorMsg.toString().trim());
-
-        accumulatedDecorators.clear();
-
-        for (int i = 0; i < protocolBlock.getChildrenCount(); i++) {
-            PlanNode child = protocolBlock.getNodeAt(i);
-            
-            // I figli partono con un accumulatore pulito
-            accumulatedDecorators.clear();
-            
-            child.accept(this);
-            nodeBean.addChild(currentPlanNodeBean);
-        }
-
-        currentPlanNodeBean = nodeBean;
-    }
-
-    @Override
-    public void visit(LoopDecorator loopDecorator) {
+    public void visit(FlowDecorator flowDecorator) {
         accumulatedDecorators.add(new FlowDecoratorBean(
-                loopDecorator.getId(),
-                FlowDecoratorType.LOOP,
-                loopDecorator.getRoundsExpression()
+                flowDecorator.getId(),
+                FlowDecoratorType.valueOf(flowDecorator.getType().toString()),
+                flowDecorator.getSerializedValue()
         ));
-        loopDecorator.getWrappedNode().accept(this);
-    }
-
-    @Override
-    public void visit(RestDecorator restDecorator) {
-        accumulatedDecorators.add(new FlowDecoratorBean(
-                restDecorator.getId(),
-                FlowDecoratorType.REST,
-                restDecorator.getRestDuration()
-        ));
-        restDecorator.getWrappedNode().accept(this);
-    }
-
-    @Override
-    public void visit(TimeLimitDecorator timeLimitDecorator) {
-        accumulatedDecorators.add(new FlowDecoratorBean(
-                timeLimitDecorator.getId(),
-                FlowDecoratorType.TIME_LIMIT,
-                timeLimitDecorator.getTimeLimit()
-        ));
-        timeLimitDecorator.getWrappedNode().accept(this);
-    }
-
-    @Override
-    public void visit(ProgressionDecorator progressionDecorator) {
-        accumulatedDecorators.add(new FlowDecoratorBean(
-                progressionDecorator.getId(),
-                FlowDecoratorType.PROGRESSION,
-                progressionDecorator.getProgressionString()
-        ));
-        progressionDecorator.getWrappedNode().accept(this);
-    }
-
-    @Override
-    public void visit(IntervalDecorator intervalDecorator) {
-        accumulatedDecorators.add(new FlowDecoratorBean(
-                intervalDecorator.getId(),
-                FlowDecoratorType.INTERVAL,
-                intervalDecorator.getIntervalDuration()
-        ));
-        intervalDecorator.getWrappedNode().accept(this);
+        flowDecorator.getWrappedNode().accept(this);
     }
 
     private String getErrorMessage(String nodeId) {

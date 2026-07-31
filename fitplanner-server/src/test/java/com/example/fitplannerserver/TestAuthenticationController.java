@@ -40,8 +40,10 @@ class TestAuthenticationController {
     void setup(){
         JwtUtil jwtUtil = new JwtUtil();
         passwordEncoder = new BCryptPasswordEncoder();
-        accountDao = new InMemoryAccountDao();
-        profileDao = new InMemoryProfileDao();
+
+        InMemoryProfileDao inMemoryProfileDao = new InMemoryProfileDao();
+        accountDao = new InMemoryAccountDao(inMemoryProfileDao);
+        profileDao = inMemoryProfileDao;
 
         controller = new AuthenticationController(
                 jwtUtil,

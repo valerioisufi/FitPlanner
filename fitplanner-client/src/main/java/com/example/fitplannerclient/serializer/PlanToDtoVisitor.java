@@ -1,11 +1,10 @@
 package com.example.fitplannerclient.serializer;
 
+import com.example.fitplannerclient.entity.plan.block.CompositeNode;
 import com.example.fitplannerclient.entity.plan.visitor.WorkoutPlanVisitor;
 import com.example.fitplannerclient.entity.plan.PlanNode;
 import com.example.fitplannerclient.entity.plan.WorkoutPlan;
 import com.example.fitplannerclient.entity.plan.WorkoutSession;
-import com.example.fitplannerclient.entity.plan.block.Block;
-import com.example.fitplannerclient.entity.plan.block.ProtocolBlock;
 import com.example.fitplannerclient.entity.plan.decorator.*;
 import com.example.fitplannerclient.entity.plan.exercise.ExerciseNode;
 import com.example.fitplannercommon.WorkoutPlanDTO;
@@ -81,34 +80,21 @@ public class PlanToDtoVisitor implements WorkoutPlanVisitor {
     }
 
     @Override
-    public void visit(Block block) {
-        currentNodeDto.setType(PlanNodeDTO.NodeType.BLOCK);
-        currentNodeDto.setName(block.getTitle());
+    public void visit(CompositeNode compositeNode) {
+        String name = compositeNode.getName().orElse("Senza nome");
+        PlanNodeDTO.NodeType nodeType = switch(compositeNode.getType()) {
+            case BLOCK -> PlanNodeDTO.NodeType.BLOCK;
+            case PROTOCOL -> PlanNodeDTO.NodeType.PROTOCOL;
+        };
+
+        currentNodeDto.setType(nodeType);
+        currentNodeDto.setName(name);
+        currentNodeDto.setParameters(compositeNode.getParameters() != null ? new HashMap<>(compositeNode.getParameters()) : new HashMap<>());
 
         PlanNodeDTO thisNodeDto = currentNodeDto;
 
-        for(int i = 0; i < block.getChildrenCount(); i++) {
-            PlanNode child = block.getNodeAt(i);
-
-            currentNodeDto = new PlanNodeDTO(); // child node
-            thisNodeDto.getChildren().add(currentNodeDto);
-
-            child.accept(this);
-        }
-
-        currentNodeDto = thisNodeDto;
-    }
-
-    @Override
-    public void visit(ProtocolBlock protocolBlock) {
-        currentNodeDto.setType(PlanNodeDTO.NodeType.PROTOCOL_BLOCK);
-        currentNodeDto.setName(protocolBlock.getSemanticType());
-        currentNodeDto.setParameters(protocolBlock.getParameters() != null ? new HashMap<>(protocolBlock.getParameters()) : new HashMap<>());
-
-        PlanNodeDTO thisNodeDto = currentNodeDto;
-
-        for (int i = 0; i < protocolBlock.getChildrenCount(); i++) {
-            PlanNode child = protocolBlock.getNodeAt(i);
+        for (int i = 0; i < compositeNode.getChildrenCount(); i++) {
+            PlanNode child = compositeNode.getNodeAt(i);
 
             currentNodeDto = new PlanNodeDTO();
             thisNodeDto.getChildren().add(currentNodeDto);
@@ -120,51 +106,11 @@ public class PlanToDtoVisitor implements WorkoutPlanVisitor {
     }
 
     @Override
-    public void visit(LoopDecorator loopDecorator) {
+    public void visit(FlowDecorator flowDecorator) {
         visitFlowDecorator(
-                loopDecorator,
-                PlanNodeDTO.FlowDecoratorType.LOOP,
-                loopDecorator.getRoundsExpression()
-        );
-
-    }
-
-    @Override
-    public void visit(RestDecorator restDecorator) {
-        visitFlowDecorator(
-                restDecorator,
-                PlanNodeDTO.FlowDecoratorType.REST,
-                restDecorator.getRestDuration()
-        );
-
-    }
-
-    @Override
-    public void visit(TimeLimitDecorator timeLimitDecorator) {
-        visitFlowDecorator(
-                timeLimitDecorator,
-                PlanNodeDTO.FlowDecoratorType.TIME_LIMIT,
-                timeLimitDecorator.getTimeLimit()
-        );
-
-    }
-
-    @Override
-    public void visit(ProgressionDecorator progressionDecorator) {
-        visitFlowDecorator(
-                progressionDecorator,
-                PlanNodeDTO.FlowDecoratorType.PROGRESSION,
-                progressionDecorator.getProgressionString()
-        );
-
-    }
-
-    @Override
-    public void visit(IntervalDecorator intervalDecorator) {
-        visitFlowDecorator(
-                intervalDecorator,
-                PlanNodeDTO.FlowDecoratorType.INTERVAL,
-                intervalDecorator.getIntervalDuration()
+                flowDecorator,
+                PlanNodeDTO.FlowDecoratorType.valueOf(flowDecorator.getType().toString()),
+                flowDecorator.getSerializedValue()
         );
     }
 

@@ -28,6 +28,7 @@ public class AthleteUser extends User {
         return new AthleteUser(this);
     }
 
+    @Override
     public String getTrainerId() {
         return trainerId;
     }

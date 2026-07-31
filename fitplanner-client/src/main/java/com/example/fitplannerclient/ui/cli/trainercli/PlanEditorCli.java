@@ -1,11 +1,7 @@
 package com.example.fitplannerclient.ui.cli.trainercli;
 
 import com.example.fitplannerclient.bean.exercise.ExerciseDescriptionBean;
-import com.example.fitplannerclient.bean.plan.ExerciseModifierBean;
-import com.example.fitplannerclient.bean.plan.FlowDecoratorBean;
-import com.example.fitplannerclient.bean.plan.PlanNodeBean;
-import com.example.fitplannerclient.bean.plan.WorkoutPlanBean;
-import com.example.fitplannerclient.bean.plan.WorkoutSessionBean;
+import com.example.fitplannerclient.bean.plan.*;
 import com.example.fitplannerclient.controller.exercise.ExerciseLibraryManager;
 import com.example.fitplannerclient.controller.plan.editor.EditWorkoutPlanManager;
 import com.example.fitplannerclient.controller.plan.editor.observer.WorkoutPlanObserver;
@@ -30,7 +26,7 @@ public class PlanEditorCli extends AbstractCliView {
     private final boolean isClone;
     private WorkoutPlanBean activePlan;
 
-    private final Map<Integer, String> nodeIndexMap = new HashMap<>();
+    private final Map<Integer, PlanNodeBean> nodeIndexMap = new HashMap<>();
 
     public PlanEditorCli(String planId, boolean isClone) {
         this.planId = planId;
@@ -183,9 +179,9 @@ public class PlanEditorCli extends AbstractCliView {
                         reader.waitForEnter();
                     } else {
                         int nodeIdx = reader.readInt("Inserisci l'indice del nodo [1-" + nodeIndexMap.size() + "]: ", 1, nodeIndexMap.size());
-                        String nodeId = nodeIndexMap.get(nodeIdx);
-                        if (nodeId != null) {
-                            manageNode(nodeId);
+                        PlanNodeBean nodeBean = nodeIndexMap.get(nodeIdx);
+                        if (nodeBean != null) {
+                            manageNode(nodeBean.getId(), nodeBean.getName(), nodeBean.getType());
                         }
                     }
                 }
@@ -258,7 +254,7 @@ public class PlanEditorCli extends AbstractCliView {
         String nodeType = node.getType() != null ? node.getType().toString() : "Sconosciuto";
 
         printer.printLn(nodeIndent + "└── [" + counter + "] " + node.getName() + " (" + nodeType + ")");
-        nodeIndexMap.put(counter, node.getId());
+        nodeIndexMap.put(counter, node);
         counter++;
 
         if (node.getModifiers() != null) {
@@ -281,7 +277,7 @@ public class PlanEditorCli extends AbstractCliView {
             String q = reader.readString("Vuoi aggiungere un elemento dentro un blocco esistente? (s/n): ");
             if (q.equalsIgnoreCase("s")) {
                 int nodeIdx = reader.readInt("Indice del blocco padre: ", 1, nodeIndexMap.size());
-                targetParentId = nodeIndexMap.get(nodeIdx);
+                targetParentId = nodeIndexMap.get(nodeIdx).getId();
             }
         }
         if (targetParentId == null) {
@@ -337,14 +333,16 @@ public class PlanEditorCli extends AbstractCliView {
 
     }
 
-    private void manageNode(String nodeId) {
+    private void manageNode(String nodeId, String nodeName, NodeType nodeType) {
         boolean nodeRunning = true;
         while (nodeRunning) {
-            printer.printHeader("GESTIONE NODO: " + planManager.getNodeName(nodeId));
+            printer.printHeader("GESTIONE NODO: " + nodeName);
 
-            boolean isBlock = planManager.isBlockNode(nodeId);
-            boolean isProtocol = planManager.isProtocolNode(nodeId);
-            boolean isExercise = planManager.isExerciseNode(nodeId);
+
+
+            boolean isBlock = nodeType == NodeType.BLOCK;
+            boolean isProtocol = nodeType == NodeType.PROTOCOL;
+            boolean isExercise = nodeType == NodeType.EXERCISE;
 
             List<String> menuOptions = getMenuOptions(isBlock, isProtocol, isExercise);
 
@@ -395,7 +393,6 @@ public class PlanEditorCli extends AbstractCliView {
             menuOptions.add("Svuota Nodo");
         }
         if (isExercise) {
-            menuOptions.add(NODE_RENAME); // Allows to rename an exercise alias
             menuOptions.add("Cambia Esercizio Associato");
             menuOptions.add("Aggiungi Modificatore");
             menuOptions.add("Rimuovi Modificatore");

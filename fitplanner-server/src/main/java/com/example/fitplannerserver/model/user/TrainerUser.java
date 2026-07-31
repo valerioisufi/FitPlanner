@@ -24,11 +24,13 @@ public class TrainerUser extends User {
     }
 
     @Override
+    public String getInvitationCode() {
+        return invitationCode;
+    }
+
+    @Override
     public User copy() {
         return new TrainerUser(this);
     }
 
-    public String getInvitationCode() {
-        return invitationCode;
-    }
 }

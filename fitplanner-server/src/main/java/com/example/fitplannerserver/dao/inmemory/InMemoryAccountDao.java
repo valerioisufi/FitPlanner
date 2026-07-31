@@ -10,11 +10,17 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class InMemoryAccountDao implements AccountDao {
 
-    // Map Key: userId
-    private final Map<String, Account> accounts = new ConcurrentHashMap<>();
     private static final String ACCOUNT_CANNOT_BE_NULL = "Account cannot be null";
     private static final String ACCOUNT_EMAIL_CANNOT_BE_NULL = "Account email cannot be null";
     private static final String ACCOUNT_USER_ID_CANNOT_BE_NULL = "Account userId cannot be null";
+
+    // Map Key: userId
+    private final Map<String, Account> accounts = new ConcurrentHashMap<>();
+
+    private final InMemoryProfileDao inMemoryProfileDao;
+    public InMemoryAccountDao(InMemoryProfileDao inMemoryProfileDao) {
+        this.inMemoryProfileDao = inMemoryProfileDao;
+    }
 
     @Override
     public synchronized boolean create(Account account) {
@@ -66,6 +72,7 @@ public class InMemoryAccountDao implements AccountDao {
         Objects.requireNonNull(account, ACCOUNT_CANNOT_BE_NULL);
         Objects.requireNonNull(account.getUserId(), ACCOUNT_USER_ID_CANNOT_BE_NULL);
 
+        inMemoryProfileDao.delete(account.getUserId());
         accounts.remove(account.getUserId());
     }
 

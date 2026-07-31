@@ -1,6 +1,5 @@
 package com.example.fitplannerclient.entity.plan.decorator;
 
-import com.example.fitplannerclient.entity.plan.visitor.WorkoutPlanVisitor;
 import com.example.fitplannerclient.entity.plan.PlanNode;
 import com.example.fitplannerclient.entity.plan.execution.ExecutionContext;
 import com.example.fitplannerclient.entity.plan.execution.ExecutionResult;
@@ -13,11 +12,6 @@ public class TimeLimitDecorator extends FlowDecorator {
     public TimeLimitDecorator(PlanNode wrappedNode, String timeLimit) {
         super(wrappedNode);
         this.timeLimit = timeLimit;
-    }
-
-    @Override
-    public void accept(WorkoutPlanVisitor visitor) {
-        visitor.visit(this);
     }
 
     @Override
@@ -79,12 +73,20 @@ public class TimeLimitDecorator extends FlowDecorator {
         this.wrappedNode.reset();
     }
 
-    public String getTimeLimit() {
-        return timeLimit;
+
+    @Override
+    public void setValue(String value) {
+        this.timeLimit = value;
     }
 
-    public void setTimeLimit(String timeLimit) {
-        this.timeLimit = timeLimit;
+    @Override
+    public FlowDecoratorType getType() {
+        return FlowDecoratorType.TIME_LIMIT;
+    }
+
+    @Override
+    public String getSerializedValue() {
+        return this.timeLimit;
     }
 
     @Override

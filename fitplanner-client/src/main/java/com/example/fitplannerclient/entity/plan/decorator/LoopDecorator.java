@@ -1,13 +1,12 @@
 package com.example.fitplannerclient.entity.plan.decorator;
 
-import com.example.fitplannerclient.entity.plan.visitor.WorkoutPlanVisitor;
 import com.example.fitplannerclient.entity.plan.PlanNode;
 import com.example.fitplannerclient.entity.plan.execution.ExecutionContext;
 import com.example.fitplannerclient.entity.plan.execution.ExecutionResult;
 import com.example.fitplannerclient.entity.plan.execution.PlanNodeState;
 
 public class LoopDecorator extends FlowDecorator {
-    private String roundsExpression;
+    protected String roundsExpression;
 
     protected int currentRound = 0;
     protected int resolvedRounds = 1;
@@ -15,11 +14,6 @@ public class LoopDecorator extends FlowDecorator {
     public LoopDecorator(PlanNode wrappedNode, String roundsExpression) {
         super(wrappedNode);
         this.roundsExpression = roundsExpression;
-    }
-
-    @Override
-    public void accept(WorkoutPlanVisitor visitor) {
-        visitor.visit(this);
     }
 
     @Override
@@ -77,12 +71,20 @@ public class LoopDecorator extends FlowDecorator {
         wrappedNode.reset();
     }
 
-    public String getRoundsExpression() {
-        return roundsExpression;
+
+    @Override
+    public void setValue(String value) {
+        this.roundsExpression = value;
     }
 
-    public void setRoundsExpression(String roundsExpression) {
-        this.roundsExpression = roundsExpression;
+    @Override
+    public FlowDecoratorType getType() {
+        return FlowDecoratorType.LOOP;
+    }
+
+    @Override
+    public String getSerializedValue() {
+        return this.roundsExpression;
     }
 
     @Override

@@ -1,6 +1,5 @@
 package com.example.fitplannerclient.entity.plan.decorator;
 
-import com.example.fitplannerclient.entity.plan.visitor.WorkoutPlanVisitor;
 import com.example.fitplannerclient.entity.plan.PlanNode;
 import com.example.fitplannerclient.entity.plan.execution.ControlSignal;
 import com.example.fitplannerclient.entity.plan.execution.ExecutionContext;
@@ -17,11 +16,6 @@ public class IntervalDecorator extends FlowDecorator {
     }
 
     @Override
-    public void accept(WorkoutPlanVisitor visitor) {
-        visitor.visit(this);
-    }
-
-    @Override
     public ExecutionResult execute(ExecutionContext context) {
         if (this.state == PlanNodeState.COMPLETED) {
             return new ExecutionResult(PlanNodeState.COMPLETED);
@@ -29,7 +23,7 @@ public class IntervalDecorator extends FlowDecorator {
 
         if (this.state == PlanNodeState.IDLE) {
             this.state = PlanNodeState.RUNNING;
-            this.timeLeftMillis = context.resolveAsInteger(intervalDuration, 0) * 1000;
+            this.timeLeftMillis = context.resolveAsInteger(this.intervalDuration, 0) * 1000;
         }
 
         int delta = context.getTickDelta();
@@ -112,12 +106,20 @@ public class IntervalDecorator extends FlowDecorator {
         this.wrappedNode.reset();
     }
 
-    public String getIntervalDuration() {
-        return intervalDuration;
+
+    @Override
+    public void setValue(String value) {
+        this.intervalDuration = value;
     }
 
-    public void setIntervalDuration(String intervalDuration) {
-        this.intervalDuration = intervalDuration;
+    @Override
+    public FlowDecoratorType getType() {
+        return FlowDecoratorType.INTERVAL;
+    }
+
+    @Override
+    public String getSerializedValue() {
+        return this.intervalDuration;
     }
 
     @Override

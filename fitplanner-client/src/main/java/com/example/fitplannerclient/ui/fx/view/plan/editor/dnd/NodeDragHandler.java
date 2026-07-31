@@ -14,6 +14,7 @@ import javafx.scene.paint.Color;
 public class NodeDragHandler {
 
     private static final String NODE_PREFIX = "NODE_";
+    private static final String MODIFIER = "MODIFIER";
     private static final String TOOLBOX_PREFIX = "TOOLBOX:";
     private static final String DROP_ABOVE = "drop-above";
     private static final String DROP_BELOW = "drop-below";
@@ -54,7 +55,7 @@ public class NodeDragHandler {
             boolean hasFitData = event.getDragboard().hasContent(DragConstants.FITPLANNER_FORMAT);
             String payload = hasFitData ? (String) event.getDragboard().getContent(DragConstants.FITPLANNER_FORMAT) : "";
             
-            boolean isToolboxBadge = payload.startsWith(TOOLBOX_PREFIX + "MODIFIER") || payload.startsWith(TOOLBOX_PREFIX + "DECORATOR");
+            boolean isToolboxBadge = payload.startsWith(TOOLBOX_PREFIX + MODIFIER) || payload.startsWith(TOOLBOX_PREFIX + "DECORATOR");
             boolean isToolboxNode = payload.startsWith(TOOLBOX_PREFIX) && !isToolboxBadge;
             boolean isNode = payload.startsWith(NODE_PREFIX);
 
@@ -114,7 +115,13 @@ public class NodeDragHandler {
         
         boolean hasFitData = db.hasContent(DragConstants.FITPLANNER_FORMAT);
         String payload = hasFitData ? (String) db.getContent(DragConstants.FITPLANNER_FORMAT) : "";
-        boolean isToolboxBadge = payload.startsWith(TOOLBOX_PREFIX + "MODIFIER") || payload.startsWith(TOOLBOX_PREFIX + "DECORATOR");
+        boolean isToolboxBadge = payload.startsWith(TOOLBOX_PREFIX + MODIFIER) || payload.startsWith(TOOLBOX_PREFIX + "DECORATOR");
+
+        if (payload.startsWith(TOOLBOX_PREFIX + MODIFIER) && component.getOriginalBean().getType() != NodeType.EXERCISE) {
+            event.setDropCompleted(false);
+            event.consume();
+            return;
+        }
 
         if (isToolboxBadge && component.getParentWrapper() == null) {
             return;
@@ -188,7 +195,7 @@ public class NodeDragHandler {
 
     private static DropPosition getDropPosition(PlanNodeComponent component, double eventY) {
         NodeType type = component.getOriginalBean().getType();
-        if (type == NodeType.BLOCK || type == NodeType.PROTOCOL_BLOCK) {
+        if (type == NodeType.BLOCK || type == NodeType.PROTOCOL) {
             double threshold = 20.0;
 
             if (eventY < threshold && component.getParentWrapper() != null) {

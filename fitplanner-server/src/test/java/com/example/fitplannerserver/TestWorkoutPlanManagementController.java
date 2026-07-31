@@ -9,6 +9,7 @@ import com.example.fitplannerserver.dao.ProfileDao;
 import com.example.fitplannerserver.dao.WorkoutPlanDao;
 import com.example.fitplannerserver.dao.inmemory.InMemoryProfileDao;
 import com.example.fitplannerserver.dao.inmemory.InMemoryWorkoutPlanDao;
+import com.example.fitplannerserver.dao.inmemory.InMemoryWorkoutSessionDao;
 import com.example.fitplannerserver.exception.ForbiddenException;
 import com.example.fitplannerserver.mock.MockIdentityProvider;
 import com.example.fitplannerserver.model.user.Account;
@@ -41,7 +42,7 @@ class TestWorkoutPlanManagementController {
 
     @BeforeEach
     void setup() {
-        workoutPlanDao = new InMemoryWorkoutPlanDao();
+        workoutPlanDao = new InMemoryWorkoutPlanDao(new InMemoryWorkoutSessionDao());
         profileDao = new InMemoryProfileDao();
 
         controller = new WorkoutPlanManagementController(

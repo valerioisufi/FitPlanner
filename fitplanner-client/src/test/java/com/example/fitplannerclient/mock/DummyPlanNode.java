@@ -6,11 +6,18 @@ import com.example.fitplannerclient.entity.plan.execution.ExecutionContext;
 import com.example.fitplannerclient.entity.plan.execution.ExecutionResult;
 import com.example.fitplannerclient.entity.plan.execution.PlanNodeState;
 
+import java.util.Optional;
+
 public class DummyPlanNode extends PlanNode {
     private int executeCallCount = 0;
     private int resetCallCount = 0;
 
     private ExecutionResult resultToReturn = new ExecutionResult(PlanNodeState.RUNNING);
+
+    @Override
+    public Optional<String> getName() {
+        return Optional.of("DummyPlanNode");
+    }
 
     @Override
     public ExecutionResult execute(ExecutionContext context) {

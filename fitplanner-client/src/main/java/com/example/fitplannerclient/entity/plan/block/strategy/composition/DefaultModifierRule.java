@@ -1,10 +1,9 @@
 package com.example.fitplannerclient.entity.plan.block.strategy.composition;
 
+import com.example.fitplannerclient.entity.plan.block.CompositeNode;
 import com.example.fitplannerclient.entity.plan.visitor.EmptyWorkoutPlanVisitor;
 import com.example.fitplannerclient.entity.plan.visitor.WorkoutPlanVisitor;
 import com.example.fitplannerclient.entity.plan.PlanNode;
-import com.example.fitplannerclient.entity.plan.block.Block;
-import com.example.fitplannerclient.entity.plan.block.ProtocolBlock;
 import com.example.fitplannerclient.entity.plan.decorator.*;
 import com.example.fitplannerclient.entity.plan.exercise.ExerciseModifier;
 import com.example.fitplannerclient.entity.plan.exercise.ExerciseNode;
@@ -27,24 +26,16 @@ public class DefaultModifierRule implements CompositionRule {
             }
 
             @Override
-            public void visit(Block block) {
-                for (PlanNode child : block) {
+            public void visit(CompositeNode compositeNode) {
+                for (PlanNode child : compositeNode) {
                     child.accept(this);
                 }
             }
 
-            @Override
-            public void visit(ProtocolBlock protocolBlock) {
-                for (PlanNode child : protocolBlock) {
-                    child.accept(this);
-                }
+            @Override public void visit(FlowDecorator flowDecorator) {
+                flowDecorator.getWrappedNode().accept(this);
             }
 
-            @Override public void visit(LoopDecorator loopDecorator) { loopDecorator.getWrappedNode().accept(this); }
-            @Override public void visit(RestDecorator restDecorator) { restDecorator.getWrappedNode().accept(this); }
-            @Override public void visit(TimeLimitDecorator timeLimitDecorator) { timeLimitDecorator.getWrappedNode().accept(this); }
-            @Override public void visit(ProgressionDecorator progressionDecorator) { progressionDecorator.getWrappedNode().accept(this); }
-            @Override public void visit(IntervalDecorator intervalDecorator) { intervalDecorator.getWrappedNode().accept(this); }
         };
 
         node.accept(visitor);

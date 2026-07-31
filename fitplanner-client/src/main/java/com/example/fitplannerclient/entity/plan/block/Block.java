@@ -1,76 +1,29 @@
 package com.example.fitplannerclient.entity.plan.block;
 
-import com.example.fitplannerclient.entity.plan.visitor.WorkoutPlanVisitor;
 import com.example.fitplannerclient.entity.plan.PlanNode;
 import com.example.fitplannerclient.entity.plan.execution.ExecutionContext;
 import com.example.fitplannerclient.entity.plan.execution.ExecutionResult;
 import com.example.fitplannerclient.entity.plan.execution.PlanNodeState;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-
-public class Block extends PlanNode implements GroupNode {
-    private String title;
-
-    protected List<PlanNode> children = new ArrayList<>();
+public class Block extends CompositeNode {
     private int currentChildIndex = 0;
 
     public Block(String title) {
-        this.title = title;
+        super(title);
+    }
+
+    @Override
+    public CompositeNodeType getType() {
+        return CompositeNodeType.BLOCK;
     }
 
     @Override
     public PlanNode deepCopy() {
-        Block copy = new Block(this.title);
-        for (PlanNode child : this.children) {
+        Block copy = new Block(this.getName().orElse(null));
+        for (PlanNode child : this) {
             copy.addNode(child.deepCopy());
         }
         return copy;
-    }
-
-    @Override
-    public void addNode(PlanNode node) {
-        children.add(node);
-    }
-
-    @Override
-    public void addNodeAt(int index, PlanNode node) {
-        children.add(index, node);
-    }
-
-    @Override
-    public boolean removeNode(PlanNode node) {
-        return children.remove(node);
-    }
-
-    @Override
-    public PlanNode removeNodeAt(int index) {
-        return children.remove(index);
-    }
-
-    @Override
-    public int getChildrenCount() {
-        return children.size();
-    }
-
-    @Override
-    public PlanNode getNodeAt(int index) {
-        return children.get(index);
-    }
-
-    @Override
-    public PlanNode replaceNode(int index, PlanNode newNode) {
-        PlanNode oldNode = children.remove(index);
-        children.add(index, newNode);
-
-        return oldNode;
-    }
-
-    @Override
-    public int indexOf(PlanNode node) {
-        return children.indexOf(node);
     }
 
     @Override
@@ -83,7 +36,7 @@ public class Block extends PlanNode implements GroupNode {
             this.state = PlanNodeState.RUNNING;
         }
 
-        while (currentChildIndex >= 0 && currentChildIndex < children.size()) {
+        while (currentChildIndex >= 0 && currentChildIndex < this.getChildrenCount()) {
             ExecutionResult result = executeChild(context);
             if (result != null) {
                 return result;
@@ -96,17 +49,17 @@ public class Block extends PlanNode implements GroupNode {
     }
 
     private ExecutionResult executeChild(ExecutionContext context) {
-        ExecutionResult result = children.get(currentChildIndex).execute(context);
+        ExecutionResult result = this.getNodeAt(currentChildIndex).execute(context);
 
         if (result.getState() == PlanNodeState.COMPLETED || result.getState() == PlanNodeState.SKIPPED) {
             currentChildIndex++;
             // il ciclo while prosegue con il figlio successivo
         } else if (result.getState() == PlanNodeState.REVERT) {
-            children.get(currentChildIndex).reset();
+            this.getNodeAt(currentChildIndex).reset();
 
             if (currentChildIndex > 0) {
                 currentChildIndex--;
-                children.get(currentChildIndex).reset();
+                this.getNodeAt(currentChildIndex).reset();
 
             } else {
                 return new ExecutionResult(PlanNodeState.REVERT);
@@ -114,9 +67,12 @@ public class Block extends PlanNode implements GroupNode {
 
         } else {
             // il figlio è RUNNING o WAITING
-            if (this.title != null && !this.title.isEmpty()) {
-                context.prependBreadcrumb(this.title);
-            }
+            this.getName().ifPresent(name -> {
+                if (!name.isEmpty()) {
+                    context.prependBreadcrumb(name);
+                }
+            });
+
             return result;
         }
 
@@ -128,26 +84,9 @@ public class Block extends PlanNode implements GroupNode {
         this.state = PlanNodeState.IDLE;
         currentChildIndex = 0;
 
-        for (PlanNode child : children) {
+        for (PlanNode child : this) {
             child.reset();
         }
     }
 
-    @Override
-    public void accept(WorkoutPlanVisitor visitor) {
-        visitor.visit(this);
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    @Override
-    public Iterator<PlanNode> iterator() {
-        return Collections.unmodifiableList(children).iterator();
-    }
 }

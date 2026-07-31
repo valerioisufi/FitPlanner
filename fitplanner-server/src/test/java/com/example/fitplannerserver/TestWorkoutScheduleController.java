@@ -7,6 +7,7 @@ import com.example.fitplannerserver.dao.SessionLogDao;
 import com.example.fitplannerserver.dao.WorkoutPlanDao;
 import com.example.fitplannerserver.dao.inmemory.InMemorySessionLogDao;
 import com.example.fitplannerserver.dao.inmemory.InMemoryWorkoutPlanDao;
+import com.example.fitplannerserver.dao.inmemory.InMemoryWorkoutSessionDao;
 import com.example.fitplannerserver.exception.ResourceNotFoundException;
 import com.example.fitplannerserver.mock.MockIdentityProvider;
 import com.example.fitplannerserver.model.user.Account;
@@ -39,7 +40,7 @@ class TestWorkoutScheduleController {
 
     @BeforeEach
     void setup() {
-        workoutPlanDao = new InMemoryWorkoutPlanDao();
+        workoutPlanDao = new InMemoryWorkoutPlanDao(new InMemoryWorkoutSessionDao());
         sessionLogDao = new InMemorySessionLogDao();
 
         controller = new WorkoutScheduleController(

@@ -1,8 +1,6 @@
 package com.example.fitplannerserver.dao.filesystem;
 
-import com.example.fitplannerserver.dao.DaoFactory;
-import com.example.fitplannerserver.dao.DataInitializer;
-
+import com.example.fitplannerserver.dao.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,6 +16,7 @@ public class FileSystemDaoFactory extends DaoFactory {
     private final FileSystemSessionLogDao sessionLogDao;
     private final FileSystemExerciseLibraryDao exerciseLibraryDao;
     private final FileSystemWorkoutPlanDao workoutPlanDao;
+    private final FileSystemWorkoutSessionDao workoutSessionDao;
 
     public FileSystemDaoFactory() {
         Path accountsPath = Path.of(BASE_DIR, "accounts.csv");
@@ -28,17 +27,17 @@ public class FileSystemDaoFactory extends DaoFactory {
         Path workoutPlansPath = Path.of(BASE_DIR, "workout_plans.csv");
         Path workoutSessionsPath = Path.of(BASE_DIR, "workout_sessions.csv");
 
-        accountDao = new FileSystemAccountDao(accountsPath);
         profileDao = new FileSystemProfileDao(profilesPath);
-        sessionLogDao = new FileSystemSessionLogDao(sessionLogsPath, exerciseLogsPath);
+        accountDao = new FileSystemAccountDao(accountsPath, profileDao);
         exerciseLibraryDao = new FileSystemExerciseLibraryDao(exerciseLibraryPath);
-        workoutPlanDao = new FileSystemWorkoutPlanDao(workoutPlansPath, workoutSessionsPath);
+        workoutSessionDao = new FileSystemWorkoutSessionDao(workoutSessionsPath);
+        workoutPlanDao = new FileSystemWorkoutPlanDao(workoutPlansPath, workoutSessionDao);
+        sessionLogDao = new FileSystemSessionLogDao(sessionLogsPath, exerciseLogsPath);
 
         defaultData();
-
     }
 
-    private void defaultData(){
+    private void defaultData() {
         try {
             DataInitializer initializer = new DataInitializer(
                     this.accountDao,
@@ -50,7 +49,6 @@ public class FileSystemDaoFactory extends DaoFactory {
             logger.error("Impossibile generare gli utenti di default sul File System", e);
         }
     }
-
 
     @Override
     public FileSystemAccountDao getAccountDao() {
@@ -75,6 +73,11 @@ public class FileSystemDaoFactory extends DaoFactory {
     @Override
     public FileSystemWorkoutPlanDao getWorkoutPlanDao() {
         return this.workoutPlanDao;
+    }
+
+    @Override
+    public WorkoutSessionDao getWorkoutSessionDao() {
+        return this.workoutSessionDao;
     }
 
 }
