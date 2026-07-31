@@ -21,8 +21,9 @@ public class ProfileManager {
 
     public ProfileBean getCacheProfileInfo(){
         Profile cachedProfile = profileRepository.getCachedProfile();
-        if(cachedProfile == null) return null;
-
+        if(cachedProfile == null) {
+            throw new IllegalStateException("Profile not found in cache");
+        }
         return entityToBean(cachedProfile);
     }
 
