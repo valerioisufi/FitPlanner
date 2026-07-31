@@ -3,7 +3,6 @@ package com.example.fitplannerserver.dao.filesystem;
 import com.example.fitplannerserver.dao.WorkoutPlanDao;
 import com.example.fitplannerserver.exception.DaoException;
 import com.example.fitplannerserver.model.plan.WorkoutPlan;
-import com.example.fitplannerserver.model.plan.WorkoutSession;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -22,18 +21,15 @@ public class FileSystemWorkoutPlanDao implements WorkoutPlanDao {
     private static final String CSV_PLAN_HEADER = "plan_id,title,start_date,cycle_length,assigned_to_id,author_trainer_id";
     private static final int EXPECTED_PLAN_COLUMNS = 6;
 
-    private static final String CSV_SESSION_HEADER = "plan_id,title,content,day";
-    private static final int EXPECTED_SESSION_COLUMNS = 4;
-
     private final Path plansPath;
-    private final Path sessionsPath;
+    private final FileSystemWorkoutSessionDao workoutSessionDao;
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
-    public FileSystemWorkoutPlanDao(Path plansPath, Path sessionsPath){
+    public FileSystemWorkoutPlanDao(Path plansPath, FileSystemWorkoutSessionDao workoutSessionDao) {
         this.plansPath = Objects.requireNonNull(plansPath, "plansPath cannot be null");
-        this.sessionsPath = Objects.requireNonNull(sessionsPath, "sessionsPath cannot be null");
+        this.workoutSessionDao = Objects.requireNonNull(workoutSessionDao, "workoutSessionDao cannot be null");
+
         initializeFile(this.plansPath, CSV_PLAN_HEADER);
-        initializeFile(this.sessionsPath, CSV_SESSION_HEADER);
     }
 
     @Override
@@ -43,15 +39,9 @@ public class FileSystemWorkoutPlanDao implements WorkoutPlanDao {
 
         lock.writeLock().lock();
         try{
-            // upsert della riga del piano, poi si riscrive l'intero insieme delle sue sessioni:
-            // si eliminano quelle vecchie e si riappendono quelle correnti
-            // (no atomicità dell'operazione)
             CsvUtils.update(plansPath, EXPECTED_PLAN_COLUMNS, parts -> parts[0].equals(plan.getPlanId()), planToCsvRow(plan));
 
-            CsvUtils.delete(sessionsPath, EXPECTED_SESSION_COLUMNS, parts -> parts[0].equals(plan.getPlanId()));
-            for (WorkoutSession session : plan.getAllSessions()) {
-                CsvUtils.append(sessionsPath, sessionToCsvRow(plan.getPlanId(), session));
-            }
+            workoutSessionDao.saveSessionsForPlan(plan.getPlanId(), plan.getAllSessions());
         } catch (IOException e) {
             throw new DaoException("Errore critico durante il salvataggio del piano", e);
         }finally{
@@ -65,7 +55,7 @@ public class FileSystemWorkoutPlanDao implements WorkoutPlanDao {
         lock.writeLock().lock();
         try{
             CsvUtils.delete(plansPath, EXPECTED_PLAN_COLUMNS, parts -> parts[0].equals(planId));
-            CsvUtils.delete(sessionsPath, EXPECTED_SESSION_COLUMNS, parts -> parts[0].equals(planId));
+            workoutSessionDao.deleteSessionsByPlanId(planId);
         } catch (IOException e) {
             throw new DaoException("Errore critico durante l'eliminazione del piano", e);
         }finally {
@@ -140,25 +130,10 @@ public class FileSystemWorkoutPlanDao implements WorkoutPlanDao {
                 .build();
     }
 
-    private String sessionToCsvRow(String planId, WorkoutSession session){
-        return new CsvRowBuilder()
-                .add(planId)
-                .add(session.getTitle())
-                .add(session.getContent())
-                .add(session.getDay())
-                .build();
-    }
-
     // ricostruisce il piano dal CsvResultSet e vi aggancia le sue sessioni
-    private WorkoutPlan loadPlanWithSessions(CsvResultSet rs) throws IOException {
+    private WorkoutPlan loadPlanWithSessions(CsvResultSet rs) throws DaoException {
         WorkoutPlan plan = planFromCsvRS(rs);
-
-        CsvResultSet sessionRs = CsvUtils.search(sessionsPath, EXPECTED_SESSION_COLUMNS,
-                parts -> parts[0].equals(plan.getPlanId()), -1);
-
-        while (sessionRs.next()) {
-            plan.addSession(sessionFromCsvRS(sessionRs));
-        }
+        workoutSessionDao.findSessionsByPlanId(plan.getPlanId()).forEach(plan::addSession);
 
         return plan;
     }
@@ -175,11 +150,4 @@ public class FileSystemWorkoutPlanDao implements WorkoutPlanDao {
         return plan;
     }
 
-    private WorkoutSession sessionFromCsvRS(CsvResultSet rs){
-        return new WorkoutSession(
-                rs.getString(1),
-                rs.getString(2),
-                rs.getInt(3)
-        );
-    }
 }

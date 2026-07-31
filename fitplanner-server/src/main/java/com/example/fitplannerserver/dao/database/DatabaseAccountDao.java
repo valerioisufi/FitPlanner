@@ -1,6 +1,7 @@
 package com.example.fitplannerserver.dao.database;
 
 import com.example.fitplannerserver.dao.AccountDao;
+import com.example.fitplannerserver.dao.DaoFactory;
 import com.example.fitplannerserver.dao.DbConnection;
 import com.example.fitplannerserver.exception.DaoException;
 import com.example.fitplannerserver.model.user.Account;
@@ -145,6 +146,8 @@ public class DatabaseAccountDao implements AccountDao {
     public void delete(Account account) throws DaoException {
         Objects.requireNonNull(account, NULL_ACC_MSG);
         Objects.requireNonNull(account.getUserId(), NULL_ID_MSG);
+
+        DaoFactory.getInstance().getProfileDao().delete(account.getUserId());
 
         String sql = "DELETE FROM accounts WHERE user_id=?";
         Connection conn = null;

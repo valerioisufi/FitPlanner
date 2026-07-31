@@ -9,22 +9,30 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class InMemoryWorkoutPlanDao implements WorkoutPlanDao{
+public class InMemoryWorkoutPlanDao implements WorkoutPlanDao {
 
     private final Map<String, WorkoutPlan> planById = new ConcurrentHashMap<>();
+
+    private final InMemoryWorkoutSessionDao workoutSessionDao;
+
+    public InMemoryWorkoutPlanDao(InMemoryWorkoutSessionDao workoutSessionDao) {
+        this.workoutSessionDao = workoutSessionDao;
+    }
 
     @Override
     public void savePlan(WorkoutPlan plan) {
         Objects.requireNonNull(plan, "WorkoutPlan cannot be null");
         Objects.requireNonNull(plan.getPlanId(), "WorkoutPlan must have a valid planId");
 
-        planById.put(plan.getPlanId(), new WorkoutPlan(plan));
+        workoutSessionDao.saveSessionsForPlan(plan.getPlanId(), plan.getAllSessions());
+        planById.put(plan.getPlanId(), new WorkoutPlan(plan, false));
     }
 
     @Override
     public void deletePlan(String planId) {
         Objects.requireNonNull(planId, "planId cannot be null");
 
+        workoutSessionDao.deleteSessionsByPlanId(planId);
         planById.remove(planId);
     }
 
@@ -32,7 +40,13 @@ public class InMemoryWorkoutPlanDao implements WorkoutPlanDao{
     public Optional<WorkoutPlan> findPlanById(String planId) {
         Objects.requireNonNull(planId, "planId cannot be null");
 
-        return Optional.ofNullable(planById.get(planId)).map(WorkoutPlan::new);
+        WorkoutPlan storedPlan = planById.get(planId);
+        if (storedPlan == null) return Optional.empty();
+
+        WorkoutPlan planCopy = new WorkoutPlan(storedPlan);
+        workoutSessionDao.findSessionsByPlanId(planId).forEach(planCopy::addSession);
+
+        return Optional.of(planCopy);
     }
 
     @Override
@@ -42,7 +56,11 @@ public class InMemoryWorkoutPlanDao implements WorkoutPlanDao{
         return planById.values().stream()
                 .filter(plan -> athleteId.equals(plan.getAssignedToId()))
                 .findFirst()
-                .map(WorkoutPlan::new);
+                .map(storedPlan -> {
+                    WorkoutPlan copy = new WorkoutPlan(storedPlan);
+                    workoutSessionDao.findSessionsByPlanId(copy.getPlanId()).forEach(copy::addSession);
+                    return copy;
+                });
     }
 
     @Override
@@ -51,7 +69,11 @@ public class InMemoryWorkoutPlanDao implements WorkoutPlanDao{
 
         return planById.values().stream()
                 .filter(plan -> trainerId.equals(plan.getAuthorId()))
-                .map(WorkoutPlan::new)
+                .map(storedPlan -> {
+                    WorkoutPlan copy = new WorkoutPlan(storedPlan);
+                    workoutSessionDao.findSessionsByPlanId(copy.getPlanId()).forEach(copy::addSession);
+                    return copy;
+                })
                 .toList();
     }
 

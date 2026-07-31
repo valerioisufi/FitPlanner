@@ -24,4 +24,6 @@ public interface ProfileDao {
     Optional<AthleteUser> findAthleteById(String athleteId) throws DaoException;
 
     Optional<TrainerUser> findTrainerById(String trainerId) throws DaoException;
+
+    void delete(String userId) throws DaoException;
 }

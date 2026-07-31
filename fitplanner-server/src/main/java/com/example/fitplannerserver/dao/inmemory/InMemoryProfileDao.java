@@ -1,7 +1,6 @@
 package com.example.fitplannerserver.dao.inmemory;
 
 import com.example.fitplannerserver.dao.ProfileDao;
-import com.example.fitplannerserver.exception.DaoException;
 import com.example.fitplannerserver.model.user.AthleteUser;
 import com.example.fitplannerserver.model.user.TrainerUser;
 import com.example.fitplannerserver.model.user.User;
@@ -58,13 +57,19 @@ public class InMemoryProfileDao implements ProfileDao {
     }
 
     @Override
-    public Optional<AthleteUser> findAthleteById(String athleteId) throws DaoException {
+    public Optional<AthleteUser> findAthleteById(String athleteId) {
         return findById(athleteId).filter(AthleteUser.class::isInstance).map(AthleteUser.class::cast);
     }
 
     @Override
-    public Optional<TrainerUser> findTrainerById(String trainerId) throws DaoException {
+    public Optional<TrainerUser> findTrainerById(String trainerId) {
         return findById(trainerId).filter(TrainerUser.class::isInstance).map(TrainerUser.class::cast);
+    }
+
+    @Override
+    public void delete(String userId) {
+        Objects.requireNonNull(userId, USER_ID_CANNOT_BE_NULL);
+        profiles.remove(userId);
     }
 
 }

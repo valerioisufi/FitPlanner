@@ -57,4 +57,12 @@ public abstract class User {
     public String getPhoneNumber() {
         return phoneNumber;
     }
+
+    public String getInvitationCode() {
+        return null;
+    }
+
+    public String getTrainerId() {
+        return null;
+    }
 }
