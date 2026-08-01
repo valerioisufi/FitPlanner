@@ -90,6 +90,7 @@ public class PlanToDtoVisitor implements WorkoutPlanVisitor {
         currentNodeDto.setType(nodeType);
         currentNodeDto.setName(name);
         currentNodeDto.setParameters(compositeNode.getParameters() != null ? new HashMap<>(compositeNode.getParameters()) : new HashMap<>());
+        currentNodeDto.setResourceId(compositeNode.getProtocolType().map(Enum::name).orElse(null));
 
         PlanNodeDTO thisNodeDto = currentNodeDto;
 
@@ -107,18 +108,10 @@ public class PlanToDtoVisitor implements WorkoutPlanVisitor {
 
     @Override
     public void visit(FlowDecorator flowDecorator) {
-        visitFlowDecorator(
-                flowDecorator,
-                PlanNodeDTO.FlowDecoratorType.valueOf(flowDecorator.getType().toString()),
-                flowDecorator.getSerializedValue()
-        );
-    }
-
-    private void visitFlowDecorator(FlowDecorator flowDecorator, PlanNodeDTO.FlowDecoratorType decoratorType, String parameter) {
         currentNodeDto.setType(PlanNodeDTO.NodeType.FLOW_DECORATOR);
         currentNodeDto.setFlowDecorator(new PlanNodeDTO.FlowDecorator(
-                decoratorType,
-                parameter
+                serializeFlowDecoratorType(flowDecorator.getType()),
+                flowDecorator.getSerializedValue()
         ));
 
         PlanNodeDTO previousNodeDto = currentNodeDto;
@@ -129,5 +122,16 @@ public class PlanToDtoVisitor implements WorkoutPlanVisitor {
 
         currentNodeDto = previousNodeDto;
     }
+
+    private PlanNodeDTO.FlowDecoratorType serializeFlowDecoratorType(FlowDecoratorType flowDecoratorType) {
+        return switch (flowDecoratorType) {
+            case LOOP -> PlanNodeDTO.FlowDecoratorType.LOOP;
+            case REST -> PlanNodeDTO.FlowDecoratorType.REST;
+            case TIME_LIMIT -> PlanNodeDTO.FlowDecoratorType.TIME_LIMIT;
+            case INTERVAL -> PlanNodeDTO.FlowDecoratorType.INTERVAL;
+            case PROGRESSION -> PlanNodeDTO.FlowDecoratorType.PROGRESSION;
+        };
+    }
+
 
 }
