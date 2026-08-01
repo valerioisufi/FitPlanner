@@ -121,7 +121,8 @@ public class PlanToBeanVisitor implements WorkoutPlanVisitor {
         PlanNodeBean nodeBean = new PlanNodeBean(compositeNode.getId(), name, nodeType);
         nodeBean.setFlowDecorators(new ArrayList<>(accumulatedDecorators));
         nodeBean.setParameters(compositeNode.getParameters() != null ? new HashMap<>(compositeNode.getParameters()) : new HashMap<>());
-
+        nodeBean.setResourceId(compositeNode.getProtocolType().map(Enum::name).orElse(null));
+        
         StringBuilder errorMsg = new StringBuilder();
         String selfError = getErrorMessage(compositeNode.getId());
         if (selfError != null) {
