@@ -59,18 +59,12 @@ public class PlanDeserializer {
             return null;
         }
 
-        switch (dto.getType()) {
-            case EXERCISE:
-                return deserializeExerciseNode(dto);
-            case BLOCK:
-                return deserializeBlockNode(dto);
-            case PROTOCOL:
-                return deserializeProtocolBlockNode(dto);
-            case FLOW_DECORATOR:
-                return deserializeFlowDecorator(dto);
-            default:
-                throw new IllegalArgumentException("Unknown node type: " + dto.getType());
-        }
+        return switch (dto.getType()) {
+            case EXERCISE -> deserializeExerciseNode(dto);
+            case BLOCK -> deserializeBlockNode(dto);
+            case PROTOCOL -> deserializeProtocolBlockNode(dto);
+            case FLOW_DECORATOR -> deserializeFlowDecorator(dto);
+        };
     }
 
     private ExerciseNode deserializeExerciseNode(PlanNodeDTO dto) {
@@ -100,12 +94,15 @@ public class PlanDeserializer {
     private ProtocolBlock deserializeProtocolBlockNode(PlanNodeDTO dto) {
         // Il semanticType viene memorizzato nel campo name del DTO
         ProtocolBlockFactory factory = new ProtocolBlockFactory();
-        ProtocolBlock protocolBlock = factory.create(dto.getName());
+        ProtocolBlock protocolBlock = factory.create(dto.getResourceId());
+        protocolBlock.setName(dto.getName());
+
         if (dto.getParameters() != null) {
             for (Map.Entry<String, String> entry : dto.getParameters().entrySet()) {
                 protocolBlock.setParameter(entry.getKey(), entry.getValue());
             }
         }
+
         if (dto.getChildren() != null) {
             for (PlanNodeDTO childDto : dto.getChildren()) {
                 protocolBlock.addNode(deserializeNode(childDto));

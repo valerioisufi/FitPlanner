@@ -304,7 +304,7 @@ public class WorkoutPlanEditorView extends BorderPane {
         protocolBlocksContainer.getChildren().clear();
         for (PlanNodeBean protocol : protocols) {
             protocolBlocksContainer.getChildren().add(
-                createToolboxItem(protocol.getName(), "TOOLBOX:PROTOCOL:" + protocol.getName(), null)
+                createToolboxItem(protocol.getName(), "TOOLBOX:PROTOCOL:" + protocol.getResourceId(), null)
             );
         }
     }

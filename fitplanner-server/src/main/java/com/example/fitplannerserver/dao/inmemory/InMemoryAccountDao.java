@@ -17,9 +17,9 @@ public class InMemoryAccountDao implements AccountDao {
     // Map Key: userId
     private final Map<String, Account> accounts = new ConcurrentHashMap<>();
 
-    private final InMemoryProfileDao inMemoryProfileDao;
+    private final InMemoryProfileDao profileDao;
     public InMemoryAccountDao(InMemoryProfileDao inMemoryProfileDao) {
-        this.inMemoryProfileDao = inMemoryProfileDao;
+        this.profileDao = inMemoryProfileDao;
     }
 
     @Override
@@ -72,7 +72,7 @@ public class InMemoryAccountDao implements AccountDao {
         Objects.requireNonNull(account, ACCOUNT_CANNOT_BE_NULL);
         Objects.requireNonNull(account.getUserId(), ACCOUNT_USER_ID_CANNOT_BE_NULL);
 
-        inMemoryProfileDao.delete(account.getUserId());
+        profileDao.delete(account.getUserId());
         accounts.remove(account.getUserId());
     }
 

@@ -12,8 +12,8 @@ public class PlanNodeDTO {
 
     private String name;
 
-    private String resourceId; // solo per type == EXERCISE
-    private List<Modifier> modifiers = new ArrayList<>();
+    private String resourceId;
+    private List<Modifier> modifiers = new ArrayList<>();  // solo per type == EXERCISE
 
     private FlowDecorator flowDecorator; // solo per type == FLOW_DECORATOR
 
