@@ -12,8 +12,8 @@ public class DatabaseDaoFactory extends DaoFactory {
     private final DatabaseWorkoutSessionDao workoutSessionDao;
 
     public DatabaseDaoFactory() {
-        this.accountDao = new DatabaseAccountDao();
         this.profileDao = new DatabaseProfileDao();
+        this.accountDao = new DatabaseAccountDao(this.profileDao);
         this.sessionLogDao = new DatabaseSessionLogDao();
         this.exerciseLibraryDao = new DatabaseExerciseLibraryDao();
         this.workoutSessionDao = new DatabaseWorkoutSessionDao();

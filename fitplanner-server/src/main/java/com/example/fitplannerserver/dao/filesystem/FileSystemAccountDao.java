@@ -25,13 +25,13 @@ public class FileSystemAccountDao implements AccountDao {
     private final Path file;
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
-    private final FileSystemProfileDao fileSystemProfileDao;
+    private final FileSystemProfileDao profileDao;
 
     public FileSystemAccountDao(Path file, FileSystemProfileDao profileDao) {
         this.file = Objects.requireNonNull(file, "file cannot be null");
         CsvUtils.initializeFile(file, CSV_HEADER);
 
-        this.fileSystemProfileDao = profileDao;
+        this.profileDao = profileDao;
     }
 
     @Override
@@ -132,7 +132,7 @@ public class FileSystemAccountDao implements AccountDao {
         Objects.requireNonNull(account, ACCOUNT_CANNOT_BE_NULL);
         Objects.requireNonNull(account.getUserId(), USER_ID_CANNOT_BE_NULL);
 
-        fileSystemProfileDao.delete(account.getUserId());
+        profileDao.delete(account.getUserId());
 
         lock.writeLock().lock();
         try {

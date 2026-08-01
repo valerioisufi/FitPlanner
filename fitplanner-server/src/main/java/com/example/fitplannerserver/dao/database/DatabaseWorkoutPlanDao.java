@@ -15,10 +15,10 @@ public class DatabaseWorkoutPlanDao implements WorkoutPlanDao {
     private static final String NULL_PLAN_ID_MSG="planId cannot be null";
     private static final String NULL_TRAINER_ID_MSG="trainerId cannot be null";
 
-    private final DatabaseWorkoutSessionDao databaseWorkoutSessionDao;
+    private final DatabaseWorkoutSessionDao workoutSessionDao;
 
     public DatabaseWorkoutPlanDao(DatabaseWorkoutSessionDao databaseWorkoutSessionDao) {
-        this.databaseWorkoutSessionDao = databaseWorkoutSessionDao;
+        this.workoutSessionDao = databaseWorkoutSessionDao;
     }
 
     @Override
@@ -33,8 +33,8 @@ public class DatabaseWorkoutPlanDao implements WorkoutPlanDao {
             conn.setAutoCommit(false);
             insertPlan(conn, plan);
 
-            databaseWorkoutSessionDao.deleteSessionsByPlanId(plan.getPlanId());
-            databaseWorkoutSessionDao.saveSessionsForPlan(plan.getPlanId(), plan.getAllSessions());
+            workoutSessionDao.deleteSessionsByPlanId(plan.getPlanId());
+            workoutSessionDao.saveSessionsForPlan(plan.getPlanId(), plan.getAllSessions());
 
             conn.commit();
         } catch (SQLException e) {
@@ -51,7 +51,7 @@ public class DatabaseWorkoutPlanDao implements WorkoutPlanDao {
     public void deletePlan(String planId) throws DaoException {
         Objects.requireNonNull(planId, NULL_PLAN_ID_MSG);
 
-        databaseWorkoutSessionDao.deleteSessionsByPlanId(planId);
+        workoutSessionDao.deleteSessionsByPlanId(planId);
 
         String sql= """
                 DELETE FROM workout_plan WHERE plan_id=?
@@ -93,7 +93,7 @@ public class DatabaseWorkoutPlanDao implements WorkoutPlanDao {
                     }
                     WorkoutPlan plan = workoutPlans.getFirst();
 
-                    databaseWorkoutSessionDao.findSessionsByPlanId(plan.getPlanId()).forEach(plan::addSession);
+                    workoutSessionDao.findSessionsByPlanId(plan.getPlanId()).forEach(plan::addSession);
                     return Optional.of(plan);
                 }
             }
@@ -125,7 +125,7 @@ public class DatabaseWorkoutPlanDao implements WorkoutPlanDao {
                         return Optional.empty();
                     }
                     WorkoutPlan plan = workoutPlans.getFirst();
-                    databaseWorkoutSessionDao.findSessionsByPlanId(plan.getPlanId()).forEach(plan::addSession);
+                    workoutSessionDao.findSessionsByPlanId(plan.getPlanId()).forEach(plan::addSession);
                     return Optional.of(plan);
                 }
             }
@@ -156,7 +156,7 @@ public class DatabaseWorkoutPlanDao implements WorkoutPlanDao {
                     List<WorkoutPlan> workoutPlans = extractPlan(rs);
 
                     for (WorkoutPlan plan : workoutPlans) {
-                        databaseWorkoutSessionDao.findSessionsByPlanId(plan.getPlanId()).forEach(plan::addSession);
+                        workoutSessionDao.findSessionsByPlanId(plan.getPlanId()).forEach(plan::addSession);
                     }
                     return workoutPlans;
                 }

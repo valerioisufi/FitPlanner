@@ -1,7 +1,6 @@
 package com.example.fitplannerserver.dao.database;
 
 import com.example.fitplannerserver.dao.AccountDao;
-import com.example.fitplannerserver.dao.DaoFactory;
 import com.example.fitplannerserver.dao.DbConnection;
 import com.example.fitplannerserver.exception.DaoException;
 import com.example.fitplannerserver.model.user.Account;
@@ -19,6 +18,11 @@ public class DatabaseAccountDao implements AccountDao {
     private static final String NULL_EMAIL_MSG = "email cannot be null";
     private static final String NULL_ID_MSG = "userId cannot be null";
 
+    private final DatabaseProfileDao profileDao;
+
+    public DatabaseAccountDao(DatabaseProfileDao databaseProfileDao) {
+        this.profileDao = databaseProfileDao;
+    }
 
     @Override
     public boolean create(Account account) throws DaoException {
@@ -147,7 +151,7 @@ public class DatabaseAccountDao implements AccountDao {
         Objects.requireNonNull(account, NULL_ACC_MSG);
         Objects.requireNonNull(account.getUserId(), NULL_ID_MSG);
 
-        DaoFactory.getInstance().getProfileDao().delete(account.getUserId());
+        profileDao.delete(account.getUserId());
 
         String sql = "DELETE FROM accounts WHERE user_id=?";
         Connection conn = null;
