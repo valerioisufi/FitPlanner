@@ -11,11 +11,13 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class DatabaseSessionLogDao implements SessionLogDao {
 
     private static final String NULL_ATHLETE_ID_MSG = "athleteId cannot be null";
+    private static final Pattern COMMA_SPACE_PATTERN = Pattern.compile(", ");
 
     @Override
     public void saveSessionLog(SessionLog log) throws DaoException {
@@ -216,7 +218,7 @@ public class DatabaseSessionLogDao implements SessionLogDao {
             String innerData = chunk.substring(startIndex + 1, endIndex);
 
             // 3. Dividiamo i due parametri usando la virgola e lo spazio
-            String[] pairs = innerData.split(", ");
+            String[] pairs = COMMA_SPACE_PATTERN.split(innerData);
 
             int reps = 0;
             double load = 0.0;
